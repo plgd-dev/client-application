@@ -1,0 +1,252 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "plgd device - HTTP Gateway API",
+    "version": "1.0",
+    "contact": {
+      "name": "plgd.dev",
+      "url": "https://github.com/plgd-dev/device",
+      "email": "info@plgd.dev"
+    },
+    "license": {
+      "name": "Apache License 2.0",
+      "url": "https://github.com/plgd-dev/device/blob/v2/LICENSE"
+    }
+  },
+  "tags": [
+    {
+      "name": "DeviceGateway"
+    }
+  ],
+  "schemes": [
+    "https"
+  ],
+  "consumes": [
+    "application/json",
+    "application/protojson"
+  ],
+  "produces": [
+    "application/json",
+    "application/protojson"
+  ],
+  "paths": {
+    "/api/v1/devices": {
+      "get": {
+        "summary": "Get all devices",
+        "operationId": "DeviceGateway_GetDevices",
+        "responses": {
+          "200": {
+            "description": "A successful response.(streaming responses)",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "result": {
+                  "$ref": "#/definitions/pbDevice"
+                },
+                "error": {
+                  "$ref": "#/definitions/rpcStatus"
+                }
+              },
+              "title": "Stream result of pbDevice"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "ownershipStatusFilter",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "enum": [
+              "NEW",
+              "OWNED"
+            ],
+            "default": "NEW"
+          }
+        ],
+        "tags": [
+          "Devices"
+        ]
+      }
+    },
+    "/api/v1/devices/{resourceId.deviceId}/resources/{resourceId.href}": {
+      "get": {
+        "summary": "Get resources from the resource shadow.",
+        "operationId": "DeviceGateway_GetResource",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbGetResourceResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "resourceId.deviceId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "resourceId.href",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Resource"
+        ]
+      },
+      "put": {
+        "summary": "Update resource at the device.",
+        "operationId": "DeviceGateway_UpdateResource",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbUpdateResourceResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "resourceId.deviceId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "resourceId.href",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbContent"
+            }
+          },
+          {
+            "name": "resourceInterface",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Resource"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "pbContent": {
+      "type": "object",
+      "properties": {
+        "contentType": {
+          "type": "string"
+        },
+        "data": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "pbDevice": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "$ref": "#/definitions/pbContent"
+        }
+      }
+    },
+    "pbGetResourceResponse": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "$ref": "#/definitions/pbContent"
+        }
+      }
+    },
+    "pbOwnershipStatus": {
+      "type": "string",
+      "enum": [
+        "NEW",
+        "OWNED"
+      ],
+      "default": "NEW"
+    },
+    "pbResourceId": {
+      "type": "object",
+      "properties": {
+        "deviceId": {
+          "type": "string"
+        },
+        "href": {
+          "type": "string"
+        }
+      }
+    },
+    "pbUpdateResourceResponse": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "$ref": "#/definitions/pbContent"
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "typeUrl": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "rpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    }
+  }
+}

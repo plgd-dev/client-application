@@ -1,0 +1,103 @@
+syntax = "proto3";
+
+package service.pb;
+
+
+import "google/api/annotations.proto";
+import "protoc-gen-openapiv2/options/annotations.proto";
+
+import "github.com/plgd-dev/client-application/pb/get_devices.proto";
+import "github.com/plgd-dev/client-application/pb/get_resource.proto";
+import "github.com/plgd-dev/client-application/pb/update_resource.proto";
+
+
+option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
+  info: {
+    title: "plgd device - HTTP Gateway API";
+    version: "1.0";
+    description: "";
+    contact: {
+      name: "plgd.dev";
+      url: "https://github.com/plgd-dev/device";
+      email: "info@plgd.dev";
+    };
+    license: {
+      name: "Apache License 2.0";
+      url: "https://github.com/plgd-dev/device/blob/v2/LICENSE";
+    };
+  };
+  schemes: [ HTTPS ];
+  consumes: [ "application/json", "application/protojson" ];
+  produces: [ "application/json", "application/protojson" ];
+};
+
+option go_package = "github.com/plgd-dev/client-application/pb;pb";
+// https://github.com/googleapis/googleapis/blob/master/google/api/http.proto
+
+service DeviceGateway {
+  // Discover devices by client application. This operation fills cache of mappings deviceId to endpoints and this cache is used by other RPC calls.
+  rpc GetDevices (GetDevicesRequest) returns (stream Device) {
+    option (google.api.http) = {
+      get: "/api/v1/devices"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: [ "Devices" ]
+    };
+  }
+
+  /*
+  // Get resource links of devices.
+  rpc GetResourceLink(GetResourceLinksRequest) returns (stream ResourceLink) {
+    option (google.api.http) = {
+      get: "/api/v1/devices/{device_id}/resource-links"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: [ "Links" ]
+    };
+  }
+  */
+
+  // Get resource from the device.
+  rpc GetResource(GetResourceRequest) returns (GetResourceResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/devices/{resource_id.device_id}/resources/{resource_id.href=**}"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: [ "Resource" ]
+    };
+  }
+
+  // Update resource at the device.
+  rpc UpdateResource(UpdateResourceRequest) returns (UpdateResourceResponse) {
+    option (google.api.http) = {
+      put: "/api/v1/devices/{resource_id.device_id}/resources/{resource_id.href=**}"
+      body: "content"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: [ "Resource" ]
+    };
+  }
+/*
+  // Own the device.
+  rpc OwnDevice(OwnDeviceRequest) returns (OwnDeviceResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/devices/{device_id}/own"
+      body: "content"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: [ "Device" ]
+    };
+  }
+
+  // Disown the device.
+  rpc DisownDevice(DisownDeviceRequest) returns (DisownDeviceResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/devices/{device_id}/disown"
+      body: "content"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: [ "Device" ]
+    };
+  }
+*/
+}
