@@ -6,9 +6,11 @@ package service.pb;
 import "google/api/annotations.proto";
 import "protoc-gen-openapiv2/options/annotations.proto";
 
+import "github.com/plgd-dev/client-application/pb/get_device_by_endpoint.proto";
 import "github.com/plgd-dev/client-application/pb/get_devices.proto";
 import "github.com/plgd-dev/client-application/pb/get_resource.proto";
 import "github.com/plgd-dev/client-application/pb/update_resource.proto";
+import "github.com/plgd-dev/client-application/pb/misc.proto";
 
 
 option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
@@ -42,6 +44,16 @@ service DeviceGateway {
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       tags: [ "Devices" ]
+    };
+  }
+
+  // Get device via endpoint address. This operation fills cache of mappings deviceId to endpoints and this cache is used by other RPC calls.
+  rpc GetDeviceByEndpoint(GetDeviceByEndpointRequest) returns (Device) {
+    option (google.api.http) = {
+      get: "/api/v1/endpoints/{endpoint}"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: [ "Device" ]
     };
   }
 

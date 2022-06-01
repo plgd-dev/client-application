@@ -32,7 +32,7 @@
   "paths": {
     "/api/v1/devices": {
       "get": {
-        "summary": "Get all devices",
+        "summary": "Discover devices by client application. This operation fills cache of mappings deviceId to endpoints and this cache is used by other RPC calls.",
         "operationId": "DeviceGateway_GetDevices",
         "responses": {
           "200": {
@@ -60,14 +60,52 @@
         "parameters": [
           {
             "name": "ownershipStatusFilter",
+            "description": "Filter by ownership status. Default: [UNOWNED,OWNED].\n\n - UNOWNED: get only not owned devices\n - OWNED: get only owned devices",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "UNOWNED",
+                "OWNED"
+              ]
+            },
+            "collectionFormat": "multi"
+          },
+          {
+            "name": "ipTypeFilter",
+            "description": "Filter by multicast IP address type. Default: [IPV4,IPV6].",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "IPV4",
+                "IPV6"
+              ]
+            },
+            "collectionFormat": "multi"
+          },
+          {
+            "name": "typeFilter",
+            "description": "Filter by device resource type of oic/d. Default: [] - filter is disabled.",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          },
+          {
+            "name": "discover",
+            "description": "How long to wait for the devices responses for multicast request. 0 means use cache. Default: 0.",
             "in": "query",
             "required": false,
             "type": "string",
-            "enum": [
-              "NEW",
-              "OWNED"
-            ],
-            "default": "NEW"
+            "format": "int64"
           }
         ],
         "tags": [
@@ -77,7 +115,7 @@
     },
     "/api/v1/devices/{resourceId.deviceId}/resources/{resourceId.href}": {
       "get": {
-        "summary": "Get resources from the resource shadow.",
+        "summary": "Get resource from the device.",
         "operationId": "DeviceGateway_GetResource",
         "responses": {
           "200": {
@@ -160,9 +198,69 @@
           "Resource"
         ]
       }
+    },
+    "/api/v1/endpoints/{endpoint}": {
+      "get": {
+        "summary": "Get device via endpoint address. This operation fills cache of mappings deviceId to endpoints and this cache is used by other RPC calls.",
+        "operationId": "DeviceGateway_GetDeviceByEndpoint",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbDevice"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "endpoint",
+            "description": "Endpoint can be in format:\n- coap://\u003chost\u003e:\u003cport\u003e or coaps://\u003chost\u003e:\u003cport\u003e\n- coap+tcp://\u003chost\u003e:\u003cport\u003e or coaps+tcp://\u003chost\u003e:\u003cport\u003e\n- \u003chost\u003e:\u003cport\u003e is interpreted as coap://\u003chost\u003e:\u003cport\u003e\n- \u003chost\u003e is interpreted as coap://\u003chost\u003e:5683",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Device"
+        ]
+      }
     }
   },
   "definitions": {
+    "DeviceOwnershipStatus": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "UNOWNED",
+        "OWNED",
+        "UNSUPPORTED"
+      ],
+      "default": "UNKNOWN",
+      "title": "- UNKNOWN: cannot determine ownership status\n - UNOWNED: device is ready to be owned the user\n - OWNED: device is owned by the user. to determine who own the device you need to get ownership resource /oic/sec/doxm\n - UNSUPPORTED: set when device is not secured. (iotivity-lite was built without security)"
+    },
+    "GetDevicesRequestIPAddressType": {
+      "type": "string",
+      "enum": [
+        "IPV4",
+        "IPV6"
+      ],
+      "default": "IPV4"
+    },
+    "GetDevicesRequestOwnershipStatusFilter": {
+      "type": "string",
+      "enum": [
+        "UNOWNED",
+        "OWNED"
+      ],
+      "default": "UNOWNED",
+      "title": "- UNOWNED: get only not owned devices\n - OWNED: get only owned devices"
+    },
     "pbContent": {
       "type": "object",
       "properties": {
@@ -179,7 +277,19 @@
       "type": "object",
       "properties": {
         "content": {
-          "$ref": "#/definitions/pbContent"
+          "$ref": "#/definitions/pbContent",
+          "title": "content of the device resource oic/d"
+        },
+        "ownershipStatus": {
+          "$ref": "#/definitions/DeviceOwnershipStatus",
+          "title": "ownership status of the device"
+        },
+        "endpoints": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "endpoints with schemas which are hosted by the device"
         }
       }
     },
@@ -190,14 +300,6 @@
           "$ref": "#/definitions/pbContent"
         }
       }
-    },
-    "pbOwnershipStatus": {
-      "type": "string",
-      "enum": [
-        "NEW",
-        "OWNED"
-      ],
-      "default": "NEW"
     },
     "pbResourceId": {
       "type": "object",

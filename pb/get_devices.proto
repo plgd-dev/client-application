@@ -2,55 +2,28 @@ syntax = "proto3";
 
 package service.pb;
 
-import "github.com/plgd-dev/client-application/pb/misc.proto";
-
 option go_package = "github.com/plgd-dev/client-application/pb;pb";
-
 
 message GetDevicesRequest {
   enum OwnershipStatusFilter {
-    // get all devices
-    ANY = 0;
     // get only not owned devices
-    NEW = 1;
+    UNOWNED = 0;
     // get only owned devices
-    OWNED = 2;
+    OWNED = 1;
   }  
-  enum McastIPAddressType {
-    ANY_IP = 0;
-    ONLY_IPV4 = 1;
-    ONLY_IPV6 = 2;
+  enum IPAddressType {
+    IPV4 = 0;
+    IPV6 = 1;
   }
-  // Filter by ownership status.
-  OwnershipStatusFilter ownership_status_filter = 1;
+  // Filter by ownership status. Default: [UNOWNED,OWNED]. 
+  repeated OwnershipStatusFilter ownership_status_filter = 1;
 
-  // Filter by multicast IP address type. This filter is not applied if enpoint_filter is not empty.
-  McastIPAddressType mcast_ip_address_filter = 2;
+  // Filter by multicast IP address type. Default: [IPV4,IPV6].
+  repeated IPAddressType ip_type_filter = 2;
 
+  // Filter by device resource type of oic/d. Default: [] - filter is disabled.
+  repeated string type_filter = 4;
 
-  // Filter by endpoints with . It can be in format:
-  // - coap://<host>:<port> or coaps://<host>:<port>
-  // - coap+tcp://<host>:<port> or coaps+tcp://<host>:<port>
-  // - <host>:<port> is interpreted as coap://<host>:<port>
-  // - <host> is interpreted as coap://<host>:5683
-  repeated string endpoint_filter = 3; 
-}
-
-message Device {
-  enum OwnershipStatus {
-    // cannot determine ownership status
-    UNKNOWN = 0;
-    // device is ready to be owned the user
-    NEW = 1;
-    // device is owned by the user. to determine who own the device you need to get ownership resource /oic/sec/doxm
-    OWNED = 2;
-    // set when device is not secured. (iotivity-lite was built without security)
-    UNSUPPORTED = 3;
-  }
-  // content of the device resource oic/d
-  Content content = 1;
-  // ownership status of the device
-  OwnershipStatus ownership_status = 2;
-  // endpoints with schemas which are hosted by the device
-  repeated string endpoints = 3;
+  // How long to wait for the devices responses for multicast request. 0 means use cache. Default: 0.
+  int64 discover = 5;
 }
