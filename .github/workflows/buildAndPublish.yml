@@ -1,0 +1,28 @@
+name: Build and upload package for release
+
+on:
+  release:
+    types: [created]
+
+jobs:
+  format:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          submodules: "true"
+
+      - uses: actions/setup-go@v2
+        with:
+          go-version: "^1.18" # The Go version to download (if necessary) and use.
+      
+      - name: Build
+        run: make build
+
+      - name: Upload packages
+        uses: skx/github-action-publish-binaries@master
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          args: '.tmp/build/*'

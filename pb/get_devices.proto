@@ -22,8 +22,8 @@ message GetDevicesRequest {
   repeated IPAddressType ip_type_filter = 2;
 
   // Filter by device resource type of oic/d. Default: [] - filter is disabled.
-  repeated string type_filter = 4;
+  repeated string type_filter = 3;
 
-  // How long to wait for the devices responses for multicast request. 0 means use cache. Default: 0.
-  int64 discover = 5;
+  // How long to wait for the devices responses for multicast request. 0 means use cache. Default: 0. New devices will be added to cache.
+  int64 discover = 4;
 }

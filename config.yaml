@@ -1,0 +1,16 @@
+log:
+  level: info
+  encoding: json
+  stacktrace:
+    enabled: false
+    level: warn
+  encoderConfig:
+    timeEncoder: rfc3339nano
+apis:
+  http:
+    address: localhost:40050
+    tls:
+      caPool: /certs/rootcacrt.pem
+      keyFile: /httpkey.pem
+      certFile: /httpcrt.pem
+      clientCertificateRequired: true
