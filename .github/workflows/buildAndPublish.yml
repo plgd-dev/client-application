@@ -6,7 +6,7 @@ on:
 
 jobs:
   format:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -18,7 +18,7 @@ jobs:
           go-version: "^1.18" # The Go version to download (if necessary) and use.
       
       - name: Build
-        run: make build
+        run: make build VERSION_TAG=${{ github.event.release.tag_name }}
 
       - name: Upload packages
         uses: skx/github-action-publish-binaries@master

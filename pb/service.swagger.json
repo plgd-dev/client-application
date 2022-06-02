@@ -74,7 +74,7 @@
             "collectionFormat": "multi"
           },
           {
-            "name": "ipTypeFilter",
+            "name": "ipVersionFilter",
             "description": "Filter by multicast IP address type. Default: [IPV4,IPV6].",
             "in": "query",
             "required": false,
@@ -101,7 +101,7 @@
           },
           {
             "name": "discover",
-            "description": "How long to wait for the devices responses for multicast request. 0 means use cache. Default: 0.",
+            "description": "How long to wait for the devices responses for multicast request. 0 means use cache. Default: 0. New devices will be added to cache.",
             "in": "query",
             "required": false,
             "type": "string",
@@ -244,7 +244,7 @@
       "default": "UNKNOWN",
       "title": "- UNKNOWN: cannot determine ownership status\n - UNOWNED: device is ready to be owned the user\n - OWNED: device is owned by the user. to determine who own the device you need to get ownership resource /oic/sec/doxm\n - UNSUPPORTED: set when device is not secured. (iotivity-lite was built without security)"
     },
-    "GetDevicesRequestIPAddressType": {
+    "GetDevicesRequestIPAddressVersion": {
       "type": "string",
       "enum": [
         "IPV4",

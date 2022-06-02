@@ -11,15 +11,15 @@ message GetDevicesRequest {
     // get only owned devices
     OWNED = 1;
   }  
-  enum IPAddressType {
+  enum IPAddressVersion {
     IPV4 = 0;
     IPV6 = 1;
   }
   // Filter by ownership status. Default: [UNOWNED,OWNED]. 
   repeated OwnershipStatusFilter ownership_status_filter = 1;
 
-  // Filter by multicast IP address type. Default: [IPV4,IPV6].
-  repeated IPAddressType ip_type_filter = 2;
+  // Filter by multicast IP address version. Default: [IPV4,IPV6].
+  repeated IPAddressVersion ip_version_filter = 2;
 
   // Filter by device resource type of oic/d. Default: [] - filter is disabled.
   repeated string type_filter = 3;

@@ -1,11 +1,12 @@
 SHELL = /bin/bash
 SERVICE_NAME = client-application
-VERSION_TAG = vnext-$(shell git rev-parse --short=7 --verify HEAD)
+VERSION_TAG ?= $(shell git rev-parse --short=7 --verify HEAD)
 TMP_PATH = $(shell pwd)/.tmp
 GOPATH ?= $(shell go env GOPATH)
 WORKING_DIRECTORY := $(shell pwd)
 SIMULATOR_NAME_SUFFIX ?= $(shell hostname)
 BUILD_PATH ?=$(TMP_PATH)/build
+CLIENT_APPLICATION_VERSION_PATH_VARIABLE = main.Version
 
 CERT_TOOL_IMAGE ?= ghcr.io/plgd-dev/hub/cert-tool:vnext
 DEVSIM_IMAGE ?= ghcr.io/iotivity/iotivity-lite/cloud-server-discovery-resource-observable-debug:master
@@ -37,15 +38,15 @@ clean:
 
 build:
 	mkdir -p $(BUILD_PATH)
-	GOOS=linux GOARCH=386 go build -o $(BUILD_PATH)/$(SERVICE_NAME).linux.386 $(WORKING_DIRECTORY)/cmd
-	GOOS=linux GOARCH=amd64 go build -o $(BUILD_PATH)/$(SERVICE_NAME).linux.amd64 $(WORKING_DIRECTORY)/cmd
-	GOOS=linux GOARCH=arm go build -o $(BUILD_PATH)/$(SERVICE_NAME).linux.arm $(WORKING_DIRECTORY)/cmd
-	GOOS=linux GOARCH=arm64 go build -o $(BUILD_PATH)/$(SERVICE_NAME).linux.arm64 $(WORKING_DIRECTORY)/cmd
-	GOOS=windows GOARCH=386 go build -o $(BUILD_PATH)/$(SERVICE_NAME).windows.386.exe $(WORKING_DIRECTORY)/cmd
-	GOOS=windows GOARCH=amd64 go build -o $(BUILD_PATH)/$(SERVICE_NAME).windows.x64.exe $(WORKING_DIRECTORY)/cmd
-	GOOS=windows GOARCH=arm64 go build -o $(BUILD_PATH)/$(SERVICE_NAME).windows.arm64.exe $(WORKING_DIRECTORY)/cmd
-	GOOS=darwin GOARCH=amd64 go build -o $(BUILD_PATH)/$(SERVICE_NAME).macos.amd64 $(WORKING_DIRECTORY)/cmd
-	GOOS=darwin GOARCH=arm64 go build -o $(BUILD_PATH)/$(SERVICE_NAME).macos.arm64 $(WORKING_DIRECTORY)/cmd
+	GOOS=linux GOARCH=386 go build -ldflags="-X '$(CLIENT_APPLICATION_VERSION_PATH_VARIABLE)=$(VERSION_TAG)'" -o $(BUILD_PATH)/$(SERVICE_NAME).linux.386 $(WORKING_DIRECTORY)/cmd
+	GOOS=linux GOARCH=amd64 go build -ldflags="-X '$(CLIENT_APPLICATION_VERSION_PATH_VARIABLE)=$(VERSION_TAG)'" -o $(BUILD_PATH)/$(SERVICE_NAME).linux.amd64 $(WORKING_DIRECTORY)/cmd
+	GOOS=linux GOARCH=arm go build -ldflags="-X '$(CLIENT_APPLICATION_VERSION_PATH_VARIABLE)=$(VERSION_TAG)'" -o $(BUILD_PATH)/$(SERVICE_NAME).linux.arm $(WORKING_DIRECTORY)/cmd
+	GOOS=linux GOARCH=arm64 go build -ldflags="-X '$(CLIENT_APPLICATION_VERSION_PATH_VARIABLE)=$(VERSION_TAG)'" -o $(BUILD_PATH)/$(SERVICE_NAME).linux.arm64 $(WORKING_DIRECTORY)/cmd
+	GOOS=windows GOARCH=386 go build -ldflags="-X '$(CLIENT_APPLICATION_VERSION_PATH_VARIABLE)=$(VERSION_TAG)'" -o $(BUILD_PATH)/$(SERVICE_NAME).windows.386.exe $(WORKING_DIRECTORY)/cmd
+	GOOS=windows GOARCH=amd64 go build -ldflags="-X '$(CLIENT_APPLICATION_VERSION_PATH_VARIABLE)=$(VERSION_TAG)'" -o $(BUILD_PATH)/$(SERVICE_NAME).windows.x64.exe $(WORKING_DIRECTORY)/cmd
+	GOOS=windows GOARCH=arm64 go build -ldflags="-X '$(CLIENT_APPLICATION_VERSION_PATH_VARIABLE)=$(VERSION_TAG)'" -o $(BUILD_PATH)/$(SERVICE_NAME).windows.arm64.exe $(WORKING_DIRECTORY)/cmd
+	GOOS=darwin GOARCH=amd64 go build -ldflags="-X '$(CLIENT_APPLICATION_VERSION_PATH_VARIABLE)=$(VERSION_TAG)'" -o $(BUILD_PATH)/$(SERVICE_NAME).macos.amd64 $(WORKING_DIRECTORY)/cmd
+	GOOS=darwin GOARCH=arm64 go build -ldflags="-X '$(CLIENT_APPLICATION_VERSION_PATH_VARIABLE)=$(VERSION_TAG)'" -o $(BUILD_PATH)/$(SERVICE_NAME).macos.arm64 $(WORKING_DIRECTORY)/cmd
 .PHONY: build
 
 test: env
