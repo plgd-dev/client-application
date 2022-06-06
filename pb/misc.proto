@@ -25,11 +25,14 @@ message Device {
     // set when device is not secured. (iotivity-lite was built without security)
     UNSUPPORTED = 3;
   }
-  string device_id = 1;
+  // device id
+  string id = 1;
+  // list of device types
+  repeated string types =2;
   // content of the device resource oic/d
-  Content content = 2;
+  Content content = 3;
   // ownership status of the device
-  OwnershipStatus ownership_status = 3;
+  OwnershipStatus ownership_status = 4;
   // endpoints with schemas which are hosted by the device
-  repeated string endpoints = 4;
+  repeated string endpoints = 5;
 }

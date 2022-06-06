@@ -59,58 +59,6 @@ func request_DeviceGateway_GetDevices_0(ctx context.Context, marshaler runtime.M
 
 }
 
-func request_DeviceGateway_GetDeviceByEndpoint_0(ctx context.Context, marshaler runtime.Marshaler, client DeviceGatewayClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq GetDeviceByEndpointRequest
-	var metadata runtime.ServerMetadata
-
-	var (
-		val string
-		ok  bool
-		err error
-		_   = err
-	)
-
-	val, ok = pathParams["endpoint"]
-	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "endpoint")
-	}
-
-	protoReq.Endpoint, err = runtime.String(val)
-	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "endpoint", err)
-	}
-
-	msg, err := client.GetDeviceByEndpoint(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
-	return msg, metadata, err
-
-}
-
-func local_request_DeviceGateway_GetDeviceByEndpoint_0(ctx context.Context, marshaler runtime.Marshaler, server DeviceGatewayServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq GetDeviceByEndpointRequest
-	var metadata runtime.ServerMetadata
-
-	var (
-		val string
-		ok  bool
-		err error
-		_   = err
-	)
-
-	val, ok = pathParams["endpoint"]
-	if !ok {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "missing parameter %s", "endpoint")
-	}
-
-	protoReq.Endpoint, err = runtime.String(val)
-	if err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "type mismatch, parameter: %s, error: %v", "endpoint", err)
-	}
-
-	msg, err := server.GetDeviceByEndpoint(ctx, &protoReq)
-	return msg, metadata, err
-
-}
-
 var (
 	filter_DeviceGateway_GetResource_0 = &utilities.DoubleArray{Encoding: map[string]int{"resource_id": 0, "device_id": 1, "href": 2}, Base: []int{1, 1, 1, 2, 0, 0}, Check: []int{0, 1, 2, 2, 3, 4}}
 )
@@ -320,29 +268,6 @@ func RegisterDeviceGatewayHandlerServer(ctx context.Context, mux *runtime.ServeM
 		return
 	})
 
-	mux.Handle("GET", pattern_DeviceGateway_GetDeviceByEndpoint_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
-		ctx, cancel := context.WithCancel(req.Context())
-		defer cancel()
-		var stream runtime.ServerTransportStream
-		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
-		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/service.pb.DeviceGateway/GetDeviceByEndpoint", runtime.WithHTTPPathPattern("/api/v1/endpoints/{endpoint}"))
-		if err != nil {
-			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
-			return
-		}
-		resp, md, err := local_request_DeviceGateway_GetDeviceByEndpoint_0(rctx, inboundMarshaler, server, req, pathParams)
-		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
-		ctx = runtime.NewServerMetadataContext(ctx, md)
-		if err != nil {
-			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
-			return
-		}
-
-		forward_DeviceGateway_GetDeviceByEndpoint_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
-	})
-
 	mux.Handle("GET", pattern_DeviceGateway_GetResource_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
@@ -450,26 +375,6 @@ func RegisterDeviceGatewayHandlerClient(ctx context.Context, mux *runtime.ServeM
 
 	})
 
-	mux.Handle("GET", pattern_DeviceGateway_GetDeviceByEndpoint_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
-		ctx, cancel := context.WithCancel(req.Context())
-		defer cancel()
-		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
-		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/service.pb.DeviceGateway/GetDeviceByEndpoint", runtime.WithHTTPPathPattern("/api/v1/endpoints/{endpoint}"))
-		if err != nil {
-			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
-			return
-		}
-		resp, md, err := request_DeviceGateway_GetDeviceByEndpoint_0(rctx, inboundMarshaler, client, req, pathParams)
-		ctx = runtime.NewServerMetadataContext(ctx, md)
-		if err != nil {
-			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
-			return
-		}
-
-		forward_DeviceGateway_GetDeviceByEndpoint_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
-
-	})
-
 	mux.Handle("GET", pattern_DeviceGateway_GetResource_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
 		ctx, cancel := context.WithCancel(req.Context())
 		defer cancel()
@@ -516,8 +421,6 @@ func RegisterDeviceGatewayHandlerClient(ctx context.Context, mux *runtime.ServeM
 var (
 	pattern_DeviceGateway_GetDevices_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2}, []string{"api", "v1", "devices"}, ""))
 
-	pattern_DeviceGateway_GetDeviceByEndpoint_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3}, []string{"api", "v1", "endpoints", "endpoint"}, ""))
-
 	pattern_DeviceGateway_GetResource_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 3, 0, 4, 1, 5, 5}, []string{"api", "v1", "devices", "resource_id.device_id", "resources", "resource_id.href"}, ""))
 
 	pattern_DeviceGateway_UpdateResource_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 1, 0, 4, 1, 5, 3, 2, 4, 3, 0, 4, 1, 5, 5}, []string{"api", "v1", "devices", "resource_id.device_id", "resources", "resource_id.href"}, ""))
@@ -525,8 +428,6 @@ var (
 
 var (
 	forward_DeviceGateway_GetDevices_0 = runtime.ForwardResponseStream
-
-	forward_DeviceGateway_GetDeviceByEndpoint_0 = runtime.ForwardResponseMessage
 
 	forward_DeviceGateway_GetResource_0 = runtime.ForwardResponseMessage
 

@@ -5,5 +5,5 @@ const (
 	Api   = "/api"
 	ApiV1 = Api + "/v1"
 
-	ProvisioningRecords = ApiV1 + "/provisioningRecords"
+	Devices = ApiV1 + "/devices"
 )

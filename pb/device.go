@@ -15,7 +15,8 @@ func (d *Device) Clone() *Device {
 		return nil
 	}
 	return &Device{
-		DeviceId:        d.GetDeviceId(),
+		Id:              d.GetId(),
+		Types:           d.GetTypes(),
 		Content:         d.GetContent().Clone(),
 		OwnershipStatus: d.GetOwnershipStatus(),
 		Endpoints:       d.GetEndpoints(),

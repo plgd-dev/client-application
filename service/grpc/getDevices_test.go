@@ -2,30 +2,25 @@ package grpc_test
 
 import (
 	"context"
-	"fmt"
+	"net/url"
+	"strings"
 	"testing"
+	"time"
 
 	"github.com/plgd-dev/client-application/pb"
 	serviceGrpc "github.com/plgd-dev/client-application/service/grpc"
+	"github.com/plgd-dev/client-application/test"
+	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
-	"google.golang.org/grpc"
 )
 
-type testDeviceGatewayGetDevicesServer struct {
-	grpc.ServerStream
-	devices []*pb.Device
-}
+func TestDeviceGatewayServerGetDevices(t *testing.T) {
+	device := test.MustFindDeviceByName(test.DevsimName, []pb.GetDevicesRequest_UseMulticast{pb.GetDevicesRequest_IPV4})
+	u, err := url.Parse(device.Endpoints[0])
+	require.NoError(t, err)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*8)
+	defer cancel()
 
-func (s *testDeviceGatewayGetDevicesServer) Send(d *pb.Device) error {
-	s.devices = append(s.devices, d)
-	return nil
-}
-
-func (s *testDeviceGatewayGetDevicesServer) Context() context.Context {
-	return context.Background()
-}
-
-func TestDeviceGatewayServer_GetDevices(t *testing.T) {
 	type args struct {
 		req *pb.GetDevicesRequest
 		srv pb.DeviceGateway_GetDevicesServer
@@ -34,12 +29,42 @@ func TestDeviceGatewayServer_GetDevices(t *testing.T) {
 		name    string
 		args    args
 		wantErr bool
+		want    []*pb.Device
 	}{
 		{
-			name: "success",
+			name: "by multicast",
 			args: args{
-				req: &pb.GetDevicesRequest{},
-				srv: &testDeviceGatewayGetDevicesServer{},
+				req: &pb.GetDevicesRequest{
+					UseMulticast: []pb.GetDevicesRequest_UseMulticast{pb.GetDevicesRequest_IPV4},
+				},
+				srv: test.NewDeviceGatewayGetDevicesServer(ctx),
+			},
+			want: []*pb.Device{
+				device,
+			},
+		},
+		{
+			name: "by ip",
+			args: args{
+				req: &pb.GetDevicesRequest{
+					UseEndpoints: []string{u.Hostname()},
+				},
+				srv: test.NewDeviceGatewayGetDevicesServer(ctx),
+			},
+			want: []*pb.Device{
+				device,
+			},
+		},
+		{
+			name: "by ip:port",
+			args: args{
+				req: &pb.GetDevicesRequest{
+					UseEndpoints: []string{u.Host},
+				},
+				srv: test.NewDeviceGatewayGetDevicesServer(ctx),
+			},
+			want: []*pb.Device{
+				device,
 			},
 		},
 	}
@@ -52,9 +77,14 @@ func TestDeviceGatewayServer_GetDevices(t *testing.T) {
 				return
 			}
 			require.NoError(t, err)
-			for _, d := range tt.args.srv.(*testDeviceGatewayGetDevicesServer).devices {
-				fmt.Printf("%v\n", d)
-			}
+			got := tt.args.srv.(*test.DeviceGatewayGetDevicesServer).Devices
+			require.NotEmpty(t, got)
+			require.Len(t, got[0].Endpoints, 4)
+			require.True(t, strings.Contains(got[0].Endpoints[0], "coap://"))
+			require.True(t, strings.Contains(got[0].Endpoints[1], "coap+tcp://"))
+			require.True(t, strings.Contains(got[0].Endpoints[2], "coaps://"))
+			require.True(t, strings.Contains(got[0].Endpoints[3], "coaps+tcp://"))
+			assert.Equal(t, tt.want, got)
 		})
 	}
 }
