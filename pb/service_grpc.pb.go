@@ -20,8 +20,6 @@ const _ = grpc.SupportPackageIsVersion7
 type DeviceGatewayClient interface {
 	// Discover devices by client application. This operation fills cache of mappings deviceId to endpoints and this cache is used by other RPC calls.
 	GetDevices(ctx context.Context, in *GetDevicesRequest, opts ...grpc.CallOption) (DeviceGateway_GetDevicesClient, error)
-	// Get device via endpoint address. This operation fills cache of mappings deviceId to endpoints and this cache is used by other RPC calls.
-	GetDeviceByEndpoint(ctx context.Context, in *GetDeviceByEndpointRequest, opts ...grpc.CallOption) (*Device, error)
 	// Get resource from the device.
 	GetResource(ctx context.Context, in *GetResourceRequest, opts ...grpc.CallOption) (*GetResourceResponse, error)
 	// Update resource at the device.
@@ -68,15 +66,6 @@ func (x *deviceGatewayGetDevicesClient) Recv() (*Device, error) {
 	return m, nil
 }
 
-func (c *deviceGatewayClient) GetDeviceByEndpoint(ctx context.Context, in *GetDeviceByEndpointRequest, opts ...grpc.CallOption) (*Device, error) {
-	out := new(Device)
-	err := c.cc.Invoke(ctx, "/service.pb.DeviceGateway/GetDeviceByEndpoint", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *deviceGatewayClient) GetResource(ctx context.Context, in *GetResourceRequest, opts ...grpc.CallOption) (*GetResourceResponse, error) {
 	out := new(GetResourceResponse)
 	err := c.cc.Invoke(ctx, "/service.pb.DeviceGateway/GetResource", in, out, opts...)
@@ -101,8 +90,6 @@ func (c *deviceGatewayClient) UpdateResource(ctx context.Context, in *UpdateReso
 type DeviceGatewayServer interface {
 	// Discover devices by client application. This operation fills cache of mappings deviceId to endpoints and this cache is used by other RPC calls.
 	GetDevices(*GetDevicesRequest, DeviceGateway_GetDevicesServer) error
-	// Get device via endpoint address. This operation fills cache of mappings deviceId to endpoints and this cache is used by other RPC calls.
-	GetDeviceByEndpoint(context.Context, *GetDeviceByEndpointRequest) (*Device, error)
 	// Get resource from the device.
 	GetResource(context.Context, *GetResourceRequest) (*GetResourceResponse, error)
 	// Update resource at the device.
@@ -116,9 +103,6 @@ type UnimplementedDeviceGatewayServer struct {
 
 func (UnimplementedDeviceGatewayServer) GetDevices(*GetDevicesRequest, DeviceGateway_GetDevicesServer) error {
 	return status.Errorf(codes.Unimplemented, "method GetDevices not implemented")
-}
-func (UnimplementedDeviceGatewayServer) GetDeviceByEndpoint(context.Context, *GetDeviceByEndpointRequest) (*Device, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetDeviceByEndpoint not implemented")
 }
 func (UnimplementedDeviceGatewayServer) GetResource(context.Context, *GetResourceRequest) (*GetResourceResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetResource not implemented")
@@ -158,24 +142,6 @@ type deviceGatewayGetDevicesServer struct {
 
 func (x *deviceGatewayGetDevicesServer) Send(m *Device) error {
 	return x.ServerStream.SendMsg(m)
-}
-
-func _DeviceGateway_GetDeviceByEndpoint_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetDeviceByEndpointRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(DeviceGatewayServer).GetDeviceByEndpoint(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/service.pb.DeviceGateway/GetDeviceByEndpoint",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(DeviceGatewayServer).GetDeviceByEndpoint(ctx, req.(*GetDeviceByEndpointRequest))
-	}
-	return interceptor(ctx, in, info, handler)
 }
 
 func _DeviceGateway_GetResource_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -221,10 +187,6 @@ var DeviceGateway_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "service.pb.DeviceGateway",
 	HandlerType: (*DeviceGatewayServer)(nil),
 	Methods: []grpc.MethodDesc{
-		{
-			MethodName: "GetDeviceByEndpoint",
-			Handler:    _DeviceGateway_GetDeviceByEndpoint_Handler,
-		},
 		{
 			MethodName: "GetResource",
 			Handler:    _DeviceGateway_GetResource_Handler,
