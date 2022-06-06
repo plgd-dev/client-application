@@ -6,6 +6,7 @@ require (
 	cloud.google.com/go v0.100.2
 	github.com/fullstorydev/grpchan v1.1.1
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.10.2
+	github.com/jessevdk/go-flags v1.5.0
 	github.com/plgd-dev/device v1.2.1
 	github.com/plgd-dev/go-coap/v2 v2.5.1-0.20220413120440-299171b8cfcd
 	github.com/plgd-dev/hub/v2 v2.4.3
@@ -39,7 +40,6 @@ require (
 	github.com/googleapis/gax-go/v2 v2.4.0 // indirect
 	github.com/gorilla/mux v1.8.0 // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware v1.3.0 // indirect
-	github.com/jessevdk/go-flags v1.5.0 // indirect
 	github.com/jhump/protoreflect v1.11.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/compress v1.15.4 // indirect
