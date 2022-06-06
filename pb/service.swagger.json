@@ -59,6 +59,13 @@
         },
         "parameters": [
           {
+            "name": "useCache",
+            "description": "Devices are taken from the cache. Default: false.",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          },
+          {
             "name": "ownershipStatusFilter",
             "description": "Filter by ownership status. Default: [UNOWNED,OWNED].\n\n - UNOWNED: get only not owned devices\n - OWNED: get only owned devices",
             "in": "query",
@@ -69,21 +76,6 @@
               "enum": [
                 "UNOWNED",
                 "OWNED"
-              ]
-            },
-            "collectionFormat": "multi"
-          },
-          {
-            "name": "ipVersionFilter",
-            "description": "Filter by multicast IP address type. Default: [IPV4,IPV6].",
-            "in": "query",
-            "required": false,
-            "type": "array",
-            "items": {
-              "type": "string",
-              "enum": [
-                "IPV4",
-                "IPV6"
               ]
             },
             "collectionFormat": "multi"
@@ -100,12 +92,38 @@
             "collectionFormat": "multi"
           },
           {
-            "name": "discover",
-            "description": "How long to wait for the devices responses for multicast request. 0 means use cache. Default: 0. New devices will be added to cache.",
+            "name": "multicastIpVersionFilter",
+            "description": "Filter by multicast IP address version. Default: [IPV4,IPV6].",
             "in": "query",
             "required": false,
-            "type": "string",
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "IPV4",
+                "IPV6"
+              ]
+            },
+            "collectionFormat": "multi"
+          },
+          {
+            "name": "multicastTimeout",
+            "description": "How long to wait for the devices responses for multicast request in milliseconds. Default: 0 - multicast disabled. New devices will be added to cache.",
+            "in": "query",
+            "required": false,
+            "type": "integer",
             "format": "int64"
+          },
+          {
+            "name": "endpointFilter",
+            "description": "Returns devices via endpoints. Default: [] - filter is disabled. New devices will be added to cache. Not reachable devices will be not in reponse.\nEndpoint can be in format:\n- coap://\u003chost\u003e:\u003cport\u003e or coaps://\u003chost\u003e:\u003cport\u003e\n- coap+tcp://\u003chost\u003e:\u003cport\u003e or coaps+tcp://\u003chost\u003e:\u003cport\u003e\n- \u003chost\u003e:\u003cport\u003e is interpreted as coap://\u003chost\u003e:\u003cport\u003e\n- \u003chost\u003e is interpreted as coap://\u003chost\u003e:5683.",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
           }
         ],
         "tags": [
@@ -276,6 +294,9 @@
     "pbDevice": {
       "type": "object",
       "properties": {
+        "deviceId": {
+          "type": "string"
+        },
         "content": {
           "$ref": "#/definitions/pbContent",
           "title": "content of the device resource oic/d"
