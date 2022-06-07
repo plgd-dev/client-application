@@ -25,17 +25,34 @@ func (c *Config) Validate() error {
 	return nil
 }
 
+type HTTPConfig struct {
+	Enabled     bool `yaml:"enabled" json:"enabled"`
+	http.Config `yaml:",inline" json:",inline"`
+}
+
+type GRPCConfig struct {
+	Enabled     bool `yaml:"enabled" json:"enabled"`
+	grpc.Config `yaml:",inline" json:",inline"`
+}
+
 type APIsConfig struct {
-	HTTP http.Config `yaml:"http" json:"http"`
-	GRPC grpc.Config `yaml:"grpc" json:"grpc"`
+	HTTP HTTPConfig `yaml:"http" json:"http"`
+	GRPC GRPCConfig `yaml:"grpc" json:"grpc"`
 }
 
 func (c *APIsConfig) Validate() error {
-	if err := c.HTTP.Validate(); err != nil {
-		return fmt.Errorf("http.%w", err)
+	if !c.HTTP.Enabled && !c.GRPC.Enabled {
+		return fmt.Errorf("http or grpc must be enabled")
 	}
-	if err := c.GRPC.Validate(); err != nil {
-		return fmt.Errorf("grpc.%w", err)
+	if c.HTTP.Enabled {
+		if err := c.HTTP.Validate(); err != nil {
+			return fmt.Errorf("http.%w", err)
+		}
+	}
+	if c.GRPC.Enabled {
+		if err := c.GRPC.Validate(); err != nil {
+			return fmt.Errorf("grpc.%w", err)
+		}
 	}
 	return nil
 }

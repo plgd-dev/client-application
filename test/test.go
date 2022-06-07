@@ -51,6 +51,8 @@ func MakeConfig(t require.TestingT) service.Config {
 	cfg.APIs.HTTP = MakeHttpConfig()
 	cfg.APIs.GRPC = MakeGrpcConfig()
 
+	require.NoError(t, cfg.Validate())
+
 	return cfg
 }
 
@@ -79,26 +81,32 @@ func New(t *testing.T, cfg service.Config) func() {
 	}
 }
 
-func MakeHttpConfig() http.Config {
+func MakeHttpConfig() service.HTTPConfig {
 	cfg := config.MakeListenerConfig(CLIENT_APPLICATION_HTTP_HOST)
-	return http.Config{
-		Addr: cfg.Addr,
-		TLS: listener.TLSConfig{
-			Enabled: true,
-			Config:  cfg.TLS,
+	return service.HTTPConfig{
+		Enabled: true,
+		Config: http.Config{
+			Addr: cfg.Addr,
+			TLS: listener.TLSConfig{
+				Enabled: true,
+				Config:  cfg.TLS,
+			},
 		},
 	}
 }
 
-func MakeGrpcConfig() serviceGrpc.Config {
+func MakeGrpcConfig() service.GRPCConfig {
 	cfg := config.MakeGrpcServerConfig(CLIENT_APPLICATION_GRPC_HOST)
-	return serviceGrpc.Config{
-		Addr:              cfg.Addr,
-		EnforcementPolicy: cfg.EnforcementPolicy,
-		KeepAlive:         cfg.KeepAlive,
-		TLS: server.TLSConfig{
-			Enabled: true,
-			Config:  cfg.TLS,
+	return service.GRPCConfig{
+		Enabled: true,
+		Config: serviceGrpc.Config{
+			Addr:              cfg.Addr,
+			EnforcementPolicy: cfg.EnforcementPolicy,
+			KeepAlive:         cfg.KeepAlive,
+			TLS: server.TLSConfig{
+				Enabled: true,
+				Config:  cfg.TLS,
+			},
 		},
 	}
 }
@@ -108,7 +116,7 @@ func NewHttpService(ctx context.Context, t *testing.T) (*http.Service, func()) {
 	cfg.APIs.HTTP.TLS.ClientCertificateRequired = false
 	logger := log.NewLogger(cfg.Log)
 
-	s, err := http.New(ctx, "client-application-http", cfg.APIs.HTTP, logger, trace.NewNoopTracerProvider())
+	s, err := http.New(ctx, "client-application-http", cfg.APIs.HTTP.Config, logger, trace.NewNoopTracerProvider())
 	require.NoError(t, err)
 
 	var wg sync.WaitGroup

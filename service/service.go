@@ -30,13 +30,20 @@ const serviceName = "client-application"
 // New creates server.
 func New(ctx context.Context, config Config, logger log.Logger) (*Service, error) {
 	tracerProvider := trace.NewNoopTracerProvider()
-	httpService, err := http.New(ctx, serviceName, config.APIs.HTTP, logger, tracerProvider)
-	if err != nil {
-		return nil, fmt.Errorf("cannot create http service: %w", err)
+	var httpService *http.Service
+	var err error
+	if config.APIs.HTTP.Enabled {
+		httpService, err = http.New(ctx, serviceName, config.APIs.HTTP.Config, logger, tracerProvider)
+		if err != nil {
+			return nil, fmt.Errorf("cannot create http service: %w", err)
+		}
 	}
-	grpcService, err := grpc.New(ctx, serviceName, config.APIs.GRPC, logger, tracerProvider)
-	if err != nil {
-		return nil, fmt.Errorf("cannot create grpc service: %w", err)
+	var grpcService *grpc.Service
+	if config.APIs.GRPC.Enabled {
+		grpcService, err = grpc.New(ctx, serviceName, config.APIs.GRPC.Config, logger, tracerProvider)
+		if err != nil {
+			return nil, fmt.Errorf("cannot create grpc service: %w", err)
+		}
 	}
 
 	ctx, cancel := context.WithCancel(ctx)

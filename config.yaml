@@ -8,7 +8,26 @@ log:
     timeEncoder: rfc3339nano
 apis:
   http:
-    address: localhost:40050
+    enabled: true
+    address: 0.0.0.0:8080
+    tls:
+      enabled: false
+      caPool: /certs/ca.pem
+      keyFile: /certs/key.pem
+      certFile: /certs/crt.pem
+      clientCertificateRequired: true
+  grpc:
+    enabled: true
+    address: 0.0.0.0:8081
+    enforcementPolicy:
+      minTime: 5s
+      permitWithoutStream: true
+    keepAlive:
+      maxConnectionIdle: 0s
+      maxConnectionAge: 0s
+      maxConnectionAgeGrace: 0s
+      time: 0s
+      timeout: 0s
     tls:
       enabled: false
       caPool: /certs/ca.pem
