@@ -3,7 +3,7 @@ module github.com/plgd-dev/client-application
 go 1.18
 
 require (
-	cloud.google.com/go v0.100.2
+	cloud.google.com/go v0.102.0
 	github.com/fullstorydev/grpchan v1.1.1
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.10.2
 	github.com/jessevdk/go-flags v1.5.0
