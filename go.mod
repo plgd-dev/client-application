@@ -11,7 +11,7 @@ require (
 	github.com/plgd-dev/go-coap/v2 v2.5.1-0.20220413120440-299171b8cfcd
 	github.com/plgd-dev/hub/v2 v2.4.3
 	github.com/plgd-dev/kit/v2 v2.0.0-20211006190727-057b33161b90
-	github.com/stretchr/testify v1.7.1
+	github.com/stretchr/testify v1.7.2
 	go.opentelemetry.io/otel/trace v1.7.0
 	go.uber.org/atomic v1.9.0
 	google.golang.org/api v0.82.0
@@ -97,6 +97,6 @@ require (
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto v0.0.0-20220527130721-00d5c0f3be58 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
-	gopkg.in/yaml.v3 v3.0.0 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 	sigs.k8s.io/yaml v1.3.0 // indirect
 )
