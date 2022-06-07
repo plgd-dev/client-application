@@ -23,7 +23,7 @@ const (
 type GetDevicesRequest_OwnershipStatusFilter int32
 
 const (
-	// get only not owned devices
+	// get only unowned devices
 	GetDevicesRequest_UNOWNED GetDevicesRequest_OwnershipStatusFilter = 0
 	// get only owned devices
 	GetDevicesRequest_OWNED GetDevicesRequest_OwnershipStatusFilter = 1
@@ -114,7 +114,7 @@ func (GetDevicesRequest_UseMulticast) EnumDescriptor() ([]byte, []int) {
 	return file_github_com_plgd_dev_client_application_pb_get_devices_proto_rawDescGZIP(), []int{0, 1}
 }
 
-// Returns a list of devices. The list is sorted by device id.
+// Returns a list of devices. The list is sorted by device id. If use_cache, use_multicast, use_endpoints are not set, then it will set use_multicast with [IPV4,IPV6].
 type GetDevicesRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache

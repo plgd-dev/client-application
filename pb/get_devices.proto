@@ -4,10 +4,10 @@ package service.pb;
 
 option go_package = "github.com/plgd-dev/client-application/pb;pb";
 
-// Returns a list of devices. The list is sorted by device id.
+// Returns a list of devices. The list is sorted by device id. If use_cache, use_multicast, use_endpoints are not set, then it will set use_multicast with [IPV4,IPV6].
 message GetDevicesRequest {
   enum OwnershipStatusFilter {
-    // get only not owned devices
+    // get only unowned devices
     UNOWNED = 0;
     // get only owned devices
     OWNED = 1;

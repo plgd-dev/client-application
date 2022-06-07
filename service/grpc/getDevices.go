@@ -223,6 +223,9 @@ func discoverDiscoveryResources(ctx context.Context, discoveryCfg core.Discovery
 	if err != nil {
 		return err
 	}
+	if len(errors) > 0 {
+		log.Debugf("some fails occurs during discover discovery resources of the device: %v", errors)
+	}
 
 	return core.Discover(ctx, discoveryClients, resources.ResourceURI, onResponse, coap.WithResourceType(device.ResourceType), coap.WithResourceType(doxm.ResourceType))
 }
@@ -472,7 +475,19 @@ func filterByOwnershipStatus(device *pb.Device, filteredOwnershipStatus []pb.Get
 	return false
 }
 
+// If use_cache, use_multicast, use_endpoints are not set, then it will set use_multicast with [IPV4,IPV6].
+func tryToSetDefaultRequest(req *pb.GetDevicesRequest) *pb.GetDevicesRequest {
+	if req == nil {
+		req = &pb.GetDevicesRequest{}
+	}
+	if !req.GetUseCache() && len(req.GetUseMulticast()) == 0 && len(req.GetUseEndpoints()) == 0 {
+		req.UseMulticast = []pb.GetDevicesRequest_UseMulticast{pb.GetDevicesRequest_IPV4, pb.GetDevicesRequest_IPV6}
+	}
+	return req
+}
+
 func (s *DeviceGatewayServer) GetDevices(req *pb.GetDevicesRequest, srv pb.DeviceGateway_GetDevicesServer) error {
+	req = tryToSetDefaultRequest(req)
 	ctx := srv.Context()
 	var toCall []func()
 	var discoveredDevices sync.Map

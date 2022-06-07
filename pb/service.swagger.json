@@ -101,7 +101,7 @@
           },
           {
             "name": "ownershipStatusFilter",
-            "description": "Filter by ownership status. Default: [UNOWNED,OWNED].\n\n - UNOWNED: get only not owned devices\n - OWNED: get only owned devices",
+            "description": "Filter by ownership status. Default: [UNOWNED,OWNED].\n\n - UNOWNED: get only unowned devices\n - OWNED: get only owned devices",
             "in": "query",
             "required": false,
             "type": "array",
@@ -237,7 +237,7 @@
         "OWNED"
       ],
       "default": "UNOWNED",
-      "title": "- UNOWNED: get only not owned devices\n - OWNED: get only owned devices"
+      "title": "- UNOWNED: get only unowned devices\n - OWNED: get only owned devices"
     },
     "GetDevicesRequestUseMulticast": {
       "type": "string",
