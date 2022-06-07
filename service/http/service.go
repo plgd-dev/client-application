@@ -40,6 +40,7 @@ func New(ctx context.Context, serviceName string, config Config, logger log.Logg
 
 	// register grpc-proxy handler
 	if err := pb.RegisterDeviceGatewayHandlerClient(context.Background(), mux, grpcClient); err != nil {
+		_ = listener.Close()
 		return nil, fmt.Errorf("failed to register grpc-gateway handler: %w", err)
 	}
 	r.PathPrefix("/").Handler(mux)
