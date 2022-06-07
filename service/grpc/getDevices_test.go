@@ -77,7 +77,9 @@ func TestDeviceGatewayServerGetDevices(t *testing.T) {
 				return
 			}
 			require.NoError(t, err)
-			got := tt.args.srv.(*test.DeviceGatewayGetDevicesServer).Devices
+			server, ok := tt.args.srv.(*test.DeviceGatewayGetDevicesServer)
+			require.True(t, ok)
+			got := server.Devices
 			require.NotEmpty(t, got)
 			require.Len(t, got[0].Endpoints, 4)
 			require.True(t, strings.Contains(got[0].Endpoints[0], "coap://"))

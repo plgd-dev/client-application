@@ -29,9 +29,7 @@ const (
 	CLIENT_APPLICATION_GRPC_HOST = "localhost:40051"
 )
 
-var (
-	DevsimName string
-)
+var DevsimName string
 
 func init() {
 	DevsimName = "devsim-" + MustGetHostname()
@@ -56,7 +54,7 @@ func MakeConfig(t require.TestingT) service.Config {
 	return cfg
 }
 
-func SetUp(t *testing.T) (TearDown func()) {
+func SetUp(t *testing.T) (tearDown func()) {
 	return New(t, MakeConfig(t))
 }
 

@@ -13,7 +13,7 @@ import (
 	"github.com/plgd-dev/device/client/core"
 	"github.com/plgd-dev/device/pkg/net/coap"
 	"github.com/plgd-dev/device/schema"
-	"github.com/plgd-dev/device/schema/device"
+	plgdDevice "github.com/plgd-dev/device/schema/device"
 	"github.com/plgd-dev/device/schema/doxm"
 	"github.com/plgd-dev/device/schema/resources"
 	"github.com/plgd-dev/go-coap/v2/message"
@@ -31,18 +31,20 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-const DefaultTimeout = 1000
-const MulticastPort = 5683
+const (
+	DefaultTimeout = 1000
+	MulticastPort  = 5683
+)
 
-type Devices []*Device
+type devices []*device
 
-func (d Devices) Sort() {
+func (d devices) Sort() {
 	sort.Slice(d, func(i, j int) bool {
 		return d[i].ID < d[j].ID
 	})
 }
 
-type Device struct {
+type device struct {
 	ID string
 
 	private struct {
@@ -54,7 +56,7 @@ type Device struct {
 	}
 }
 
-func (d *Device) ToProto() *pb.Device {
+func (d *device) ToProto() *pb.Device {
 	d.private.mutex.RLock()
 	defer d.private.mutex.RUnlock()
 
@@ -62,6 +64,7 @@ func (d *Device) ToProto() *pb.Device {
 	for _, ep := range d.private.Endpoints {
 		eps = append(eps, ep.URI)
 	}
+
 	return &pb.Device{
 		Id:              d.ID,
 		Types:           d.private.ResourceTypes,
@@ -71,13 +74,13 @@ func (d *Device) ToProto() *pb.Device {
 	}
 }
 
-func (d *Device) UpdateDeviceResourceBody(body *pb.Content) {
+func (d *device) UpdateDeviceResourceBody(body *pb.Content) {
 	d.private.mutex.Lock()
 	defer d.private.mutex.Unlock()
 	d.private.DeviceResourceBody = body
 }
 
-func filterEndpoints(endpoints schema.Endpoints, ipv4TcpEndpoint schema.Endpoint, ipv4UdpEndpoint schema.Endpoint, ipv6TcpEndpoint schema.Endpoint, ipv6UdpEndpoint schema.Endpoint, ipv4secureTcpEndpoint schema.Endpoint, ipv4secureUdpEndpoint schema.Endpoint, ipv6secureTcpEndpoint schema.Endpoint, ipv6secureUdpEndpoint schema.Endpoint) (schema.Endpoint, schema.Endpoint, schema.Endpoint, schema.Endpoint, schema.Endpoint, schema.Endpoint, schema.Endpoint, schema.Endpoint) {
+func filterEndpoints(endpoints schema.Endpoints, ipv4TCPEndpoint schema.Endpoint, ipv4UDPEndpoint schema.Endpoint, ipv6TCPEndpoint schema.Endpoint, ipv6UDPEndpoint schema.Endpoint, ipv4secureTCPEndpoint schema.Endpoint, ipv4secureUDPEndpoint schema.Endpoint, ipv6secureTCPEndpoint schema.Endpoint, ipv6secureUDPEndpoint schema.Endpoint) (schema.Endpoint, schema.Endpoint, schema.Endpoint, schema.Endpoint, schema.Endpoint, schema.Endpoint, schema.Endpoint, schema.Endpoint) {
 	for i := range endpoints {
 		endpoint := endpoints[i]
 		addr, err := endpoint.GetAddr()
@@ -87,67 +90,68 @@ func filterEndpoints(endpoints schema.Endpoints, ipv4TcpEndpoint schema.Endpoint
 		switch addr.GetScheme() {
 		case string(schema.TCPScheme):
 			if strings.ContainsAny(addr.GetHostname(), ":") {
-				ipv6TcpEndpoint = endpoint
+				ipv6TCPEndpoint = endpoint
 			} else {
-				ipv4TcpEndpoint = endpoint
+				ipv4TCPEndpoint = endpoint
 			}
 		case string(schema.UDPScheme):
 			if strings.ContainsAny(addr.GetHostname(), ":") {
-				ipv6UdpEndpoint = endpoint
+				ipv6UDPEndpoint = endpoint
 			} else {
-				ipv4UdpEndpoint = endpoint
+				ipv4UDPEndpoint = endpoint
 			}
 		case string(schema.TCPSecureScheme):
 			if strings.ContainsAny(addr.GetHostname(), ":") {
-				ipv6secureTcpEndpoint = endpoint
+				ipv6secureTCPEndpoint = endpoint
 			} else {
-				ipv4secureTcpEndpoint = endpoint
+				ipv4secureTCPEndpoint = endpoint
 			}
 		case string(schema.UDPSecureScheme):
 			if strings.ContainsAny(addr.GetHostname(), ":") {
-				ipv6secureUdpEndpoint = endpoint
+				ipv6secureUDPEndpoint = endpoint
 			} else {
-				ipv4secureUdpEndpoint = endpoint
+				ipv4secureUDPEndpoint = endpoint
 			}
 		}
 	}
-	return ipv4TcpEndpoint, ipv4UdpEndpoint, ipv6TcpEndpoint, ipv6UdpEndpoint, ipv4secureTcpEndpoint, ipv4secureUdpEndpoint, ipv6secureTcpEndpoint, ipv6secureUdpEndpoint
+
+	return ipv4TCPEndpoint, ipv4UDPEndpoint, ipv6TCPEndpoint, ipv6UDPEndpoint, ipv4secureTCPEndpoint, ipv4secureUDPEndpoint, ipv6secureTCPEndpoint, ipv6secureUDPEndpoint
 }
 
-func (d *Device) updateEndpointsLocked(endpoints schema.Endpoints) {
-	var ipv4TcpEndpoint, ipv4UdpEndpoint, ipv6TcpEndpoint, ipv6UdpEndpoint, ipv4secureTcpEndpoint, ipv4secureUdpEndpoint, ipv6secureTcpEndpoint, ipv6secureUdpEndpoint schema.Endpoint
-	ipv4TcpEndpoint, ipv4UdpEndpoint, ipv6TcpEndpoint, ipv6UdpEndpoint, ipv4secureTcpEndpoint, ipv4secureUdpEndpoint, ipv6secureTcpEndpoint, ipv6secureUdpEndpoint = filterEndpoints(d.private.Endpoints, ipv4TcpEndpoint, ipv4UdpEndpoint, ipv6TcpEndpoint, ipv6UdpEndpoint, ipv4secureTcpEndpoint, ipv4secureUdpEndpoint, ipv6secureTcpEndpoint, ipv6secureUdpEndpoint)
-	ipv4TcpEndpoint, ipv4UdpEndpoint, ipv6TcpEndpoint, ipv6UdpEndpoint, ipv4secureTcpEndpoint, ipv4secureUdpEndpoint, ipv6secureTcpEndpoint, ipv6secureUdpEndpoint = filterEndpoints(endpoints, ipv4TcpEndpoint, ipv4UdpEndpoint, ipv6TcpEndpoint, ipv6UdpEndpoint, ipv4secureTcpEndpoint, ipv4secureUdpEndpoint, ipv6secureTcpEndpoint, ipv6secureUdpEndpoint)
+func (d *device) updateEndpointsLocked(endpoints schema.Endpoints) {
+	var ipv4TCPEndpoint, ipv4UDPEndpoint, ipv6TCPEndpoint, ipv6UDPEndpoint, ipv4secureTCPEndpoint, ipv4secureUDPEndpoint, ipv6secureTCPEndpoint, ipv6secureUDPEndpoint schema.Endpoint
+	ipv4TCPEndpoint, ipv4UDPEndpoint, ipv6TCPEndpoint, ipv6UDPEndpoint, ipv4secureTCPEndpoint, ipv4secureUDPEndpoint, ipv6secureTCPEndpoint, ipv6secureUDPEndpoint = filterEndpoints(d.private.Endpoints, ipv4TCPEndpoint, ipv4UDPEndpoint, ipv6TCPEndpoint, ipv6UDPEndpoint, ipv4secureTCPEndpoint, ipv4secureUDPEndpoint, ipv6secureTCPEndpoint, ipv6secureUDPEndpoint)
+	ipv4TCPEndpoint, ipv4UDPEndpoint, ipv6TCPEndpoint, ipv6UDPEndpoint, ipv4secureTCPEndpoint, ipv4secureUDPEndpoint, ipv6secureTCPEndpoint, ipv6secureUDPEndpoint = filterEndpoints(endpoints, ipv4TCPEndpoint, ipv4UDPEndpoint, ipv6TCPEndpoint, ipv6UDPEndpoint, ipv4secureTCPEndpoint, ipv4secureUDPEndpoint, ipv6secureTCPEndpoint, ipv6secureUDPEndpoint)
 
 	newEndpoints := make(schema.Endpoints, 0, 8)
-	if _, err := ipv4UdpEndpoint.GetAddr(); err == nil {
-		newEndpoints = append(newEndpoints, ipv4UdpEndpoint)
+	if _, err := ipv4UDPEndpoint.GetAddr(); err == nil {
+		newEndpoints = append(newEndpoints, ipv4UDPEndpoint)
 	}
-	if _, err := ipv6UdpEndpoint.GetAddr(); err == nil {
-		newEndpoints = append(newEndpoints, ipv6UdpEndpoint)
+	if _, err := ipv6UDPEndpoint.GetAddr(); err == nil {
+		newEndpoints = append(newEndpoints, ipv6UDPEndpoint)
 	}
-	if _, err := ipv4TcpEndpoint.GetAddr(); err == nil {
-		newEndpoints = append(newEndpoints, ipv4TcpEndpoint)
+	if _, err := ipv4TCPEndpoint.GetAddr(); err == nil {
+		newEndpoints = append(newEndpoints, ipv4TCPEndpoint)
 	}
-	if _, err := ipv6TcpEndpoint.GetAddr(); err == nil {
-		newEndpoints = append(newEndpoints, ipv6TcpEndpoint)
+	if _, err := ipv6TCPEndpoint.GetAddr(); err == nil {
+		newEndpoints = append(newEndpoints, ipv6TCPEndpoint)
 	}
-	if _, err := ipv4secureUdpEndpoint.GetAddr(); err == nil {
-		newEndpoints = append(newEndpoints, ipv4secureUdpEndpoint)
+	if _, err := ipv4secureUDPEndpoint.GetAddr(); err == nil {
+		newEndpoints = append(newEndpoints, ipv4secureUDPEndpoint)
 	}
-	if _, err := ipv6secureUdpEndpoint.GetAddr(); err == nil {
-		newEndpoints = append(newEndpoints, ipv6secureUdpEndpoint)
+	if _, err := ipv6secureUDPEndpoint.GetAddr(); err == nil {
+		newEndpoints = append(newEndpoints, ipv6secureUDPEndpoint)
 	}
-	if _, err := ipv4secureTcpEndpoint.GetAddr(); err == nil {
-		newEndpoints = append(newEndpoints, ipv4secureTcpEndpoint)
+	if _, err := ipv4secureTCPEndpoint.GetAddr(); err == nil {
+		newEndpoints = append(newEndpoints, ipv4secureTCPEndpoint)
 	}
-	if _, err := ipv6secureTcpEndpoint.GetAddr(); err == nil {
-		newEndpoints = append(newEndpoints, ipv6secureTcpEndpoint)
+	if _, err := ipv6secureTCPEndpoint.GetAddr(); err == nil {
+		newEndpoints = append(newEndpoints, ipv6secureTCPEndpoint)
 	}
 	d.private.Endpoints = newEndpoints
 }
 
-func (d *Device) UpdateDeviceMetadata(resourceTypes []string, endpoints schema.Endpoints, ownershipStatus pb.Device_OwnershipStatus) {
+func (d *device) UpdateDeviceMetadata(resourceTypes []string, endpoints schema.Endpoints, ownershipStatus pb.Device_OwnershipStatus) {
 	d.private.mutex.Lock()
 	defer d.private.mutex.Unlock()
 	d.private.ResourceTypes = resourceTypes
@@ -155,7 +159,7 @@ func (d *Device) UpdateDeviceMetadata(resourceTypes []string, endpoints schema.E
 	d.updateEndpointsLocked(endpoints)
 }
 
-func processDiscoveryResourceResponse(resp *pool.Message) (*Device, error) {
+func processDiscoveryResourceResponse(resp *pool.Message) (*device, error) {
 	if resp.Code() != coapCodes.Content {
 		return nil, fmt.Errorf("unexpected response code: %d", resp.Code())
 	}
@@ -176,7 +180,7 @@ func processDiscoveryResourceResponse(resp *pool.Message) (*Device, error) {
 	ownershipStatus := pb.Device_UNSUPPORTED
 	for _, l := range links {
 		deviceID = l.GetDeviceID()
-		if pkgStrings.Contains(l.ResourceTypes, device.ResourceType) {
+		if pkgStrings.Contains(l.ResourceTypes, plgdDevice.ResourceType) {
 			endpoints = l.Endpoints
 			resourceTypes = l.ResourceTypes
 		}
@@ -188,26 +192,30 @@ func processDiscoveryResourceResponse(resp *pool.Message) (*Device, error) {
 			}
 		}
 	}
-	device := Device{
+	device := device{
 		ID: deviceID,
 	}
 	device.private.ResourceTypes = resourceTypes
 	device.updateEndpointsLocked(endpoints)
 	device.private.OwnershipStatus = ownershipStatus
+
 	return &device, nil
 }
 
 func onDiscoveryResourceResponse(conn *client.ClientConn, resp *pool.Message, devices *sync.Map) error {
 	_ = conn.Close()
-	device, err := processDiscoveryResourceResponse(resp)
+	dev, err := processDiscoveryResourceResponse(resp)
 	if err != nil {
 		return err
 	}
-	v, loaded := devices.LoadOrStore(device.ID, device)
+	v, loaded := devices.LoadOrStore(dev.ID, dev)
 	if !loaded {
 		return nil
 	}
-	v.(*Device).UpdateDeviceMetadata(device.private.ResourceTypes, device.private.Endpoints, device.private.OwnershipStatus)
+	if d, ok := v.(*device); ok {
+		d.UpdateDeviceMetadata(dev.private.ResourceTypes, dev.private.Endpoints, dev.private.OwnershipStatus)
+	}
+
 	return nil
 }
 
@@ -231,10 +239,10 @@ func discoverDiscoveryResources(ctx context.Context, discoveryCfg core.Discovery
 		log.Debugf("some fails occurs during discover discovery resources of the device: %v", dbgErrors)
 	}
 
-	return core.Discover(ctx, discoveryClients, resources.ResourceURI, onResponse, coap.WithResourceType(device.ResourceType), coap.WithResourceType(doxm.ResourceType))
+	return core.Discover(ctx, discoveryClients, resources.ResourceURI, onResponse, coap.WithResourceType(plgdDevice.ResourceType), coap.WithResourceType(doxm.ResourceType))
 }
 
-func processDeviceResourceResponse(resp *pool.Message) (*Device, error) {
+func processDeviceResourceResponse(resp *pool.Message) (*device, error) {
 	if resp.Code() != coapCodes.Content {
 		return nil, fmt.Errorf("unexpected response code: %s", resp.Code())
 	}
@@ -242,14 +250,14 @@ func processDeviceResourceResponse(resp *pool.Message) (*Device, error) {
 	if err != nil {
 		return nil, err
 	}
-	var d device.Device
+	var d plgdDevice.Device
 	if err = cbor.Decode(body, &d); err != nil {
 		return nil, err
 	}
 	if d.ID == "" {
 		return nil, fmt.Errorf("device ID is empty")
 	}
-	device := Device{
+	device := device{
 		ID: d.ID,
 	}
 
@@ -262,20 +270,24 @@ func processDeviceResourceResponse(resp *pool.Message) (*Device, error) {
 		ContentType: contentFormat.String(),
 		Data:        body,
 	}
+
 	return &device, nil
 }
 
 func onDeviceResourceResponse(conn *client.ClientConn, resp *pool.Message, devices *sync.Map) error {
 	_ = conn.Close()
-	device, err := processDeviceResourceResponse(resp)
+	dev, err := processDeviceResourceResponse(resp)
 	if err != nil {
 		return err
 	}
-	v, loaded := devices.LoadOrStore(device.ID, device)
+	v, loaded := devices.LoadOrStore(dev.ID, dev)
 	if !loaded {
 		return nil
 	}
-	v.(*Device).UpdateDeviceResourceBody(device.private.DeviceResourceBody)
+	if d, ok := v.(*device); ok {
+		d.UpdateDeviceResourceBody(dev.private.DeviceResourceBody)
+	}
+
 	return nil
 }
 
@@ -285,7 +297,7 @@ func discoverDeviceResource(ctx context.Context, discoveryCfg core.DiscoveryConf
 		return status.Error(codes.Internal, err.Error())
 	}
 
-	return core.Discover(ctx, discoveryClients, device.ResourceURI, onResponse)
+	return core.Discover(ctx, discoveryClients, plgdDevice.ResourceURI, onResponse)
 }
 
 func toDiscoveryConfiguration(ipVersionFilter ipVersionFilter) core.DiscoveryConfiguration {
@@ -335,43 +347,46 @@ func normalizeEndpoint(endpoint string) (pkgNet.Addr, error) {
 	return addr, nil
 }
 
-func getDeviceByAddress(ctx context.Context, addr pkgNet.Addr, devices *sync.Map) error {
-	port := addr.GetPort()
-	address := fmt.Sprintf("%s:%d", addr.GetHostname(), port)
-
-	if port == MulticastPort {
-		multicastAddr := []string{address}
-		discoveryConfiguration := core.DefaultDiscoveryConfiguration()
-		if strings.Contains(addr.GetHostname(), ":") {
-			discoveryConfiguration.MulticastAddressUDP6 = multicastAddr
-			discoveryConfiguration.MulticastAddressUDP4 = nil
-		} else {
-			discoveryConfiguration.MulticastAddressUDP4 = multicastAddr
-			discoveryConfiguration.MulticastAddressUDP6 = nil
-		}
-		deviceResource := atomic.NewBool(false)
-		discoveryResource := atomic.NewBool(false)
-		ctx, cancel := context.WithCancel(ctx)
-		defer cancel()
-		getDevicesByMulticast(ctx, discoveryConfiguration, func(conn *client.ClientConn, resp *pool.Message) {
-			err := onDeviceResourceResponse(conn, resp, devices)
-			if err != nil {
-				return
-			}
-			if deviceResource.CAS(false, true) && discoveryResource.Load() {
-				cancel()
-			}
-		}, func(conn *client.ClientConn, resp *pool.Message) {
-			err := onDiscoveryResourceResponse(conn, resp, devices)
-			if err != nil {
-				return
-			}
-			if discoveryResource.CAS(false, true) && deviceResource.Load() {
-				cancel()
-			}
-		})
-		return nil
+func getDeviceByMulticastAddress(ctx context.Context, addr pkgNet.Addr, devices *sync.Map) error {
+	address := fmt.Sprintf("%s:%d", addr.GetHostname(), addr.GetPort())
+	multicastAddr := []string{address}
+	discoveryConfiguration := core.DefaultDiscoveryConfiguration()
+	if strings.Contains(addr.GetHostname(), ":") {
+		discoveryConfiguration.MulticastAddressUDP6 = multicastAddr
+		discoveryConfiguration.MulticastAddressUDP4 = nil
+	} else {
+		discoveryConfiguration.MulticastAddressUDP4 = multicastAddr
+		discoveryConfiguration.MulticastAddressUDP6 = nil
 	}
+	deviceResource := atomic.NewBool(false)
+	discoveryResource := atomic.NewBool(false)
+	ctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+	getDevicesByMulticast(ctx, discoveryConfiguration, func(conn *client.ClientConn, resp *pool.Message) {
+		err := onDeviceResourceResponse(conn, resp, devices)
+		if err != nil {
+			return
+		}
+		if deviceResource.CAS(false, true) && discoveryResource.Load() {
+			cancel()
+		}
+	}, func(conn *client.ClientConn, resp *pool.Message) {
+		err := onDiscoveryResourceResponse(conn, resp, devices)
+		if err != nil {
+			return
+		}
+		if discoveryResource.CAS(false, true) && deviceResource.Load() {
+			cancel()
+		}
+	})
+	return nil
+}
+
+func getDeviceByAddress(ctx context.Context, addr pkgNet.Addr, devices *sync.Map) error {
+	if addr.GetPort() == MulticastPort {
+		return getDeviceByMulticastAddress(ctx, addr, devices)
+	}
+	address := fmt.Sprintf("%s:%d", addr.GetHostname(), addr.GetPort())
 	client, err := udp.Dial(address, udp.WithContext(ctx))
 	if err != nil {
 		return err
@@ -379,7 +394,7 @@ func getDeviceByAddress(ctx context.Context, addr pkgNet.Addr, devices *sync.Map
 	defer func() {
 		_ = client.Close()
 	}()
-	resp, err := client.Get(ctx, device.ResourceURI)
+	resp, err := client.Get(ctx, plgdDevice.ResourceURI)
 	if err != nil {
 		return err
 	}
@@ -388,7 +403,7 @@ func getDeviceByAddress(ctx context.Context, addr pkgNet.Addr, devices *sync.Map
 		return err
 	}
 	opts := make(message.Options, 0, 2)
-	coap.WithResourceType(device.ResourceType)(opts)
+	coap.WithResourceType(plgdDevice.ResourceType)(opts)
 	coap.WithResourceType(doxm.ResourceType)(opts)
 	resp, err = client.Get(ctx, resources.ResourceURI, opts...)
 	if err != nil {
@@ -399,10 +414,12 @@ func getDeviceByAddress(ctx context.Context, addr pkgNet.Addr, devices *sync.Map
 		return err
 	}
 	v, loaded := devices.LoadOrStore(deviceRes.ID, deviceRes)
-	if loaded {
-		v.(*Device).UpdateDeviceResourceBody(deviceRes.private.DeviceResourceBody)
+	if d, ok := v.(*device); ok {
+		if loaded {
+			d.UpdateDeviceResourceBody(deviceRes.private.DeviceResourceBody)
+		}
+		d.UpdateDeviceMetadata(discoveryRes.private.ResourceTypes, discoveryRes.private.Endpoints, discoveryRes.private.OwnershipStatus)
 	}
-	v.(*Device).UpdateDeviceMetadata(discoveryRes.private.ResourceTypes, discoveryRes.private.Endpoints, discoveryRes.private.OwnershipStatus)
 	return nil
 }
 
@@ -412,6 +429,7 @@ func getDevicesByEndpoints(ctx context.Context, endpoints []string, devices *syn
 		addr, err := normalizeEndpoint(endpoint)
 		if err != nil {
 			log.Errorf("%w", err)
+
 			continue
 		}
 		addresses = append(addresses, addr)
@@ -538,9 +556,11 @@ func (s *DeviceGatewayServer) GetDevices(req *pb.GetDevicesRequest, srv pb.Devic
 	}
 	wg.Wait()
 
-	devices := make(Devices, 0, 128)
+	devices := make(devices, 0, 128)
 	discoveredDevices.Range(func(key, value any) bool {
-		devices = append(devices, value.(*Device))
+		if d, ok := value.(*device); ok {
+			devices = append(devices, d)
+		}
 		s.devices.Store(key, value)
 		return true
 	})

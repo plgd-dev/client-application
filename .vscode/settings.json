@@ -19,4 +19,8 @@
     "go.buildFlags": [
         // "-mod=vendor",
     ],
+    "go.useLanguageServer": true,
+    "gopls": {
+	    "formatting.gofumpt": true,
+    },
 }

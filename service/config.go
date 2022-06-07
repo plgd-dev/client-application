@@ -9,7 +9,7 @@ import (
 	"github.com/plgd-dev/hub/v2/pkg/log"
 )
 
-//Config represent application configuration
+// Config represent application configuration
 type Config struct {
 	Log  log.Config `yaml:"log" json:"log"`
 	APIs APIsConfig `yaml:"apis" json:"apis"`
@@ -57,7 +57,7 @@ func (c *APIsConfig) Validate() error {
 	return nil
 }
 
-//String return string representation of Config
+// String return string representation of Config
 func (c Config) String() string {
 	return config.ToString(c)
 }
