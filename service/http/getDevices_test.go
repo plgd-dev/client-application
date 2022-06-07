@@ -1,6 +1,7 @@
 package http_test
 
 import (
+	"errors"
 	"io"
 	"net/http"
 	"net/url"
@@ -76,7 +77,7 @@ func TestDeviceGatewayServerGetDevices(t *testing.T) {
 			for {
 				var dev pb.Device
 				err := httpgwTest.Unmarshal(resp.StatusCode, resp.Body, &dev)
-				if err == io.EOF {
+				if errors.Is(err, io.EOF) {
 					break
 				}
 				require.NoError(t, err)

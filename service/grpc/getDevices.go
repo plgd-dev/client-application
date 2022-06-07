@@ -194,11 +194,10 @@ func processDiscoveryResourceResponse(resp *pool.Message) (*Device, error) {
 	device.updateEndpointsLocked(endpoints)
 	device.private.OwnershipStatus = ownershipStatus
 	return &device, nil
-
 }
 
 func onDiscoveryResourceResponse(conn *client.ClientConn, resp *pool.Message, devices *sync.Map) error {
-	conn.Close()
+	_ = conn.Close()
 	device, err := processDiscoveryResourceResponse(resp)
 	if err != nil {
 		return err
@@ -262,7 +261,7 @@ func processDeviceResourceResponse(resp *pool.Message) (*Device, error) {
 }
 
 func onDeviceResourceResponse(conn *client.ClientConn, resp *pool.Message, devices *sync.Map) error {
-	conn.Close()
+	_ = conn.Close()
 	device, err := processDeviceResourceResponse(resp)
 	if err != nil {
 		return err
@@ -407,13 +406,16 @@ func getDevicesByEndpoints(ctx context.Context, endpoints []string, devices *syn
 	for _, endpoint := range endpoints {
 		addr, err := normalizeEndpoint(endpoint)
 		if err != nil {
-			log.Errorf("%v", err)
+			log.Errorf("%w", err)
 			continue
 		}
 		addresses = append(addresses, addr)
 	}
 	if len(addresses) == 1 {
-		getDeviceByAddress(ctx, addresses[0], devices)
+		err := getDeviceByAddress(ctx, addresses[0], devices)
+		if err != nil {
+			log.Errorf("cannot get device by address %v: %w", addresses[0], err)
+		}
 		return
 	}
 
@@ -422,7 +424,10 @@ func getDevicesByEndpoints(ctx context.Context, endpoints []string, devices *syn
 	for _, addr := range addresses {
 		go func(addr pkgNet.Addr) {
 			defer wg.Done()
-			getDeviceByAddress(ctx, addr, devices)
+			err := getDeviceByAddress(ctx, addr, devices)
+			if err != nil {
+				log.Errorf("cannot get device by address %v: %w", addr, err)
+			}
 		}(addr)
 	}
 	wg.Wait()

@@ -1,9 +1,7 @@
 package service
 
 import (
-	"bytes"
 	"context"
-	"crypto/x509"
 	"fmt"
 	"os"
 	"os/signal"
@@ -11,35 +9,18 @@ import (
 	"syscall"
 
 	"github.com/plgd-dev/client-application/service/http"
-	"github.com/plgd-dev/go-coap/v2/tcp"
 	"github.com/plgd-dev/hub/v2/pkg/log"
 	"go.opentelemetry.io/otel/trace"
 )
 
 type Service struct {
 	config         Config
-	listener       tcp.Listener
 	ctx            context.Context
 	cancel         context.CancelFunc
 	logger         log.Logger
 	httpService    *http.Service
 	tracerProvider trace.TracerProvider
 	sigs           chan os.Signal
-}
-
-const DPSTag = "dps"
-
-func setCAPools(roots *x509.CertPool, intermediates *x509.CertPool, certs []*x509.Certificate) {
-	for _, cert := range certs {
-		if !cert.IsCA {
-			continue
-		}
-		if bytes.Equal(cert.RawIssuer, cert.RawSubject) {
-			roots.AddCert(cert)
-			continue
-		}
-		intermediates.AddCert(cert)
-	}
 }
 
 const serviceName = "client-application"
