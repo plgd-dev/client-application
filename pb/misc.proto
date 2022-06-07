@@ -1,0 +1,38 @@
+syntax = "proto3";
+
+package service.pb;
+
+option go_package = "github.com/plgd-dev/client-application/pb;pb";
+
+message ResourceId {
+  string device_id = 1;
+  string href = 2;
+}
+
+message Content {
+  string content_type = 1;
+  bytes data  = 2;
+}
+
+message Device {
+  enum OwnershipStatus {
+    // cannot determine ownership status
+    UNKNOWN = 0;
+    // device is ready to be owned the user
+    UNOWNED = 1;
+    // device is owned by the user. to determine who own the device you need to get ownership resource /oic/sec/doxm
+    OWNED = 2;
+    // set when device is not secured. (iotivity-lite was built without security)
+    UNSUPPORTED = 3;
+  }
+  // device id
+  string id = 1;
+  // list of device types
+  repeated string types =2;
+  // content of the device resource oic/d
+  Content content = 3;
+  // ownership status of the device
+  OwnershipStatus ownership_status = 4;
+  // endpoints with schemas which are hosted by the device
+  repeated string endpoints = 5;
+}

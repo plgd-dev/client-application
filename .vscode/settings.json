@@ -1,0 +1,26 @@
+{
+    "go.testFlags": [
+        "-race",
+        "-v",
+        "-cover",
+    ],
+    "go.testEnvVars": {
+        "LISTEN_FILE_CA_POOL": "${workspaceFolder}/.tmp/certs/rootcacrt.pem",
+        "LISTEN_FILE_CERT_DIR_PATH": "${workspaceFolder}/.tmp/certs",
+        "LISTEN_FILE_CERT_NAME": "httpcrt.pem",
+        "LISTEN_FILE_CERT_KEY_NAME": "httpkey.pem",
+        // "GOMAXPROCS": 1,
+        // "GOFLAGS":"-mod=vendor",
+        // "GRPC_VERBOSITY":"DEBUG",
+        // "GRPC_GO_LOG_VERBOSITY_LEVEL":99,
+        // "GRPC_GO_LOG_SEVERITY_LEVEL":"info",
+    },
+    "go.testTimeout": "600s",
+    "go.buildFlags": [
+        // "-mod=vendor",
+    ],
+    "go.useLanguageServer": true,
+    "gopls": {
+	    "formatting.gofumpt": true,
+    },
+}

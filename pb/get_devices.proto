@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+package service.pb;
+
+option go_package = "github.com/plgd-dev/client-application/pb;pb";
+
+// Returns a list of devices. The list is sorted by device id. If use_cache, use_multicast, use_endpoints are not set, then it will set use_multicast with [IPV4,IPV6].
+message GetDevicesRequest {
+  enum OwnershipStatusFilter {
+    // get only unowned devices
+    UNOWNED = 0;
+    // get only owned devices
+    OWNED = 1;
+  }  
+  enum UseMulticast {
+    IPV4 = 0;
+    IPV6 = 1;
+  }
+  // Devices are taken from the cache. Default: false.
+  bool use_cache = 1;
+
+  // Filter by multicast IP address version. Default: [] - multicast is disabled. If it is set, the new devices will be added to cache.
+  repeated UseMulticast use_multicast = 2;
+
+   // Returns devices via endpoints. Default: [] - filter is disabled. New devices will be added to cache. Not reachable devices will be not in reponse.
+  // Endpoint can be in format:
+  // - <host>:<port> is interpreted as coap://<host>:<port>
+  // - <host> is interpreted as coap://<host>:5683
+  repeated string use_endpoints = 3;
+
+  // How long to wait for the devices responses for responses in milliseconds. Default: 0 - means 1sec.
+  uint32 timeout = 4;
+
+  // Filter by ownership status. Default: [UNOWNED,OWNED]. 
+  repeated OwnershipStatusFilter ownership_status_filter = 5;
+
+  // Filter by device resource type of oic/d. Default: [] - filter is disabled.
+  repeated string type_filter = 6;
+}

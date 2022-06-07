@@ -1,0 +1,351 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "plgd device - HTTP Gateway API",
+    "version": "1.0",
+    "contact": {
+      "name": "plgd.dev",
+      "url": "https://github.com/plgd-dev/device",
+      "email": "info@plgd.dev"
+    },
+    "license": {
+      "name": "Apache License 2.0",
+      "url": "https://github.com/plgd-dev/device/blob/v2/LICENSE"
+    }
+  },
+  "tags": [
+    {
+      "name": "DeviceGateway"
+    }
+  ],
+  "schemes": [
+    "https"
+  ],
+  "consumes": [
+    "application/json",
+    "application/protojson"
+  ],
+  "produces": [
+    "application/json",
+    "application/protojson"
+  ],
+  "paths": {
+    "/api/v1/devices": {
+      "get": {
+        "summary": "Discover devices by client application. This operation fills cache of mappings deviceId to endpoints and this cache is used by other RPC calls.",
+        "operationId": "DeviceGateway_GetDevices",
+        "responses": {
+          "200": {
+            "description": "A successful response.(streaming responses)",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "result": {
+                  "$ref": "#/definitions/pbDevice"
+                },
+                "error": {
+                  "$ref": "#/definitions/rpcStatus"
+                }
+              },
+              "title": "Stream result of pbDevice"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "useCache",
+            "description": "Devices are taken from the cache. Default: false.",
+            "in": "query",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "name": "useMulticast",
+            "description": "Filter by multicast IP address version. Default: [] - multicast is disabled. If it is set, the new devices will be added to cache.",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "IPV4",
+                "IPV6"
+              ]
+            },
+            "collectionFormat": "multi"
+          },
+          {
+            "name": "useEndpoints",
+            "description": "Returns devices via endpoints. Default: [] - filter is disabled. New devices will be added to cache. Not reachable devices will be not in reponse.\nEndpoint can be in format:\n- \u003chost\u003e:\u003cport\u003e is interpreted as coap://\u003chost\u003e:\u003cport\u003e\n- \u003chost\u003e is interpreted as coap://\u003chost\u003e:5683.",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          },
+          {
+            "name": "timeout",
+            "description": "How long to wait for the devices responses for responses in milliseconds. Default: 0 - means 1sec.",
+            "in": "query",
+            "required": false,
+            "type": "integer",
+            "format": "int64"
+          },
+          {
+            "name": "ownershipStatusFilter",
+            "description": "Filter by ownership status. Default: [UNOWNED,OWNED].\n\n - UNOWNED: get only unowned devices\n - OWNED: get only owned devices",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "UNOWNED",
+                "OWNED"
+              ]
+            },
+            "collectionFormat": "multi"
+          },
+          {
+            "name": "typeFilter",
+            "description": "Filter by device resource type of oic/d. Default: [] - filter is disabled.",
+            "in": "query",
+            "required": false,
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "collectionFormat": "multi"
+          }
+        ],
+        "tags": [
+          "Devices"
+        ]
+      }
+    },
+    "/api/v1/devices/{resourceId.deviceId}/resources/{resourceId.href}": {
+      "get": {
+        "summary": "Get resource from the device.",
+        "operationId": "DeviceGateway_GetResource",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbGetResourceResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "resourceId.deviceId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "resourceId.href",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Resource"
+        ]
+      },
+      "put": {
+        "summary": "Update resource at the device.",
+        "operationId": "DeviceGateway_UpdateResource",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbUpdateResourceResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "resourceId.deviceId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "resourceId.href",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbContent"
+            }
+          },
+          {
+            "name": "resourceInterface",
+            "in": "query",
+            "required": false,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Resource"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "DeviceOwnershipStatus": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "UNOWNED",
+        "OWNED",
+        "UNSUPPORTED"
+      ],
+      "default": "UNKNOWN",
+      "title": "- UNKNOWN: cannot determine ownership status\n - UNOWNED: device is ready to be owned the user\n - OWNED: device is owned by the user. to determine who own the device you need to get ownership resource /oic/sec/doxm\n - UNSUPPORTED: set when device is not secured. (iotivity-lite was built without security)"
+    },
+    "GetDevicesRequestOwnershipStatusFilter": {
+      "type": "string",
+      "enum": [
+        "UNOWNED",
+        "OWNED"
+      ],
+      "default": "UNOWNED",
+      "title": "- UNOWNED: get only unowned devices\n - OWNED: get only owned devices"
+    },
+    "GetDevicesRequestUseMulticast": {
+      "type": "string",
+      "enum": [
+        "IPV4",
+        "IPV6"
+      ],
+      "default": "IPV4"
+    },
+    "pbContent": {
+      "type": "object",
+      "properties": {
+        "contentType": {
+          "type": "string"
+        },
+        "data": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "pbDevice": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "title": "device id"
+        },
+        "types": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "list of device types"
+        },
+        "content": {
+          "$ref": "#/definitions/pbContent",
+          "title": "content of the device resource oic/d"
+        },
+        "ownershipStatus": {
+          "$ref": "#/definitions/DeviceOwnershipStatus",
+          "title": "ownership status of the device"
+        },
+        "endpoints": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "endpoints with schemas which are hosted by the device"
+        }
+      }
+    },
+    "pbGetResourceResponse": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "$ref": "#/definitions/pbContent"
+        }
+      }
+    },
+    "pbResourceId": {
+      "type": "object",
+      "properties": {
+        "deviceId": {
+          "type": "string"
+        },
+        "href": {
+          "type": "string"
+        }
+      }
+    },
+    "pbUpdateResourceResponse": {
+      "type": "object",
+      "properties": {
+        "content": {
+          "$ref": "#/definitions/pbContent"
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "typeUrl": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "rpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    }
+  }
+}
