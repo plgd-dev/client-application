@@ -8,22 +8,22 @@ import (
 
 	"github.com/fullstorydev/grpchan/inprocgrpc"
 	"github.com/plgd-dev/client-application/pb"
+	"github.com/plgd-dev/client-application/pkg/net/listener"
 	"github.com/plgd-dev/client-application/service/grpc"
 	"github.com/plgd-dev/hub/v2/http-gateway/serverMux"
 	"github.com/plgd-dev/hub/v2/pkg/log"
 	kitNetHttp "github.com/plgd-dev/hub/v2/pkg/net/http"
-	"github.com/plgd-dev/hub/v2/pkg/net/listener"
 	"go.opentelemetry.io/otel/trace"
 )
 
 type Service struct {
 	httpServer *http.Server
-	listener   *listener.Server
+	listener   listener.Listener
 }
 
 // New creates new HTTP service
 func New(ctx context.Context, serviceName string, config Config, logger log.Logger, tracerProvider trace.TracerProvider) (*Service, error) {
-	listener, err := listener.New(config.Connection, logger)
+	listener, err := listener.New(config, logger)
 	if err != nil {
 		return nil, fmt.Errorf("cannot create grpc server: %w", err)
 	}

@@ -10,7 +10,8 @@ apis:
   http:
     address: localhost:40050
     tls:
-      caPool: /certs/rootcacrt.pem
-      keyFile: /httpkey.pem
-      certFile: /httpcrt.pem
+      enabled: false
+      caPool: /certs/ca.pem
+      keyFile: /certs/key.pem
+      certFile: /certs/crt.pem
       clientCertificateRequired: true

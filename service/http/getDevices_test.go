@@ -60,14 +60,14 @@ func TestDeviceGatewayServerGetDevices(t *testing.T) {
 	}
 
 	cfg := test.MakeConfig(t)
-	cfg.APIs.HTTP.Connection.TLS.ClientCertificateRequired = false
+	cfg.APIs.HTTP.TLS.ClientCertificateRequired = false
 	shutDown := test.New(t, cfg)
 	defer shutDown()
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			request := httpgwTest.NewRequest(http.MethodGet, httpService.Devices, nil).
-				Host(test.CLIENT_APPLICATIO_HTTP_HOST).Accept(tt.args.accept).AddQuery("useMulticast", tt.args.useMulticast...).AddQuery("useEndpoints", tt.args.useEndpoints...).AddQuery("timeout", "1000").Build()
+				Host(test.CLIENT_APPLICATION_HTTP_HOST).Accept(tt.args.accept).AddQuery("useMulticast", tt.args.useMulticast...).AddQuery("useEndpoints", tt.args.useEndpoints...).AddQuery("timeout", "1000").Build()
 			resp := httpgwTest.HTTPDo(t, request)
 			defer func() {
 				_ = resp.Body.Close()

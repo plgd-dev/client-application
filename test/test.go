@@ -10,6 +10,7 @@ import (
 
 	_ "cloud.google.com/go"
 	"github.com/plgd-dev/client-application/pb"
+	"github.com/plgd-dev/client-application/pkg/net/listener"
 	"github.com/plgd-dev/client-application/service"
 	serviceGrpc "github.com/plgd-dev/client-application/service/grpc"
 	"github.com/plgd-dev/client-application/service/http"
@@ -23,7 +24,7 @@ import (
 )
 
 const (
-	CLIENT_APPLICATIO_HTTP_HOST = "localhost:40050"
+	CLIENT_APPLICATION_HTTP_HOST = "localhost:40050"
 )
 
 var (
@@ -76,17 +77,22 @@ func New(t *testing.T, cfg service.Config) func() {
 }
 
 func MakeHttpConfig() http.Config {
+	cfg := config.MakeListenerConfig(CLIENT_APPLICATION_HTTP_HOST)
 	return http.Config{
-		Connection: config.MakeListenerConfig(CLIENT_APPLICATIO_HTTP_HOST),
+		Addr: cfg.Addr,
+		TLS: listener.TLSConfig{
+			Enabled: true,
+			Config:  cfg.TLS,
+		},
 	}
 }
 
 func NewHttpService(ctx context.Context, t *testing.T) (*http.Service, func()) {
 	cfg := MakeConfig(t)
-	cfg.APIs.HTTP.Connection.TLS.ClientCertificateRequired = false
+	cfg.APIs.HTTP.TLS.ClientCertificateRequired = false
 	logger := log.NewLogger(cfg.Log)
 
-	s, err := http.New(ctx, "dps-http", cfg.APIs.HTTP, logger, trace.NewNoopTracerProvider())
+	s, err := http.New(ctx, "client-application-http", cfg.APIs.HTTP, logger, trace.NewNoopTracerProvider())
 	require.NoError(t, err)
 
 	var wg sync.WaitGroup
