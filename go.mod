@@ -5,7 +5,7 @@ go 1.18
 require (
 	cloud.google.com/go v0.100.2
 	github.com/fullstorydev/grpchan v1.1.1
-	github.com/grpc-ecosystem/grpc-gateway/v2 v2.10.2
+	github.com/grpc-ecosystem/grpc-gateway/v2 v2.10.3
 	github.com/jessevdk/go-flags v1.5.0
 	github.com/plgd-dev/device v1.2.1
 	github.com/plgd-dev/go-coap/v2 v2.5.1-0.20220413120440-299171b8cfcd
@@ -97,6 +97,6 @@ require (
 	google.golang.org/appengine v1.6.7 // indirect
 	google.golang.org/genproto v0.0.0-20220527130721-00d5c0f3be58 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
-	gopkg.in/yaml.v3 v3.0.0 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 	sigs.k8s.io/yaml v1.3.0 // indirect
 )
