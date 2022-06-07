@@ -10,6 +10,7 @@ import (
 
 	_ "cloud.google.com/go"
 	"github.com/plgd-dev/client-application/pb"
+	"github.com/plgd-dev/client-application/pkg/net/grpc/server"
 	"github.com/plgd-dev/client-application/pkg/net/listener"
 	"github.com/plgd-dev/client-application/service"
 	serviceGrpc "github.com/plgd-dev/client-application/service/grpc"
@@ -25,6 +26,7 @@ import (
 
 const (
 	CLIENT_APPLICATION_HTTP_HOST = "localhost:40050"
+	CLIENT_APPLICATION_GRPC_HOST = "localhost:40051"
 )
 
 var (
@@ -47,6 +49,7 @@ func MakeConfig(t require.TestingT) service.Config {
 	var cfg service.Config
 	cfg.Log = log.MakeDefaultConfig()
 	cfg.APIs.HTTP = MakeHttpConfig()
+	cfg.APIs.GRPC = MakeGrpcConfig()
 
 	return cfg
 }
@@ -81,6 +84,19 @@ func MakeHttpConfig() http.Config {
 	return http.Config{
 		Addr: cfg.Addr,
 		TLS: listener.TLSConfig{
+			Enabled: true,
+			Config:  cfg.TLS,
+		},
+	}
+}
+
+func MakeGrpcConfig() serviceGrpc.Config {
+	cfg := config.MakeGrpcServerConfig(CLIENT_APPLICATION_GRPC_HOST)
+	return serviceGrpc.Config{
+		Addr:              cfg.Addr,
+		EnforcementPolicy: cfg.EnforcementPolicy,
+		KeepAlive:         cfg.KeepAlive,
+		TLS: server.TLSConfig{
 			Enabled: true,
 			Config:  cfg.TLS,
 		},

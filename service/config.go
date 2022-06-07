@@ -3,6 +3,7 @@ package service
 import (
 	"fmt"
 
+	"github.com/plgd-dev/client-application/service/grpc"
 	"github.com/plgd-dev/client-application/service/http"
 	"github.com/plgd-dev/hub/v2/pkg/config"
 	"github.com/plgd-dev/hub/v2/pkg/log"
@@ -26,11 +27,15 @@ func (c *Config) Validate() error {
 
 type APIsConfig struct {
 	HTTP http.Config `yaml:"http" json:"http"`
+	GRPC grpc.Config `yaml:"grpc" json:"grpc"`
 }
 
 func (c *APIsConfig) Validate() error {
 	if err := c.HTTP.Validate(); err != nil {
 		return fmt.Errorf("http.%w", err)
+	}
+	if err := c.GRPC.Validate(); err != nil {
+		return fmt.Errorf("grpc.%w", err)
 	}
 	return nil
 }

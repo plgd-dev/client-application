@@ -8,6 +8,7 @@ import (
 	"sync"
 	"syscall"
 
+	"github.com/plgd-dev/client-application/service/grpc"
 	"github.com/plgd-dev/client-application/service/http"
 	"github.com/plgd-dev/hub/v2/pkg/log"
 	"go.opentelemetry.io/otel/trace"
@@ -19,6 +20,7 @@ type Service struct {
 	cancel         context.CancelFunc
 	logger         log.Logger
 	httpService    *http.Service
+	grpcService    *grpc.Service
 	tracerProvider trace.TracerProvider
 	sigs           chan os.Signal
 }
@@ -32,6 +34,10 @@ func New(ctx context.Context, config Config, logger log.Logger) (*Service, error
 	if err != nil {
 		return nil, fmt.Errorf("cannot create http service: %w", err)
 	}
+	grpcService, err := grpc.New(ctx, serviceName, config.APIs.GRPC, logger, tracerProvider)
+	if err != nil {
+		return nil, fmt.Errorf("cannot create grpc service: %w", err)
+	}
 
 	ctx, cancel := context.WithCancel(ctx)
 	s := Service{
@@ -44,6 +50,7 @@ func New(ctx context.Context, config Config, logger log.Logger) (*Service, error
 
 		logger:         logger,
 		httpService:    httpService,
+		grpcService:    grpcService,
 		tracerProvider: tracerProvider,
 	}
 
@@ -57,13 +64,22 @@ func (server *Service) Serve() error {
 
 func (server *Service) serveWithHandlingSignal() error {
 	var wg sync.WaitGroup
-	errCh := make(chan error, 3)
-	wg.Add(1)
-	go func(server *Service) {
-		defer wg.Done()
-		err := server.httpService.Serve()
-		errCh <- err
-	}(server)
+	errCh := make(chan error, 4)
+	services := make([]func() error, 0, 3)
+	if server.httpService != nil {
+		services = append(services, server.httpService.Serve)
+	}
+	if server.grpcService != nil {
+		services = append(services, server.grpcService.Serve)
+	}
+	wg.Add(len(services))
+	for _, serve := range services {
+		go func(serve func() error) {
+			defer wg.Done()
+			err := serve()
+			errCh <- err
+		}(serve)
+	}
 
 	signal.Notify(server.sigs,
 		syscall.SIGHUP,
@@ -72,8 +88,13 @@ func (server *Service) serveWithHandlingSignal() error {
 		syscall.SIGQUIT)
 	<-server.sigs
 
-	err := server.httpService.Shutdown()
-	errCh <- err
+	if server.httpService != nil {
+		err := server.httpService.Shutdown()
+		errCh <- err
+	}
+	if server.grpcService != nil {
+		server.grpcService.Stop()
+	}
 	wg.Wait()
 
 	var errors []error

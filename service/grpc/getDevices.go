@@ -32,6 +32,7 @@ import (
 )
 
 const DefaultTimeout = 1000
+const MulticastPort = 5683
 
 type Devices []*Device
 
@@ -223,7 +224,11 @@ func discoverDiscoveryResources(ctx context.Context, discoveryCfg core.Discovery
 		return err
 	}
 	if len(errors) > 0 {
-		log.Debugf("some fails occurs during discover discovery resources of the device: %v", errors)
+		lock.Lock()
+		dbgErrors := errors
+		errors = nil
+		lock.Unlock()
+		log.Debugf("some fails occurs during discover discovery resources of the device: %v", dbgErrors)
 	}
 
 	return core.Discover(ctx, discoveryClients, resources.ResourceURI, onResponse, coap.WithResourceType(device.ResourceType), coap.WithResourceType(doxm.ResourceType))
@@ -322,7 +327,7 @@ func normalizeEndpoint(endpoint string) (pkgNet.Addr, error) {
 	addressPort := endpoint
 	addr, err := pkgNet.ParseString(string(schema.UDPScheme), addressPort)
 	if err != nil && strings.Contains(err.Error(), "missing port in address") {
-		addr, err = pkgNet.ParseString(string(schema.UDPScheme), addressPort+":5683")
+		addr, err = pkgNet.ParseString(string(schema.UDPScheme), fmt.Sprintf("%v:%v", addressPort, MulticastPort))
 	}
 	if err != nil {
 		return pkgNet.Addr{}, fmt.Errorf("invalid endpoint: %s", endpoint)
@@ -334,7 +339,7 @@ func getDeviceByAddress(ctx context.Context, addr pkgNet.Addr, devices *sync.Map
 	port := addr.GetPort()
 	address := fmt.Sprintf("%s:%d", addr.GetHostname(), port)
 
-	if port == 5683 {
+	if port == MulticastPort {
 		multicastAddr := []string{address}
 		discoveryConfiguration := core.DefaultDiscoveryConfiguration()
 		if strings.Contains(addr.GetHostname(), ":") {
