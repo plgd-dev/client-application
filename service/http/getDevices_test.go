@@ -5,7 +5,9 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strconv"
 	"testing"
+	"time"
 
 	"github.com/plgd-dev/client-application/pb"
 	httpService "github.com/plgd-dev/client-application/service/http"
@@ -23,6 +25,7 @@ func TestDeviceGatewayServerGetDevices(t *testing.T) {
 		accept       string
 		useMulticast []string
 		useEndpoints []string
+		timeout      time.Duration
 	}
 	tests := []struct {
 		name    string
@@ -67,7 +70,7 @@ func TestDeviceGatewayServerGetDevices(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			request := httpgwTest.NewRequest(http.MethodGet, httpService.Devices, nil).
-				Host(test.CLIENT_APPLICATION_HTTP_HOST).Accept(tt.args.accept).AddQuery("useMulticast", tt.args.useMulticast...).AddQuery("useEndpoints", tt.args.useEndpoints...).AddQuery("timeout", "1000").Build()
+				Host(test.CLIENT_APPLICATION_HTTP_HOST).Accept(tt.args.accept).AddQuery(httpService.UseMulticastQueryKey, tt.args.useMulticast...).AddQuery(httpService.UseEndpointsQueryKey, tt.args.useEndpoints...).AddQuery(httpService.TimeoutQueryKey, strconv.FormatInt(int64(tt.args.timeout/time.Millisecond), 10)).Build()
 			resp := httpgwTest.HTTPDo(t, request)
 			defer func() {
 				_ = resp.Body.Close()

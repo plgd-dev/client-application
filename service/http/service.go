@@ -7,6 +7,8 @@ import (
 	"strings"
 
 	"github.com/fullstorydev/grpchan/inprocgrpc"
+	router "github.com/gorilla/mux"
+	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/plgd-dev/client-application/pb"
 	"github.com/plgd-dev/client-application/pkg/net/listener"
 	"github.com/plgd-dev/client-application/service/grpc"
@@ -19,6 +21,34 @@ import (
 type Service struct {
 	httpServer *http.Server
 	listener   listener.Listener
+}
+
+type RequestHandler struct {
+	mux *runtime.ServeMux
+}
+
+func splitURIPath(requestURI, prefix string) []string {
+	v := kitNetHttp.CanonicalHref(requestURI)
+	p := strings.TrimPrefix(v, prefix) // remove core prefix
+	if p == v {
+		return nil
+	}
+	p = strings.TrimLeft(p, "/")
+	return strings.Split(p, "/")
+}
+
+func resourceMatcher(r *http.Request, rm *router.RouteMatch) bool {
+	paths := splitURIPath(r.RequestURI, Devices)
+	if len(paths) > 2 &&
+		paths[1] == ResourcesPathKey {
+		if rm.Vars == nil {
+			rm.Vars = make(map[string]string)
+		}
+		rm.Vars[DeviceIDKey] = paths[0]
+		rm.Vars[ResourceHrefKey] = strings.Split("/"+strings.Join(paths[2:], "/"), "?")[0]
+		return true
+	}
+	return false
 }
 
 // New creates new HTTP service
@@ -43,6 +73,8 @@ func New(ctx context.Context, serviceName string, config Config, logger log.Logg
 		_ = listener.Close()
 		return nil, fmt.Errorf("failed to register grpc-gateway handler: %w", err)
 	}
+	requestHandler := &RequestHandler{mux: mux}
+	r.PathPrefix(Devices).Methods(http.MethodPut).MatcherFunc(resourceMatcher).HandlerFunc(requestHandler.updateResource)
 	r.PathPrefix("/").Handler(mux)
 	httpServer := &http.Server{Handler: kitNetHttp.OpenTelemetryNewHandler(r, serviceName, tracerProvider)}
 
@@ -63,13 +95,19 @@ func (s *Service) Shutdown() error {
 }
 
 const (
-	IDFilterQueryKey                = "idFilter"
-	EnrollmentGroupIdFilterQueryKey = "enrollmentGroupIdFilter"
-	DeviceIdFilterQueryKey          = "deviceIdFilter"
+	UseCacheQueryKey              = "useCache"
+	UseMulticastQueryKey          = "useMulticast"
+	UseEndpointsQueryKey          = "useEndpoints"
+	TimeoutQueryKey               = "timeout"
+	OwnershipStatusFilterQueryKey = "ownershipStatusFilter"
+	TypeFilterQueryKey            = "typeFilter"
 )
 
 var queryCaseInsensitive = map[string]string{
-	strings.ToLower(IDFilterQueryKey):                IDFilterQueryKey,
-	strings.ToLower(EnrollmentGroupIdFilterQueryKey): EnrollmentGroupIdFilterQueryKey,
-	strings.ToLower(DeviceIdFilterQueryKey):          DeviceIdFilterQueryKey,
+	strings.ToLower(UseCacheQueryKey):              UseCacheQueryKey,
+	strings.ToLower(UseMulticastQueryKey):          UseMulticastQueryKey,
+	strings.ToLower(UseEndpointsQueryKey):          UseEndpointsQueryKey,
+	strings.ToLower(TimeoutQueryKey):               TimeoutQueryKey,
+	strings.ToLower(OwnershipStatusFilterQueryKey): OwnershipStatusFilterQueryKey,
+	strings.ToLower(TypeFilterQueryKey):            TypeFilterQueryKey,
 }

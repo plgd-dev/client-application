@@ -124,7 +124,7 @@ type GetDevicesRequest struct {
 	UseCache bool `protobuf:"varint,1,opt,name=use_cache,json=useCache,proto3" json:"use_cache,omitempty"`
 	// Filter by multicast IP address version. Default: [] - multicast is disabled. If it is set, the new devices will be added to cache.
 	UseMulticast []GetDevicesRequest_UseMulticast `protobuf:"varint,2,rep,packed,name=use_multicast,json=useMulticast,proto3,enum=service.pb.GetDevicesRequest_UseMulticast" json:"use_multicast,omitempty"`
-	// Returns devices via endpoints. Default: [] - filter is disabled. New devices will be added to cache. Not reachable devices will be not in reponse.
+	// Returns devices via endpoints. Default: [] - filter is disabled. New devices will be added to cache. Not reachable devices will be not in response.
 	// Endpoint can be in format:
 	// - <host>:<port> is interpreted as coap://<host>:<port>
 	// - <host> is interpreted as coap://<host>:5683

@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -35,50 +34,6 @@ const (
 	DefaultTimeout = 1000
 	MulticastPort  = 5683
 )
-
-type devices []*device
-
-func (d devices) Sort() {
-	sort.Slice(d, func(i, j int) bool {
-		return d[i].ID < d[j].ID
-	})
-}
-
-type device struct {
-	ID string
-
-	private struct {
-		mutex              sync.RWMutex
-		ResourceTypes      []string
-		Endpoints          schema.Endpoints
-		OwnershipStatus    pb.Device_OwnershipStatus
-		DeviceResourceBody *pb.Content
-	}
-}
-
-func (d *device) ToProto() *pb.Device {
-	d.private.mutex.RLock()
-	defer d.private.mutex.RUnlock()
-
-	eps := make([]string, 0, len(d.private.Endpoints))
-	for _, ep := range d.private.Endpoints {
-		eps = append(eps, ep.URI)
-	}
-
-	return &pb.Device{
-		Id:              d.ID,
-		Types:           d.private.ResourceTypes,
-		Content:         d.private.DeviceResourceBody.Clone(),
-		OwnershipStatus: d.private.OwnershipStatus,
-		Endpoints:       eps,
-	}
-}
-
-func (d *device) UpdateDeviceResourceBody(body *pb.Content) {
-	d.private.mutex.Lock()
-	defer d.private.mutex.Unlock()
-	d.private.DeviceResourceBody = body
-}
 
 func filterEndpoints(endpoints schema.Endpoints, ipv4TCPEndpoint schema.Endpoint, ipv4UDPEndpoint schema.Endpoint, ipv6TCPEndpoint schema.Endpoint, ipv6UDPEndpoint schema.Endpoint, ipv4secureTCPEndpoint schema.Endpoint, ipv4secureUDPEndpoint schema.Endpoint, ipv6secureTCPEndpoint schema.Endpoint, ipv6secureUDPEndpoint schema.Endpoint) (schema.Endpoint, schema.Endpoint, schema.Endpoint, schema.Endpoint, schema.Endpoint, schema.Endpoint, schema.Endpoint, schema.Endpoint) {
 	for i := range endpoints {
@@ -192,18 +147,15 @@ func processDiscoveryResourceResponse(resp *pool.Message) (*device, error) {
 			}
 		}
 	}
-	device := device{
-		ID: deviceID,
-	}
+	device := newDevice(deviceID)
 	device.private.ResourceTypes = resourceTypes
 	device.updateEndpointsLocked(endpoints)
 	device.private.OwnershipStatus = ownershipStatus
 
-	return &device, nil
+	return device, nil
 }
 
-func onDiscoveryResourceResponse(conn *client.ClientConn, resp *pool.Message, devices *sync.Map) error {
-	_ = conn.Close()
+func onDiscoveryResourceResponse(resp *pool.Message, devices *sync.Map) error {
 	dev, err := processDiscoveryResourceResponse(resp)
 	if err != nil {
 		return err
@@ -231,6 +183,11 @@ func discoverDiscoveryResources(ctx context.Context, discoveryCfg core.Discovery
 	if err != nil {
 		return err
 	}
+	defer func() {
+		for _, c := range discoveryClients {
+			_ = c.Close()
+		}
+	}()
 	if len(errors) > 0 {
 		lock.Lock()
 		dbgErrors := errors
@@ -257,10 +214,7 @@ func processDeviceResourceResponse(resp *pool.Message) (*device, error) {
 	if d.ID == "" {
 		return nil, fmt.Errorf("device ID is empty")
 	}
-	device := device{
-		ID: d.ID,
-	}
-
+	device := newDevice(d.ID)
 	contentFormat, err := resp.ContentFormat()
 	if err != nil {
 		contentFormat = message.AppOcfCbor
@@ -271,11 +225,10 @@ func processDeviceResourceResponse(resp *pool.Message) (*device, error) {
 		Data:        body,
 	}
 
-	return &device, nil
+	return device, nil
 }
 
-func onDeviceResourceResponse(conn *client.ClientConn, resp *pool.Message, devices *sync.Map) error {
-	_ = conn.Close()
+func onDeviceResourceResponse(resp *pool.Message, devices *sync.Map) error {
 	dev, err := processDeviceResourceResponse(resp)
 	if err != nil {
 		return err
@@ -296,6 +249,11 @@ func discoverDeviceResource(ctx context.Context, discoveryCfg core.DiscoveryConf
 	if err != nil {
 		return status.Error(codes.Internal, err.Error())
 	}
+	defer func() {
+		for _, c := range discoveryClients {
+			_ = c.Close()
+		}
+	}()
 
 	return core.Discover(ctx, discoveryClients, plgdDevice.ResourceURI, onResponse)
 }
@@ -363,7 +321,8 @@ func getDeviceByMulticastAddress(ctx context.Context, addr pkgNet.Addr, devices 
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 	getDevicesByMulticast(ctx, discoveryConfiguration, func(conn *client.ClientConn, resp *pool.Message) {
-		err := onDeviceResourceResponse(conn, resp, devices)
+		_ = conn.Close()
+		err := onDeviceResourceResponse(resp, devices)
 		if err != nil {
 			return
 		}
@@ -371,7 +330,8 @@ func getDeviceByMulticastAddress(ctx context.Context, addr pkgNet.Addr, devices 
 			cancel()
 		}
 	}, func(conn *client.ClientConn, resp *pool.Message) {
-		err := onDiscoveryResourceResponse(conn, resp, devices)
+		_ = conn.Close()
+		err := onDiscoveryResourceResponse(resp, devices)
 		if err != nil {
 			return
 		}
@@ -519,6 +479,7 @@ func (s *DeviceGatewayServer) GetDevices(req *pb.GetDevicesRequest, srv pb.Devic
 	ctx := srv.Context()
 	var toCall []func()
 	var discoveredDevices sync.Map
+	var cachedDevices sync.Map
 	if req.GetTimeout() == 0 {
 		req.Timeout = DefaultTimeout
 	}
@@ -526,16 +487,18 @@ func (s *DeviceGatewayServer) GetDevices(req *pb.GetDevicesRequest, srv pb.Devic
 	defer cancel()
 	if req.UseCache {
 		s.devices.Range(func(key, value interface{}) bool {
-			discoveredDevices.Store(key, value)
+			cachedDevices.Store(key, value)
 			return true
 		})
 	}
 	if len(req.GetUseMulticast()) > 0 {
 		toCall = append(toCall, func() {
 			getDevicesByMulticast(discoveryCtx, toDiscoveryConfiguration(toUseMulticastFilter(req.GetUseMulticast())), func(conn *client.ClientConn, resp *pool.Message) {
-				_ = onDeviceResourceResponse(conn, resp, &discoveredDevices)
+				_ = conn.Close()
+				_ = onDeviceResourceResponse(resp, &discoveredDevices)
 			}, func(conn *client.ClientConn, resp *pool.Message) {
-				_ = onDiscoveryResourceResponse(conn, resp, &discoveredDevices)
+				_ = conn.Close()
+				_ = onDiscoveryResourceResponse(resp, &discoveredDevices)
 			})
 		},
 		)
@@ -562,10 +525,16 @@ func (s *DeviceGatewayServer) GetDevices(req *pb.GetDevicesRequest, srv pb.Devic
 			devices = append(devices, d)
 		}
 		s.devices.Store(key, value)
+		cachedDevices.Delete(key)
+		return true
+	})
+	cachedDevices.Range(func(key, value any) bool {
+		if d, ok := value.(*device); ok {
+			devices = append(devices, d)
+		}
 		return true
 	})
 	devices.Sort()
-
 	for _, device := range devices {
 		d := device.ToProto()
 		if d.GetContent() == nil {
