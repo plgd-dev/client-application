@@ -22,7 +22,6 @@ func convContentToOcfCbor(content *pb.Content) ([]byte, error) {
 			return nil, status.Errorf(codes.InvalidArgument, "cannot convert json to cbor: %v", err)
 		}
 		return data, nil
-
 	}
 	return nil, status.Errorf(codes.InvalidArgument, "unsupported content type '%v'", content.GetContentType())
 }

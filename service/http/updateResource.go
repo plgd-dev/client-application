@@ -22,7 +22,6 @@ func createContentBody(body io.ReadCloser) (io.ReadCloser, error) {
 	if err != nil {
 		return nil, fmt.Errorf("read body: %w", err)
 	}
-
 	req := commands.Content{
 		ContentType:       message.AppJSON.String(),
 		CoapContentFormat: int32(message.AppJSON),

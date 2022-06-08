@@ -8,6 +8,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/plgd-dev/client-application/pb"
 	serviceGrpc "github.com/plgd-dev/client-application/service/grpc"
+	serviceHttp "github.com/plgd-dev/client-application/service/http"
 	"github.com/plgd-dev/client-application/test"
 	"github.com/plgd-dev/device/schema/device"
 	"github.com/plgd-dev/device/schema/doxm"
@@ -40,7 +41,7 @@ func TestDeviceGatewayServerUpdateResource(t *testing.T) {
 						Href:     doxm.ResourceURI,
 					},
 					Content: &pb.Content{
-						ContentType: "application/json",
+						ContentType: serviceHttp.ApplicationJsonContentType,
 						Data:        []byte(`{"oxmsel":0}`),
 					},
 				},
@@ -58,7 +59,7 @@ func TestDeviceGatewayServerUpdateResource(t *testing.T) {
 						Href:     device.ResourceURI,
 					},
 					Content: &pb.Content{
-						ContentType: "application/json",
+						ContentType: serviceHttp.ApplicationJsonContentType,
 						Data:        []byte(`{"name":"test"}`),
 					},
 				},
@@ -75,7 +76,7 @@ func TestDeviceGatewayServerUpdateResource(t *testing.T) {
 						Href:     device.ResourceURI,
 					},
 					Content: &pb.Content{
-						ContentType: "application/json",
+						ContentType: serviceHttp.ApplicationJsonContentType,
 						Data:        []byte(`{"name":"test"}`),
 					},
 				},
@@ -92,7 +93,7 @@ func TestDeviceGatewayServerUpdateResource(t *testing.T) {
 						Href:     "/unknown",
 					},
 					Content: &pb.Content{
-						ContentType: "application/json",
+						ContentType: serviceHttp.ApplicationJsonContentType,
 						Data:        []byte(`{"name":"test"}`),
 					},
 				},
@@ -109,7 +110,7 @@ func TestDeviceGatewayServerUpdateResource(t *testing.T) {
 						Href:     "/light/1",
 					},
 					Content: &pb.Content{
-						ContentType: "application/json",
+						ContentType: serviceHttp.ApplicationJsonContentType,
 						Data:        []byte(`{"name":"test"}`),
 					},
 				},

@@ -4,10 +4,9 @@ import (
 	"errors"
 
 	coapStatus "github.com/plgd-dev/go-coap/v2/message/status"
+	"github.com/plgd-dev/kit/v2/coapconv"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-
-	"github.com/plgd-dev/kit/v2/coapconv"
 )
 
 func convErrToGrpcStatus(defaultCode codes.Code, err error) *status.Status {

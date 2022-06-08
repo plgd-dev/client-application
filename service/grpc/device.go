@@ -41,29 +41,49 @@ type device struct {
 	*core.Device
 }
 
+func dialDTLS(ctx context.Context, addr string, dtlsCfg *dtls.Config, opts ...coap.DialOptionFunc) (*coap.ClientCloseHandler, error) {
+	dialOpts := []coap.DialOptionFunc{
+		coap.WithKeepAlive(time.Minute),
+	}
+	return coap.DialUDPSecure(ctx, addr, dtlsCfg, append(dialOpts, opts...)...)
+}
+
+func dialUDP(ctx context.Context, addr string, opts ...coap.DialOptionFunc) (*coap.ClientCloseHandler, error) {
+	dialOpts := []coap.DialOptionFunc{
+		coap.WithKeepAlive(time.Minute),
+	}
+	return coap.DialUDP(ctx, addr, append(dialOpts, opts...)...)
+}
+
+func dialTCP(ctx context.Context, addr string, opts ...coap.DialOptionFunc) (*coap.ClientCloseHandler, error) {
+	dialOpts := []coap.DialOptionFunc{
+		coap.WithKeepAlive(time.Minute),
+	}
+	return coap.DialTCP(ctx, addr, append(dialOpts, opts...)...)
+}
+
+func dialTLS(ctx context.Context, addr string, tlsCfg *tls.Config, opts ...coap.DialOptionFunc) (*coap.ClientCloseHandler, error) {
+	dialOpts := []coap.DialOptionFunc{
+		coap.WithKeepAlive(time.Minute),
+	}
+	return coap.DialTCPSecure(ctx, addr, tlsCfg, append(dialOpts, opts...)...)
+}
+
+func errFunc(err error) {
+	log.Debug(err)
+}
+
 func newDevice(deviceID string) *device {
 	d := device{
 		ID: deviceID,
 	}
-	dialOpts := []coap.DialOptionFunc{
-		coap.WithKeepAlive(time.Minute),
-	}
+
 	d.Device = core.NewDevice(core.DeviceConfiguration{
-		DialDTLS: func(ctx context.Context, addr string, dtlsCfg *dtls.Config, opts ...coap.DialOptionFunc) (*coap.ClientCloseHandler, error) {
-			return coap.DialUDPSecure(ctx, addr, dtlsCfg, append(dialOpts, opts...)...)
-		},
-		DialUDP: func(ctx context.Context, addr string, opts ...coap.DialOptionFunc) (*coap.ClientCloseHandler, error) {
-			return coap.DialUDP(ctx, addr, append(dialOpts, opts...)...)
-		},
-		DialTCP: func(ctx context.Context, addr string, opts ...coap.DialOptionFunc) (*coap.ClientCloseHandler, error) {
-			return coap.DialTCP(ctx, addr, append(dialOpts, opts...)...)
-		},
-		DialTLS: func(ctx context.Context, addr string, tlsCfg *tls.Config, opts ...coap.DialOptionFunc) (*coap.ClientCloseHandler, error) {
-			return coap.DialTCPSecure(ctx, addr, tlsCfg, append(dialOpts, opts...)...)
-		},
-		ErrFunc: func(err error) {
-			log.Debug(err)
-		},
+		DialDTLS: dialDTLS,
+		DialUDP:  dialUDP,
+		DialTCP:  dialTCP,
+		DialTLS:  dialTLS,
+		ErrFunc:  errFunc,
 		TLSConfig: &core.TLSConfig{
 			GetCertificate: func() (tls.Certificate, error) {
 				return tls.Certificate{}, fmt.Errorf("not implemented")

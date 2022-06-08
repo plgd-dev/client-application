@@ -22,7 +22,7 @@ message GetDevicesRequest {
   // Filter by multicast IP address version. Default: [] - multicast is disabled. If it is set, the new devices will be added to cache.
   repeated UseMulticast use_multicast = 2;
 
-   // Returns devices via endpoints. Default: [] - filter is disabled. New devices will be added to cache. Not reachable devices will be not in reponse.
+   // Returns devices via endpoints. Default: [] - filter is disabled. New devices will be added to cache. Not reachable devices will be not in response.
   // Endpoint can be in format:
   // - <host>:<port> is interpreted as coap://<host>:<port>
   // - <host> is interpreted as coap://<host>:5683
