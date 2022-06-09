@@ -24,6 +24,10 @@ HTTP API of the client application service as defined [swagger](./pb/service.swa
 | Property | Type | Description | Default |
 | ---------- | -------- | -------------- | ------- |
 | `api.http.enabled` | bool | `Enable the HTTP API.` | `true` |
+| `api.http.cors.allowedOrigins` | []string | `Sets the allowed origins for CORS requests, as used in the 'Allow-Access-Control-Origin' HTTP header. Passing in a "*" will allow any domain.` | `"*"` |
+| `api.http.cors.allowedHeaders` | []string | `Adds the provided headers to the list of allowed headers in a CORS request. This is an append operation so the headers Accept, Accept-Language, and Content-Language are always allowed. Content-Type must be explicitly declared if accepting Content-Types other than application/x-www-form-urlencoded, multipart/form-data, or text/plain.` | `"Accept","Accept-Language","Accept-Encoding","Content-Type","Content-Language","Content-Length","Origin","X-CSRF-Token","Authorization"` |
+| `api.http.cors.allowedMethods` | []string | `Explicitly set allowed methods in the Access-Control-Allow-Methods header. This is a replacement operation so you must also pass GET, HEAD, and POST if you wish to support those methods.` | `"GET","PATCH","HEAD","POST","PUT","OPTIONS","DELETE"` |
+| `api.http.cors.allowCredentials` | bool | `User agent may pass authentication details along with the request.` | `false` |
 | `api.http.address` | string | `Listen specification <host>:<port> for http client connection.` | `"0.0.0.0:8080"` |
 | `api.http.tls.enabled` | bool | `Enable HTTPS.` | `false` |
 | `api.http.tls.caPool` | string | `File path to the root certificate in PEM format which might contain multiple certificates in a single file.` |  `""` |
