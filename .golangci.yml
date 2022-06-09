@@ -1,9 +1,10 @@
 linters-settings:
   govet:
-    # check-shadowing: true
-    check-shadowing: false
+    check-shadowing: true
   exhaustive:
     default-signifies-exhaustive: true
+  gocyclo:
+    min-complexity: 15
   gomodguard:
     blocked:
       modules:
