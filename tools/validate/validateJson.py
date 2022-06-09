@@ -101,86 +101,6 @@ def get_all_proto_and_json_tags():
 
   return proto_tags, json_tags
 
-def validate_key_existence(key, tags):
-  """Check that key with given name exists among tags."""
-  found = False
-  for file, tags in tags.items():
-    if key in tags:
-      if args.verbose:
-        print("key {} found in {}".format(key, file))
-      found = True
-
-  if not found:
-    print("ERROR: key {} does not exist in any Go file".format(key), file=sys.stderr)
-  return found
-
-def validate_component(component, tags):
-  """Check that all properties from given swagger component have existing tag counterparts."""
-
-  if not "properties" in component:
-    return True
-
-  exists = True
-  for k, v in component["properties"].items():
-    if args.verbose:
-      print("{}:{}".format(k, v))
-    exists = validate_key_existence(str(k), tags) and exists
-    if not "type" in v:
-      continue
-    if v["type"] == "object":
-      exists = validate_component(v, tags) and exists
-    if v["type"] == "array" and "type" in v["items"] and v["items"]["type"] == "object":
-      exists = validate_component(v["items"], tags) and exists
-
-  return exists
-
-def validate_component_from_file(file, component_name, tags):
-  """Extract component with given name from swagger file and validate it."""
-  with open(file, "r") as f:
-    try:
-      if args.verbose:
-        print("{}".format(file))
-      data = yaml.safe_load(f)
-      schemas = data["components"]["schemas"]
-      if not schemas:
-        print("ERROR: schemas object not found")
-        return False
-
-      component = schemas[component_name]
-      if not component:
-        print("ERROR: {} schema not found".format(component_name))
-        return False
-      return validate_component(component, tags)
-    except yaml.YAMLError as exc:
-      print(exc)
-
-    return False
-
-def validate_components_from_file(file, excluded_components, tags):
-  """Extract all components swagger file and validate each."""
-  valid = True
-  with open(file, "r") as f:
-    try:
-      if args.verbose:
-        print("{}".format(file))
-      data = yaml.safe_load(f)
-      schemas = data["components"]["schemas"]
-      if not schemas:
-        print("ERROR: schemas object not found")
-        return False
-      for component_name, component in schemas.items():
-        if args.verbose:
-          print("component {}".format(component_name))
-        if component_name in excluded_components:
-          continue
-        if not "type" in component or not component["type"] == "object":
-          continue
-        valid = validate_component(component, tags) and valid
-    except yaml.YAMLError as exc:
-      print(exc)
-
-  return valid
-
 def validate_tag_format(tag):
   """Check that tag begins with lower-case letter and contains only supported characters."""
   valid = True
@@ -195,24 +115,6 @@ def validate_tag_format(tag):
     print("ERROR: invalid tag {}".format(tag), file=sys.stderr)
   return valid
 
-def validate_c2c_connector_swagger(json_tags):
-  """Validate LinkedCloud schema from cloud2cloud-connector/swagger.yaml."""
-  tags = {}
-  for k, v in json_tags.items():
-    if "/cloud2cloud-connector/" in k or "pkg" in k:
-      tags[k] = v
-  return validate_component_from_file(ROOT_DIRECTORY + "/cloud2cloud-connector/swagger.yaml", "LinkedCloud", tags)
-
-def validate_http_gateway_swagger(proto_tags):
-  """Validate schemas from http-gateway/swagger.yaml."""
-  tags = {}
-  for k, v in proto_tags.items():
-    if "/grpc-gateway/" in k or "/resource-aggregate/" in k:
-      tags[k] = v
-
-  excluded_components = ["Error", "ResourceCreateContent", "ResourceCreatedContent"]
-  return validate_components_from_file(ROOT_DIRECTORY + "/http-gateway/swagger.yaml", excluded_components, tags)
-
 def find_and_validate_json_fields():
   """Find all protobuf and json tags in Go files from given directory and validate them."""
   proto_tags, json_tags = get_all_proto_and_json_tags()
@@ -221,9 +123,6 @@ def find_and_validate_json_fields():
   for tags in json_tags.values():
     for tag in tags:
       valid = validate_tag_format(tag) and valid
-
-  valid = validate_c2c_connector_swagger(json_tags) and valid
-  valid = validate_http_gateway_swagger(proto_tags) and valid
 
   return valid
 

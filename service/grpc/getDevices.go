@@ -513,10 +513,10 @@ func (s *DeviceGatewayServer) GetDevices(req *pb.GetDevicesRequest, srv pb.Devic
 	}
 	wg.Wait()
 
-	devices := make(devices, 0, 128)
+	devs := make(devices, 0, 128)
 	discoveredDevices.Range(func(key, value any) bool {
 		if d, ok := value.(*device); ok {
-			devices = append(devices, d)
+			devs = append(devs, d)
 		}
 		s.devices.Store(key, value)
 		cachedDevices.Delete(key)
@@ -524,12 +524,12 @@ func (s *DeviceGatewayServer) GetDevices(req *pb.GetDevicesRequest, srv pb.Devic
 	})
 	cachedDevices.Range(func(key, value any) bool {
 		if d, ok := value.(*device); ok {
-			devices = append(devices, d)
+			devs = append(devs, d)
 		}
 		return true
 	})
-	devices.Sort()
-	for _, device := range devices {
+	devs.Sort()
+	for _, device := range devs {
 		d := device.ToProto()
 		if d.GetData().GetContent() == nil {
 			continue
