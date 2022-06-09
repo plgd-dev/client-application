@@ -87,10 +87,17 @@ func MakeHttpConfig() service.HTTPConfig {
 	return service.HTTPConfig{
 		Enabled: true,
 		Config: http.Config{
-			Addr: cfg.Addr,
-			TLS: listener.TLSConfig{
-				Enabled: true,
-				Config:  cfg.TLS,
+			Config: listener.Config{
+				Addr: cfg.Addr,
+				TLS: listener.TLSConfig{
+					Enabled: true,
+					Config:  cfg.TLS,
+				},
+			},
+			CORS: http.CORSConfig{
+				AllowedOrigins: []string{"*"},
+				AllowedHeaders: []string{"Accept", "Accept-Language", "Accept-Encoding", "Content-Type", "Content-Language", "Content-Length", "Origin", "X-CSRF-Token", "Authorization"},
+				AllowedMethods: []string{"GET", "PATCH", "HEAD", "POST", "PUT", "OPTIONS", "DELETE"},
 			},
 		},
 	}

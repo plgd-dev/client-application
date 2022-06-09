@@ -16,6 +16,28 @@ apis:
       keyFile: /certs/key.pem
       certFile: /certs/crt.pem
       clientCertificateRequired: true
+    cors:
+      allowedOrigins:
+        - '*'
+      allowedHeaders:
+        - Accept
+        - Accept-Language
+        - Accept-Encoding
+        - Content-Type
+        - Content-Language
+        - Content-Length
+        - Origin
+        - X-CSRF-Token
+        - Authorization
+      allowedMethods:
+        - GET
+        - PATCH
+        - HEAD
+        - POST
+        - PUT
+        - OPTIONS
+        - DELETE
+      allowCredentials: false
   grpc:
     enabled: true
     address: 0.0.0.0:8081
