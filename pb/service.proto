@@ -6,9 +6,11 @@ package service.pb;
 import "google/api/annotations.proto";
 import "protoc-gen-openapiv2/options/annotations.proto";
 
-import "github.com/plgd-dev/client-application/pb/get_devices.proto";
-import "github.com/plgd-dev/client-application/pb/get_resource.proto";
-import "github.com/plgd-dev/client-application/pb/get_device_resource_links.proto";
+import "pb/get_devices.proto";
+import "pb/get_resource.proto";
+import "pb/get_device_resource_links.proto";
+import "pb/own_device.proto";
+import "pb/disown_device.proto";
 import "grpc-gateway/pb/devices.proto";
 import "resource-aggregate/pb/events.proto";
 
@@ -79,12 +81,11 @@ service DeviceGateway {
       tags: [ "Resource" ]
     };
   }
-/*
+
   // Own the device.
   rpc OwnDevice(OwnDeviceRequest) returns (OwnDeviceResponse) {
     option (google.api.http) = {
       post: "/api/v1/devices/{device_id}/own"
-      body: "content"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       tags: [ "Device" ]
@@ -95,11 +96,9 @@ service DeviceGateway {
   rpc DisownDevice(DisownDeviceRequest) returns (DisownDeviceResponse) {
     option (google.api.http) = {
       post: "/api/v1/devices/{device_id}/disown"
-      body: "content"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       tags: [ "Device" ]
     };
   }
-*/
 }

@@ -11,6 +11,7 @@ import (
 	"github.com/plgd-dev/hub/v2/resource-aggregate/commands"
 	"github.com/plgd-dev/hub/v2/resource-aggregate/events"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 func (s *DeviceGatewayServer) GetResource(ctx context.Context, req *pb.GetResourceRequest) (*grpcgwPb.Resource, error) {
@@ -24,10 +25,15 @@ func (s *DeviceGatewayServer) GetResource(ctx context.Context, req *pb.GetResour
 	}
 	codec := rawcodec.GetRawCodec(message.AppOcfCbor)
 	var data []byte
+
+	if dev.ToProto().OwnershipStatus != grpcgwPb.Device_OWNED && len(link.Endpoints.FilterUnsecureEndpoints()) == 0 {
+		return nil, status.Error(codes.PermissionDenied, "device is not owned")
+	}
 	err = dev.GetResourceWithCodec(ctx, link, codec, &data)
 	if err != nil {
 		return nil, convErrToGrpcStatus(codes.Unavailable, fmt.Errorf("cannot get resource %v for device %v: %w", req.GetResourceId().GetHref(), dev.ID, err)).Err()
 	}
+
 	contentType := ""
 	if len(data) > 0 {
 		contentType = message.AppOcfCbor.String()

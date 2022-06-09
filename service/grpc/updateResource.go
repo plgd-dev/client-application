@@ -41,7 +41,9 @@ func (s *DeviceGatewayServer) UpdateResource(ctx context.Context, req *grpcgwPb.
 	if err != nil {
 		return nil, err
 	}
-
+	if dev.ToProto().OwnershipStatus != grpcgwPb.Device_OWNED && len(link.Endpoints.FilterUnsecureEndpoints()) == 0 {
+		return nil, status.Error(codes.PermissionDenied, "device is not owned")
+	}
 	codec := rawcodec.GetRawCodec(message.AppOcfCbor)
 	var data []byte
 	err = dev.UpdateResourceWithCodec(ctx, link, codec, updateData, &data)

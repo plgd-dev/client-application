@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/plgd-dev/client-application/pb"
-	serviceGrpc "github.com/plgd-dev/client-application/service/grpc"
 	"github.com/plgd-dev/client-application/test"
 	grpcgwPb "github.com/plgd-dev/hub/v2/grpc-gateway/pb"
 	"github.com/stretchr/testify/assert"
@@ -72,8 +71,9 @@ func TestDeviceGatewayServerGetDevices(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s := &serviceGrpc.DeviceGatewayServer{}
-			err := s.GetDevices(tt.args.req, tt.args.srv)
+			s, err := test.NewDeviceGatewayServer(ctx)
+			require.NoError(t, err)
+			err = s.GetDevices(tt.args.req, tt.args.srv)
 			if tt.wantErr {
 				require.Error(t, err)
 				return

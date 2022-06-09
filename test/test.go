@@ -13,6 +13,7 @@ import (
 	"github.com/plgd-dev/client-application/pkg/net/grpc/server"
 	"github.com/plgd-dev/client-application/pkg/net/listener"
 	"github.com/plgd-dev/client-application/service"
+	serviceDevice "github.com/plgd-dev/client-application/service/device"
 	serviceGrpc "github.com/plgd-dev/client-application/service/grpc"
 	"github.com/plgd-dev/client-application/service/http"
 	"github.com/plgd-dev/device/schema"
@@ -51,6 +52,7 @@ func MakeConfig(t require.TestingT) service.Config {
 	cfg.Log = log.MakeDefaultConfig()
 	cfg.APIs.HTTP = MakeHttpConfig()
 	cfg.APIs.GRPC = MakeGrpcConfig()
+	cfg.Clients.Device = MakeDeviceConfig()
 
 	require.NoError(t, cfg.Validate())
 
@@ -79,6 +81,25 @@ func New(t *testing.T, cfg service.Config) func() {
 	return func() {
 		_ = s.Close()
 		wg.Wait()
+	}
+}
+
+func MakeDeviceConfig() serviceDevice.Config {
+	return serviceDevice.Config{
+		COAP: serviceDevice.CoapConfig{
+			MaxMessageSize: 256 * 1024,
+			InactivityMonitor: serviceDevice.InactivityMonitor{
+				Timeout: time.Second * 10,
+			},
+			BlockwiseTransfer: serviceDevice.BlockwiseTransferConfig{
+				Enabled: true,
+				SZX:     "1024",
+			},
+			TLS: serviceDevice.TLSConfig{
+				SubjectUUID:      "57b3fae9-adf5-4e34-90ea-e77784407103",
+				PreSharedKeyUUID: "46178d21-d480-4e95-9bd3-6c9eefa8d9d8",
+			},
+		},
 	}
 }
 
@@ -123,8 +144,9 @@ func NewHttpService(ctx context.Context, t *testing.T) (*http.Service, func()) {
 	cfg := MakeConfig(t)
 	cfg.APIs.HTTP.TLS.ClientCertificateRequired = false
 	logger := log.NewLogger(cfg.Log)
-
-	s, err := http.New(ctx, "client-application-http", cfg.APIs.HTTP.Config, logger, trace.NewNoopTracerProvider())
+	deviceGatewayServer, err := NewDeviceGatewayServer(ctx)
+	require.NoError(t, err)
+	s, err := http.New(ctx, "client-application-http", cfg.APIs.HTTP.Config, deviceGatewayServer, logger, trace.NewNoopTracerProvider())
 	require.NoError(t, err)
 
 	var wg sync.WaitGroup
@@ -141,6 +163,19 @@ func NewHttpService(ctx context.Context, t *testing.T) (*http.Service, func()) {
 	}
 
 	return s, cleanUp
+}
+
+func NewDeviceGatewayServer(ctx context.Context) (*serviceGrpc.DeviceGatewayServer, error) {
+	logger := log.NewLogger(log.MakeDefaultConfig())
+	cfg := MakeDeviceConfig()
+	if err := cfg.Validate(); err != nil {
+		return nil, err
+	}
+	d, err := serviceDevice.New(ctx, "client-application-device", cfg, logger, trace.NewNoopTracerProvider())
+	if err != nil {
+		return nil, err
+	}
+	return serviceGrpc.NewDeviceGatewayServer(d, logger), nil
 }
 
 type DeviceGatewayGetDevicesServer struct {
@@ -169,8 +204,11 @@ func FindDeviceByName(name string, useMulticast []pb.GetDevicesRequest_UseMultic
 		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 		defer cancel()
 		srv := NewDeviceGatewayGetDevicesServer(ctx)
-		s := &serviceGrpc.DeviceGatewayServer{}
-		err := s.GetDevices(&pb.GetDevicesRequest{
+		s, err := NewDeviceGatewayServer(ctx)
+		if err != nil {
+			return nil, err
+		}
+		err = s.GetDevices(&pb.GetDevicesRequest{
 			UseMulticast: useMulticast,
 		}, srv)
 		if err != nil {

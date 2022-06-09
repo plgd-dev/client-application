@@ -18,4 +18,6 @@ const (
 	DeviceResourceLinks = Devices + "/{" + DeviceIDKey + "}/" + ResourceLinksPathKey
 	DeviceResources     = Device + "/" + ResourcesPathKey
 	DeviceResource      = DeviceResources + "/{" + ResourceHrefKey + "}"
+	OwnDevice           = Device + "/own"
+	DisownDevice        = Device + "/disown"
 )

@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package service.pb;
+
+option go_package = "github.com/plgd-dev/client-application/pb;pb";
+
+message OwnDeviceRequest {
+  string device_id = 1;
+}
+
+message OwnDeviceResponse {
+}
