@@ -141,13 +141,21 @@ func normalizeHref(href string) string {
 	return "/" + href
 }
 
-func (d *device) getResourceLink(ctx context.Context, resourceID *commands.ResourceId) (schema.ResourceLink, error) {
+func (d *device) getResourceLinks(ctx context.Context) (schema.ResourceLinks, error) {
 	if d.Device == nil {
-		return schema.ResourceLink{}, status.Error(codes.Internal, "device is not initialized")
+		return nil, status.Error(codes.Internal, "device is not initialized")
 	}
 	links, err := d.GetResourceLinks(ctx, d.GetEndpoints())
 	if err != nil {
-		return schema.ResourceLink{}, convErrToGrpcStatus(codes.Unavailable, fmt.Errorf("cannot get resource links for device %v: %w", d.ID, err)).Err()
+		return nil, convErrToGrpcStatus(codes.Unavailable, fmt.Errorf("cannot get resource links for device %v: %w", d.ID, err)).Err()
+	}
+	return links, nil
+}
+
+func (d *device) getResourceLink(ctx context.Context, resourceID *commands.ResourceId) (schema.ResourceLink, error) {
+	links, err := d.getResourceLinks(ctx)
+	if err != nil {
+		return schema.ResourceLink{}, nil
 	}
 	link, ok := links.GetResourceLink(normalizeHref(resourceID.GetHref()))
 	if !ok {
