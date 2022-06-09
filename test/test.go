@@ -16,6 +16,7 @@ import (
 	serviceGrpc "github.com/plgd-dev/client-application/service/grpc"
 	"github.com/plgd-dev/client-application/service/http"
 	"github.com/plgd-dev/device/schema/device"
+	grpcgwPb "github.com/plgd-dev/hub/v2/grpc-gateway/pb"
 	"github.com/plgd-dev/hub/v2/pkg/log"
 	"github.com/plgd-dev/hub/v2/test/config"
 	"github.com/plgd-dev/kit/v2/codec/cbor"
@@ -135,7 +136,7 @@ func NewHttpService(ctx context.Context, t *testing.T) (*http.Service, func()) {
 
 type DeviceGatewayGetDevicesServer struct {
 	grpc.ServerStream
-	Devices []*pb.Device
+	Devices []*grpcgwPb.Device
 	Ctx     context.Context
 }
 
@@ -145,7 +146,7 @@ func NewDeviceGatewayGetDevicesServer(ctx context.Context) *DeviceGatewayGetDevi
 	}
 }
 
-func (s *DeviceGatewayGetDevicesServer) Send(d *pb.Device) error {
+func (s *DeviceGatewayGetDevicesServer) Send(d *grpcgwPb.Device) error {
 	s.Devices = append(s.Devices, d)
 	return nil
 }
@@ -154,7 +155,7 @@ func (s *DeviceGatewayGetDevicesServer) Context() context.Context {
 	return s.Ctx
 }
 
-func FindDeviceByName(name string, useMulticast []pb.GetDevicesRequest_UseMulticast) (*pb.Device, error) {
+func FindDeviceByName(name string, useMulticast []pb.GetDevicesRequest_UseMulticast) (*grpcgwPb.Device, error) {
 	for i := 0; i < 3; i++ {
 		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 		defer cancel()
@@ -168,7 +169,7 @@ func FindDeviceByName(name string, useMulticast []pb.GetDevicesRequest_UseMultic
 		}
 		for _, d := range srv.Devices {
 			var dev device.Device
-			if err := cbor.Decode(d.GetContent().GetData(), &dev); err != nil {
+			if err := cbor.Decode(d.GetData().GetContent().GetData(), &dev); err != nil {
 				continue
 			}
 			if dev.Name == name {
@@ -179,7 +180,7 @@ func FindDeviceByName(name string, useMulticast []pb.GetDevicesRequest_UseMultic
 	return nil, fmt.Errorf("device %s not found", name)
 }
 
-func MustFindDeviceByName(name string, useMulticast []pb.GetDevicesRequest_UseMulticast) *pb.Device {
+func MustFindDeviceByName(name string, useMulticast []pb.GetDevicesRequest_UseMulticast) *grpcgwPb.Device {
 	d, err := FindDeviceByName(name, useMulticast)
 	if err != nil {
 		panic(err)

@@ -10,6 +10,7 @@ import (
 	"github.com/plgd-dev/client-application/pb"
 	serviceGrpc "github.com/plgd-dev/client-application/service/grpc"
 	"github.com/plgd-dev/client-application/test"
+	grpcgwPb "github.com/plgd-dev/hub/v2/grpc-gateway/pb"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -20,6 +21,7 @@ func TestDeviceGatewayServerGetDevices(t *testing.T) {
 	require.NoError(t, err)
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*8)
 	defer cancel()
+	device.OwnershipStatus = grpcgwPb.Device_UNOWNED
 
 	type args struct {
 		req *pb.GetDevicesRequest
@@ -29,7 +31,7 @@ func TestDeviceGatewayServerGetDevices(t *testing.T) {
 		name    string
 		args    args
 		wantErr bool
-		want    []*pb.Device
+		want    []*grpcgwPb.Device
 	}{
 		{
 			name: "by multicast",
@@ -39,7 +41,7 @@ func TestDeviceGatewayServerGetDevices(t *testing.T) {
 				},
 				srv: test.NewDeviceGatewayGetDevicesServer(ctx),
 			},
-			want: []*pb.Device{
+			want: []*grpcgwPb.Device{
 				device,
 			},
 		},
@@ -51,7 +53,7 @@ func TestDeviceGatewayServerGetDevices(t *testing.T) {
 				},
 				srv: test.NewDeviceGatewayGetDevicesServer(ctx),
 			},
-			want: []*pb.Device{
+			want: []*grpcgwPb.Device{
 				device,
 			},
 		},
@@ -63,7 +65,7 @@ func TestDeviceGatewayServerGetDevices(t *testing.T) {
 				},
 				srv: test.NewDeviceGatewayGetDevicesServer(ctx),
 			},
-			want: []*pb.Device{
+			want: []*grpcgwPb.Device{
 				device,
 			},
 		},

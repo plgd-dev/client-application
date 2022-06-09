@@ -10,6 +10,8 @@ import (
 	serviceGrpc "github.com/plgd-dev/client-application/service/grpc"
 	"github.com/plgd-dev/client-application/test"
 	"github.com/plgd-dev/device/schema/device"
+	grpcgwPb "github.com/plgd-dev/hub/v2/grpc-gateway/pb"
+	"github.com/plgd-dev/hub/v2/resource-aggregate/commands"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -26,7 +28,7 @@ func TestDeviceGatewayServerGetResource(t *testing.T) {
 	tests := []struct {
 		name        string
 		args        args
-		want        *pb.GetResourceResponse
+		want        *grpcgwPb.Resource
 		wantErr     bool
 		wantErrCode codes.Code
 	}{
@@ -34,21 +36,22 @@ func TestDeviceGatewayServerGetResource(t *testing.T) {
 			name: "device resource",
 			args: args{
 				req: &pb.GetResourceRequest{
-					ResourceId: &pb.ResourceId{
+					ResourceId: &commands.ResourceId{
 						DeviceId: dev.Id,
 						Href:     device.ResourceURI,
 					},
 				},
 			},
-			want: &pb.GetResourceResponse{
-				Content: dev.Content,
+			want: &grpcgwPb.Resource{
+				Data:  dev.GetData(),
+				Types: []string{"oic.d.cloudDevice", "oic.wk.d"},
 			},
 		},
 		{
 			name: "unknown device",
 			args: args{
 				req: &pb.GetResourceRequest{
-					ResourceId: &pb.ResourceId{
+					ResourceId: &commands.ResourceId{
 						DeviceId: uuid.NewString(),
 						Href:     device.ResourceURI,
 					},
@@ -61,7 +64,7 @@ func TestDeviceGatewayServerGetResource(t *testing.T) {
 			name: "unknown href",
 			args: args{
 				req: &pb.GetResourceRequest{
-					ResourceId: &pb.ResourceId{
+					ResourceId: &commands.ResourceId{
 						DeviceId: dev.Id,
 						Href:     "/unknown",
 					},
@@ -74,7 +77,7 @@ func TestDeviceGatewayServerGetResource(t *testing.T) {
 			name: "unavailable - cannot establish TLS connection",
 			args: args{
 				req: &pb.GetResourceRequest{
-					ResourceId: &pb.ResourceId{
+					ResourceId: &commands.ResourceId{
 						DeviceId: dev.Id,
 						Href:     "/light/1",
 					},

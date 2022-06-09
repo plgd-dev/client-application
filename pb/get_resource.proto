@@ -2,15 +2,10 @@ syntax = "proto3";
 
 package service.pb;
 
-import "github.com/plgd-dev/client-application/pb/misc.proto";
-
+import "resource-aggregate/pb/commands.proto";
 option go_package = "github.com/plgd-dev/client-application/pb;pb";
 
 
 message GetResourceRequest {
-  ResourceId resource_id = 1;
-}
-
-message GetResourceResponse {
-  Content content = 1;
+  resourceaggregate.pb.ResourceId resource_id = 1;
 }

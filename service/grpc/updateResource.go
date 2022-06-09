@@ -4,15 +4,17 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/plgd-dev/client-application/pb"
 	"github.com/plgd-dev/client-application/pkg/rawcodec"
 	"github.com/plgd-dev/go-coap/v2/message"
+	grpcgwPb "github.com/plgd-dev/hub/v2/grpc-gateway/pb"
+	"github.com/plgd-dev/hub/v2/resource-aggregate/commands"
+	"github.com/plgd-dev/hub/v2/resource-aggregate/events"
 	"github.com/plgd-dev/kit/v2/codec/json"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
-func convContentToOcfCbor(content *pb.Content) ([]byte, error) {
+func convContentToOcfCbor(content *grpcgwPb.Content) ([]byte, error) {
 	switch content.GetContentType() {
 	case message.AppCBOR.String(), message.AppOcfCbor.String():
 		return content.GetData(), nil
@@ -26,7 +28,7 @@ func convContentToOcfCbor(content *pb.Content) ([]byte, error) {
 	return nil, status.Errorf(codes.InvalidArgument, "unsupported content type '%v'", content.GetContentType())
 }
 
-func (s *DeviceGatewayServer) UpdateResource(ctx context.Context, req *pb.UpdateResourceRequest) (*pb.UpdateResourceResponse, error) {
+func (s *DeviceGatewayServer) UpdateResource(ctx context.Context, req *grpcgwPb.UpdateResourceRequest) (*grpcgwPb.UpdateResourceResponse, error) {
 	updateData, err := convContentToOcfCbor(req.GetContent())
 	if err != nil {
 		return nil, err
@@ -50,10 +52,13 @@ func (s *DeviceGatewayServer) UpdateResource(ctx context.Context, req *pb.Update
 	if len(data) > 0 {
 		contentType = message.AppOcfCbor.String()
 	}
-	return &pb.UpdateResourceResponse{
-		Content: &pb.Content{
-			ContentType: contentType,
-			Data:        data,
+	return &grpcgwPb.UpdateResourceResponse{
+		Data: &events.ResourceUpdated{
+			Content: &commands.Content{
+				ContentType: contentType,
+				Data:        data,
+			},
+			Status: commands.Status_OK,
 		},
 	}, nil
 }
