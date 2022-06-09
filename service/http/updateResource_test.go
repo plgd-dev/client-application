@@ -13,7 +13,10 @@ import (
 	"github.com/plgd-dev/client-application/test"
 	"github.com/plgd-dev/device/schema/device"
 	"github.com/plgd-dev/device/schema/doxm"
+	grpcgwPb "github.com/plgd-dev/hub/v2/grpc-gateway/pb"
 	httpgwTest "github.com/plgd-dev/hub/v2/http-gateway/test"
+	"github.com/plgd-dev/hub/v2/resource-aggregate/commands"
+	"github.com/plgd-dev/hub/v2/resource-aggregate/events"
 	hubTest "github.com/plgd-dev/hub/v2/test"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -21,6 +24,7 @@ import (
 
 func TestDeviceGatewayServerUpdateResource(t *testing.T) {
 	dev := test.MustFindDeviceByName(test.DevsimName, []pb.GetDevicesRequest_UseMulticast{pb.GetDevicesRequest_IPV4})
+	dev.Data.OpenTelemetryCarrier = map[string]string{}
 
 	type args struct {
 		accept      string
@@ -32,7 +36,7 @@ func TestDeviceGatewayServerUpdateResource(t *testing.T) {
 	tests := []struct {
 		name     string
 		args     args
-		want     *pb.UpdateResourceResponse
+		want     *grpcgwPb.UpdateResourceResponse
 		wantErr  bool
 		wantCode int
 	}{
@@ -45,8 +49,12 @@ func TestDeviceGatewayServerUpdateResource(t *testing.T) {
 				contentType: httpService.ApplicationJsonContentType,
 				body:        bytes.NewReader([]byte(`{"oxmsel":0}`)),
 			},
-			want: &pb.UpdateResourceResponse{
-				Content: &pb.Content{},
+			want: &grpcgwPb.UpdateResourceResponse{
+				Data: &events.ResourceUpdated{
+					Content:              &commands.Content{},
+					Status:               commands.Status_OK,
+					OpenTelemetryCarrier: map[string]string{},
+				},
 			},
 			wantCode: http.StatusOK,
 		},
@@ -107,7 +115,7 @@ func TestDeviceGatewayServerUpdateResource(t *testing.T) {
 	resp := httpgwTest.HTTPDo(t, request)
 	require.Equal(t, http.StatusOK, resp.StatusCode)
 	for {
-		var dev pb.Device
+		var dev grpcgwPb.Device
 		err := httpgwTest.Unmarshal(resp.StatusCode, resp.Body, &dev)
 		if errors.Is(err, io.EOF) {
 			break
@@ -126,7 +134,7 @@ func TestDeviceGatewayServerUpdateResource(t *testing.T) {
 			}()
 			assert.Equal(t, tt.wantCode, resp.StatusCode)
 
-			var got pb.UpdateResourceResponse
+			var got grpcgwPb.UpdateResourceResponse
 			err := httpgwTest.Unmarshal(resp.StatusCode, resp.Body, &got)
 			if tt.wantErr {
 				require.Error(t, err)

@@ -11,6 +11,7 @@ import (
 	httpService "github.com/plgd-dev/client-application/service/http"
 	"github.com/plgd-dev/client-application/test"
 	"github.com/plgd-dev/device/schema/device"
+	grpcgwPb "github.com/plgd-dev/hub/v2/grpc-gateway/pb"
 	httpgwTest "github.com/plgd-dev/hub/v2/http-gateway/test"
 	hubTest "github.com/plgd-dev/hub/v2/test"
 	"github.com/stretchr/testify/assert"
@@ -19,6 +20,7 @@ import (
 
 func TestDeviceGatewayServerGetResource(t *testing.T) {
 	dev := test.MustFindDeviceByName(test.DevsimName, []pb.GetDevicesRequest_UseMulticast{pb.GetDevicesRequest_IPV4})
+	dev.Data.OpenTelemetryCarrier = map[string]string{}
 
 	type args struct {
 		accept   string
@@ -28,7 +30,7 @@ func TestDeviceGatewayServerGetResource(t *testing.T) {
 	tests := []struct {
 		name     string
 		args     args
-		want     *pb.GetResourceResponse
+		want     *grpcgwPb.Resource
 		wantErr  bool
 		wantCode int
 	}{
@@ -39,8 +41,9 @@ func TestDeviceGatewayServerGetResource(t *testing.T) {
 				deviceID: dev.Id,
 				href:     device.ResourceURI,
 			},
-			want: &pb.GetResourceResponse{
-				Content: dev.Content,
+			want: &grpcgwPb.Resource{
+				Data:  dev.Data,
+				Types: []string{"oic.d.cloudDevice", "oic.wk.d"},
 			},
 			wantCode: http.StatusOK,
 		},
@@ -83,7 +86,7 @@ func TestDeviceGatewayServerGetResource(t *testing.T) {
 	resp := httpgwTest.HTTPDo(t, request)
 	require.Equal(t, http.StatusOK, resp.StatusCode)
 	for {
-		var dev pb.Device
+		var dev grpcgwPb.Device
 		err := httpgwTest.Unmarshal(resp.StatusCode, resp.Body, &dev)
 		if errors.Is(err, io.EOF) {
 			break
@@ -103,7 +106,7 @@ func TestDeviceGatewayServerGetResource(t *testing.T) {
 
 			assert.Equal(t, tt.wantCode, resp.StatusCode)
 
-			var got pb.GetResourceResponse
+			var got grpcgwPb.Resource
 			err := httpgwTest.Unmarshal(resp.StatusCode, resp.Body, &got)
 			if tt.wantErr {
 				require.Error(t, err)

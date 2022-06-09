@@ -20,8 +20,10 @@ import (
 	"github.com/plgd-dev/go-coap/v2/udp"
 	"github.com/plgd-dev/go-coap/v2/udp/client"
 	"github.com/plgd-dev/go-coap/v2/udp/message/pool"
+	grpcgwPb "github.com/plgd-dev/hub/v2/grpc-gateway/pb"
 	"github.com/plgd-dev/hub/v2/pkg/log"
 	pkgStrings "github.com/plgd-dev/hub/v2/pkg/strings"
+	"github.com/plgd-dev/hub/v2/resource-aggregate/commands"
 	"github.com/plgd-dev/kit/v2/codec/cbor"
 	pkgNet "github.com/plgd-dev/kit/v2/net"
 	kitStrings "github.com/plgd-dev/kit/v2/strings"
@@ -106,14 +108,6 @@ func (d *device) updateEndpointsLocked(endpoints schema.Endpoints) {
 	d.private.Endpoints = newEndpoints
 }
 
-func (d *device) UpdateDeviceMetadata(resourceTypes []string, endpoints schema.Endpoints, ownershipStatus pb.Device_OwnershipStatus) {
-	d.private.mutex.Lock()
-	defer d.private.mutex.Unlock()
-	d.private.ResourceTypes = resourceTypes
-	d.private.OwnershipStatus = ownershipStatus
-	d.updateEndpointsLocked(endpoints)
-}
-
 func processDiscoveryResourceResponse(resp *pool.Message) (*device, error) {
 	if resp.Code() != coapCodes.Content {
 		return nil, fmt.Errorf("unexpected response code: %d", resp.Code())
@@ -132,7 +126,7 @@ func processDiscoveryResourceResponse(resp *pool.Message) (*device, error) {
 	var deviceID string
 	var endpoints schema.Endpoints
 	var resourceTypes []string
-	ownershipStatus := pb.Device_UNSUPPORTED
+	ownershipStatus := grpcgwPb.Device_UNSUPPORTED
 	for _, l := range links {
 		deviceID = l.GetDeviceID()
 		if pkgStrings.Contains(l.ResourceTypes, plgdDevice.ResourceType) {
@@ -141,9 +135,9 @@ func processDiscoveryResourceResponse(resp *pool.Message) (*device, error) {
 		}
 		if pkgStrings.Contains(l.ResourceTypes, doxm.ResourceType) {
 			if len(l.Endpoints.FilterUnsecureEndpoints()) == 0 {
-				ownershipStatus = pb.Device_OWNED
+				ownershipStatus = grpcgwPb.Device_OWNED
 			} else {
-				ownershipStatus = pb.Device_UNOWNED
+				ownershipStatus = grpcgwPb.Device_UNOWNED
 			}
 		}
 	}
@@ -220,7 +214,7 @@ func processDeviceResourceResponse(resp *pool.Message) (*device, error) {
 		contentFormat = message.AppOcfCbor
 	}
 	device.private.ResourceTypes = d.ResourceTypes
-	device.private.DeviceResourceBody = &pb.Content{
+	device.private.DeviceResourceBody = &commands.Content{
 		ContentType: contentFormat.String(),
 		Data:        body,
 	}
@@ -436,7 +430,7 @@ func toUseMulticastFilter(v []pb.GetDevicesRequest_UseMulticast) ipVersionFilter
 	return f
 }
 
-func filterByType(device *pb.Device, filteredTypes []string) bool {
+func filterByType(device *grpcgwPb.Device, filteredTypes []string) bool {
 	if len(filteredTypes) == 0 {
 		return true
 	}
@@ -444,18 +438,18 @@ func filterByType(device *pb.Device, filteredTypes []string) bool {
 	return types.HasOneOf(device.GetTypes()...)
 }
 
-func filterByOwnershipStatus(device *pb.Device, filteredOwnershipStatus []pb.GetDevicesRequest_OwnershipStatusFilter) bool {
+func filterByOwnershipStatus(device *grpcgwPb.Device, filteredOwnershipStatus []pb.GetDevicesRequest_OwnershipStatusFilter) bool {
 	if len(filteredOwnershipStatus) == 0 {
 		return true
 	}
 	for _, status := range filteredOwnershipStatus {
 		switch status {
 		case pb.GetDevicesRequest_OWNED:
-			if device.GetOwnershipStatus() == pb.Device_OWNED {
+			if device.GetOwnershipStatus() == grpcgwPb.Device_OWNED {
 				return true
 			}
 		case pb.GetDevicesRequest_UNOWNED:
-			if device.GetOwnershipStatus() == pb.Device_UNOWNED {
+			if device.GetOwnershipStatus() == grpcgwPb.Device_UNOWNED {
 				return true
 			}
 		}
@@ -537,7 +531,7 @@ func (s *DeviceGatewayServer) GetDevices(req *pb.GetDevicesRequest, srv pb.Devic
 	devices.Sort()
 	for _, device := range devices {
 		d := device.ToProto()
-		if d.GetContent() == nil {
+		if d.GetData().GetContent() == nil {
 			continue
 		}
 		if !filterByType(d, req.GetTypeFilter()) {

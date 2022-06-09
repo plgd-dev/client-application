@@ -12,6 +12,7 @@ import (
 	"github.com/plgd-dev/client-application/pb"
 	httpService "github.com/plgd-dev/client-application/service/http"
 	"github.com/plgd-dev/client-application/test"
+	grpcgwPb "github.com/plgd-dev/hub/v2/grpc-gateway/pb"
 	httpgwTest "github.com/plgd-dev/hub/v2/http-gateway/test"
 	"github.com/stretchr/testify/require"
 )
@@ -31,14 +32,14 @@ func TestDeviceGatewayServerGetDevices(t *testing.T) {
 		name    string
 		args    args
 		wantErr bool
-		want    []*pb.Device
+		want    []*grpcgwPb.Device
 	}{
 		{
 			name: "by multicast",
 			args: args{
 				useMulticast: []string{pb.GetDevicesRequest_IPV4.String()},
 			},
-			want: []*pb.Device{
+			want: []*grpcgwPb.Device{
 				device,
 			},
 		},
@@ -47,7 +48,7 @@ func TestDeviceGatewayServerGetDevices(t *testing.T) {
 			args: args{
 				useEndpoints: []string{u.Hostname()},
 			},
-			want: []*pb.Device{
+			want: []*grpcgwPb.Device{
 				device,
 			},
 		},
@@ -56,7 +57,7 @@ func TestDeviceGatewayServerGetDevices(t *testing.T) {
 			args: args{
 				useEndpoints: []string{u.Host},
 			},
-			want: []*pb.Device{
+			want: []*grpcgwPb.Device{
 				device,
 			},
 		},
@@ -76,9 +77,9 @@ func TestDeviceGatewayServerGetDevices(t *testing.T) {
 				_ = resp.Body.Close()
 			}()
 
-			var got []*pb.Device
+			var got []*grpcgwPb.Device
 			for {
-				var dev pb.Device
+				var dev grpcgwPb.Device
 				err := httpgwTest.Unmarshal(resp.StatusCode, resp.Body, &dev)
 				if errors.Is(err, io.EOF) {
 					break

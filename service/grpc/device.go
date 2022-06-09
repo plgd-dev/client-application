@@ -10,10 +10,12 @@ import (
 	"time"
 
 	"github.com/pion/dtls/v2"
-	"github.com/plgd-dev/client-application/pb"
 	"github.com/plgd-dev/device/client/core"
 	"github.com/plgd-dev/device/pkg/net/coap"
 	"github.com/plgd-dev/device/schema"
+	grpcgwPb "github.com/plgd-dev/hub/v2/grpc-gateway/pb"
+	"github.com/plgd-dev/hub/v2/resource-aggregate/commands"
+	"github.com/plgd-dev/hub/v2/resource-aggregate/events"
 	"github.com/plgd-dev/kit/v2/log"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -34,8 +36,8 @@ type device struct {
 		mutex              sync.RWMutex
 		ResourceTypes      []string
 		Endpoints          schema.Endpoints
-		OwnershipStatus    pb.Device_OwnershipStatus
-		DeviceResourceBody *pb.Content
+		OwnershipStatus    grpcgwPb.Device_OwnershipStatus
+		DeviceResourceBody *commands.Content
 		api                *core.Device
 	}
 	*core.Device
@@ -96,7 +98,7 @@ func newDevice(deviceID string) *device {
 	return &d
 }
 
-func (d *device) ToProto() *pb.Device {
+func (d *device) ToProto() *grpcgwPb.Device {
 	d.private.mutex.RLock()
 	defer d.private.mutex.RUnlock()
 
@@ -105,10 +107,17 @@ func (d *device) ToProto() *pb.Device {
 		eps = append(eps, ep.URI)
 	}
 
-	return &pb.Device{
-		Id:              d.ID,
-		Types:           d.private.ResourceTypes,
-		Content:         d.private.DeviceResourceBody.Clone(),
+	return &grpcgwPb.Device{
+		Id:    d.ID,
+		Types: d.private.ResourceTypes,
+		Data: &events.ResourceChanged{
+			Content: &commands.Content{
+				Data:              d.private.DeviceResourceBody.GetData(),
+				ContentType:       d.private.DeviceResourceBody.GetContentType(),
+				CoapContentFormat: d.private.DeviceResourceBody.GetCoapContentFormat(),
+			},
+			Status: commands.Status_OK,
+		},
 		OwnershipStatus: d.private.OwnershipStatus,
 		Endpoints:       eps,
 	}
@@ -122,12 +131,6 @@ func (d *device) GetEndpoints() schema.Endpoints {
 	return endpoints
 }
 
-func (d *device) UpdateDeviceResourceBody(body *pb.Content) {
-	d.private.mutex.Lock()
-	defer d.private.mutex.Unlock()
-	d.private.DeviceResourceBody = body
-}
-
 func normalizeHref(href string) string {
 	if href == "" {
 		return ""
@@ -138,7 +141,7 @@ func normalizeHref(href string) string {
 	return "/" + href
 }
 
-func (d *device) getResourceLink(ctx context.Context, resourceID *pb.ResourceId) (schema.ResourceLink, error) {
+func (d *device) getResourceLink(ctx context.Context, resourceID *commands.ResourceId) (schema.ResourceLink, error) {
 	if d.Device == nil {
 		return schema.ResourceLink{}, status.Error(codes.Internal, "device is not initialized")
 	}
@@ -151,4 +154,18 @@ func (d *device) getResourceLink(ctx context.Context, resourceID *pb.ResourceId)
 		return schema.ResourceLink{}, status.Errorf(codes.NotFound, "cannot find resource link %v for device %v", resourceID.GetHref(), d.ID)
 	}
 	return link, nil
+}
+
+func (d *device) UpdateDeviceMetadata(resourceTypes []string, endpoints schema.Endpoints, ownershipStatus grpcgwPb.Device_OwnershipStatus) {
+	d.private.mutex.Lock()
+	defer d.private.mutex.Unlock()
+	d.private.ResourceTypes = resourceTypes
+	d.private.OwnershipStatus = ownershipStatus
+	d.updateEndpointsLocked(endpoints)
+}
+
+func (d *device) UpdateDeviceResourceBody(body *commands.Content) {
+	d.private.mutex.Lock()
+	defer d.private.mutex.Unlock()
+	d.private.DeviceResourceBody = body
 }

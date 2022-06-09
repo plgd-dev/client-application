@@ -44,7 +44,7 @@
                   "$ref": "#/definitions/pbDevice"
                 },
                 "error": {
-                  "$ref": "#/definitions/rpcStatus"
+                  "$ref": "#/definitions/googlerpcStatus"
                 }
               },
               "title": "Stream result of pbDevice"
@@ -53,7 +53,7 @@
           "default": {
             "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/rpcStatus"
+              "$ref": "#/definitions/googlerpcStatus"
             }
           }
         },
@@ -131,6 +131,37 @@
         ]
       }
     },
+    "/api/v1/devices/{deviceId}/resource-links": {
+      "get": {
+        "summary": "Get resource links of devices.",
+        "operationId": "DeviceGateway_GetDeviceResourceLinks",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbResourceLinksPublished"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "deviceId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Device"
+        ]
+      }
+    },
     "/api/v1/devices/{resourceId.deviceId}/resources/{resourceId.href}": {
       "get": {
         "summary": "Get resource from the device.",
@@ -139,13 +170,13 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/pbGetResourceResponse"
+              "$ref": "#/definitions/grpcgatewaypbResource"
             }
           },
           "default": {
             "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/rpcStatus"
+              "$ref": "#/definitions/googlerpcStatus"
             }
           }
         },
@@ -174,13 +205,13 @@
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/pbUpdateResourceResponse"
+              "$ref": "#/definitions/grpcgatewaypbUpdateResourceResponse"
             }
           },
           "default": {
             "description": "An unexpected error response.",
             "schema": {
-              "$ref": "#/definitions/rpcStatus"
+              "$ref": "#/definitions/googlerpcStatus"
             }
           }
         },
@@ -202,7 +233,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "$ref": "#/definitions/pbContent"
+              "$ref": "#/definitions/grpcgatewaypbContent"
             }
           },
           {
@@ -210,6 +241,13 @@
             "in": "query",
             "required": false,
             "type": "string"
+          },
+          {
+            "name": "timeToLive",
+            "in": "query",
+            "required": false,
+            "type": "string",
+            "format": "int64"
           }
         ],
         "tags": [
@@ -219,6 +257,17 @@
     }
   },
   "definitions": {
+    "DeviceMetadata": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "$ref": "#/definitions/pbConnectionStatus"
+        },
+        "shadowSynchronization": {
+          "$ref": "#/definitions/pbShadowSynchronization"
+        }
+      }
+    },
     "DeviceOwnershipStatus": {
       "type": "string",
       "enum": [
@@ -247,89 +296,7 @@
       ],
       "default": "IPV4"
     },
-    "pbContent": {
-      "type": "object",
-      "properties": {
-        "contentType": {
-          "type": "string"
-        },
-        "data": {
-          "type": "string",
-          "format": "byte"
-        }
-      }
-    },
-    "pbDevice": {
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string",
-          "title": "device id"
-        },
-        "types": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "title": "list of device types"
-        },
-        "content": {
-          "$ref": "#/definitions/pbContent",
-          "title": "content of the device resource oic/d"
-        },
-        "ownershipStatus": {
-          "$ref": "#/definitions/DeviceOwnershipStatus",
-          "title": "ownership status of the device"
-        },
-        "endpoints": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          },
-          "title": "endpoints with schemas which are hosted by the device"
-        }
-      }
-    },
-    "pbGetResourceResponse": {
-      "type": "object",
-      "properties": {
-        "content": {
-          "$ref": "#/definitions/pbContent"
-        }
-      }
-    },
-    "pbResourceId": {
-      "type": "object",
-      "properties": {
-        "deviceId": {
-          "type": "string"
-        },
-        "href": {
-          "type": "string"
-        }
-      }
-    },
-    "pbUpdateResourceResponse": {
-      "type": "object",
-      "properties": {
-        "content": {
-          "$ref": "#/definitions/pbContent"
-        }
-      }
-    },
-    "protobufAny": {
-      "type": "object",
-      "properties": {
-        "typeUrl": {
-          "type": "string"
-        },
-        "value": {
-          "type": "string",
-          "format": "byte"
-        }
-      }
-    },
-    "rpcStatus": {
+    "googlerpcStatus": {
       "type": "object",
       "properties": {
         "code": {
@@ -346,6 +313,376 @@
           }
         }
       }
+    },
+    "grpcgatewaypbContent": {
+      "type": "object",
+      "properties": {
+        "contentType": {
+          "type": "string"
+        },
+        "data": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "grpcgatewaypbResource": {
+      "type": "object",
+      "properties": {
+        "types": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "data": {
+          "$ref": "#/definitions/pbResourceChanged"
+        }
+      }
+    },
+    "grpcgatewaypbUpdateResourceResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "$ref": "#/definitions/pbResourceUpdated"
+        }
+      }
+    },
+    "pbAuditContext": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string"
+        },
+        "correlationId": {
+          "type": "string"
+        }
+      }
+    },
+    "pbConnectionStatus": {
+      "type": "object",
+      "properties": {
+        "value": {
+          "$ref": "#/definitions/pbConnectionStatusStatus"
+        },
+        "validUntil": {
+          "type": "string",
+          "format": "int64"
+        },
+        "connectionId": {
+          "type": "string"
+        }
+      }
+    },
+    "pbConnectionStatusStatus": {
+      "type": "string",
+      "enum": [
+        "OFFLINE",
+        "ONLINE"
+      ],
+      "default": "OFFLINE"
+    },
+    "pbDevice": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "types": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "name": {
+          "type": "string"
+        },
+        "metadata": {
+          "$ref": "#/definitions/DeviceMetadata"
+        },
+        "manufacturerName": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/pbLocalizedString"
+          }
+        },
+        "modelNumber": {
+          "type": "string"
+        },
+        "interfaces": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "protocolIndependentId": {
+          "type": "string"
+        },
+        "data": {
+          "$ref": "#/definitions/pbResourceChanged"
+        },
+        "ownershipStatus": {
+          "$ref": "#/definitions/DeviceOwnershipStatus",
+          "title": "ownership status of the device"
+        },
+        "endpoints": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "title": "endpoints with schemas which are hosted by the device"
+        }
+      }
+    },
+    "pbEndpointInformation": {
+      "type": "object",
+      "properties": {
+        "endpoint": {
+          "type": "string"
+        },
+        "priority": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "pbEventMetadata": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "int64"
+        },
+        "connectionId": {
+          "type": "string"
+        },
+        "sequence": {
+          "type": "string",
+          "format": "uint64"
+        }
+      }
+    },
+    "pbLocalizedString": {
+      "type": "object",
+      "properties": {
+        "language": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string"
+        }
+      }
+    },
+    "pbPolicy": {
+      "type": "object",
+      "properties": {
+        "bitFlags": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "pbResourceChanged": {
+      "type": "object",
+      "properties": {
+        "resourceId": {
+          "$ref": "#/definitions/pbResourceId"
+        },
+        "content": {
+          "$ref": "#/definitions/resourceaggregatepbContent"
+        },
+        "status": {
+          "$ref": "#/definitions/resourceaggregatepbStatus"
+        },
+        "auditContext": {
+          "$ref": "#/definitions/pbAuditContext"
+        },
+        "eventMetadata": {
+          "$ref": "#/definitions/pbEventMetadata"
+        },
+        "openTelemetryCarrier": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "Open telemetry data propagated to asynchronous events"
+        }
+      }
+    },
+    "pbResourceId": {
+      "type": "object",
+      "properties": {
+        "deviceId": {
+          "type": "string"
+        },
+        "href": {
+          "type": "string"
+        }
+      }
+    },
+    "pbResourceLinksPublished": {
+      "type": "object",
+      "properties": {
+        "deviceId": {
+          "type": "string"
+        },
+        "resources": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/resourceaggregatepbResource"
+          }
+        },
+        "auditContext": {
+          "$ref": "#/definitions/pbAuditContext"
+        },
+        "eventMetadata": {
+          "$ref": "#/definitions/pbEventMetadata"
+        },
+        "openTelemetryCarrier": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "Open telemetry data propagated to asynchronous events"
+        }
+      },
+      "title": "https://github.com/openconnectivityfoundation/cloud-services/blob/master/swagger2.0/oic.wk.rd.swagger.json#L173"
+    },
+    "pbResourceUpdated": {
+      "type": "object",
+      "properties": {
+        "resourceId": {
+          "$ref": "#/definitions/pbResourceId"
+        },
+        "status": {
+          "$ref": "#/definitions/resourceaggregatepbStatus"
+        },
+        "content": {
+          "$ref": "#/definitions/resourceaggregatepbContent"
+        },
+        "auditContext": {
+          "$ref": "#/definitions/pbAuditContext"
+        },
+        "eventMetadata": {
+          "$ref": "#/definitions/pbEventMetadata"
+        },
+        "openTelemetryCarrier": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "Open telemetry data propagated to asynchronous events"
+        }
+      }
+    },
+    "pbShadowSynchronization": {
+      "type": "string",
+      "enum": [
+        "UNSET",
+        "ENABLED",
+        "DISABLED"
+      ],
+      "default": "UNSET"
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "typeUrl": {
+          "type": "string"
+        },
+        "value": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "resourceaggregatepbContent": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "type": "string",
+          "format": "byte"
+        },
+        "contentType": {
+          "type": "string"
+        },
+        "coapContentFormat": {
+          "type": "integer",
+          "format": "int32"
+        }
+      }
+    },
+    "resourceaggregatepbResource": {
+      "type": "object",
+      "properties": {
+        "href": {
+          "type": "string"
+        },
+        "deviceId": {
+          "type": "string"
+        },
+        "resourceTypes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "interfaces": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "anchor": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "supportedContentTypes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "validUntil": {
+          "type": "string",
+          "format": "int64"
+        },
+        "policy": {
+          "$ref": "#/definitions/pbPolicy"
+        },
+        "endpointInformations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/pbEndpointInformation"
+          }
+        }
+      },
+      "title": "https://github.com/openconnectivityfoundation/core/blob/master/schemas/oic.links.properties.core-schema.json"
+    },
+    "resourceaggregatepbStatus": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "OK",
+        "BAD_REQUEST",
+        "UNAUTHORIZED",
+        "FORBIDDEN",
+        "NOT_FOUND",
+        "UNAVAILABLE",
+        "NOT_IMPLEMENTED",
+        "ACCEPTED",
+        "ERROR",
+        "METHOD_NOT_ALLOWED",
+        "CREATED",
+        "CANCELED"
+      ],
+      "default": "UNKNOWN"
     }
   }
 }

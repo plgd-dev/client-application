@@ -344,6 +344,12 @@ github.com/plgd-dev/go-coap/v2 v2.5.1-0.20220524070052-e4127919524d h1:wb9MVrMaV
 github.com/plgd-dev/go-coap/v2 v2.5.1-0.20220524070052-e4127919524d/go.mod h1:qlkRFLInjw68Rxm3aYw3gA6R35XcYnbTMQvA+MLFp/M=
 github.com/plgd-dev/hub/v2 v2.4.3 h1:4RVDGDRLRsxK3N1ICl9VBkRckdRwzrNX350IR3Nlffo=
 github.com/plgd-dev/hub/v2 v2.4.3/go.mod h1:njNEjvqPwXiJ9gSIX6hXh+7v6NnFEAxdCgaFPID8U0I=
+github.com/plgd-dev/hub/v2 v2.4.4-0.20220608152626-e8c33a53b32d h1:TqnhHPR7xIEGj0OMv49JPQ6rIwqC9ZZDlXKr89uM1+k=
+github.com/plgd-dev/hub/v2 v2.4.4-0.20220608152626-e8c33a53b32d/go.mod h1:c4m8Vv/SNtHXaEnup7smqwcAqY7QgXbAq6siJgavNSU=
+github.com/plgd-dev/hub/v2 v2.4.4-0.20220608170113-72b108dead31 h1:Qdj5bYbgNs8fLB/JWqWX+A85PgvznxBCPRx2256LNSE=
+github.com/plgd-dev/hub/v2 v2.4.4-0.20220608170113-72b108dead31/go.mod h1:c4m8Vv/SNtHXaEnup7smqwcAqY7QgXbAq6siJgavNSU=
+github.com/plgd-dev/hub/v2 v2.4.4-0.20220608170734-731275b98fd4 h1:iKppkqU/8VirG8TJRiwEDDaQ3h9Z0ZPnaFtUyCm7Uuk=
+github.com/plgd-dev/hub/v2 v2.4.4-0.20220608170734-731275b98fd4/go.mod h1:c4m8Vv/SNtHXaEnup7smqwcAqY7QgXbAq6siJgavNSU=
 github.com/plgd-dev/kit v0.0.0-20200819113605-d5fcf3e94f63/go.mod h1:Yl9zisyXfPdtP9hTWlJqjJYXmgU/jtSDKttz9/CeD90=
 github.com/plgd-dev/kit/v2 v2.0.0-20211006190727-057b33161b90 h1:TC1HJ/UbyflJFPvaOdGmNZ5TeFGex1/dyr9urNGLy7M=
 github.com/plgd-dev/kit/v2 v2.0.0-20211006190727-057b33161b90/go.mod h1:Z7oKFLSGQjdi8eInxwFCs0tSApuEM1o0qNck+sJYp4M=

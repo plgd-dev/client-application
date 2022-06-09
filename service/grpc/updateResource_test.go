@@ -12,6 +12,9 @@ import (
 	"github.com/plgd-dev/client-application/test"
 	"github.com/plgd-dev/device/schema/device"
 	"github.com/plgd-dev/device/schema/doxm"
+	grpcgwPb "github.com/plgd-dev/hub/v2/grpc-gateway/pb"
+	"github.com/plgd-dev/hub/v2/resource-aggregate/commands"
+	"github.com/plgd-dev/hub/v2/resource-aggregate/events"
 	"github.com/stretchr/testify/require"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -23,42 +26,45 @@ func TestDeviceGatewayServerUpdateResource(t *testing.T) {
 	defer cancel()
 
 	type args struct {
-		req *pb.UpdateResourceRequest
+		req *grpcgwPb.UpdateResourceRequest
 	}
 	tests := []struct {
 		name        string
 		args        args
-		want        *pb.UpdateResourceResponse
+		want        *grpcgwPb.UpdateResourceResponse
 		wantErr     bool
 		wantErrCode codes.Code
 	}{
 		{
 			name: "doxm update",
 			args: args{
-				req: &pb.UpdateResourceRequest{
-					ResourceId: &pb.ResourceId{
+				req: &grpcgwPb.UpdateResourceRequest{
+					ResourceId: &commands.ResourceId{
 						DeviceId: dev.Id,
 						Href:     doxm.ResourceURI,
 					},
-					Content: &pb.Content{
+					Content: &grpcgwPb.Content{
 						ContentType: serviceHttp.ApplicationJsonContentType,
 						Data:        []byte(`{"oxmsel":0}`),
 					},
 				},
 			},
-			want: &pb.UpdateResourceResponse{
-				Content: &pb.Content{},
+			want: &grpcgwPb.UpdateResourceResponse{
+				Data: &events.ResourceUpdated{
+					Content: &commands.Content{},
+					Status:  commands.Status_OK,
+				},
 			},
 		},
 		{
 			name: "device resource - fail",
 			args: args{
-				req: &pb.UpdateResourceRequest{
-					ResourceId: &pb.ResourceId{
+				req: &grpcgwPb.UpdateResourceRequest{
+					ResourceId: &commands.ResourceId{
 						DeviceId: dev.Id,
 						Href:     device.ResourceURI,
 					},
-					Content: &pb.Content{
+					Content: &grpcgwPb.Content{
 						ContentType: serviceHttp.ApplicationJsonContentType,
 						Data:        []byte(`{"name":"test"}`),
 					},
@@ -70,12 +76,12 @@ func TestDeviceGatewayServerUpdateResource(t *testing.T) {
 		{
 			name: "unknown device",
 			args: args{
-				req: &pb.UpdateResourceRequest{
-					ResourceId: &pb.ResourceId{
+				req: &grpcgwPb.UpdateResourceRequest{
+					ResourceId: &commands.ResourceId{
 						DeviceId: uuid.NewString(),
 						Href:     device.ResourceURI,
 					},
-					Content: &pb.Content{
+					Content: &grpcgwPb.Content{
 						ContentType: serviceHttp.ApplicationJsonContentType,
 						Data:        []byte(`{"name":"test"}`),
 					},
@@ -87,12 +93,12 @@ func TestDeviceGatewayServerUpdateResource(t *testing.T) {
 		{
 			name: "unknown href",
 			args: args{
-				req: &pb.UpdateResourceRequest{
-					ResourceId: &pb.ResourceId{
+				req: &grpcgwPb.UpdateResourceRequest{
+					ResourceId: &commands.ResourceId{
 						DeviceId: dev.Id,
 						Href:     "/unknown",
 					},
-					Content: &pb.Content{
+					Content: &grpcgwPb.Content{
 						ContentType: serviceHttp.ApplicationJsonContentType,
 						Data:        []byte(`{"name":"test"}`),
 					},
@@ -104,12 +110,12 @@ func TestDeviceGatewayServerUpdateResource(t *testing.T) {
 		{
 			name: "unavailable - cannot establish TLS connection",
 			args: args{
-				req: &pb.UpdateResourceRequest{
-					ResourceId: &pb.ResourceId{
+				req: &grpcgwPb.UpdateResourceRequest{
+					ResourceId: &commands.ResourceId{
 						DeviceId: dev.Id,
 						Href:     "/light/1",
 					},
-					Content: &pb.Content{
+					Content: &grpcgwPb.Content{
 						ContentType: serviceHttp.ApplicationJsonContentType,
 						Data:        []byte(`{"name":"test"}`),
 					},
