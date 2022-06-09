@@ -15,7 +15,9 @@ import (
 	"github.com/plgd-dev/client-application/service"
 	serviceGrpc "github.com/plgd-dev/client-application/service/grpc"
 	"github.com/plgd-dev/client-application/service/http"
+	"github.com/plgd-dev/device/schema"
 	"github.com/plgd-dev/device/schema/device"
+	deviceTest "github.com/plgd-dev/device/test"
 	grpcgwPb "github.com/plgd-dev/hub/v2/grpc-gateway/pb"
 	"github.com/plgd-dev/hub/v2/pkg/log"
 	"github.com/plgd-dev/hub/v2/test/config"
@@ -186,4 +188,12 @@ func MustFindDeviceByName(name string, useMulticast []pb.GetDevicesRequest_UseMu
 		panic(err)
 	}
 	return d
+}
+
+func GetDeviceResourceLinks() schema.ResourceLinks {
+	resources := make(schema.ResourceLinks, 0, len(deviceTest.TestDevsimResources)+len(deviceTest.TestDevsimPrivateResources)+len(deviceTest.TestDevsimSecResources))
+	resources = append(resources, deviceTest.TestDevsimResources...)
+	resources = append(resources, deviceTest.TestDevsimPrivateResources...)
+	resources = append(resources, deviceTest.TestDevsimSecResources...)
+	return resources
 }
