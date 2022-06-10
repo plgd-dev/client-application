@@ -83,6 +83,7 @@ GRPCGATEWAY_MODULE_PATH := $(shell go list -m -f '{{.Dir}}' github.com/grpc-ecos
 PLGDHUB_MODULE_PATH := $(shell go list -m -f '{{.Dir}}' github.com/plgd-dev/hub/v2 | head -1)
 
 proto/generate:
+	protoc -I=. -I=$(GOPATH)/src -I=$(PLGDHUB_MODULE_PATH) --go_out=$(GOPATH)/src $(WORKING_DIRECTORY)/pb/get_device.proto
 	protoc -I=. -I=$(GOPATH)/src -I=$(PLGDHUB_MODULE_PATH) --go_out=$(GOPATH)/src $(WORKING_DIRECTORY)/pb/get_devices.proto
 	protoc -I=. -I=$(GOPATH)/src -I=$(PLGDHUB_MODULE_PATH) --go_out=$(GOPATH)/src $(WORKING_DIRECTORY)/pb/get_resource.proto
 	protoc -I=. -I=$(GOPATH)/src -I=$(PLGDHUB_MODULE_PATH) --go_out=$(GOPATH)/src $(WORKING_DIRECTORY)/pb/get_device_resource_links.proto

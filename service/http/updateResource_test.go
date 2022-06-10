@@ -9,7 +9,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/plgd-dev/client-application/pb"
-	httpService "github.com/plgd-dev/client-application/service/http"
+	serviceHttp "github.com/plgd-dev/client-application/service/http"
 	"github.com/plgd-dev/client-application/test"
 	"github.com/plgd-dev/device/schema/device"
 	"github.com/plgd-dev/device/schema/doxm"
@@ -43,10 +43,10 @@ func TestDeviceGatewayServerUpdateResource(t *testing.T) {
 		{
 			name: "doxm update",
 			args: args{
-				accept:      httpService.ApplicationProtoJsonContentType,
+				accept:      serviceHttp.ApplicationProtoJsonContentType,
 				deviceID:    dev.Id,
 				href:        doxm.ResourceURI,
-				contentType: httpService.ApplicationJsonContentType,
+				contentType: serviceHttp.ApplicationJsonContentType,
 				body:        bytes.NewReader([]byte(`{"oxmsel":0}`)),
 			},
 			want: &grpcgwPb.UpdateResourceResponse{
@@ -61,10 +61,10 @@ func TestDeviceGatewayServerUpdateResource(t *testing.T) {
 		{
 			name: "device resource",
 			args: args{
-				accept:      httpService.ApplicationProtoJsonContentType,
+				accept:      serviceHttp.ApplicationProtoJsonContentType,
 				deviceID:    dev.Id,
 				href:        device.ResourceURI,
-				contentType: httpService.ApplicationJsonContentType,
+				contentType: serviceHttp.ApplicationJsonContentType,
 				body:        bytes.NewReader([]byte(`{"oxmsel":0}`)),
 			},
 			wantErr:  true,
@@ -75,7 +75,7 @@ func TestDeviceGatewayServerUpdateResource(t *testing.T) {
 			args: args{
 				deviceID:    uuid.NewString(),
 				href:        device.ResourceURI,
-				contentType: httpService.ApplicationJsonContentType,
+				contentType: serviceHttp.ApplicationJsonContentType,
 				body:        bytes.NewReader([]byte(`{"oxmsel":0}`)),
 			},
 			wantErr:  true,
@@ -86,7 +86,7 @@ func TestDeviceGatewayServerUpdateResource(t *testing.T) {
 			args: args{
 				deviceID:    dev.Id,
 				href:        "/unknown",
-				contentType: httpService.ApplicationJsonContentType,
+				contentType: serviceHttp.ApplicationJsonContentType,
 				body:        bytes.NewReader([]byte(`{"oxmsel":0}`)),
 			},
 			wantErr:  true,
@@ -97,7 +97,7 @@ func TestDeviceGatewayServerUpdateResource(t *testing.T) {
 			args: args{
 				deviceID:    dev.Id,
 				href:        "/light/1",
-				contentType: httpService.ApplicationJsonContentType,
+				contentType: serviceHttp.ApplicationJsonContentType,
 				body:        bytes.NewReader([]byte(`{"oxmsel":0}`)),
 			},
 			wantErr:  true,
@@ -110,7 +110,7 @@ func TestDeviceGatewayServerUpdateResource(t *testing.T) {
 	shutDown := test.New(t, cfg)
 	defer shutDown()
 
-	request := httpgwTest.NewRequest(http.MethodGet, httpService.Devices, nil).
+	request := httpgwTest.NewRequest(http.MethodGet, serviceHttp.Devices, nil).
 		Host(test.CLIENT_APPLICATION_HTTP_HOST).Build()
 	resp := httpgwTest.HTTPDo(t, request)
 	require.Equal(t, http.StatusOK, resp.StatusCode)
@@ -126,7 +126,7 @@ func TestDeviceGatewayServerUpdateResource(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			request := httpgwTest.NewRequest(http.MethodPut, httpService.DeviceResource, tt.args.body).
+			request := httpgwTest.NewRequest(http.MethodPut, serviceHttp.DeviceResource, tt.args.body).
 				Host(test.CLIENT_APPLICATION_HTTP_HOST).Accept(tt.args.accept).DeviceId(tt.args.deviceID).ResourceHref(tt.args.href).ContentType(tt.args.contentType).Build()
 			resp := httpgwTest.HTTPDo(t, request)
 			defer func() {

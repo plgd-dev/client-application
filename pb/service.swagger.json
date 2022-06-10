@@ -131,6 +131,37 @@
         ]
       }
     },
+    "/api/v1/devices/{deviceId}": {
+      "get": {
+        "summary": "Get device information from the device or from the cache. Device needs to be stored in cache otherwise it returns not found.",
+        "operationId": "DeviceGateway_GetDevice",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbDevice"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "deviceId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Device"
+        ]
+      }
+    },
     "/api/v1/devices/{deviceId}/disown": {
       "post": {
         "summary": "Disown the device.",

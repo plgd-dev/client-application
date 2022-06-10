@@ -9,6 +9,7 @@ import (
 	serviceDevice "github.com/plgd-dev/client-application/service/device"
 	"github.com/plgd-dev/device/client/core"
 	"github.com/plgd-dev/device/schema"
+	plgdDevice "github.com/plgd-dev/device/schema/device"
 	"github.com/plgd-dev/device/schema/doxm"
 	grpcgwPb "github.com/plgd-dev/hub/v2/grpc-gateway/pb"
 	"github.com/plgd-dev/hub/v2/pkg/log"
@@ -120,6 +121,10 @@ func (d *device) getResourceLinksAndRefreshCache(ctx context.Context) (schema.Re
 		return nil, convErrToGrpcStatus(codes.Unavailable, fmt.Errorf("cannot get resource links for device %v: %w", d.ID, err)).Err()
 	}
 	d.updateOwnershipStatus(getOwnershipStatus(links))
+	devLinks := links.GetResourceLinks(plgdDevice.ResourceType)
+	if len(devLinks) > 0 {
+		d.updateResourceTypes(devLinks[0].ResourceTypes)
+	}
 	return links, nil
 }
 
@@ -141,6 +146,12 @@ func (d *device) updateDeviceMetadata(resourceTypes []string, endpoints schema.E
 	d.private.ResourceTypes = resourceTypes
 	d.private.OwnershipStatus = ownershipStatus
 	d.updateEndpointsLocked(endpoints)
+}
+
+func (d *device) updateResourceTypes(resourceTypes []string) {
+	d.private.mutex.Lock()
+	defer d.private.mutex.Unlock()
+	d.private.ResourceTypes = resourceTypes
 }
 
 func (d *device) updateOwnershipStatus(ownershipStatus grpcgwPb.Device_OwnershipStatus) {

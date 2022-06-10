@@ -9,7 +9,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/plgd-dev/client-application/pb"
-	httpService "github.com/plgd-dev/client-application/service/http"
+	serviceHttp "github.com/plgd-dev/client-application/service/http"
 	"github.com/plgd-dev/client-application/test"
 	grpcgwPb "github.com/plgd-dev/hub/v2/grpc-gateway/pb"
 	httpgwTest "github.com/plgd-dev/hub/v2/http-gateway/test"
@@ -61,7 +61,7 @@ func TestDeviceGatewayServerGetDeviceResourceLinks(t *testing.T) {
 	shutDown := test.New(t, cfg)
 	defer shutDown()
 
-	request := httpgwTest.NewRequest(http.MethodGet, httpService.Devices, nil).
+	request := httpgwTest.NewRequest(http.MethodGet, serviceHttp.Devices, nil).
 		Host(test.CLIENT_APPLICATION_HTTP_HOST).Build()
 	resp := httpgwTest.HTTPDo(t, request)
 	require.Equal(t, http.StatusOK, resp.StatusCode)
@@ -76,7 +76,7 @@ func TestDeviceGatewayServerGetDeviceResourceLinks(t *testing.T) {
 	_ = resp.Body.Close()
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			request := httpgwTest.NewRequest(http.MethodGet, httpService.DeviceResourceLinks, nil).
+			request := httpgwTest.NewRequest(http.MethodGet, serviceHttp.DeviceResourceLinks, nil).
 				Host(test.CLIENT_APPLICATION_HTTP_HOST).Accept(tt.args.accept).DeviceId(tt.args.deviceID).Build()
 			resp := httpgwTest.HTTPDo(t, request)
 			defer func() {

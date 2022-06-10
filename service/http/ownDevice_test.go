@@ -7,7 +7,7 @@ import (
 	"testing"
 
 	"github.com/plgd-dev/client-application/pb"
-	httpService "github.com/plgd-dev/client-application/service/http"
+	serviceHttp "github.com/plgd-dev/client-application/service/http"
 	"github.com/plgd-dev/client-application/test"
 	grpcgwPb "github.com/plgd-dev/hub/v2/grpc-gateway/pb"
 	httpgwTest "github.com/plgd-dev/hub/v2/http-gateway/test"
@@ -21,7 +21,7 @@ func TestDeviceGatewayServerOwnDevice(t *testing.T) {
 	shutDown := test.New(t, cfg)
 	defer shutDown()
 
-	request := httpgwTest.NewRequest(http.MethodGet, httpService.Devices, nil).
+	request := httpgwTest.NewRequest(http.MethodGet, serviceHttp.Devices, nil).
 		Host(test.CLIENT_APPLICATION_HTTP_HOST).Build()
 	resp := httpgwTest.HTTPDo(t, request)
 	require.Equal(t, http.StatusOK, resp.StatusCode)
@@ -35,19 +35,19 @@ func TestDeviceGatewayServerOwnDevice(t *testing.T) {
 	}
 	_ = resp.Body.Close()
 
-	request = httpgwTest.NewRequest(http.MethodPost, httpService.OwnDevice, nil).
+	request = httpgwTest.NewRequest(http.MethodPost, serviceHttp.OwnDevice, nil).
 		Host(test.CLIENT_APPLICATION_HTTP_HOST).DeviceId(dev.Id).Build()
 	resp = httpgwTest.HTTPDo(t, request)
 	_ = resp.Body.Close()
 	require.Equal(t, http.StatusOK, resp.StatusCode)
 
-	request = httpgwTest.NewRequest(http.MethodGet, httpService.DeviceResource, nil).
+	request = httpgwTest.NewRequest(http.MethodGet, serviceHttp.DeviceResource, nil).
 		Host(test.CLIENT_APPLICATION_HTTP_HOST).DeviceId(dev.Id).ResourceHref("/light/1").Build()
 	resp = httpgwTest.HTTPDo(t, request)
 	_ = resp.Body.Close()
 	require.Equal(t, http.StatusOK, resp.StatusCode)
 
-	request = httpgwTest.NewRequest(http.MethodPost, httpService.DisownDevice, nil).
+	request = httpgwTest.NewRequest(http.MethodPost, serviceHttp.DisownDevice, nil).
 		Host(test.CLIENT_APPLICATION_HTTP_HOST).DeviceId(dev.Id).Build()
 	resp = httpgwTest.HTTPDo(t, request)
 	_ = resp.Body.Close()
