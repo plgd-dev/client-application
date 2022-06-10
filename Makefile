@@ -6,12 +6,15 @@ GOPATH ?= $(shell go env GOPATH)
 WORKING_DIRECTORY := $(shell pwd)
 SIMULATOR_NAME_SUFFIX ?= $(shell hostname)
 BUILD_PATH ?=$(TMP_PATH)/build
+WWW_PATH=$(TMP_PATH)/www
 CLIENT_APPLICATION_VERSION_PATH_VARIABLE = main.Version
+CLIENT_APPLICATION_UI_SEPARATOR_PATH_VARIABLE = main.UISeparator
 
 CERT_TOOL_IMAGE ?= ghcr.io/plgd-dev/hub/cert-tool:vnext
 DEVSIM_IMAGE ?= ghcr.io/iotivity/iotivity-lite/cloud-server-discovery-resource-observable-debug:master
 DEVSIM_PATH = $(shell pwd)/.tmp/devsim
 CERT_PATH = $(TMP_PATH)/certs
+UI_SEPARATOR = "--------UI--------"
 
 certificates:
 	mkdir -p $(CERT_PATH)
@@ -36,17 +39,34 @@ clean:
 	rm -rf $(TMP_PATH) || true
 .PHONY: clean
 
-build:
+
+build-web:
+	mkdir -p $(WWW_PATH)
+	docker build --tag build-web -f ./web/Dockerfile ./web
+	$(eval container_id=$(shell docker create build-web))
+	docker cp $(container_id):/web/build/ $(WWW_PATH)/
+	docker rm -f $(container_id)
+	cd $(WWW_PATH)/build && tar -czf $(TMP_PATH)/ui.tar.gz .
+.PHONY: build-web
+
+define build-binary
+	GOOS=$(1) GOARCH=$(2) go build -ldflags="-X '$(CLIENT_APPLICATION_VERSION_PATH_VARIABLE)=$(VERSION_TAG)'" -ldflags="-X '$(CLIENT_APPLICATION_UI_SEPARATOR_PATH_VARIABLE)=$(UI_SEPARATOR)'" -o $(3) $(WORKING_DIRECTORY)/cmd
+	printf "\n$(UI_SEPARATOR)\n" >> $(3)
+	wc -c $(3)
+	cat $(TMP_PATH)/ui.tar.gz >> $(3)
+endef
+
+build: clean build-web
 	mkdir -p $(BUILD_PATH)
-	GOOS=linux GOARCH=386 go build -ldflags="-X '$(CLIENT_APPLICATION_VERSION_PATH_VARIABLE)=$(VERSION_TAG)'" -o $(BUILD_PATH)/$(SERVICE_NAME).linux.386 $(WORKING_DIRECTORY)/cmd
-	GOOS=linux GOARCH=amd64 go build -ldflags="-X '$(CLIENT_APPLICATION_VERSION_PATH_VARIABLE)=$(VERSION_TAG)'" -o $(BUILD_PATH)/$(SERVICE_NAME).linux.amd64 $(WORKING_DIRECTORY)/cmd
-	GOOS=linux GOARCH=arm go build -ldflags="-X '$(CLIENT_APPLICATION_VERSION_PATH_VARIABLE)=$(VERSION_TAG)'" -o $(BUILD_PATH)/$(SERVICE_NAME).linux.arm $(WORKING_DIRECTORY)/cmd
-	GOOS=linux GOARCH=arm64 go build -ldflags="-X '$(CLIENT_APPLICATION_VERSION_PATH_VARIABLE)=$(VERSION_TAG)'" -o $(BUILD_PATH)/$(SERVICE_NAME).linux.arm64 $(WORKING_DIRECTORY)/cmd
-	GOOS=windows GOARCH=386 go build -ldflags="-X '$(CLIENT_APPLICATION_VERSION_PATH_VARIABLE)=$(VERSION_TAG)'" -o $(BUILD_PATH)/$(SERVICE_NAME).windows.386.exe $(WORKING_DIRECTORY)/cmd
-	GOOS=windows GOARCH=amd64 go build -ldflags="-X '$(CLIENT_APPLICATION_VERSION_PATH_VARIABLE)=$(VERSION_TAG)'" -o $(BUILD_PATH)/$(SERVICE_NAME).windows.x64.exe $(WORKING_DIRECTORY)/cmd
-	GOOS=windows GOARCH=arm64 go build -ldflags="-X '$(CLIENT_APPLICATION_VERSION_PATH_VARIABLE)=$(VERSION_TAG)'" -o $(BUILD_PATH)/$(SERVICE_NAME).windows.arm64.exe $(WORKING_DIRECTORY)/cmd
-	GOOS=darwin GOARCH=amd64 go build -ldflags="-X '$(CLIENT_APPLICATION_VERSION_PATH_VARIABLE)=$(VERSION_TAG)'" -o $(BUILD_PATH)/$(SERVICE_NAME).macos.amd64 $(WORKING_DIRECTORY)/cmd
-	GOOS=darwin GOARCH=arm64 go build -ldflags="-X '$(CLIENT_APPLICATION_VERSION_PATH_VARIABLE)=$(VERSION_TAG)'" -o $(BUILD_PATH)/$(SERVICE_NAME).macos.arm64 $(WORKING_DIRECTORY)/cmd
+	$(call build-binary,linux,386,$(BUILD_PATH)/$(SERVICE_NAME).linux.386)
+	$(call build-binary,linux,amd64,$(BUILD_PATH)/$(SERVICE_NAME).linux.amd64)
+	$(call build-binary,linux,arm,$(BUILD_PATH)/$(SERVICE_NAME).linux.arm)
+	$(call build-binary,linux,arm64,$(BUILD_PATH)/$(SERVICE_NAME).linux.arm64)
+	$(call build-binary,windows,386,$(BUILD_PATH)/$(SERVICE_NAME).windows.386.exe)
+	$(call build-binary,windows,amd64,$(BUILD_PATH)/$(SERVICE_NAME).windows.amd64.exe)
+	$(call build-binary,windows,arm64,$(BUILD_PATH)/$(SERVICE_NAME).windows.arm64.exe)
+	$(call build-binary,darwin,amd64,$(BUILD_PATH)/$(SERVICE_NAME).macos.amd64)
+	$(call build-binary,darwin,arm64,$(BUILD_PATH)/$(SERVICE_NAME).macos.arm64)
 .PHONY: build
 
 test: env

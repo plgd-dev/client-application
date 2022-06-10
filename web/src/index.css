@@ -1,0 +1,119 @@
+@import url("https://fonts.googleapis.com/icon?family=Material+Icons");
+@import url("https://fonts.googleapis.com/css?family=Montserrat&display=swap"); 
+
+body{
+  background-image: linear-gradient(to right, #FFE259,#FFA751);
+
+}
+
+.searchIconCircle {
+  display: flex;
+  margin: 40px 0 40px 0;
+}
+.searchIcon{
+  position: absolute;
+  padding: 8px;
+  font-size: 50px;
+}
+
+input{
+  border: none;
+  font-size: 40px;
+  border: 4px solid #ffffff;
+  color: #000000;
+  width: 100vw;
+  padding-left: 58px;
+  height: 50px;
+  border-radius: 50px ;
+}
+
+input:focus{
+  outline: 0;
+  border: none;
+  border: 4px solid #ffffff;
+  background-image: linear-gradient(to right, #FFE259,#FFA751);
+}
+
+.emojiBox{
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  background-image: linear-gradient(#fdfbfb, #ebedee);
+  background-size: cover;
+  background-repeat: no-repeat;
+  border-radius: 20px;
+  margin:10px;
+  padding: 16px;
+  box-shadow: -6px -6px 10px rgba(255, 226, 89, 0.8), 6px 6px 10px rgba(224, 123, 22, 0.48);
+}
+
+.emojiBox:hover{
+  box-shadow: inset -4px -4px 8px rgba(255, 255, 255, 0.5), inset 8px 8px 16px rgba(0, 0, 0, 0.1);
+}
+
+.emojiBox img{
+  width: 80px;
+  height: 80px;
+  justify-content: center;
+  align-self: center;
+  padding-bottom: 1em;
+}
+
+.emojiBox span{
+  justify-content: center;
+  flex-wrap: nowrap;
+  align-self: center;
+}
+
+.emojiResult{
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-evenly;
+  font-family: "Montserrat", sans-serif;
+}
+
+.header{
+  display: flex;
+  justify-content: center;
+  font-family: "Montserrat", sans-serif;
+  font-size: large;
+}
+p{
+  position: absolute;
+  display: none;
+  font-size: smaller;
+  transition: 2s;
+  margin: 0px;
+  padding: 0px;
+}
+.emojiBox:hover > p{
+  display: block;
+  content: 'click to Copy';
+}
+
+h2{
+  margin: auto;
+}
+
+.emojiBox:first-child{
+  width: 100%;
+}
+@media screen and (max-width : 800px) {
+  input{
+    width: 100%;
+  }
+  .emojiResult{
+    display: flex;
+  }
+  .emojiBox{
+    width: 15%;
+  }
+  .emojiBox image{
+    width: 100%;
+    height: 70%;
+
+  }
+  .emojiBox span{
+    font-size: .8em;
+  }
+}

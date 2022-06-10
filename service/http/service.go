@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"net/http/httptest"
 	"strings"
 
 	"github.com/fullstorydev/grpchan/inprocgrpc"
@@ -85,7 +86,30 @@ func New(ctx context.Context, serviceName string, config Config, deviceGatewaySe
 	}
 	requestHandler := &RequestHandler{mux: mux}
 	r.PathPrefix(Devices).Methods(http.MethodPut).MatcherFunc(resourceMatcher).HandlerFunc(requestHandler.updateResource)
-	r.PathPrefix("/").Handler(mux)
+	r.PathPrefix(ApiV1).Handler(mux)
+
+	// serve www directory
+	if config.UI.Enabled {
+		// r.HandleFunc(uri.WebConfiguration, requestHandler.getWebConfiguration).Methods(http.MethodGet)
+		fs := http.FileServer(http.Dir(config.UI.Directory))
+		r.PathPrefix("/").Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			c := httptest.NewRecorder()
+			fs.ServeHTTP(c, r)
+			if c.Code == http.StatusNotFound {
+				c = httptest.NewRecorder()
+				r.URL.Path = "/"
+				fs.ServeHTTP(c, r)
+			}
+			for k, v := range c.Header() {
+				w.Header().Set(k, strings.Join(v, ""))
+			}
+			w.WriteHeader(c.Code)
+			if _, err := c.Body.WriteTo(w); err != nil {
+				log.Errorf("failed to write response body: %w", err)
+			}
+		}))
+	}
+
 	httpServer := &http.Server{Handler: kitNetHttp.OpenTelemetryNewHandler(handler, serviceName, tracerProvider)}
 
 	return &Service{
