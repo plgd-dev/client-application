@@ -6,6 +6,7 @@ package service.pb;
 import "google/api/annotations.proto";
 import "protoc-gen-openapiv2/options/annotations.proto";
 
+import "pb/get_device.proto";
 import "pb/get_devices.proto";
 import "pb/get_resource.proto";
 import "pb/get_device_resource_links.proto";
@@ -46,6 +47,16 @@ service DeviceGateway {
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       tags: [ "Devices" ]
+    };
+  }
+
+  // Get device information from the device or from the cache. Device needs to be stored in cache otherwise it returns not found.
+  rpc GetDevice (GetDeviceRequest) returns (grpcgateway.pb.Device) {
+    option (google.api.http) = {
+      get: "/api/v1/devices/{device_id}"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: [ "Device" ]
     };
   }
 

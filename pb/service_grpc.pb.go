@@ -22,6 +22,8 @@ const _ = grpc.SupportPackageIsVersion7
 type DeviceGatewayClient interface {
 	// Discover devices by client application. This operation fills cache of mappings deviceId to endpoints and this cache is used by other RPC calls.
 	GetDevices(ctx context.Context, in *GetDevicesRequest, opts ...grpc.CallOption) (DeviceGateway_GetDevicesClient, error)
+	// Get device information from the device or from the cache. Device needs to be stored in cache otherwise it returns not found.
+	GetDevice(ctx context.Context, in *GetDeviceRequest, opts ...grpc.CallOption) (*pb.Device, error)
 	// Get resource links of devices.
 	GetDeviceResourceLinks(ctx context.Context, in *GetDeviceResourceLinksRequest, opts ...grpc.CallOption) (*events.ResourceLinksPublished, error)
 	// Get resource from the device.
@@ -72,6 +74,15 @@ func (x *deviceGatewayGetDevicesClient) Recv() (*pb.Device, error) {
 		return nil, err
 	}
 	return m, nil
+}
+
+func (c *deviceGatewayClient) GetDevice(ctx context.Context, in *GetDeviceRequest, opts ...grpc.CallOption) (*pb.Device, error) {
+	out := new(pb.Device)
+	err := c.cc.Invoke(ctx, "/service.pb.DeviceGateway/GetDevice", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *deviceGatewayClient) GetDeviceResourceLinks(ctx context.Context, in *GetDeviceResourceLinksRequest, opts ...grpc.CallOption) (*events.ResourceLinksPublished, error) {
@@ -125,6 +136,8 @@ func (c *deviceGatewayClient) DisownDevice(ctx context.Context, in *DisownDevice
 type DeviceGatewayServer interface {
 	// Discover devices by client application. This operation fills cache of mappings deviceId to endpoints and this cache is used by other RPC calls.
 	GetDevices(*GetDevicesRequest, DeviceGateway_GetDevicesServer) error
+	// Get device information from the device or from the cache. Device needs to be stored in cache otherwise it returns not found.
+	GetDevice(context.Context, *GetDeviceRequest) (*pb.Device, error)
 	// Get resource links of devices.
 	GetDeviceResourceLinks(context.Context, *GetDeviceResourceLinksRequest) (*events.ResourceLinksPublished, error)
 	// Get resource from the device.
@@ -144,6 +157,9 @@ type UnimplementedDeviceGatewayServer struct {
 
 func (UnimplementedDeviceGatewayServer) GetDevices(*GetDevicesRequest, DeviceGateway_GetDevicesServer) error {
 	return status.Errorf(codes.Unimplemented, "method GetDevices not implemented")
+}
+func (UnimplementedDeviceGatewayServer) GetDevice(context.Context, *GetDeviceRequest) (*pb.Device, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetDevice not implemented")
 }
 func (UnimplementedDeviceGatewayServer) GetDeviceResourceLinks(context.Context, *GetDeviceResourceLinksRequest) (*events.ResourceLinksPublished, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetDeviceResourceLinks not implemented")
@@ -192,6 +208,24 @@ type deviceGatewayGetDevicesServer struct {
 
 func (x *deviceGatewayGetDevicesServer) Send(m *pb.Device) error {
 	return x.ServerStream.SendMsg(m)
+}
+
+func _DeviceGateway_GetDevice_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetDeviceRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DeviceGatewayServer).GetDevice(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/service.pb.DeviceGateway/GetDevice",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DeviceGatewayServer).GetDevice(ctx, req.(*GetDeviceRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _DeviceGateway_GetDeviceResourceLinks_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
@@ -291,6 +325,10 @@ var DeviceGateway_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "service.pb.DeviceGateway",
 	HandlerType: (*DeviceGatewayServer)(nil),
 	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "GetDevice",
+			Handler:    _DeviceGateway_GetDevice_Handler,
+		},
 		{
 			MethodName: "GetDeviceResourceLinks",
 			Handler:    _DeviceGateway_GetDeviceResourceLinks_Handler,
