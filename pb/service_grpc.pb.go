@@ -22,17 +22,17 @@ const _ = grpc.SupportPackageIsVersion7
 type DeviceGatewayClient interface {
 	// Discover devices by client application. This operation fills cache of mappings deviceId to endpoints and this cache is used by other RPC calls.
 	GetDevices(ctx context.Context, in *GetDevicesRequest, opts ...grpc.CallOption) (DeviceGateway_GetDevicesClient, error)
-	// Get device information from the device or from the cache. Device needs to be stored in cache otherwise it returns not found.
+	// Get device information from the device. Device needs to be stored in cache otherwise it returns not found.
 	GetDevice(ctx context.Context, in *GetDeviceRequest, opts ...grpc.CallOption) (*pb.Device, error)
-	// Get resource links of devices.
+	// Get resource links of devices. Device needs to be stored in cache otherwise it returns not found.
 	GetDeviceResourceLinks(ctx context.Context, in *GetDeviceResourceLinksRequest, opts ...grpc.CallOption) (*events.ResourceLinksPublished, error)
-	// Get resource from the device.
+	// Get resource from the device. Device needs to be stored in cache otherwise it returns not found.
 	GetResource(ctx context.Context, in *GetResourceRequest, opts ...grpc.CallOption) (*pb.Resource, error)
-	// Update resource at the device.
+	// Update resource at the device. Device needs to be stored in cache otherwise it returns not found.
 	UpdateResource(ctx context.Context, in *pb.UpdateResourceRequest, opts ...grpc.CallOption) (*pb.UpdateResourceResponse, error)
-	// Own the device.
+	// Own the device. Device needs to be stored in cache otherwise it returns not found.
 	OwnDevice(ctx context.Context, in *OwnDeviceRequest, opts ...grpc.CallOption) (*OwnDeviceResponse, error)
-	// Disown the device.
+	// Disown the device. Device needs to be stored in cache otherwise it returns not found.
 	DisownDevice(ctx context.Context, in *DisownDeviceRequest, opts ...grpc.CallOption) (*DisownDeviceResponse, error)
 }
 
@@ -136,17 +136,17 @@ func (c *deviceGatewayClient) DisownDevice(ctx context.Context, in *DisownDevice
 type DeviceGatewayServer interface {
 	// Discover devices by client application. This operation fills cache of mappings deviceId to endpoints and this cache is used by other RPC calls.
 	GetDevices(*GetDevicesRequest, DeviceGateway_GetDevicesServer) error
-	// Get device information from the device or from the cache. Device needs to be stored in cache otherwise it returns not found.
+	// Get device information from the device. Device needs to be stored in cache otherwise it returns not found.
 	GetDevice(context.Context, *GetDeviceRequest) (*pb.Device, error)
-	// Get resource links of devices.
+	// Get resource links of devices. Device needs to be stored in cache otherwise it returns not found.
 	GetDeviceResourceLinks(context.Context, *GetDeviceResourceLinksRequest) (*events.ResourceLinksPublished, error)
-	// Get resource from the device.
+	// Get resource from the device. Device needs to be stored in cache otherwise it returns not found.
 	GetResource(context.Context, *GetResourceRequest) (*pb.Resource, error)
-	// Update resource at the device.
+	// Update resource at the device. Device needs to be stored in cache otherwise it returns not found.
 	UpdateResource(context.Context, *pb.UpdateResourceRequest) (*pb.UpdateResourceResponse, error)
-	// Own the device.
+	// Own the device. Device needs to be stored in cache otherwise it returns not found.
 	OwnDevice(context.Context, *OwnDeviceRequest) (*OwnDeviceResponse, error)
-	// Disown the device.
+	// Disown the device. Device needs to be stored in cache otherwise it returns not found.
 	DisownDevice(context.Context, *DisownDeviceRequest) (*DisownDeviceResponse, error)
 	mustEmbedUnimplementedDeviceGatewayServer()
 }

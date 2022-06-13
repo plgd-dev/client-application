@@ -133,7 +133,7 @@
     },
     "/api/v1/devices/{deviceId}": {
       "get": {
-        "summary": "Get device information from the device or from the cache. Device needs to be stored in cache otherwise it returns not found.",
+        "summary": "Get device information from the device. Device needs to be stored in cache otherwise it returns not found.",
         "operationId": "DeviceGateway_GetDevice",
         "responses": {
           "200": {
@@ -164,7 +164,7 @@
     },
     "/api/v1/devices/{deviceId}/disown": {
       "post": {
-        "summary": "Disown the device.",
+        "summary": "Disown the device. Device needs to be stored in cache otherwise it returns not found.",
         "operationId": "DeviceGateway_DisownDevice",
         "responses": {
           "200": {
@@ -195,7 +195,7 @@
     },
     "/api/v1/devices/{deviceId}/own": {
       "post": {
-        "summary": "Own the device.",
+        "summary": "Own the device. Device needs to be stored in cache otherwise it returns not found.",
         "operationId": "DeviceGateway_OwnDevice",
         "responses": {
           "200": {
@@ -226,7 +226,7 @@
     },
     "/api/v1/devices/{deviceId}/resource-links": {
       "get": {
-        "summary": "Get resource links of devices.",
+        "summary": "Get resource links of devices. Device needs to be stored in cache otherwise it returns not found.",
         "operationId": "DeviceGateway_GetDeviceResourceLinks",
         "responses": {
           "200": {
@@ -257,7 +257,7 @@
     },
     "/api/v1/devices/{resourceId.deviceId}/resources/{resourceId.href}": {
       "get": {
-        "summary": "Get resource from the device.",
+        "summary": "Get resource from the device. Device needs to be stored in cache otherwise it returns not found.",
         "operationId": "DeviceGateway_GetResource",
         "responses": {
           "200": {
@@ -292,7 +292,7 @@
         ]
       },
       "put": {
-        "summary": "Update resource at the device.",
+        "summary": "Update resource at the device. Device needs to be stored in cache otherwise it returns not found.",
         "operationId": "DeviceGateway_UpdateResource",
         "responses": {
           "200": {
