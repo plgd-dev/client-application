@@ -43,7 +43,7 @@ apis:
     address: 0.0.0.0:8081
     enforcementPolicy:
       minTime: 5s
-      permitWithoutStream: true
+      permitWithoutStream: false
     keepAlive:
       maxConnectionIdle: 0s
       maxConnectionAge: 0s

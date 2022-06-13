@@ -2,6 +2,22 @@
 
 Provides GRPC and HTTP APIs to interact with the OCF devices via D2D communication.
 
+## Run
+
+The client application can be run by executing the following command:
+
+```bash
+./client-application
+```
+
+* Default `config.yaml` file will be generated in case it's not in the same directory as the client application, or if a different path with the existing config isn't specified.
+* Default web UI files will be copied to the `www` folder next to the client application in case it doesn't exist, or if a different path with existing UI files isn't specified in the config file.
+
+### Supported options
+
+- `--config`: path to the config file
+- `--version`: print the version of the client application
+
 ## YAML Configuration
 
 A configuration template is available on [config.yaml](./config.yaml).
@@ -29,6 +45,8 @@ HTTP API of the client application service as defined [swagger](./pb/service.swa
 | `api.http.cors.allowedMethods` | []string | `Explicitly set allowed methods in the Access-Control-Allow-Methods header. This is a replacement operation so you must also pass GET, HEAD, and POST if you wish to support those methods.` | `"GET","PATCH","HEAD","POST","PUT","OPTIONS","DELETE"` |
 | `api.http.cors.allowCredentials` | bool | `User agent may pass authentication details along with the request.` | `false` |
 | `api.http.address` | string | `Listen specification <host>:<port> for http client connection.` | `"0.0.0.0:8080"` |
+| `api.http.ui.enabled` | bool | `Set to true if you would like to run the web UI.` | `false` |
+| `api.http.ui.directory` | string | `A path to the directory with web UI files. When it is not present, it creates <client_application_binary>/www with default ui.` | `""` |
 | `api.http.tls.enabled` | bool | `Enable HTTPS.` | `false` |
 | `api.http.tls.caPool` | string | `File path to the root certificate in PEM format which might contain multiple certificates in a single file.` |  `""` |
 | `api.http.tls.keyFile` | string | `File path to private key in PEM format.` | `""` |
@@ -44,7 +62,7 @@ gRPC API of the client application service as defined [service](./pb/service.pro
 | `api.grpc.enabled` | bool | `Enable the GRPC API.` | `true` |
 | `api.grpc.address` | string | `Listen specification <host>:<port> for grpc client connection.` | `"0.0.0.0:8081"` |
 | `api.grpc.enforcementPolicy.minTime` | string | `The minimum amount of time a client should wait before sending a keepalive ping. Otherwise the server close connection.` | `5s`|
-| `api.grpc.enforcementPolicy.permitWithoutStream` | bool |  `If true, server allows keepalive pings even when there are no active streams(RPCs). Otherwise the server close connection.`  | `true` |
+| `api.grpc.enforcementPolicy.permitWithoutStream` | bool |  `If true, server allows keepalive pings even when there are no active streams(RPCs). Otherwise the server close connection.`  | `false` |
 | `api.grpc.keepAlive.maxConnectionIdle` | string | `A duration for the amount of time after which an idle connection would be closed by sending a GoAway. 0s means infinity.` | `0s` |
 | `api.grpc.keepAlive.maxConnectionAge` | string | `A duration for the maximum amount of time a connection may exist before it will be closed by sending a GoAway. 0s means infinity.` | `0s` |
 | `api.grpc.keepAlive.maxConnectionAgeGrace` | string | `An additive period after MaxConnectionAge after which the connection will be forcibly closed. 0s means infinity.` | `0s` |
