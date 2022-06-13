@@ -56,3 +56,15 @@ apis:
       keyFile: /certs/key.pem
       certFile: /certs/crt.pem
       clientCertificateRequired: true
+clients:
+  device:
+    coap:
+      maxMessageSize: 262144
+      inactivityMonitor:
+        timeout: 10s
+      blockwiseTransfer:
+        enabled: true
+        blockSize: "1024"
+      tls:
+        subjectUuid: 57b3fae9-adf5-4e34-90ea-e77784407103
+        preSharedKeyUuid: 46178d21-d480-4e95-9bd3-6c9eefa8d9d8

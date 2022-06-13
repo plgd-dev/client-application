@@ -16,8 +16,8 @@ type Service struct {
 	grpcServer *server.Server
 }
 
-// New creates new HTTP service
-func New(ctx context.Context, serviceName string, config Config, logger log.Logger, tracerProvider trace.TracerProvider) (*Service, error) {
+// New creates new GRPC service
+func New(ctx context.Context, serviceName string, config Config, deviceGatewayServer *DeviceGatewayServer, logger log.Logger, tracerProvider trace.TracerProvider) (*Service, error) {
 	interceptor := kitNetGrpc.MakeAuthInterceptors(func(ctx context.Context, method string) (context.Context, error) {
 		return ctx, nil
 	})
@@ -30,7 +30,7 @@ func New(ctx context.Context, serviceName string, config Config, logger log.Logg
 	if err != nil {
 		return nil, fmt.Errorf("cannot create grpc server: %w", err)
 	}
-	pb.RegisterDeviceGatewayServer(server.Server, NewDeviceGatewayServer())
+	pb.RegisterDeviceGatewayServer(server.Server, deviceGatewayServer)
 
 	return &Service{
 		grpcServer: server,

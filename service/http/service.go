@@ -53,14 +53,14 @@ func resourceMatcher(r *http.Request, rm *router.RouteMatch) bool {
 }
 
 // New creates new HTTP service
-func New(ctx context.Context, serviceName string, config Config, logger log.Logger, tracerProvider trace.TracerProvider) (*Service, error) {
+func New(ctx context.Context, serviceName string, config Config, deviceGatewayServer *grpc.DeviceGatewayServer, logger log.Logger, tracerProvider trace.TracerProvider) (*Service, error) {
 	listener, err := listener.New(config.Config, logger)
 	if err != nil {
 		return nil, fmt.Errorf("cannot create grpc server: %w", err)
 	}
 
 	ch := new(inprocgrpc.Channel)
-	pb.RegisterDeviceGatewayServer(ch, grpc.NewDeviceGatewayServer())
+	pb.RegisterDeviceGatewayServer(ch, deviceGatewayServer)
 	grpcClient := pb.NewDeviceGatewayClient(ch)
 
 	auth := func(ctx context.Context, method, uri string) (context.Context, error) {

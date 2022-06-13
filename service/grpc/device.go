@@ -2,21 +2,18 @@ package grpc
 
 import (
 	"context"
-	"crypto/tls"
-	"crypto/x509"
 	"fmt"
 	"sort"
 	"sync"
-	"time"
 
-	"github.com/pion/dtls/v2"
+	serviceDevice "github.com/plgd-dev/client-application/service/device"
 	"github.com/plgd-dev/device/client/core"
-	"github.com/plgd-dev/device/pkg/net/coap"
 	"github.com/plgd-dev/device/schema"
+	"github.com/plgd-dev/device/schema/doxm"
 	grpcgwPb "github.com/plgd-dev/hub/v2/grpc-gateway/pb"
+	"github.com/plgd-dev/hub/v2/pkg/log"
 	"github.com/plgd-dev/hub/v2/resource-aggregate/commands"
 	"github.com/plgd-dev/hub/v2/resource-aggregate/events"
-	"github.com/plgd-dev/kit/v2/log"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -30,7 +27,8 @@ func (d devices) Sort() {
 }
 
 type device struct {
-	ID string
+	ID     string
+	logger log.Logger
 
 	private struct {
 		mutex              sync.RWMutex
@@ -43,59 +41,19 @@ type device struct {
 	*core.Device
 }
 
-func dialDTLS(ctx context.Context, addr string, dtlsCfg *dtls.Config, opts ...coap.DialOptionFunc) (*coap.ClientCloseHandler, error) {
-	dialOpts := []coap.DialOptionFunc{
-		coap.WithKeepAlive(time.Minute),
-	}
-	return coap.DialUDPSecure(ctx, addr, dtlsCfg, append(dialOpts, opts...)...)
-}
-
-func dialUDP(ctx context.Context, addr string, opts ...coap.DialOptionFunc) (*coap.ClientCloseHandler, error) {
-	dialOpts := []coap.DialOptionFunc{
-		coap.WithKeepAlive(time.Minute),
-	}
-	return coap.DialUDP(ctx, addr, append(dialOpts, opts...)...)
-}
-
-func dialTCP(ctx context.Context, addr string, opts ...coap.DialOptionFunc) (*coap.ClientCloseHandler, error) {
-	dialOpts := []coap.DialOptionFunc{
-		coap.WithKeepAlive(time.Minute),
-	}
-	return coap.DialTCP(ctx, addr, append(dialOpts, opts...)...)
-}
-
-func dialTLS(ctx context.Context, addr string, tlsCfg *tls.Config, opts ...coap.DialOptionFunc) (*coap.ClientCloseHandler, error) {
-	dialOpts := []coap.DialOptionFunc{
-		coap.WithKeepAlive(time.Minute),
-	}
-	return coap.DialTCPSecure(ctx, addr, tlsCfg, append(dialOpts, opts...)...)
-}
-
-func errFunc(err error) {
-	log.Debug(err)
-}
-
-func newDevice(deviceID string) *device {
+func newDevice(deviceID string, serviceDevice *serviceDevice.Service, logger log.Logger) *device {
 	d := device{
-		ID: deviceID,
+		ID:     deviceID,
+		logger: logger.With(log.DeviceIDKey, deviceID),
 	}
-
-	d.Device = core.NewDevice(core.DeviceConfiguration{
-		DialDTLS: dialDTLS,
-		DialUDP:  dialUDP,
-		DialTCP:  dialTCP,
-		DialTLS:  dialTLS,
-		ErrFunc:  errFunc,
-		TLSConfig: &core.TLSConfig{
-			GetCertificate: func() (tls.Certificate, error) {
-				return tls.Certificate{}, fmt.Errorf("not implemented")
-			},
-			GetCertificateAuthorities: func() ([]*x509.Certificate, error) {
-				return nil, fmt.Errorf("not implemented")
-			},
-		},
-	}, d.ID, []string{}, d.GetEndpoints)
+	coreDeviceCfg := serviceDevice.GetDeviceConfiguration()
+	coreDeviceCfg.ErrFunc = d.ErrorFunc
+	d.Device = core.NewDevice(coreDeviceCfg, d.ID, []string{}, d.GetEndpoints)
 	return &d
+}
+
+func (d *device) ErrorFunc(err error) {
+	d.logger.Debug(err)
 }
 
 func (d *device) ToProto() *grpcgwPb.Device {
@@ -141,7 +99,19 @@ func normalizeHref(href string) string {
 	return "/" + href
 }
 
-func (d *device) getResourceLinks(ctx context.Context) (schema.ResourceLinks, error) {
+func getOwnershipStatus(links schema.ResourceLinks) grpcgwPb.Device_OwnershipStatus {
+	doxmRes := links.GetResourceLinks(doxm.ResourceType)
+	if len(doxmRes) == 0 {
+		return grpcgwPb.Device_UNSUPPORTED
+	}
+	l := doxmRes[0]
+	if len(l.Endpoints.FilterUnsecureEndpoints()) == 0 {
+		return grpcgwPb.Device_OWNED
+	}
+	return grpcgwPb.Device_UNOWNED
+}
+
+func (d *device) getResourceLinksAndRefreshCache(ctx context.Context) (schema.ResourceLinks, error) {
 	if d.Device == nil {
 		return nil, status.Error(codes.Internal, "device is not initialized")
 	}
@@ -149,11 +119,12 @@ func (d *device) getResourceLinks(ctx context.Context) (schema.ResourceLinks, er
 	if err != nil {
 		return nil, convErrToGrpcStatus(codes.Unavailable, fmt.Errorf("cannot get resource links for device %v: %w", d.ID, err)).Err()
 	}
+	d.updateOwnershipStatus(getOwnershipStatus(links))
 	return links, nil
 }
 
 func (d *device) getResourceLink(ctx context.Context, resourceID *commands.ResourceId) (schema.ResourceLink, error) {
-	links, err := d.getResourceLinks(ctx)
+	links, err := d.getResourceLinksAndRefreshCache(ctx)
 	if err != nil {
 		return schema.ResourceLink{}, nil
 	}
@@ -164,7 +135,7 @@ func (d *device) getResourceLink(ctx context.Context, resourceID *commands.Resou
 	return link, nil
 }
 
-func (d *device) UpdateDeviceMetadata(resourceTypes []string, endpoints schema.Endpoints, ownershipStatus grpcgwPb.Device_OwnershipStatus) {
+func (d *device) updateDeviceMetadata(resourceTypes []string, endpoints schema.Endpoints, ownershipStatus grpcgwPb.Device_OwnershipStatus) {
 	d.private.mutex.Lock()
 	defer d.private.mutex.Unlock()
 	d.private.ResourceTypes = resourceTypes
@@ -172,7 +143,13 @@ func (d *device) UpdateDeviceMetadata(resourceTypes []string, endpoints schema.E
 	d.updateEndpointsLocked(endpoints)
 }
 
-func (d *device) UpdateDeviceResourceBody(body *commands.Content) {
+func (d *device) updateOwnershipStatus(ownershipStatus grpcgwPb.Device_OwnershipStatus) {
+	d.private.mutex.Lock()
+	defer d.private.mutex.Unlock()
+	d.private.OwnershipStatus = ownershipStatus
+}
+
+func (d *device) updateDeviceResourceBody(body *commands.Content) {
 	d.private.mutex.Lock()
 	defer d.private.mutex.Unlock()
 	d.private.DeviceResourceBody = body

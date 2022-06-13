@@ -131,6 +131,68 @@
         ]
       }
     },
+    "/api/v1/devices/{deviceId}/disown": {
+      "post": {
+        "summary": "Disown the device.",
+        "operationId": "DeviceGateway_DisownDevice",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbDisownDeviceResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "deviceId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Device"
+        ]
+      }
+    },
+    "/api/v1/devices/{deviceId}/own": {
+      "post": {
+        "summary": "Own the device.",
+        "operationId": "DeviceGateway_OwnDevice",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbOwnDeviceResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "deviceId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Device"
+        ]
+      }
+    },
     "/api/v1/devices/{deviceId}/resource-links": {
       "get": {
         "summary": "Get resource links of devices.",
@@ -434,6 +496,9 @@
         }
       }
     },
+    "pbDisownDeviceResponse": {
+      "type": "object"
+    },
     "pbEndpointInformation": {
       "type": "object",
       "properties": {
@@ -476,6 +541,9 @@
           "type": "string"
         }
       }
+    },
+    "pbOwnDeviceResponse": {
+      "type": "object"
     },
     "pbPolicy": {
       "type": "object",

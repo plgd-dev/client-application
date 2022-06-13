@@ -7,7 +7,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/plgd-dev/client-application/pb"
-	serviceGrpc "github.com/plgd-dev/client-application/service/grpc"
 	"github.com/plgd-dev/client-application/test"
 	"github.com/plgd-dev/device/schema/device"
 	grpcgwPb "github.com/plgd-dev/hub/v2/grpc-gateway/pb"
@@ -74,7 +73,7 @@ func TestDeviceGatewayServerGetResource(t *testing.T) {
 			wantErrCode: codes.NotFound,
 		},
 		{
-			name: "unavailable - cannot establish TLS connection",
+			name: "permissionDenied - cannot establish TLS connection",
 			args: args{
 				req: &pb.GetResourceRequest{
 					ResourceId: &commands.ResourceId{
@@ -84,12 +83,13 @@ func TestDeviceGatewayServerGetResource(t *testing.T) {
 				},
 			},
 			wantErr:     true,
-			wantErrCode: codes.Unavailable,
+			wantErrCode: codes.PermissionDenied,
 		},
 	}
 
-	s := &serviceGrpc.DeviceGatewayServer{}
-	err := s.GetDevices(&pb.GetDevicesRequest{}, test.NewDeviceGatewayGetDevicesServer(ctx))
+	s, err := test.NewDeviceGatewayServer(ctx)
+	require.NoError(t, err)
+	err = s.GetDevices(&pb.GetDevicesRequest{}, test.NewDeviceGatewayGetDevicesServer(ctx))
 	require.NoError(t, err)
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

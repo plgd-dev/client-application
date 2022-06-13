@@ -66,13 +66,13 @@ func TestDeviceGatewayServerGetResource(t *testing.T) {
 			wantCode: http.StatusNotFound,
 		},
 		{
-			name: "unavailable - cannot establish TLS connection",
+			name: "forbidden - cannot establish TLS connection",
 			args: args{
 				deviceID: dev.Id,
 				href:     "/light/1",
 			},
 			wantErr:  true,
-			wantCode: http.StatusServiceUnavailable,
+			wantCode: http.StatusForbidden,
 		},
 	}
 

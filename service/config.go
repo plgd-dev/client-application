@@ -3,6 +3,7 @@ package service
 import (
 	"fmt"
 
+	"github.com/plgd-dev/client-application/service/device"
 	"github.com/plgd-dev/client-application/service/grpc"
 	"github.com/plgd-dev/client-application/service/http"
 	"github.com/plgd-dev/hub/v2/pkg/config"
@@ -11,13 +12,17 @@ import (
 
 // Config represent application configuration
 type Config struct {
-	Log  log.Config `yaml:"log" json:"log"`
-	APIs APIsConfig `yaml:"apis" json:"apis"`
+	Log     log.Config    `yaml:"log" json:"log"`
+	APIs    APIsConfig    `yaml:"apis" json:"apis"`
+	Clients ClientsConfig `yaml:"clients" json:"clients"`
 }
 
 func (c *Config) Validate() error {
 	if err := c.APIs.Validate(); err != nil {
 		return fmt.Errorf("apis.%w", err)
+	}
+	if err := c.Clients.Validate(); err != nil {
+		return fmt.Errorf("clients.%w", err)
 	}
 	if err := c.Log.Validate(); err != nil {
 		return fmt.Errorf("log.%w", err)
@@ -53,6 +58,17 @@ func (c *APIsConfig) Validate() error {
 		if err := c.GRPC.Validate(); err != nil {
 			return fmt.Errorf("grpc.%w", err)
 		}
+	}
+	return nil
+}
+
+type ClientsConfig struct {
+	Device device.Config `yaml:"device" json:"device"`
+}
+
+func (c *ClientsConfig) Validate() error {
+	if err := c.Device.Validate(); err != nil {
+		return fmt.Errorf("device.%w", err)
 	}
 	return nil
 }

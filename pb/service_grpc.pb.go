@@ -28,6 +28,10 @@ type DeviceGatewayClient interface {
 	GetResource(ctx context.Context, in *GetResourceRequest, opts ...grpc.CallOption) (*pb.Resource, error)
 	// Update resource at the device.
 	UpdateResource(ctx context.Context, in *pb.UpdateResourceRequest, opts ...grpc.CallOption) (*pb.UpdateResourceResponse, error)
+	// Own the device.
+	OwnDevice(ctx context.Context, in *OwnDeviceRequest, opts ...grpc.CallOption) (*OwnDeviceResponse, error)
+	// Disown the device.
+	DisownDevice(ctx context.Context, in *DisownDeviceRequest, opts ...grpc.CallOption) (*DisownDeviceResponse, error)
 }
 
 type deviceGatewayClient struct {
@@ -97,6 +101,24 @@ func (c *deviceGatewayClient) UpdateResource(ctx context.Context, in *pb.UpdateR
 	return out, nil
 }
 
+func (c *deviceGatewayClient) OwnDevice(ctx context.Context, in *OwnDeviceRequest, opts ...grpc.CallOption) (*OwnDeviceResponse, error) {
+	out := new(OwnDeviceResponse)
+	err := c.cc.Invoke(ctx, "/service.pb.DeviceGateway/OwnDevice", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *deviceGatewayClient) DisownDevice(ctx context.Context, in *DisownDeviceRequest, opts ...grpc.CallOption) (*DisownDeviceResponse, error) {
+	out := new(DisownDeviceResponse)
+	err := c.cc.Invoke(ctx, "/service.pb.DeviceGateway/DisownDevice", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // DeviceGatewayServer is the server API for DeviceGateway service.
 // All implementations must embed UnimplementedDeviceGatewayServer
 // for forward compatibility
@@ -109,6 +131,10 @@ type DeviceGatewayServer interface {
 	GetResource(context.Context, *GetResourceRequest) (*pb.Resource, error)
 	// Update resource at the device.
 	UpdateResource(context.Context, *pb.UpdateResourceRequest) (*pb.UpdateResourceResponse, error)
+	// Own the device.
+	OwnDevice(context.Context, *OwnDeviceRequest) (*OwnDeviceResponse, error)
+	// Disown the device.
+	DisownDevice(context.Context, *DisownDeviceRequest) (*DisownDeviceResponse, error)
 	mustEmbedUnimplementedDeviceGatewayServer()
 }
 
@@ -127,6 +153,12 @@ func (UnimplementedDeviceGatewayServer) GetResource(context.Context, *GetResourc
 }
 func (UnimplementedDeviceGatewayServer) UpdateResource(context.Context, *pb.UpdateResourceRequest) (*pb.UpdateResourceResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateResource not implemented")
+}
+func (UnimplementedDeviceGatewayServer) OwnDevice(context.Context, *OwnDeviceRequest) (*OwnDeviceResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method OwnDevice not implemented")
+}
+func (UnimplementedDeviceGatewayServer) DisownDevice(context.Context, *DisownDeviceRequest) (*DisownDeviceResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DisownDevice not implemented")
 }
 func (UnimplementedDeviceGatewayServer) mustEmbedUnimplementedDeviceGatewayServer() {}
 
@@ -216,6 +248,42 @@ func _DeviceGateway_UpdateResource_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
+func _DeviceGateway_OwnDevice_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(OwnDeviceRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DeviceGatewayServer).OwnDevice(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/service.pb.DeviceGateway/OwnDevice",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DeviceGatewayServer).OwnDevice(ctx, req.(*OwnDeviceRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _DeviceGateway_DisownDevice_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DisownDeviceRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DeviceGatewayServer).DisownDevice(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/service.pb.DeviceGateway/DisownDevice",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DeviceGatewayServer).DisownDevice(ctx, req.(*DisownDeviceRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // DeviceGateway_ServiceDesc is the grpc.ServiceDesc for DeviceGateway service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -234,6 +302,14 @@ var DeviceGateway_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "UpdateResource",
 			Handler:    _DeviceGateway_UpdateResource_Handler,
+		},
+		{
+			MethodName: "OwnDevice",
+			Handler:    _DeviceGateway_OwnDevice_Handler,
+		},
+		{
+			MethodName: "DisownDevice",
+			Handler:    _DeviceGateway_DisownDevice_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{
