@@ -22,6 +22,7 @@ type Service struct {
 	logger         log.Logger
 	httpService    *http.Service
 	grpcService    *grpc.Service
+	deviceService  *device.Service
 	tracerProvider trace.TracerProvider
 	sigs           chan os.Signal
 }
@@ -65,6 +66,7 @@ func New(ctx context.Context, config Config, logger log.Logger) (*Service, error
 		logger:         logger,
 		httpService:    httpService,
 		grpcService:    grpcService,
+		deviceService:  deviceService,
 		tracerProvider: tracerProvider,
 	}
 
@@ -80,6 +82,7 @@ func (server *Service) serveWithHandlingSignal() error {
 	var wg sync.WaitGroup
 	errCh := make(chan error, 4)
 	services := make([]func() error, 0, 3)
+	services = append(services, server.deviceService.Serve)
 	if server.httpService != nil {
 		services = append(services, server.httpService.Serve)
 	}
@@ -101,7 +104,6 @@ func (server *Service) serveWithHandlingSignal() error {
 		syscall.SIGTERM,
 		syscall.SIGQUIT)
 	<-server.sigs
-
 	if server.httpService != nil {
 		err := server.httpService.Shutdown()
 		errCh <- err
@@ -109,6 +111,7 @@ func (server *Service) serveWithHandlingSignal() error {
 	if server.grpcService != nil {
 		server.grpcService.Stop()
 	}
+	server.deviceService.Close()
 	wg.Wait()
 
 	var errors []error

@@ -144,7 +144,7 @@ func NewHttpService(ctx context.Context, t *testing.T) (*http.Service, func()) {
 	cfg := MakeConfig(t)
 	cfg.APIs.HTTP.TLS.ClientCertificateRequired = false
 	logger := log.NewLogger(cfg.Log)
-	deviceGatewayServer, err := NewDeviceGatewayServer(ctx)
+	deviceGatewayServer, tearDown, err := NewDeviceGatewayServer(ctx)
 	require.NoError(t, err)
 	s, err := http.New(ctx, "client-application-http", cfg.APIs.HTTP.Config, deviceGatewayServer, logger, trace.NewNoopTracerProvider())
 	require.NoError(t, err)
@@ -160,22 +160,33 @@ func NewHttpService(ctx context.Context, t *testing.T) (*http.Service, func()) {
 		err = s.Shutdown()
 		require.NoError(t, err)
 		wg.Wait()
+		tearDown()
 	}
 
 	return s, cleanUp
 }
 
-func NewDeviceGatewayServer(ctx context.Context) (*serviceGrpc.DeviceGatewayServer, error) {
+func NewDeviceGatewayServer(ctx context.Context) (*serviceGrpc.DeviceGatewayServer, func(), error) {
 	logger := log.NewLogger(log.MakeDefaultConfig())
 	cfg := MakeDeviceConfig()
 	if err := cfg.Validate(); err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 	d, err := serviceDevice.New(ctx, "client-application-device", cfg, logger, trace.NewNoopTracerProvider())
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
-	return serviceGrpc.NewDeviceGatewayServer(d, logger), nil
+	var wg sync.WaitGroup
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		_ = d.Serve()
+	}()
+
+	return serviceGrpc.NewDeviceGatewayServer(d, logger), func() {
+		d.Close()
+		wg.Wait()
+	}, nil
 }
 
 type DeviceGatewayGetDevicesServer struct {
@@ -204,10 +215,11 @@ func FindDeviceByName(name string, useMulticast []pb.GetDevicesRequest_UseMultic
 		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 		defer cancel()
 		srv := NewDeviceGatewayGetDevicesServer(ctx)
-		s, err := NewDeviceGatewayServer(ctx)
+		s, teardown, err := NewDeviceGatewayServer(ctx)
 		if err != nil {
 			return nil, err
 		}
+		defer teardown()
 		err = s.GetDevices(&pb.GetDevicesRequest{
 			UseMulticast: useMulticast,
 		}, srv)

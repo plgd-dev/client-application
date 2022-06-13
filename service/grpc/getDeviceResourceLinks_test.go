@@ -56,8 +56,9 @@ func TestDeviceGatewayServerGetDeviceResourceLinks(t *testing.T) {
 		},
 	}
 
-	s, err := test.NewDeviceGatewayServer(ctx)
+	s, teardown, err := test.NewDeviceGatewayServer(ctx)
 	require.NoError(t, err)
+	defer teardown()
 	err = s.GetDevices(&pb.GetDevicesRequest{}, test.NewDeviceGatewayGetDevicesServer(ctx))
 	require.NoError(t, err)
 	for _, tt := range tests {

@@ -71,8 +71,9 @@ func TestDeviceGatewayServerGetDevices(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			s, err := test.NewDeviceGatewayServer(ctx)
+			s, teardown, err := test.NewDeviceGatewayServer(ctx)
 			require.NoError(t, err)
+			defer teardown()
 			err = s.GetDevices(tt.args.req, tt.args.srv)
 			if tt.wantErr {
 				require.Error(t, err)

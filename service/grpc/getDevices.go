@@ -139,6 +139,7 @@ func processDiscoveryResourceResponse(serviceDevice *serviceDevice.Service, logg
 	device.private.ResourceTypes = resourceTypes
 	device.updateEndpointsLocked(endpoints)
 	device.private.OwnershipStatus = ownershipStatus
+	fmt.Printf("processDiscoveryResourceResponse %v %v\n", device.private.OwnershipStatus, device.private.Endpoints)
 
 	return device, nil
 }

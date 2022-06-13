@@ -18,11 +18,12 @@ import (
 
 func TestDeviceGatewayServerGetDevice(t *testing.T) {
 	dev := test.MustFindDeviceByName(test.DevsimName, []pb.GetDevicesRequest_UseMulticast{pb.GetDevicesRequest_IPV4})
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*3600)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*8)
 	defer cancel()
 
-	s, err := test.NewDeviceGatewayServer(ctx)
+	s, teardown, err := test.NewDeviceGatewayServer(ctx)
 	require.NoError(t, err)
+	defer teardown()
 	err = s.GetDevices(&pb.GetDevicesRequest{
 		UseMulticast: []pb.GetDevicesRequest_UseMulticast{pb.GetDevicesRequest_IPV4},
 	}, test.NewDeviceGatewayGetDevicesServer(ctx))

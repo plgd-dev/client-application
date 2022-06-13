@@ -16,8 +16,9 @@ func TestDeviceGatewayServerOwnDevice(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*8)
 	defer cancel()
 
-	s, err := test.NewDeviceGatewayServer(ctx)
+	s, teardown, err := test.NewDeviceGatewayServer(ctx)
 	require.NoError(t, err)
+	defer teardown()
 	err = s.GetDevices(&pb.GetDevicesRequest{}, test.NewDeviceGatewayGetDevicesServer(ctx))
 	require.NoError(t, err)
 
