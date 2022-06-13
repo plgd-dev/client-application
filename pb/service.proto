@@ -50,7 +50,7 @@ service DeviceGateway {
     };
   }
 
-  // Get device information from the device or from the cache. Device needs to be stored in cache otherwise it returns not found.
+  // Get device information from the device. Device needs to be stored in cache otherwise it returns not found.
   rpc GetDevice (GetDeviceRequest) returns (grpcgateway.pb.Device) {
     option (google.api.http) = {
       get: "/api/v1/devices/{device_id}"
@@ -61,7 +61,7 @@ service DeviceGateway {
   }
 
   
-  // Get resource links of devices.
+  // Get resource links of devices. Device needs to be stored in cache otherwise it returns not found.
   rpc GetDeviceResourceLinks(GetDeviceResourceLinksRequest) returns (resourceaggregate.pb.ResourceLinksPublished) {
     option (google.api.http) = {
       get: "/api/v1/devices/{device_id}/resource-links"
@@ -72,7 +72,7 @@ service DeviceGateway {
   }
   
 
-  // Get resource from the device.
+  // Get resource from the device. Device needs to be stored in cache otherwise it returns not found.
   rpc GetResource(GetResourceRequest) returns (grpcgateway.pb.Resource) {
     option (google.api.http) = {
       get: "/api/v1/devices/{resource_id.device_id}/resources/{resource_id.href=**}"
@@ -82,7 +82,7 @@ service DeviceGateway {
     };
   }
 
-  // Update resource at the device.
+  // Update resource at the device. Device needs to be stored in cache otherwise it returns not found.
   rpc UpdateResource(grpcgateway.pb.UpdateResourceRequest) returns (grpcgateway.pb.UpdateResourceResponse) {
     option (google.api.http) = {
       put: "/api/v1/devices/{resource_id.device_id}/resources/{resource_id.href=**}"
@@ -93,7 +93,7 @@ service DeviceGateway {
     };
   }
 
-  // Own the device.
+  // Own the device. Device needs to be stored in cache otherwise it returns not found.
   rpc OwnDevice(OwnDeviceRequest) returns (OwnDeviceResponse) {
     option (google.api.http) = {
       post: "/api/v1/devices/{device_id}/own"
@@ -103,7 +103,7 @@ service DeviceGateway {
     };
   }
 
-  // Disown the device.
+  // Disown the device. Device needs to be stored in cache otherwise it returns not found.
   rpc DisownDevice(DisownDeviceRequest) returns (DisownDeviceResponse) {
     option (google.api.http) = {
       post: "/api/v1/devices/{device_id}/disown"
