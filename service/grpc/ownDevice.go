@@ -14,7 +14,7 @@ func (s *DeviceGatewayServer) OwnDevice(ctx context.Context, req *pb.OwnDeviceRe
 	if err != nil {
 		return nil, err
 	}
-	links, err := dev.getResourceLinks(ctx)
+	links, err := dev.getResourceLinksAndRefreshCache(ctx)
 	if err != nil {
 		return nil, err
 	}

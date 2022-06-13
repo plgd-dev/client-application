@@ -111,7 +111,7 @@ func getOwnershipStatus(links schema.ResourceLinks) grpcgwPb.Device_OwnershipSta
 	return grpcgwPb.Device_UNOWNED
 }
 
-func (d *device) getResourceLinks(ctx context.Context) (schema.ResourceLinks, error) {
+func (d *device) getResourceLinksAndRefreshCache(ctx context.Context) (schema.ResourceLinks, error) {
 	if d.Device == nil {
 		return nil, status.Error(codes.Internal, "device is not initialized")
 	}
@@ -124,7 +124,7 @@ func (d *device) getResourceLinks(ctx context.Context) (schema.ResourceLinks, er
 }
 
 func (d *device) getResourceLink(ctx context.Context, resourceID *commands.ResourceId) (schema.ResourceLink, error) {
-	links, err := d.getResourceLinks(ctx)
+	links, err := d.getResourceLinksAndRefreshCache(ctx)
 	if err != nil {
 		return schema.ResourceLink{}, nil
 	}

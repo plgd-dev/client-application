@@ -62,9 +62,9 @@ The configuration sets up access to the devices via COAP protocol.
 
 | Property | Type | Description | Default |
 | ---------- | -------- | -------------- | ------- |
-| `api.coap.maxMessageSize` | int | `Max message size which can be send/receive via coap. i.e. 256*1024 = 262144 bytes.` | `262144` |
+| `api.coap.maxMessageSize` | int | `Max message size which can be sent/received via coap. i.e. 256*1024 = 262144 bytes.` | `262144` |
 | `api.coap.inactivityMonitor.timeout` | string | `Time limit to close inactive connection.` | `20s` |
-| `api.coap.blockwiseTransfer.enabled` | bool | `If true, enable blockwise transfer of coap message.` | `false` |
+| `api.coap.blockwiseTransfer.enabled` | bool | `If true, enable blockwise transfer of coap messages.` | `false` |
 | `api.coap.blockwiseTransfer.blockSize` | int | `Size of blockwise transfer block.` | `1024` |
 | `api.coap.tls.subjectUuid` | UUID | `Provides an identifier for client applications for establishing TLS connections or for devices that are set as owner devices` | `""` |
 | `api.coap.tls.preSharedKeyUuid` | UUID | `Pre-shared key used in conjunction with subjectUUID to enable TLS connection.` | `""` |

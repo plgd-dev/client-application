@@ -16,7 +16,7 @@ func (s *DeviceGatewayServer) DisownDevice(ctx context.Context, req *pb.DisownDe
 	if err != nil {
 		return nil, err
 	}
-	links, err := dev.getResourceLinks(ctx)
+	links, err := dev.getResourceLinksAndRefreshCache(ctx)
 	if err != nil {
 		return nil, err
 	}

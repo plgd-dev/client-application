@@ -42,6 +42,7 @@ func (s *Service) DialDTLS(ctx context.Context, addr string, _ *dtls.Config, opt
 	dtlsCfg := &dtls.Config{
 		PSKIdentityHint: idBin,
 		PSK: func(b []byte) ([]byte, error) {
+			// iotivity-lite supports only 16-byte PSK
 			return s.config.COAP.TLS.preSharedKeyUUID[:16], nil
 		},
 		CipherSuites: []dtls.CipherSuiteID{dtls.TLS_ECDHE_PSK_WITH_AES_128_CBC_SHA256},
