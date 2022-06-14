@@ -20,7 +20,7 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type DeviceGatewayClient interface {
-	// Discover devices by client application. This operation fills cache of mappings deviceId to endpoints and this cache is used by other RPC calls.
+	// Discover devices by client application. This operation fills cache of mappings deviceId to endpoints and this cache is used by other calls.
 	GetDevices(ctx context.Context, in *GetDevicesRequest, opts ...grpc.CallOption) (DeviceGateway_GetDevicesClient, error)
 	// Get device information from the device. Device needs to be stored in cache otherwise it returns not found.
 	GetDevice(ctx context.Context, in *GetDeviceRequest, opts ...grpc.CallOption) (*pb.Device, error)
@@ -34,6 +34,8 @@ type DeviceGatewayClient interface {
 	OwnDevice(ctx context.Context, in *OwnDeviceRequest, opts ...grpc.CallOption) (*OwnDeviceResponse, error)
 	// Disown the device. Device needs to be stored in cache otherwise it returns not found.
 	DisownDevice(ctx context.Context, in *DisownDeviceRequest, opts ...grpc.CallOption) (*DisownDeviceResponse, error)
+	// Deletes all devices from the cache. To fill the cache again, call GetDevices.
+	ClearCache(ctx context.Context, in *ClearCacheRequest, opts ...grpc.CallOption) (*ClearCacheResponse, error)
 }
 
 type deviceGatewayClient struct {
@@ -130,11 +132,20 @@ func (c *deviceGatewayClient) DisownDevice(ctx context.Context, in *DisownDevice
 	return out, nil
 }
 
+func (c *deviceGatewayClient) ClearCache(ctx context.Context, in *ClearCacheRequest, opts ...grpc.CallOption) (*ClearCacheResponse, error) {
+	out := new(ClearCacheResponse)
+	err := c.cc.Invoke(ctx, "/service.pb.DeviceGateway/ClearCache", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // DeviceGatewayServer is the server API for DeviceGateway service.
 // All implementations must embed UnimplementedDeviceGatewayServer
 // for forward compatibility
 type DeviceGatewayServer interface {
-	// Discover devices by client application. This operation fills cache of mappings deviceId to endpoints and this cache is used by other RPC calls.
+	// Discover devices by client application. This operation fills cache of mappings deviceId to endpoints and this cache is used by other calls.
 	GetDevices(*GetDevicesRequest, DeviceGateway_GetDevicesServer) error
 	// Get device information from the device. Device needs to be stored in cache otherwise it returns not found.
 	GetDevice(context.Context, *GetDeviceRequest) (*pb.Device, error)
@@ -148,6 +159,8 @@ type DeviceGatewayServer interface {
 	OwnDevice(context.Context, *OwnDeviceRequest) (*OwnDeviceResponse, error)
 	// Disown the device. Device needs to be stored in cache otherwise it returns not found.
 	DisownDevice(context.Context, *DisownDeviceRequest) (*DisownDeviceResponse, error)
+	// Deletes all devices from the cache. To fill the cache again, call GetDevices.
+	ClearCache(context.Context, *ClearCacheRequest) (*ClearCacheResponse, error)
 	mustEmbedUnimplementedDeviceGatewayServer()
 }
 
@@ -175,6 +188,9 @@ func (UnimplementedDeviceGatewayServer) OwnDevice(context.Context, *OwnDeviceReq
 }
 func (UnimplementedDeviceGatewayServer) DisownDevice(context.Context, *DisownDeviceRequest) (*DisownDeviceResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DisownDevice not implemented")
+}
+func (UnimplementedDeviceGatewayServer) ClearCache(context.Context, *ClearCacheRequest) (*ClearCacheResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ClearCache not implemented")
 }
 func (UnimplementedDeviceGatewayServer) mustEmbedUnimplementedDeviceGatewayServer() {}
 
@@ -318,6 +334,24 @@ func _DeviceGateway_DisownDevice_Handler(srv interface{}, ctx context.Context, d
 	return interceptor(ctx, in, info, handler)
 }
 
+func _DeviceGateway_ClearCache_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ClearCacheRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DeviceGatewayServer).ClearCache(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/service.pb.DeviceGateway/ClearCache",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DeviceGatewayServer).ClearCache(ctx, req.(*ClearCacheRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // DeviceGateway_ServiceDesc is the grpc.ServiceDesc for DeviceGateway service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -348,6 +382,10 @@ var DeviceGateway_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "DisownDevice",
 			Handler:    _DeviceGateway_DisownDevice_Handler,
+		},
+		{
+			MethodName: "ClearCache",
+			Handler:    _DeviceGateway_ClearCache_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

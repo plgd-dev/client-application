@@ -32,7 +32,7 @@
   "paths": {
     "/api/v1/devices": {
       "get": {
-        "summary": "Discover devices by client application. This operation fills cache of mappings deviceId to endpoints and this cache is used by other RPC calls.",
+        "summary": "Discover devices by client application. This operation fills cache of mappings deviceId to endpoints and this cache is used by other calls.",
         "operationId": "DeviceGateway_GetDevices",
         "responses": {
           "200": {
@@ -126,6 +126,27 @@
             "collectionFormat": "multi"
           }
         ],
+        "tags": [
+          "Devices"
+        ]
+      },
+      "delete": {
+        "summary": "Deletes all devices from the cache. To fill the cache again, call GetDevices.",
+        "operationId": "DeviceGateway_ClearCache",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbClearCacheResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
         "tags": [
           "Devices"
         ]
@@ -451,6 +472,9 @@
           "type": "string"
         }
       }
+    },
+    "pbClearCacheResponse": {
+      "type": "object"
     },
     "pbConnectionStatus": {
       "type": "object",
