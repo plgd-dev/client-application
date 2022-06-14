@@ -6,6 +6,7 @@ package service.pb;
 import "google/api/annotations.proto";
 import "protoc-gen-openapiv2/options/annotations.proto";
 
+import "pb/clear_cache.proto";
 import "pb/get_device.proto";
 import "pb/get_devices.proto";
 import "pb/get_resource.proto";
@@ -40,7 +41,7 @@ option go_package = "github.com/plgd-dev/client-application/pb;pb";
 // https://github.com/googleapis/googleapis/blob/master/google/api/http.proto
 
 service DeviceGateway {
-  // Discover devices by client application. This operation fills cache of mappings deviceId to endpoints and this cache is used by other RPC calls.
+  // Discover devices by client application. This operation fills cache of mappings deviceId to endpoints and this cache is used by other calls.
   rpc GetDevices (GetDevicesRequest) returns (stream grpcgateway.pb.Device) {
     option (google.api.http) = {
       get: "/api/v1/devices"
@@ -110,6 +111,16 @@ service DeviceGateway {
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       tags: [ "Device" ]
+    };
+  }
+
+  // Deletes all devices from the cache. To fill the cache again, call GetDevices.
+  rpc ClearCache(ClearCacheRequest) returns (ClearCacheResponse) {
+    option (google.api.http) = {
+      delete: "/api/v1/devices"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: [ "Devices" ]
     };
   }
 }

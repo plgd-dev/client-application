@@ -19,35 +19,40 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestDeviceGatewayServerGetDevice(t *testing.T) {
+func TestDeviceGatewayServerClearCache(t *testing.T) {
 	dev := test.MustFindDeviceByName(test.DevsimName, []pb.GetDevicesRequest_UseMulticast{pb.GetDevicesRequest_IPV4})
 	cfg := test.MakeConfig(t)
 	cfg.APIs.HTTP.TLS.ClientCertificateRequired = false
 	shutDown := test.New(t, cfg)
 	defer shutDown()
 
-	request := httpgwTest.NewRequest(http.MethodGet, serviceHttp.Devices, nil).
-		Host(test.CLIENT_APPLICATION_HTTP_HOST).Build()
-	resp := httpgwTest.HTTPDo(t, request)
-	require.Equal(t, http.StatusOK, resp.StatusCode)
-	for {
-		var dev grpcgwPb.Device
-		err := httpgwTest.Unmarshal(resp.StatusCode, resp.Body, &dev)
-		if errors.Is(err, io.EOF) {
-			break
+	getDevices := func() {
+		request := httpgwTest.NewRequest(http.MethodGet, serviceHttp.Devices, nil).
+			Host(test.CLIENT_APPLICATION_HTTP_HOST).Build()
+		resp := httpgwTest.HTTPDo(t, request)
+		require.Equal(t, http.StatusOK, resp.StatusCode)
+		for {
+			var dev grpcgwPb.Device
+			err := httpgwTest.Unmarshal(resp.StatusCode, resp.Body, &dev)
+			if errors.Is(err, io.EOF) {
+				break
+			}
+			require.NoError(t, err)
 		}
-		require.NoError(t, err)
+		_ = resp.Body.Close()
 	}
-	_ = resp.Body.Close()
+	// fill cache
+	getDevices()
 
-	request = httpgwTest.NewRequest(http.MethodPost, serviceHttp.OwnDevice, nil).
+	// own device
+	request := httpgwTest.NewRequest(http.MethodPost, serviceHttp.OwnDevice, nil).
 		Host(test.CLIENT_APPLICATION_HTTP_HOST).DeviceId(dev.Id).Build()
-	resp = httpgwTest.HTTPDo(t, request)
+	resp := httpgwTest.HTTPDo(t, request)
 	_ = resp.Body.Close()
 	require.Equal(t, http.StatusOK, resp.StatusCode)
 
+	// update device
 	newName := test.DevsimName + "_new"
-
 	request = httpgwTest.NewRequest(http.MethodPut, serviceHttp.DeviceResource, bytes.NewBufferString(`{"n":"`+newName+`"}`)).
 		Host(test.CLIENT_APPLICATION_HTTP_HOST).DeviceId(dev.Id).ResourceHref(configuration.ResourceURI).ContentType(serviceHttp.ApplicationJsonContentType).Build()
 	resp = httpgwTest.HTTPDo(t, request)
@@ -56,6 +61,7 @@ func TestDeviceGatewayServerGetDevice(t *testing.T) {
 	}()
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
 
+	// check device name
 	request = httpgwTest.NewRequest(http.MethodGet, serviceHttp.Device, nil).
 		Host(test.CLIENT_APPLICATION_HTTP_HOST).Accept(serviceHttp.ApplicationProtoJsonContentType).DeviceId(dev.Id).Build()
 	resp = httpgwTest.HTTPDo(t, request)
@@ -73,6 +79,28 @@ func TestDeviceGatewayServerGetDevice(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, newName, v.Name)
 
+	// clear cache
+	request = httpgwTest.NewRequest(http.MethodDelete, serviceHttp.Devices, nil).
+		Host(test.CLIENT_APPLICATION_HTTP_HOST).Accept(serviceHttp.ApplicationProtoJsonContentType).Build()
+	resp = httpgwTest.HTTPDo(t, request)
+	defer func() {
+		_ = resp.Body.Close()
+	}()
+	assert.Equal(t, http.StatusOK, resp.StatusCode)
+
+	// check that device is not in cache
+	request = httpgwTest.NewRequest(http.MethodGet, serviceHttp.Device, nil).
+		Host(test.CLIENT_APPLICATION_HTTP_HOST).Accept(serviceHttp.ApplicationProtoJsonContentType).DeviceId(dev.Id).Build()
+	resp = httpgwTest.HTTPDo(t, request)
+	defer func() {
+		_ = resp.Body.Close()
+	}()
+	assert.Equal(t, http.StatusNotFound, resp.StatusCode)
+
+	// fill cache again
+	getDevices()
+
+	// revert update device name
 	request = httpgwTest.NewRequest(http.MethodPut, serviceHttp.DeviceResource, bytes.NewBufferString(`{"n":"`+test.DevsimName+`"}`)).
 		Host(test.CLIENT_APPLICATION_HTTP_HOST).DeviceId(dev.Id).ResourceHref(configuration.ResourceURI).ContentType(serviceHttp.ApplicationJsonContentType).Build()
 	resp = httpgwTest.HTTPDo(t, request)
@@ -81,6 +109,7 @@ func TestDeviceGatewayServerGetDevice(t *testing.T) {
 	}()
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
 
+	// disown device
 	request = httpgwTest.NewRequest(http.MethodPost, serviceHttp.DisownDevice, nil).
 		Host(test.CLIENT_APPLICATION_HTTP_HOST).DeviceId(dev.Id).Build()
 	resp = httpgwTest.HTTPDo(t, request)
