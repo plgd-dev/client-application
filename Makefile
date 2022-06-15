@@ -42,10 +42,8 @@ clean:
 
 build-web:
 	mkdir -p $(WWW_PATH)
-	docker build --tag build-web -f ./web/Dockerfile ./web
-	$(eval container_id=$(shell docker create build-web))
-	docker cp $(container_id):/web/build/ $(WWW_PATH)/
-	docker rm -f $(container_id)
+	docker build --tag build-web:latest --target build-web -f ./web/Dockerfile ./web
+	CONTAINER_ID=`docker create build-web:latest` && docker cp $$CONTAINER_ID:/web/build/ $(WWW_PATH)/ && docker rm -f $$CONTAINER_ID
 	cd $(WWW_PATH)/build && tar -czf $(TMP_PATH)/ui.tar.gz .
 .PHONY: build-web
 
