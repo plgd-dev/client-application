@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"net"
 	"os"
 	"os/signal"
 	"sync"
@@ -73,8 +74,46 @@ func New(ctx context.Context, config Config, logger log.Logger) (*Service, error
 	return &s, nil
 }
 
+func getAddress(addr string) string {
+	hostname, port, err := net.SplitHostPort(addr)
+	if err != nil {
+		return addr
+	}
+	ip := net.ParseIP(hostname)
+	if ip == nil {
+		return addr
+	}
+	if ip.IsUnspecified() {
+		if ip.To4() == nil {
+			return "[::1]:" + port
+		}
+		return "127.0.0.1:" + port
+	}
+	return addr
+}
+
 // Serve starts a device provisioning service on the configured address in *Service.
 func (server *Service) Serve() error {
+	if server.httpService != nil {
+		scheme := "http"
+		if server.config.APIs.HTTP.Config.TLS.Enabled {
+			scheme = "https"
+		}
+		addr := getAddress(server.httpService.Address())
+		log.Infof("HTTP API available on %v://%s%v", scheme, addr, http.ApiV1)
+		if server.config.APIs.HTTP.UI.Enabled {
+			log.Infof("HTTP UI available on %v://%s", scheme, addr)
+		}
+	}
+	if server.grpcService != nil {
+		addr := getAddress(server.grpcService.Address())
+		insecure := ""
+		if !server.config.APIs.GRPC.Config.TLS.Enabled {
+			insecure = " (insecure)"
+		}
+		log.Infof("gRPC API available on %s%v", addr, insecure)
+	}
+
 	return server.serveWithHandlingSignal()
 }
 

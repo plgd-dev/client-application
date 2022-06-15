@@ -128,6 +128,10 @@ func (s *Service) Shutdown() error {
 	return s.httpServer.Shutdown(context.Background())
 }
 
+func (s *Service) Address() string {
+	return s.listener.Addr().String()
+}
+
 const (
 	UseCacheQueryKey              = "useCache"
 	UseMulticastQueryKey          = "useMulticast"

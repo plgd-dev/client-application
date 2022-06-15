@@ -37,7 +37,7 @@ func main() {
 	}
 	logger := log.NewLogger(cfg.Log)
 	log.Set(logger)
-	log.Infof("config: %v", cfg.String())
+	log.Debugf("config:\n%v", cfg.String())
 	s, err := service.New(context.Background(), cfg, logger)
 	if err != nil {
 		log.Fatalf("cannot create service: %v", err)

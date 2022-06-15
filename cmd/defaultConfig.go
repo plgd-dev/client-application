@@ -17,6 +17,8 @@ import (
 )
 
 func createDefaultConfig(uiDirectory string) service.Config {
+	logCfg := log.MakeDefaultConfig()
+	logCfg.Encoding = "console"
 	return service.Config{
 		APIs: service.APIsConfig{
 			HTTP: service.HTTPConfig{
@@ -52,7 +54,7 @@ func createDefaultConfig(uiDirectory string) service.Config {
 				},
 			},
 		},
-		Log: log.MakeDefaultConfig(),
+		Log: logCfg,
 		Clients: service.ClientsConfig{
 			Device: device.Config{
 				COAP: device.CoapConfig{
