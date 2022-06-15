@@ -1,21 +1,58 @@
 {
-  "name": "emoji-search",
-  "version": "0.1.0",
-  "private": true,
+  "name": "plgd-client-application",
+  "version": "1.0.0",
+  "private": false,
   "dependencies": {
-    "@testing-library/jest-dom": "^5.11.10",
-    "@testing-library/react": "^11.2.6",
-    "@testing-library/user-event": "^12.8.3",
+    "@babel/cli": "^7.16.0",
+    "@craco/craco": "^6.4.3",
+    "@reduxjs/toolkit": "^1.7.0",
+    "@testing-library/jest-dom": "^5.16.1",
+    "@testing-library/react": "^12.1.2",
+    "@testing-library/user-event": "^13.5.0",
+    "axios": "^0.24.0",
+    "bootstrap": "^4.6.0",
+    "classnames": "^2.3.1",
+    "cross-env": "^7.0.3",
+    "history": "^4.10.1",
+    "jsoneditor": "^9.5.7",
+    "lodash": "^4.17.21",
+    "prettier": "2.5.1",
+    "prop-types": "^15.7.2",
     "react": "^17.0.2",
-    "react-copy-to-clipboard": "^5.0.3",
+    "react-bootstrap": "^1.6.3",
     "react-dom": "^17.0.2",
-    "web-vitals": "^1.1.1"
+    "react-helmet": "^6.1.0",
+    "react-intl": "^5.23.0",
+    "react-intl-po": "^2.2.2",
+    "react-redux": "^7.2.6",
+    "react-router-dom": "^5.3.1",
+    "react-scripts": "4.0.3",
+    "react-select": "^5.2.1",
+    "react-table": "^7.7.0",
+    "react-toastify": "^8.1.0",
+    "redux": "^4.1.2",
+    "redux-batched-actions": "^0.5.0",
+    "sass": "^1.45.0",
+    "units-converter": "^1.0.3",
+    "uuid": "^8.3.2",
+    "web-vitals": "^2.1.2"
+  },
+  "devDependencies": {
+    "@formatjs/cli": "^4.5.0",
+    "babel-plugin-formatjs": "^10.3.12",
+    "shelljs": "^0.8.5"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "start": "npm run generate-language-files && craco start",
+    "build": "npm run generate-language-files && craco build",
+    "test": "craco test",
+    "eject": "react-scripts eject",
+    "generate-pot": "node ./scripts/generate-pot.js",
+    "generate-language-files": "node ./scripts/generate-language-files.js"
+  },
+  "scriptComments": {
+    "generate-pot": "Examines all src js files and extracts the translate keys into a .pot file, to be used in a translation tool outside of this app.",
+    "generate-language-files": "Applies the .po and .pot files in i18n folder to create the final languages.json (translated strings) file to be used at run-time in the application."
   },
   "eslintConfig": {
     "extends": [
@@ -34,9 +71,5 @@
       "last 1 firefox version",
       "last 1 safari version"
     ]
-  },
-  "devDependencies": {
-    "prettier": "^2.2.1",
-    "react-scripts": "^4.0.3"
   }
 }
