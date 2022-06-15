@@ -1,6 +1,6 @@
 log:
   level: info
-  encoding: json
+  encoding: console
   stacktrace:
     enabled: false
     level: warn

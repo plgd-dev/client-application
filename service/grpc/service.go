@@ -46,3 +46,7 @@ func (s *Service) Serve() error {
 func (s *Service) Stop() {
 	s.grpcServer.Stop()
 }
+
+func (s *Service) Address() string {
+	return s.grpcServer.Addr()
+}
