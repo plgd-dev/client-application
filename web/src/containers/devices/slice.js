@@ -3,6 +3,8 @@
 import { createSlice } from '@reduxjs/toolkit'
 import findIndex from 'lodash/findIndex'
 import { devicesOwnerships } from '@/containers/devices/constants'
+import isEqual from 'lodash/isEqual'
+
 const { OWNED, UNOWNED } = devicesOwnerships
 
 const initialState = {
@@ -40,6 +42,22 @@ const { reducer, actions } = createSlice({
     setDevices(state, { payload }) {
       state.devicesList = payload
     },
+    updateDevices(state, { payload }) {
+      if (state.devicesList.length === 0) {
+        state.devicesList = payload
+      } else {
+        payload.forEach(device => {
+          const index = findIndex(state.devicesList, d => d.id === device.id)
+          if (index > -1) {
+            if (!isEqual(state.devicesList[index], device)) {
+              state.devicesList[index] = device
+            }
+          } else {
+            state.devicesList.push(device)
+          }
+        })
+      }
+    },
     addDevice(state, { payload }) {
       state.devicesList.push(payload)
     },
@@ -70,6 +88,7 @@ export const {
   addDevice,
   flushDevices,
   toggleOwnDevice,
+  updateDevices,
 } = actions
 
 // Reducer

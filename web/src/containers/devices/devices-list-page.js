@@ -19,11 +19,12 @@ import { toast } from 'react-toastify'
 import { getApiErrorMessage } from '@/common/utils'
 import {
   getDevices,
-  setDevices,
+  updateDevices,
   flushDevices,
   toggleOwnDevice,
 } from '@/containers/devices/slice'
 import { useDispatch, useSelector } from 'react-redux'
+import Button from '@shared/Button'
 
 export const DevicesListPage = () => {
   const { formatMessage: _ } = useIntl()
@@ -42,7 +43,7 @@ export const DevicesListPage = () => {
   }, [deviceError])
 
   useEffect(() => {
-    dispatch(setDevices(data))
+    data && dispatch(updateDevices(data))
   }, [data, dispatch])
 
   const handleOpenDeleteModal = () => {
@@ -135,6 +136,8 @@ export const DevicesListPage = () => {
         onDeleteClick={handleOpenDeleteModal}
         ownDevice={handleOwnDevice}
       />
+
+      <Button />
 
       <ConfirmModal
         onConfirm={deleteDevices}
