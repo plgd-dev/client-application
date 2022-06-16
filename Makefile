@@ -9,12 +9,13 @@ BUILD_PATH ?=$(TMP_PATH)/build
 WWW_PATH=$(TMP_PATH)/www
 CLIENT_APPLICATION_VERSION_PATH_VARIABLE = main.Version
 CLIENT_APPLICATION_UI_SEPARATOR_PATH_VARIABLE = main.UISeparator
+CLIENT_APPLICATION_BINARY_PATH ?= 
 
 CERT_TOOL_IMAGE ?= ghcr.io/plgd-dev/hub/cert-tool:vnext
 DEVSIM_IMAGE ?= ghcr.io/iotivity/iotivity-lite/cloud-server-discovery-resource-observable-debug:master
 DEVSIM_PATH = $(shell pwd)/.tmp/devsim
 CERT_PATH = $(TMP_PATH)/certs
-UI_SEPARATOR = "--------UI--------"
+UI_SEPARATOR ?= "--------UI--------"
 
 certificates:
 	mkdir -p $(CERT_PATH)
@@ -47,24 +48,14 @@ build-web:
 	cd $(WWW_PATH)/build && tar -czf $(TMP_PATH)/ui.tar.gz .
 .PHONY: build-web
 
-define build-binary
-	GOOS=$(1) GOARCH=$(2) go build -ldflags="-X '$(CLIENT_APPLICATION_VERSION_PATH_VARIABLE)=$(VERSION_TAG)'" -ldflags="-X '$(CLIENT_APPLICATION_UI_SEPARATOR_PATH_VARIABLE)=$(UI_SEPARATOR)'" -o $(3) $(WORKING_DIRECTORY)/cmd
-	printf "\n$(UI_SEPARATOR)\n" >> $(3)
-	wc -c $(3)
-	cat $(TMP_PATH)/ui.tar.gz >> $(3)
-endef
+inject-web: $(CLIENT_APPLICATION_BINARY_PATH)
+	printf "\n$(UI_SEPARATOR)\n" >> $(CLIENT_APPLICATION_BINARY_PATH)
+	wc -c $(CLIENT_APPLICATION_BINARY_PATH)
+	cat $(TMP_PATH)/ui.tar.gz >> $(CLIENT_APPLICATION_BINARY_PATH)
+.PHONY: inject-web
 
-build: clean build-web
-	mkdir -p $(BUILD_PATH)
-	$(call build-binary,linux,386,$(BUILD_PATH)/$(SERVICE_NAME).linux.386)
-	$(call build-binary,linux,amd64,$(BUILD_PATH)/$(SERVICE_NAME).linux.amd64)
-	$(call build-binary,linux,arm,$(BUILD_PATH)/$(SERVICE_NAME).linux.arm)
-	$(call build-binary,linux,arm64,$(BUILD_PATH)/$(SERVICE_NAME).linux.arm64)
-	$(call build-binary,windows,386,$(BUILD_PATH)/$(SERVICE_NAME).windows.386.exe)
-	$(call build-binary,windows,amd64,$(BUILD_PATH)/$(SERVICE_NAME).windows.amd64.exe)
-	$(call build-binary,windows,arm64,$(BUILD_PATH)/$(SERVICE_NAME).windows.arm64.exe)
-	$(call build-binary,darwin,amd64,$(BUILD_PATH)/$(SERVICE_NAME).macos.amd64)
-	$(call build-binary,darwin,arm64,$(BUILD_PATH)/$(SERVICE_NAME).macos.arm64)
+build: clean
+	UI_SEPARATOR=$(UI_SEPARATOR) goreleaser build --rm-dist
 .PHONY: build
 
 test: env

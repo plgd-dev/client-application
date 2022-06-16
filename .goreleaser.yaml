@@ -1,0 +1,47 @@
+# This is an example .goreleaser.yml file with some sensible defaults.
+# Make sure to check the documentation at https://goreleaser.com
+before:
+  hooks:
+   - make build-web
+dist: .tmp/dist
+builds:
+  - binary: client-application
+    goos:
+      - linux
+      - windows
+      - darwin
+    goarch:
+      - amd64
+      - arm
+      - arm64
+      - "386"
+    goarm:
+      - "7"
+    main: ./cmd
+    ldflags:
+      - -s -w -X main.Version={{.Version}}
+      - -s -w -X main.UISeparator={{.Env.UI_SEPARATOR}}
+    hooks:
+      post:
+        - make inject-web CLIENT_APPLICATION_BINARY_PATH={{.Path}} UI_SEPARATOR={{.Env.UI_SEPARATOR}}
+archives:
+  - replacements:
+      darwin: macOS
+      linux: linux
+      windows: windows
+      386: i386
+      amd64: amd64
+    wrap_in_directory: true
+    format_overrides:
+      - goos: windows
+        format: zip
+checksum:
+  name_template: 'checksums.txt'
+snapshot:
+  name_template: "{{ incpatch .Version }}-next"
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
