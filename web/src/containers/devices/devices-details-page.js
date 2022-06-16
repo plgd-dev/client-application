@@ -51,7 +51,7 @@ export const DevicesDetailsPage = () => {
   // const {
   //   wellKnownConfig: { defaultCommandTimeToLive },
   // } = useAppConfig()
-  const defaultCommandTimeToLive = 3000 // TODO
+  const defaultCommandTimeToLive = 1000000000
   const [ttl, setTtl] = useState(defaultCommandTimeToLive)
   const [ttlHasError, setTtlHasError] = useState(false)
   const isMounted = useIsMounted()
