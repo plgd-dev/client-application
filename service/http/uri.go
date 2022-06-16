@@ -20,4 +20,5 @@ const (
 	DeviceResource      = DeviceResources + "/{" + ResourceHrefKey + "}"
 	OwnDevice           = Device + "/own"
 	DisownDevice        = Device + "/disown"
+	WebConfiguration    = "/web_configuration.json"
 )

@@ -131,7 +131,7 @@ func (d *device) getResourceLinksAndRefreshCache(ctx context.Context) (schema.Re
 func (d *device) getResourceLink(ctx context.Context, resourceID *commands.ResourceId) (schema.ResourceLink, error) {
 	links, err := d.getResourceLinksAndRefreshCache(ctx)
 	if err != nil {
-		return schema.ResourceLink{}, nil
+		return schema.ResourceLink{}, err
 	}
 	link, ok := links.GetResourceLink(normalizeHref(resourceID.GetHref()))
 	if !ok {
@@ -164,4 +164,15 @@ func (d *device) updateDeviceResourceBody(body *commands.Content) {
 	d.private.mutex.Lock()
 	defer d.private.mutex.Unlock()
 	d.private.DeviceResourceBody = body
+}
+
+func (d *device) update(data *device) {
+	data.private.mutex.RLock()
+	defer data.private.mutex.RUnlock()
+	d.private.mutex.Lock()
+	defer d.private.mutex.Unlock()
+	d.private.DeviceResourceBody = data.private.DeviceResourceBody
+	d.private.ResourceTypes = data.private.ResourceTypes
+	d.private.OwnershipStatus = data.private.OwnershipStatus
+	d.updateEndpointsLocked(data.private.Endpoints)
 }
