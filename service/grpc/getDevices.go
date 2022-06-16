@@ -462,6 +462,33 @@ func tryToSetDefaultRequest(req *pb.GetDevicesRequest) *pb.GetDevicesRequest {
 	return req
 }
 
+func (s *DeviceGatewayServer) processDiscoverdDevices(discoveredDevices, cachedDevices *sync.Map) devices {
+	devs := make(devices, 0, 128)
+	discoveredDevices.Range(func(key, value any) bool {
+		d, ok := value.(*device)
+		if !ok {
+			return true
+		}
+		if len(d.GetEndpoints()) == 0 {
+			// we don't want to return devices with no endpoints
+			return true
+		}
+
+		updDevice, loaded := s.devices.LoadOrStore(key, d)
+		if loaded {
+			toUpdDevice, ok := updDevice.(*device)
+			if !ok {
+				return true
+			}
+			toUpdDevice.update(d)
+		}
+		devs = append(devs, d)
+		cachedDevices.Delete(key)
+		return true
+	})
+	return devs
+}
+
 func (s *DeviceGatewayServer) GetDevices(req *pb.GetDevicesRequest, srv pb.DeviceGateway_GetDevicesServer) error {
 	req = tryToSetDefaultRequest(req)
 	ctx := srv.Context()
@@ -507,15 +534,7 @@ func (s *DeviceGatewayServer) GetDevices(req *pb.GetDevicesRequest, srv pb.Devic
 	}
 	wg.Wait()
 
-	devs := make(devices, 0, 128)
-	discoveredDevices.Range(func(key, value any) bool {
-		if d, ok := value.(*device); ok {
-			devs = append(devs, d)
-		}
-		s.devices.Store(key, value)
-		cachedDevices.Delete(key)
-		return true
-	})
+	devs := s.processDiscoverdDevices(&discoveredDevices, &cachedDevices)
 	cachedDevices.Range(func(key, value any) bool {
 		if d, ok := value.(*device); ok {
 			devs = append(devs, d)

@@ -90,7 +90,7 @@ func New(ctx context.Context, serviceName string, config Config, deviceGatewaySe
 
 	// serve www directory
 	if config.UI.Enabled {
-		// r.HandleFunc(uri.WebConfiguration, requestHandler.getWebConfiguration).Methods(http.MethodGet)
+		r.HandleFunc(WebConfiguration, getWebConfiguration).Methods(http.MethodGet)
 		fs := http.FileServer(http.Dir(config.UI.Directory))
 		r.PathPrefix("/").Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			c := httptest.NewRecorder()
