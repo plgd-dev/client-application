@@ -9,7 +9,7 @@ import (
 	"google.golang.org/grpc/codes"
 )
 
-func (s *DeviceGatewayServer) OwnDevice(ctx context.Context, req *pb.OwnDeviceRequest) (*pb.OwnDeviceResponse, error) {
+func (s *ClientApplicationServer) OwnDevice(ctx context.Context, req *pb.OwnDeviceRequest) (*pb.OwnDeviceResponse, error) {
 	dev, err := s.getDevice(req.GetDeviceId())
 	if err != nil {
 		return nil, err

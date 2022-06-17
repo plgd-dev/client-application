@@ -16,20 +16,24 @@ import (
 // Requires gRPC-Go v1.32.0 or later.
 const _ = grpc.SupportPackageIsVersion7
 
-// DeviceGatewayClient is the client API for DeviceGateway service.
+// ClientApplicationClient is the client API for ClientApplication service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type DeviceGatewayClient interface {
+type ClientApplicationClient interface {
 	// Discover devices by client application. This operation fills cache of mappings deviceId to endpoints and this cache is used by other calls.
-	GetDevices(ctx context.Context, in *GetDevicesRequest, opts ...grpc.CallOption) (DeviceGateway_GetDevicesClient, error)
+	GetDevices(ctx context.Context, in *GetDevicesRequest, opts ...grpc.CallOption) (ClientApplication_GetDevicesClient, error)
 	// Get device information from the device. Device needs to be stored in cache otherwise it returns not found.
 	GetDevice(ctx context.Context, in *GetDeviceRequest, opts ...grpc.CallOption) (*pb.Device, error)
 	// Get resource links of devices. Device needs to be stored in cache otherwise it returns not found.
 	GetDeviceResourceLinks(ctx context.Context, in *GetDeviceResourceLinksRequest, opts ...grpc.CallOption) (*events.ResourceLinksPublished, error)
-	// Get resource from the device. Device needs to be stored in cache otherwise it returns not found.
+	// Get a resource from the device. Device needs to be stored in cache otherwise it returns not found.
 	GetResource(ctx context.Context, in *GetResourceRequest, opts ...grpc.CallOption) (*pb.Resource, error)
-	// Update resource at the device. Device needs to be stored in cache otherwise it returns not found.
-	UpdateResource(ctx context.Context, in *pb.UpdateResourceRequest, opts ...grpc.CallOption) (*pb.UpdateResourceResponse, error)
+	// Update a resource at the device. Device needs to be stored in cache otherwise it returns not found.
+	UpdateResource(ctx context.Context, in *UpdateResourceRequest, opts ...grpc.CallOption) (*pb.UpdateResourceResponse, error)
+	// Create a resource at the device. Device needs to be stored in cache otherwise it returns not found.
+	CreateResource(ctx context.Context, in *CreateResourceRequest, opts ...grpc.CallOption) (*pb.CreateResourceResponse, error)
+	// Delete a resource at the device. Device needs to be stored in cache otherwise it returns not found.
+	DeleteResource(ctx context.Context, in *DeleteResourceRequest, opts ...grpc.CallOption) (*pb.DeleteResourceResponse, error)
 	// Own the device. Device needs to be stored in cache otherwise it returns not found.
 	OwnDevice(ctx context.Context, in *OwnDeviceRequest, opts ...grpc.CallOption) (*OwnDeviceResponse, error)
 	// Disown the device. Device needs to be stored in cache otherwise it returns not found.
@@ -38,20 +42,20 @@ type DeviceGatewayClient interface {
 	ClearCache(ctx context.Context, in *ClearCacheRequest, opts ...grpc.CallOption) (*ClearCacheResponse, error)
 }
 
-type deviceGatewayClient struct {
+type clientApplicationClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewDeviceGatewayClient(cc grpc.ClientConnInterface) DeviceGatewayClient {
-	return &deviceGatewayClient{cc}
+func NewClientApplicationClient(cc grpc.ClientConnInterface) ClientApplicationClient {
+	return &clientApplicationClient{cc}
 }
 
-func (c *deviceGatewayClient) GetDevices(ctx context.Context, in *GetDevicesRequest, opts ...grpc.CallOption) (DeviceGateway_GetDevicesClient, error) {
-	stream, err := c.cc.NewStream(ctx, &DeviceGateway_ServiceDesc.Streams[0], "/service.pb.DeviceGateway/GetDevices", opts...)
+func (c *clientApplicationClient) GetDevices(ctx context.Context, in *GetDevicesRequest, opts ...grpc.CallOption) (ClientApplication_GetDevicesClient, error) {
+	stream, err := c.cc.NewStream(ctx, &ClientApplication_ServiceDesc.Streams[0], "/service.pb.ClientApplication/GetDevices", opts...)
 	if err != nil {
 		return nil, err
 	}
-	x := &deviceGatewayGetDevicesClient{stream}
+	x := &clientApplicationGetDevicesClient{stream}
 	if err := x.ClientStream.SendMsg(in); err != nil {
 		return nil, err
 	}
@@ -61,16 +65,16 @@ func (c *deviceGatewayClient) GetDevices(ctx context.Context, in *GetDevicesRequ
 	return x, nil
 }
 
-type DeviceGateway_GetDevicesClient interface {
+type ClientApplication_GetDevicesClient interface {
 	Recv() (*pb.Device, error)
 	grpc.ClientStream
 }
 
-type deviceGatewayGetDevicesClient struct {
+type clientApplicationGetDevicesClient struct {
 	grpc.ClientStream
 }
 
-func (x *deviceGatewayGetDevicesClient) Recv() (*pb.Device, error) {
+func (x *clientApplicationGetDevicesClient) Recv() (*pb.Device, error) {
 	m := new(pb.Device)
 	if err := x.ClientStream.RecvMsg(m); err != nil {
 		return nil, err
@@ -78,320 +82,392 @@ func (x *deviceGatewayGetDevicesClient) Recv() (*pb.Device, error) {
 	return m, nil
 }
 
-func (c *deviceGatewayClient) GetDevice(ctx context.Context, in *GetDeviceRequest, opts ...grpc.CallOption) (*pb.Device, error) {
+func (c *clientApplicationClient) GetDevice(ctx context.Context, in *GetDeviceRequest, opts ...grpc.CallOption) (*pb.Device, error) {
 	out := new(pb.Device)
-	err := c.cc.Invoke(ctx, "/service.pb.DeviceGateway/GetDevice", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/service.pb.ClientApplication/GetDevice", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *deviceGatewayClient) GetDeviceResourceLinks(ctx context.Context, in *GetDeviceResourceLinksRequest, opts ...grpc.CallOption) (*events.ResourceLinksPublished, error) {
+func (c *clientApplicationClient) GetDeviceResourceLinks(ctx context.Context, in *GetDeviceResourceLinksRequest, opts ...grpc.CallOption) (*events.ResourceLinksPublished, error) {
 	out := new(events.ResourceLinksPublished)
-	err := c.cc.Invoke(ctx, "/service.pb.DeviceGateway/GetDeviceResourceLinks", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/service.pb.ClientApplication/GetDeviceResourceLinks", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *deviceGatewayClient) GetResource(ctx context.Context, in *GetResourceRequest, opts ...grpc.CallOption) (*pb.Resource, error) {
+func (c *clientApplicationClient) GetResource(ctx context.Context, in *GetResourceRequest, opts ...grpc.CallOption) (*pb.Resource, error) {
 	out := new(pb.Resource)
-	err := c.cc.Invoke(ctx, "/service.pb.DeviceGateway/GetResource", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/service.pb.ClientApplication/GetResource", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *deviceGatewayClient) UpdateResource(ctx context.Context, in *pb.UpdateResourceRequest, opts ...grpc.CallOption) (*pb.UpdateResourceResponse, error) {
+func (c *clientApplicationClient) UpdateResource(ctx context.Context, in *UpdateResourceRequest, opts ...grpc.CallOption) (*pb.UpdateResourceResponse, error) {
 	out := new(pb.UpdateResourceResponse)
-	err := c.cc.Invoke(ctx, "/service.pb.DeviceGateway/UpdateResource", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/service.pb.ClientApplication/UpdateResource", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *deviceGatewayClient) OwnDevice(ctx context.Context, in *OwnDeviceRequest, opts ...grpc.CallOption) (*OwnDeviceResponse, error) {
+func (c *clientApplicationClient) CreateResource(ctx context.Context, in *CreateResourceRequest, opts ...grpc.CallOption) (*pb.CreateResourceResponse, error) {
+	out := new(pb.CreateResourceResponse)
+	err := c.cc.Invoke(ctx, "/service.pb.ClientApplication/CreateResource", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *clientApplicationClient) DeleteResource(ctx context.Context, in *DeleteResourceRequest, opts ...grpc.CallOption) (*pb.DeleteResourceResponse, error) {
+	out := new(pb.DeleteResourceResponse)
+	err := c.cc.Invoke(ctx, "/service.pb.ClientApplication/DeleteResource", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *clientApplicationClient) OwnDevice(ctx context.Context, in *OwnDeviceRequest, opts ...grpc.CallOption) (*OwnDeviceResponse, error) {
 	out := new(OwnDeviceResponse)
-	err := c.cc.Invoke(ctx, "/service.pb.DeviceGateway/OwnDevice", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/service.pb.ClientApplication/OwnDevice", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *deviceGatewayClient) DisownDevice(ctx context.Context, in *DisownDeviceRequest, opts ...grpc.CallOption) (*DisownDeviceResponse, error) {
+func (c *clientApplicationClient) DisownDevice(ctx context.Context, in *DisownDeviceRequest, opts ...grpc.CallOption) (*DisownDeviceResponse, error) {
 	out := new(DisownDeviceResponse)
-	err := c.cc.Invoke(ctx, "/service.pb.DeviceGateway/DisownDevice", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/service.pb.ClientApplication/DisownDevice", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *deviceGatewayClient) ClearCache(ctx context.Context, in *ClearCacheRequest, opts ...grpc.CallOption) (*ClearCacheResponse, error) {
+func (c *clientApplicationClient) ClearCache(ctx context.Context, in *ClearCacheRequest, opts ...grpc.CallOption) (*ClearCacheResponse, error) {
 	out := new(ClearCacheResponse)
-	err := c.cc.Invoke(ctx, "/service.pb.DeviceGateway/ClearCache", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/service.pb.ClientApplication/ClearCache", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// DeviceGatewayServer is the server API for DeviceGateway service.
-// All implementations must embed UnimplementedDeviceGatewayServer
+// ClientApplicationServer is the server API for ClientApplication service.
+// All implementations must embed UnimplementedClientApplicationServer
 // for forward compatibility
-type DeviceGatewayServer interface {
+type ClientApplicationServer interface {
 	// Discover devices by client application. This operation fills cache of mappings deviceId to endpoints and this cache is used by other calls.
-	GetDevices(*GetDevicesRequest, DeviceGateway_GetDevicesServer) error
+	GetDevices(*GetDevicesRequest, ClientApplication_GetDevicesServer) error
 	// Get device information from the device. Device needs to be stored in cache otherwise it returns not found.
 	GetDevice(context.Context, *GetDeviceRequest) (*pb.Device, error)
 	// Get resource links of devices. Device needs to be stored in cache otherwise it returns not found.
 	GetDeviceResourceLinks(context.Context, *GetDeviceResourceLinksRequest) (*events.ResourceLinksPublished, error)
-	// Get resource from the device. Device needs to be stored in cache otherwise it returns not found.
+	// Get a resource from the device. Device needs to be stored in cache otherwise it returns not found.
 	GetResource(context.Context, *GetResourceRequest) (*pb.Resource, error)
-	// Update resource at the device. Device needs to be stored in cache otherwise it returns not found.
-	UpdateResource(context.Context, *pb.UpdateResourceRequest) (*pb.UpdateResourceResponse, error)
+	// Update a resource at the device. Device needs to be stored in cache otherwise it returns not found.
+	UpdateResource(context.Context, *UpdateResourceRequest) (*pb.UpdateResourceResponse, error)
+	// Create a resource at the device. Device needs to be stored in cache otherwise it returns not found.
+	CreateResource(context.Context, *CreateResourceRequest) (*pb.CreateResourceResponse, error)
+	// Delete a resource at the device. Device needs to be stored in cache otherwise it returns not found.
+	DeleteResource(context.Context, *DeleteResourceRequest) (*pb.DeleteResourceResponse, error)
 	// Own the device. Device needs to be stored in cache otherwise it returns not found.
 	OwnDevice(context.Context, *OwnDeviceRequest) (*OwnDeviceResponse, error)
 	// Disown the device. Device needs to be stored in cache otherwise it returns not found.
 	DisownDevice(context.Context, *DisownDeviceRequest) (*DisownDeviceResponse, error)
 	// Deletes all devices from the cache. To fill the cache again, call GetDevices.
 	ClearCache(context.Context, *ClearCacheRequest) (*ClearCacheResponse, error)
-	mustEmbedUnimplementedDeviceGatewayServer()
+	mustEmbedUnimplementedClientApplicationServer()
 }
 
-// UnimplementedDeviceGatewayServer must be embedded to have forward compatible implementations.
-type UnimplementedDeviceGatewayServer struct {
+// UnimplementedClientApplicationServer must be embedded to have forward compatible implementations.
+type UnimplementedClientApplicationServer struct {
 }
 
-func (UnimplementedDeviceGatewayServer) GetDevices(*GetDevicesRequest, DeviceGateway_GetDevicesServer) error {
+func (UnimplementedClientApplicationServer) GetDevices(*GetDevicesRequest, ClientApplication_GetDevicesServer) error {
 	return status.Errorf(codes.Unimplemented, "method GetDevices not implemented")
 }
-func (UnimplementedDeviceGatewayServer) GetDevice(context.Context, *GetDeviceRequest) (*pb.Device, error) {
+func (UnimplementedClientApplicationServer) GetDevice(context.Context, *GetDeviceRequest) (*pb.Device, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetDevice not implemented")
 }
-func (UnimplementedDeviceGatewayServer) GetDeviceResourceLinks(context.Context, *GetDeviceResourceLinksRequest) (*events.ResourceLinksPublished, error) {
+func (UnimplementedClientApplicationServer) GetDeviceResourceLinks(context.Context, *GetDeviceResourceLinksRequest) (*events.ResourceLinksPublished, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetDeviceResourceLinks not implemented")
 }
-func (UnimplementedDeviceGatewayServer) GetResource(context.Context, *GetResourceRequest) (*pb.Resource, error) {
+func (UnimplementedClientApplicationServer) GetResource(context.Context, *GetResourceRequest) (*pb.Resource, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetResource not implemented")
 }
-func (UnimplementedDeviceGatewayServer) UpdateResource(context.Context, *pb.UpdateResourceRequest) (*pb.UpdateResourceResponse, error) {
+func (UnimplementedClientApplicationServer) UpdateResource(context.Context, *UpdateResourceRequest) (*pb.UpdateResourceResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateResource not implemented")
 }
-func (UnimplementedDeviceGatewayServer) OwnDevice(context.Context, *OwnDeviceRequest) (*OwnDeviceResponse, error) {
+func (UnimplementedClientApplicationServer) CreateResource(context.Context, *CreateResourceRequest) (*pb.CreateResourceResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method CreateResource not implemented")
+}
+func (UnimplementedClientApplicationServer) DeleteResource(context.Context, *DeleteResourceRequest) (*pb.DeleteResourceResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method DeleteResource not implemented")
+}
+func (UnimplementedClientApplicationServer) OwnDevice(context.Context, *OwnDeviceRequest) (*OwnDeviceResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method OwnDevice not implemented")
 }
-func (UnimplementedDeviceGatewayServer) DisownDevice(context.Context, *DisownDeviceRequest) (*DisownDeviceResponse, error) {
+func (UnimplementedClientApplicationServer) DisownDevice(context.Context, *DisownDeviceRequest) (*DisownDeviceResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DisownDevice not implemented")
 }
-func (UnimplementedDeviceGatewayServer) ClearCache(context.Context, *ClearCacheRequest) (*ClearCacheResponse, error) {
+func (UnimplementedClientApplicationServer) ClearCache(context.Context, *ClearCacheRequest) (*ClearCacheResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ClearCache not implemented")
 }
-func (UnimplementedDeviceGatewayServer) mustEmbedUnimplementedDeviceGatewayServer() {}
+func (UnimplementedClientApplicationServer) mustEmbedUnimplementedClientApplicationServer() {}
 
-// UnsafeDeviceGatewayServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to DeviceGatewayServer will
+// UnsafeClientApplicationServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to ClientApplicationServer will
 // result in compilation errors.
-type UnsafeDeviceGatewayServer interface {
-	mustEmbedUnimplementedDeviceGatewayServer()
+type UnsafeClientApplicationServer interface {
+	mustEmbedUnimplementedClientApplicationServer()
 }
 
-func RegisterDeviceGatewayServer(s grpc.ServiceRegistrar, srv DeviceGatewayServer) {
-	s.RegisterService(&DeviceGateway_ServiceDesc, srv)
+func RegisterClientApplicationServer(s grpc.ServiceRegistrar, srv ClientApplicationServer) {
+	s.RegisterService(&ClientApplication_ServiceDesc, srv)
 }
 
-func _DeviceGateway_GetDevices_Handler(srv interface{}, stream grpc.ServerStream) error {
+func _ClientApplication_GetDevices_Handler(srv interface{}, stream grpc.ServerStream) error {
 	m := new(GetDevicesRequest)
 	if err := stream.RecvMsg(m); err != nil {
 		return err
 	}
-	return srv.(DeviceGatewayServer).GetDevices(m, &deviceGatewayGetDevicesServer{stream})
+	return srv.(ClientApplicationServer).GetDevices(m, &clientApplicationGetDevicesServer{stream})
 }
 
-type DeviceGateway_GetDevicesServer interface {
+type ClientApplication_GetDevicesServer interface {
 	Send(*pb.Device) error
 	grpc.ServerStream
 }
 
-type deviceGatewayGetDevicesServer struct {
+type clientApplicationGetDevicesServer struct {
 	grpc.ServerStream
 }
 
-func (x *deviceGatewayGetDevicesServer) Send(m *pb.Device) error {
+func (x *clientApplicationGetDevicesServer) Send(m *pb.Device) error {
 	return x.ServerStream.SendMsg(m)
 }
 
-func _DeviceGateway_GetDevice_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _ClientApplication_GetDevice_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetDeviceRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(DeviceGatewayServer).GetDevice(ctx, in)
+		return srv.(ClientApplicationServer).GetDevice(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/service.pb.DeviceGateway/GetDevice",
+		FullMethod: "/service.pb.ClientApplication/GetDevice",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(DeviceGatewayServer).GetDevice(ctx, req.(*GetDeviceRequest))
+		return srv.(ClientApplicationServer).GetDevice(ctx, req.(*GetDeviceRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _DeviceGateway_GetDeviceResourceLinks_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _ClientApplication_GetDeviceResourceLinks_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetDeviceResourceLinksRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(DeviceGatewayServer).GetDeviceResourceLinks(ctx, in)
+		return srv.(ClientApplicationServer).GetDeviceResourceLinks(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/service.pb.DeviceGateway/GetDeviceResourceLinks",
+		FullMethod: "/service.pb.ClientApplication/GetDeviceResourceLinks",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(DeviceGatewayServer).GetDeviceResourceLinks(ctx, req.(*GetDeviceResourceLinksRequest))
+		return srv.(ClientApplicationServer).GetDeviceResourceLinks(ctx, req.(*GetDeviceResourceLinksRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _DeviceGateway_GetResource_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _ClientApplication_GetResource_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetResourceRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(DeviceGatewayServer).GetResource(ctx, in)
+		return srv.(ClientApplicationServer).GetResource(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/service.pb.DeviceGateway/GetResource",
+		FullMethod: "/service.pb.ClientApplication/GetResource",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(DeviceGatewayServer).GetResource(ctx, req.(*GetResourceRequest))
+		return srv.(ClientApplicationServer).GetResource(ctx, req.(*GetResourceRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _DeviceGateway_UpdateResource_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(pb.UpdateResourceRequest)
+func _ClientApplication_UpdateResource_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateResourceRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(DeviceGatewayServer).UpdateResource(ctx, in)
+		return srv.(ClientApplicationServer).UpdateResource(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/service.pb.DeviceGateway/UpdateResource",
+		FullMethod: "/service.pb.ClientApplication/UpdateResource",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(DeviceGatewayServer).UpdateResource(ctx, req.(*pb.UpdateResourceRequest))
+		return srv.(ClientApplicationServer).UpdateResource(ctx, req.(*UpdateResourceRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _DeviceGateway_OwnDevice_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _ClientApplication_CreateResource_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(CreateResourceRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ClientApplicationServer).CreateResource(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/service.pb.ClientApplication/CreateResource",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ClientApplicationServer).CreateResource(ctx, req.(*CreateResourceRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ClientApplication_DeleteResource_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(DeleteResourceRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ClientApplicationServer).DeleteResource(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/service.pb.ClientApplication/DeleteResource",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ClientApplicationServer).DeleteResource(ctx, req.(*DeleteResourceRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ClientApplication_OwnDevice_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(OwnDeviceRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(DeviceGatewayServer).OwnDevice(ctx, in)
+		return srv.(ClientApplicationServer).OwnDevice(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/service.pb.DeviceGateway/OwnDevice",
+		FullMethod: "/service.pb.ClientApplication/OwnDevice",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(DeviceGatewayServer).OwnDevice(ctx, req.(*OwnDeviceRequest))
+		return srv.(ClientApplicationServer).OwnDevice(ctx, req.(*OwnDeviceRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _DeviceGateway_DisownDevice_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _ClientApplication_DisownDevice_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(DisownDeviceRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(DeviceGatewayServer).DisownDevice(ctx, in)
+		return srv.(ClientApplicationServer).DisownDevice(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/service.pb.DeviceGateway/DisownDevice",
+		FullMethod: "/service.pb.ClientApplication/DisownDevice",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(DeviceGatewayServer).DisownDevice(ctx, req.(*DisownDeviceRequest))
+		return srv.(ClientApplicationServer).DisownDevice(ctx, req.(*DisownDeviceRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _DeviceGateway_ClearCache_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _ClientApplication_ClearCache_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(ClearCacheRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(DeviceGatewayServer).ClearCache(ctx, in)
+		return srv.(ClientApplicationServer).ClearCache(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/service.pb.DeviceGateway/ClearCache",
+		FullMethod: "/service.pb.ClientApplication/ClearCache",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(DeviceGatewayServer).ClearCache(ctx, req.(*ClearCacheRequest))
+		return srv.(ClientApplicationServer).ClearCache(ctx, req.(*ClearCacheRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-// DeviceGateway_ServiceDesc is the grpc.ServiceDesc for DeviceGateway service.
+// ClientApplication_ServiceDesc is the grpc.ServiceDesc for ClientApplication service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var DeviceGateway_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "service.pb.DeviceGateway",
-	HandlerType: (*DeviceGatewayServer)(nil),
+var ClientApplication_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "service.pb.ClientApplication",
+	HandlerType: (*ClientApplicationServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
 			MethodName: "GetDevice",
-			Handler:    _DeviceGateway_GetDevice_Handler,
+			Handler:    _ClientApplication_GetDevice_Handler,
 		},
 		{
 			MethodName: "GetDeviceResourceLinks",
-			Handler:    _DeviceGateway_GetDeviceResourceLinks_Handler,
+			Handler:    _ClientApplication_GetDeviceResourceLinks_Handler,
 		},
 		{
 			MethodName: "GetResource",
-			Handler:    _DeviceGateway_GetResource_Handler,
+			Handler:    _ClientApplication_GetResource_Handler,
 		},
 		{
 			MethodName: "UpdateResource",
-			Handler:    _DeviceGateway_UpdateResource_Handler,
+			Handler:    _ClientApplication_UpdateResource_Handler,
+		},
+		{
+			MethodName: "CreateResource",
+			Handler:    _ClientApplication_CreateResource_Handler,
+		},
+		{
+			MethodName: "DeleteResource",
+			Handler:    _ClientApplication_DeleteResource_Handler,
 		},
 		{
 			MethodName: "OwnDevice",
-			Handler:    _DeviceGateway_OwnDevice_Handler,
+			Handler:    _ClientApplication_OwnDevice_Handler,
 		},
 		{
 			MethodName: "DisownDevice",
-			Handler:    _DeviceGateway_DisownDevice_Handler,
+			Handler:    _ClientApplication_DisownDevice_Handler,
 		},
 		{
 			MethodName: "ClearCache",
-			Handler:    _DeviceGateway_ClearCache_Handler,
+			Handler:    _ClientApplication_ClearCache_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{
 		{
 			StreamName:    "GetDevices",
-			Handler:       _DeviceGateway_GetDevices_Handler,
+			Handler:       _ClientApplication_GetDevices_Handler,
 			ServerStreams: true,
 		},
 	},

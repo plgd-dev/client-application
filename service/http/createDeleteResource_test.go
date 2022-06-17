@@ -10,16 +10,14 @@ import (
 	"github.com/plgd-dev/client-application/pb"
 	serviceHttp "github.com/plgd-dev/client-application/service/http"
 	"github.com/plgd-dev/client-application/test"
-	"github.com/plgd-dev/device/schema/configuration"
-	plgdDevice "github.com/plgd-dev/device/schema/device"
 	grpcgwPb "github.com/plgd-dev/hub/v2/grpc-gateway/pb"
 	httpgwTest "github.com/plgd-dev/hub/v2/http-gateway/test"
-	"github.com/plgd-dev/kit/v2/codec/cbor"
-	"github.com/stretchr/testify/assert"
+	hubTest "github.com/plgd-dev/hub/v2/test"
+	"github.com/plgd-dev/kit/v2/codec/json"
 	"github.com/stretchr/testify/require"
 )
 
-func TestClientApplicationServerGetDevice(t *testing.T) {
+func TestClientApplicationServerCreateDeleteResource(t *testing.T) {
 	dev := test.MustFindDeviceByName(test.DevsimName, []pb.GetDevicesRequest_UseMulticast{pb.GetDevicesRequest_IPV4})
 	cfg := test.MakeConfig(t)
 	cfg.APIs.HTTP.TLS.ClientCertificateRequired = false
@@ -46,40 +44,29 @@ func TestClientApplicationServerGetDevice(t *testing.T) {
 	_ = resp.Body.Close()
 	require.Equal(t, http.StatusOK, resp.StatusCode)
 
-	newName := test.DevsimName + "_new"
-
-	request = httpgwTest.NewRequest(http.MethodPut, serviceHttp.DeviceResource, bytes.NewBufferString(`{"n":"`+newName+`"}`)).
-		Host(test.CLIENT_APPLICATION_HTTP_HOST).DeviceId(dev.Id).ResourceHref(configuration.ResourceURI).ContentType(serviceHttp.ApplicationJsonContentType).Build()
+	// create resource
+	request = httpgwTest.NewRequest(http.MethodPost, serviceHttp.DeviceResourceLink, bytes.NewBuffer(func() []byte {
+		v, err := json.Encode(hubTest.MakeSwitchResourceDefaultData())
+		require.NoError(t, err)
+		return v
+	}())).Host(test.CLIENT_APPLICATION_HTTP_HOST).DeviceId(dev.Id).ResourceHref(hubTest.TestResourceSwitchesHref).Build()
 	resp = httpgwTest.HTTPDo(t, request)
-	defer func() {
-		_ = resp.Body.Close()
-	}()
-	assert.Equal(t, http.StatusOK, resp.StatusCode)
+	_ = resp.Body.Close()
+	require.Equal(t, http.StatusOK, resp.StatusCode)
 
-	request = httpgwTest.NewRequest(http.MethodGet, serviceHttp.Device, nil).
-		Host(test.CLIENT_APPLICATION_HTTP_HOST).Accept(serviceHttp.ApplicationProtoJsonContentType).DeviceId(dev.Id).Build()
+	// delete resource
+	request = httpgwTest.NewRequest(http.MethodDelete, serviceHttp.DeviceResourceLink, nil).
+		Host(test.CLIENT_APPLICATION_HTTP_HOST).DeviceId(dev.Id).ResourceHref(hubTest.TestResourceSwitchesInstanceHref("1")).Build()
 	resp = httpgwTest.HTTPDo(t, request)
-	defer func() {
-		_ = resp.Body.Close()
-	}()
-	assert.Equal(t, http.StatusOK, resp.StatusCode)
+	_ = resp.Body.Close()
+	require.Equal(t, http.StatusOK, resp.StatusCode)
 
-	var device grpcgwPb.Device
-	err := httpgwTest.Unmarshal(resp.StatusCode, resp.Body, &device)
-	require.NoError(t, err)
-
-	var v plgdDevice.Device
-	err = cbor.Decode(device.GetData().GetContent().GetData(), &v)
-	require.NoError(t, err)
-	require.Equal(t, newName, v.Name)
-
-	request = httpgwTest.NewRequest(http.MethodPut, serviceHttp.DeviceResource, bytes.NewBufferString(`{"n":"`+test.DevsimName+`"}`)).
-		Host(test.CLIENT_APPLICATION_HTTP_HOST).DeviceId(dev.Id).ResourceHref(configuration.ResourceURI).ContentType(serviceHttp.ApplicationJsonContentType).Build()
+	// duplicity delete
+	request = httpgwTest.NewRequest(http.MethodDelete, serviceHttp.DeviceResourceLink, nil).
+		Host(test.CLIENT_APPLICATION_HTTP_HOST).DeviceId(dev.Id).ResourceHref(hubTest.TestResourceSwitchesInstanceHref("1")).Build()
 	resp = httpgwTest.HTTPDo(t, request)
-	defer func() {
-		_ = resp.Body.Close()
-	}()
-	assert.Equal(t, http.StatusOK, resp.StatusCode)
+	_ = resp.Body.Close()
+	require.Equal(t, http.StatusNotFound, resp.StatusCode)
 
 	request = httpgwTest.NewRequest(http.MethodPost, serviceHttp.DisownDevice, nil).
 		Host(test.CLIENT_APPLICATION_HTTP_HOST).DeviceId(dev.Id).Build()

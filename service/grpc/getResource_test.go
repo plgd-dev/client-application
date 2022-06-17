@@ -16,7 +16,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func TestDeviceGatewayServerGetResource(t *testing.T) {
+func TestClientApplicationServerGetResource(t *testing.T) {
 	dev := test.MustFindDeviceByName(test.DevsimName, []pb.GetDevicesRequest_UseMulticast{pb.GetDevicesRequest_IPV4})
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*8)
 	defer cancel()
@@ -87,10 +87,10 @@ func TestDeviceGatewayServerGetResource(t *testing.T) {
 		},
 	}
 
-	s, teardown, err := test.NewDeviceGatewayServer(ctx)
+	s, teardown, err := test.NewClientApplicationServer(ctx)
 	require.NoError(t, err)
 	defer teardown()
-	err = s.GetDevices(&pb.GetDevicesRequest{}, test.NewDeviceGatewayGetDevicesServer(ctx))
+	err = s.GetDevices(&pb.GetDevicesRequest{}, test.NewClientApplicationGetDevicesServer(ctx))
 	require.NoError(t, err)
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

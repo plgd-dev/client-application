@@ -6,17 +6,15 @@ import (
 	"time"
 
 	"github.com/plgd-dev/client-application/pb"
-	serviceHttp "github.com/plgd-dev/client-application/service/http"
 	"github.com/plgd-dev/client-application/test"
-	"github.com/plgd-dev/device/schema/configuration"
-	plgdDevice "github.com/plgd-dev/device/schema/device"
+	"github.com/plgd-dev/go-coap/v2/message"
 	grpcgwPb "github.com/plgd-dev/hub/v2/grpc-gateway/pb"
 	"github.com/plgd-dev/hub/v2/resource-aggregate/commands"
-	"github.com/plgd-dev/kit/v2/codec/cbor"
+	hubTest "github.com/plgd-dev/hub/v2/test"
 	"github.com/stretchr/testify/require"
 )
 
-func TestClientApplicationServerGetDevice(t *testing.T) {
+func TestClientApplicationServerCreateDeleteResource(t *testing.T) {
 	dev := test.MustFindDeviceByName(test.DevsimName, []pb.GetDevicesRequest_UseMulticast{pb.GetDevicesRequest_IPV4})
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*8)
 	defer cancel()
@@ -40,33 +38,25 @@ func TestClientApplicationServerGetDevice(t *testing.T) {
 	})
 	require.NoError(t, err)
 
-	newName := test.DevsimName + "_new"
-	_, err = s.UpdateResource(ctx, &pb.UpdateResourceRequest{
-		ResourceId: commands.NewResourceID(dev.Id, configuration.ResourceURI),
+	_, err = s.CreateResource(ctx, &pb.CreateResourceRequest{
+		ResourceId: commands.NewResourceID(dev.Id, hubTest.TestResourceSwitchesHref),
 		Content: &grpcgwPb.Content{
-			ContentType: serviceHttp.ApplicationJsonContentType,
-			Data:        []byte(`{"n":"` + newName + `"}`),
+			ContentType: message.AppOcfCbor.String(),
+			Data:        hubTest.EncodeToCbor(t, hubTest.MakeSwitchResourceDefaultData()),
 		},
 	})
 	require.NoError(t, err)
 
-	d1, err = s.GetDevice(ctx, &pb.GetDeviceRequest{
-		DeviceId: dev.Id,
+	_, err = s.DeleteResource(ctx, &pb.DeleteResourceRequest{
+		ResourceId: commands.NewResourceID(dev.Id, hubTest.TestResourceSwitchesInstanceHref("1")),
 	})
 	require.NoError(t, err)
-	var v plgdDevice.Device
-	err = cbor.Decode(d1.GetData().GetContent().GetData(), &v)
-	require.NoError(t, err)
-	require.Equal(t, newName, v.Name)
 
-	_, err = s.UpdateResource(ctx, &pb.UpdateResourceRequest{
-		ResourceId: commands.NewResourceID(dev.Id, configuration.ResourceURI),
-		Content: &grpcgwPb.Content{
-			ContentType: serviceHttp.ApplicationJsonContentType,
-			Data:        []byte(`{"n":"` + test.DevsimName + `"}`),
-		},
+	// duplicity delete
+	_, err = s.DeleteResource(ctx, &pb.DeleteResourceRequest{
+		ResourceId: commands.NewResourceID(dev.Id, hubTest.TestResourceSwitchesInstanceHref("1")),
 	})
-	require.NoError(t, err)
+	require.Error(t, err)
 
 	_, err = s.DisownDevice(ctx, &pb.DisownDeviceRequest{
 		DeviceId: dev.Id,

@@ -22,7 +22,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestDeviceGatewayServerUpdateResource(t *testing.T) {
+func TestClientApplicationServerUpdateResource(t *testing.T) {
 	dev := test.MustFindDeviceByName(test.DevsimName, []pb.GetDevicesRequest_UseMulticast{pb.GetDevicesRequest_IPV4})
 	dev.Data.OpenTelemetryCarrier = map[string]string{}
 

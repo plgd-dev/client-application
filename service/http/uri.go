@@ -16,6 +16,7 @@ const (
 	Devices             = ApiV1 + "/devices"
 	Device              = Devices + "/{" + DeviceIDKey + "}"
 	DeviceResourceLinks = Devices + "/{" + DeviceIDKey + "}/" + ResourceLinksPathKey
+	DeviceResourceLink  = DeviceResourceLinks + "/{" + ResourceHrefKey + "}"
 	DeviceResources     = Device + "/" + ResourcesPathKey
 	DeviceResource      = DeviceResources + "/{" + ResourceHrefKey + "}"
 	OwnDevice           = Device + "/own"

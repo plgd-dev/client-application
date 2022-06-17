@@ -16,19 +16,19 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestDeviceGatewayServerClearCache(t *testing.T) {
+func TestClientApplicationServerClearCache(t *testing.T) {
 	dev := test.MustFindDeviceByName(test.DevsimName, []pb.GetDevicesRequest_UseMulticast{pb.GetDevicesRequest_IPV4})
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*120)
 	defer cancel()
 
-	s, teardown, err := test.NewDeviceGatewayServer(ctx)
+	s, teardown, err := test.NewClientApplicationServer(ctx)
 	require.NoError(t, err)
 	defer teardown()
 
 	// fill cache
 	err = s.GetDevices(&pb.GetDevicesRequest{
 		UseMulticast: []pb.GetDevicesRequest_UseMulticast{pb.GetDevicesRequest_IPV4},
-	}, test.NewDeviceGatewayGetDevicesServer(ctx))
+	}, test.NewClientApplicationGetDevicesServer(ctx))
 	require.NoError(t, err)
 
 	// get device
@@ -46,7 +46,7 @@ func TestDeviceGatewayServerClearCache(t *testing.T) {
 
 	// update resource - dtls connection will be created
 	newName := test.DevsimName + "_new"
-	_, err = s.UpdateResource(ctx, &grpcgwPb.UpdateResourceRequest{
+	_, err = s.UpdateResource(ctx, &pb.UpdateResourceRequest{
 		ResourceId: commands.NewResourceID(dev.Id, configuration.ResourceURI),
 		Content: &grpcgwPb.Content{
 			ContentType: serviceHttp.ApplicationJsonContentType,
@@ -78,11 +78,11 @@ func TestDeviceGatewayServerClearCache(t *testing.T) {
 	// fill cache
 	err = s.GetDevices(&pb.GetDevicesRequest{
 		UseMulticast: []pb.GetDevicesRequest_UseMulticast{pb.GetDevicesRequest_IPV4},
-	}, test.NewDeviceGatewayGetDevicesServer(ctx))
+	}, test.NewClientApplicationGetDevicesServer(ctx))
 	require.NoError(t, err)
 
 	// revert resource update
-	_, err = s.UpdateResource(ctx, &grpcgwPb.UpdateResourceRequest{
+	_, err = s.UpdateResource(ctx, &pb.UpdateResourceRequest{
 		ResourceId: commands.NewResourceID(dev.Id, configuration.ResourceURI),
 		Content: &grpcgwPb.Content{
 			ContentType: serviceHttp.ApplicationJsonContentType,

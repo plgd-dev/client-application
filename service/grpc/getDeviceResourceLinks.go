@@ -9,7 +9,7 @@ import (
 	"github.com/plgd-dev/hub/v2/resource-aggregate/events"
 )
 
-func (s *DeviceGatewayServer) GetDeviceResourceLinks(ctx context.Context, req *pb.GetDeviceResourceLinksRequest) (*events.ResourceLinksPublished, error) {
+func (s *ClientApplicationServer) GetDeviceResourceLinks(ctx context.Context, req *pb.GetDeviceResourceLinksRequest) (*events.ResourceLinksPublished, error) {
 	dev, err := s.getDevice(req.GetDeviceId())
 	if err != nil {
 		return nil, err

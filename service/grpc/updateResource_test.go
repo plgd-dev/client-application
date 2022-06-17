@@ -19,13 +19,13 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func TestDeviceGatewayServerUpdateResource(t *testing.T) {
+func TestClientApplicationServerUpdateResource(t *testing.T) {
 	dev := test.MustFindDeviceByName(test.DevsimName, []pb.GetDevicesRequest_UseMulticast{pb.GetDevicesRequest_IPV4})
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*8)
 	defer cancel()
 
 	type args struct {
-		req *grpcgwPb.UpdateResourceRequest
+		req *pb.UpdateResourceRequest
 	}
 	tests := []struct {
 		name        string
@@ -37,7 +37,7 @@ func TestDeviceGatewayServerUpdateResource(t *testing.T) {
 		{
 			name: "doxm update",
 			args: args{
-				req: &grpcgwPb.UpdateResourceRequest{
+				req: &pb.UpdateResourceRequest{
 					ResourceId: &commands.ResourceId{
 						DeviceId: dev.Id,
 						Href:     doxm.ResourceURI,
@@ -58,7 +58,7 @@ func TestDeviceGatewayServerUpdateResource(t *testing.T) {
 		{
 			name: "device resource - fail",
 			args: args{
-				req: &grpcgwPb.UpdateResourceRequest{
+				req: &pb.UpdateResourceRequest{
 					ResourceId: &commands.ResourceId{
 						DeviceId: dev.Id,
 						Href:     device.ResourceURI,
@@ -75,7 +75,7 @@ func TestDeviceGatewayServerUpdateResource(t *testing.T) {
 		{
 			name: "unknown device",
 			args: args{
-				req: &grpcgwPb.UpdateResourceRequest{
+				req: &pb.UpdateResourceRequest{
 					ResourceId: &commands.ResourceId{
 						DeviceId: uuid.NewString(),
 						Href:     device.ResourceURI,
@@ -92,7 +92,7 @@ func TestDeviceGatewayServerUpdateResource(t *testing.T) {
 		{
 			name: "unknown href",
 			args: args{
-				req: &grpcgwPb.UpdateResourceRequest{
+				req: &pb.UpdateResourceRequest{
 					ResourceId: &commands.ResourceId{
 						DeviceId: dev.Id,
 						Href:     "/unknown",
@@ -109,7 +109,7 @@ func TestDeviceGatewayServerUpdateResource(t *testing.T) {
 		{
 			name: "permission denied - cannot establish TLS connection",
 			args: args{
-				req: &grpcgwPb.UpdateResourceRequest{
+				req: &pb.UpdateResourceRequest{
 					ResourceId: &commands.ResourceId{
 						DeviceId: dev.Id,
 						Href:     "/light/1",
@@ -125,10 +125,10 @@ func TestDeviceGatewayServerUpdateResource(t *testing.T) {
 		},
 	}
 
-	s, teardown, err := test.NewDeviceGatewayServer(ctx)
+	s, teardown, err := test.NewClientApplicationServer(ctx)
 	require.NoError(t, err)
 	defer teardown()
-	err = s.GetDevices(&pb.GetDevicesRequest{}, test.NewDeviceGatewayGetDevicesServer(ctx))
+	err = s.GetDevices(&pb.GetDevicesRequest{}, test.NewClientApplicationGetDevicesServer(ctx))
 	require.NoError(t, err)
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
