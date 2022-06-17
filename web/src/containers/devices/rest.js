@@ -201,7 +201,7 @@ export const addDeviceByIp = deviceIp => {
  * Own device by deviceId
  * @param {*} params deviceId
  */
-export const ownDevice = deviceId => {
+export const ownDeviceApi = deviceId => {
   return fetchApi(
     `${security.getGeneralConfig().httpGatewayAddress}${
       devicesApiEndpoints.DEVICES
@@ -214,7 +214,7 @@ export const ownDevice = deviceId => {
  * DisOwn device by deviceId
  * @param {*} params deviceId
  */
-export const disownDevice = deviceId => {
+export const disownDeviceApi = deviceId => {
   return fetchApi(
     `${security.getGeneralConfig().httpGatewayAddress}${
       devicesApiEndpoints.DEVICES

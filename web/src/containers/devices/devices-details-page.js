@@ -34,8 +34,8 @@ import {
   updateDevicesResourceApi,
   createDevicesResourceApi,
   deleteDevicesResourceApi,
-  ownDevice,
-  disownDevice,
+  ownDeviceApi,
+  disownDeviceApi,
 } from './rest'
 import { useDeviceDetails, useDevicesResources } from './hooks'
 import { messages as t } from './devices-i18n'
@@ -320,7 +320,7 @@ export const DevicesDetailsPage = () => {
 
   const handleOwnChange = async () => {
     try {
-      ;(await isOwned) ? disownDevice(id) : ownDevice(id)
+      ;(await isOwned) ? disownDeviceApi(id) : ownDeviceApi(id)
       const newOwnState = !isOwned
       setIsOwned(newOwnState)
 

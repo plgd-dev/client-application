@@ -8,7 +8,7 @@ import { messages as menuT } from '@/components/menu/menu-i18n'
 import { useDevicesList } from './hooks'
 import { DevicesList } from './_devices-list'
 import { DevicesListHeader } from './_devices-list-header'
-import { deleteDevicesApi, disownDevice, ownDevice } from './rest'
+import { deleteDevicesApi, disownDeviceApi, ownDeviceApi } from './rest'
 import {
   handleDeleteDevicesErrors,
   handleOwnDevicesErrors,
@@ -21,10 +21,10 @@ import {
   getDevices,
   updateDevices,
   flushDevices,
-  toggleOwnDevice,
+  ownDevice,
+  disOwnDevice,
 } from '@/containers/devices/slice'
 import { useDispatch, useSelector } from 'react-redux'
-import Button from '@shared/Button'
 
 export const DevicesListPage = () => {
   const { formatMessage: _ } = useIntl()
@@ -85,7 +85,7 @@ export const DevicesListPage = () => {
   const handleOwnDevice = async (isOwned, deviceId, deviceName) => {
     try {
       setOwning(true)
-      isOwned ? await disownDevice(deviceId) : await ownDevice(deviceId)
+      isOwned ? await disownDeviceApi(deviceId) : await ownDeviceApi(deviceId)
 
       if (isMounted.current) {
         showSuccessToast({
@@ -96,8 +96,9 @@ export const DevicesListPage = () => {
         })
 
         if (!isOwned) {
-          dispatch(toggleOwnDevice({ deviceId: deviceId, ownState: !isOwned }))
+          dispatch(ownDevice(deviceId))
         } else {
+          dispatch(disOwnDevice(deviceId))
           refresh()
         }
 
@@ -136,8 +137,6 @@ export const DevicesListPage = () => {
         onDeleteClick={handleOpenDeleteModal}
         ownDevice={handleOwnDevice}
       />
-
-      <Button />
 
       <ConfirmModal
         onConfirm={deleteDevices}

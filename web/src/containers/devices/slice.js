@@ -5,7 +5,7 @@ import findIndex from 'lodash/findIndex'
 import { devicesOwnerships } from '@/containers/devices/constants'
 import isEqual from 'lodash/isEqual'
 
-const { OWNED, UNOWNED } = devicesOwnerships
+const { OWNED } = devicesOwnerships
 
 const initialState = {
   activeNotifications: [],
@@ -64,17 +64,21 @@ const { reducer, actions } = createSlice({
     flushDevices(state) {
       state.devicesList = []
     },
-    toggleOwnDevice(state, { payload }) {
+    ownDevice(state, { payload }) {
       const index = findIndex(
         state.devicesList,
-        device => device.id === payload.deviceId
+        device => device.id === payload
       )
 
       if (index > -1) {
-        state.devicesList[index].ownershipStatus = payload.ownState
-          ? OWNED
-          : UNOWNED
+        state.devicesList[index].ownershipStatus = OWNED
       }
+    },
+    disOwnDevice(state, { payload }) {
+      state.devicesList.splice(
+        state.devicesList.findIndex(device => device.id === payload),
+        1
+      )
     },
   },
 })
@@ -87,7 +91,8 @@ export const {
   setDevices,
   addDevice,
   flushDevices,
-  toggleOwnDevice,
+  ownDevice,
+  disOwnDevice,
   updateDevices,
 } = actions
 
