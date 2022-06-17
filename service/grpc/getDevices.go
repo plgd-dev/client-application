@@ -1,4 +1,4 @@
-//***************************************************************************
+// ************************************************************************
 // Copyright (C) 2022 plgd.dev, s.r.o.
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,7 +12,7 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//*************************************************************************
+// ************************************************************************
 
 package grpc
 
@@ -505,6 +505,27 @@ func (s *ClientApplicationServer) processDiscoverdDevices(discoveredDevices, cac
 	return devs
 }
 
+func sendDevices(req *pb.GetDevicesRequest, devs devices, send func(*grpcgwPb.Device) error) error {
+	devs.Sort()
+	for _, device := range devs {
+		d := device.ToProto()
+		if d.GetData().GetContent() == nil {
+			continue
+		}
+		if !filterByType(d, req.GetTypeFilter()) {
+			continue
+		}
+		if !filterByOwnershipStatus(d, req.GetOwnershipStatusFilter()) {
+			continue
+		}
+		if err := send(d); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func (s *ClientApplicationServer) GetDevices(req *pb.GetDevicesRequest, srv pb.ClientApplication_GetDevicesServer) error {
 	req = tryToSetDefaultRequest(req)
 	ctx := srv.Context()
@@ -557,22 +578,5 @@ func (s *ClientApplicationServer) GetDevices(req *pb.GetDevicesRequest, srv pb.C
 		}
 		return true
 	})
-	devs.Sort()
-	for _, device := range devs {
-		d := device.ToProto()
-		if d.GetData().GetContent() == nil {
-			continue
-		}
-		if !filterByType(d, req.GetTypeFilter()) {
-			continue
-		}
-		if !filterByOwnershipStatus(d, req.GetOwnershipStatusFilter()) {
-			continue
-		}
-		if err := srv.Send(d); err != nil {
-			return err
-		}
-	}
-
-	return nil
+	return sendDevices(req, devs, srv.Send)
 }
