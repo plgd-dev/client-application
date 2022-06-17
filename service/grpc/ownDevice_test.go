@@ -11,15 +11,15 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestDeviceGatewayServerOwnDevice(t *testing.T) {
+func TestClientApplicationServerOwnDevice(t *testing.T) {
 	dev := test.MustFindDeviceByName(test.DevsimName, []pb.GetDevicesRequest_UseMulticast{pb.GetDevicesRequest_IPV4})
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*8)
 	defer cancel()
 
-	s, teardown, err := test.NewDeviceGatewayServer(ctx)
+	s, teardown, err := test.NewClientApplicationServer(ctx)
 	require.NoError(t, err)
 	defer teardown()
-	err = s.GetDevices(&pb.GetDevicesRequest{}, test.NewDeviceGatewayGetDevicesServer(ctx))
+	err = s.GetDevices(&pb.GetDevicesRequest{}, test.NewClientApplicationGetDevicesServer(ctx))
 	require.NoError(t, err)
 
 	_, err = s.OwnDevice(ctx, &pb.OwnDeviceRequest{

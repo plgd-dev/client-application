@@ -10,7 +10,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (s *DeviceGatewayServer) GetDevice(ctx context.Context, req *pb.GetDeviceRequest) (*grpcgwPb.Device, error) {
+func (s *ClientApplicationServer) GetDevice(ctx context.Context, req *pb.GetDeviceRequest) (*grpcgwPb.Device, error) {
 	dev, err := s.getDevice(req.GetDeviceId())
 	if err != nil {
 		return nil, err

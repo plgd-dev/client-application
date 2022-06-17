@@ -462,7 +462,7 @@ func tryToSetDefaultRequest(req *pb.GetDevicesRequest) *pb.GetDevicesRequest {
 	return req
 }
 
-func (s *DeviceGatewayServer) processDiscoverdDevices(discoveredDevices, cachedDevices *sync.Map) devices {
+func (s *ClientApplicationServer) processDiscoverdDevices(discoveredDevices, cachedDevices *sync.Map) devices {
 	devs := make(devices, 0, 128)
 	discoveredDevices.Range(func(key, value any) bool {
 		d, ok := value.(*device)
@@ -489,7 +489,7 @@ func (s *DeviceGatewayServer) processDiscoverdDevices(discoveredDevices, cachedD
 	return devs
 }
 
-func (s *DeviceGatewayServer) GetDevices(req *pb.GetDevicesRequest, srv pb.DeviceGateway_GetDevicesServer) error {
+func (s *ClientApplicationServer) GetDevices(req *pb.GetDevicesRequest, srv pb.ClientApplication_GetDevicesServer) error {
 	req = tryToSetDefaultRequest(req)
 	ctx := srv.Context()
 	var toCall []func()

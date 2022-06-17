@@ -39,17 +39,17 @@ func New(ctx context.Context, config Config, logger log.Logger) (*Service, error
 		return nil, fmt.Errorf("cannot create device service: %w", err)
 	}
 
-	deviceGatewayServer := grpc.NewDeviceGatewayServer(deviceService, logger)
+	clientApplicationServer := grpc.NewClientApplicationServer(deviceService, logger)
 
 	if config.APIs.HTTP.Enabled {
-		httpService, err = http.New(ctx, serviceName, config.APIs.HTTP.Config, deviceGatewayServer, logger, tracerProvider)
+		httpService, err = http.New(ctx, serviceName, config.APIs.HTTP.Config, clientApplicationServer, logger, tracerProvider)
 		if err != nil {
 			return nil, fmt.Errorf("cannot create http service: %w", err)
 		}
 	}
 	var grpcService *grpc.Service
 	if config.APIs.GRPC.Enabled {
-		grpcService, err = grpc.New(ctx, serviceName, config.APIs.GRPC.Config, deviceGatewayServer, logger, tracerProvider)
+		grpcService, err = grpc.New(ctx, serviceName, config.APIs.GRPC.Config, clientApplicationServer, logger, tracerProvider)
 		if err != nil {
 			return nil, fmt.Errorf("cannot create grpc service: %w", err)
 		}

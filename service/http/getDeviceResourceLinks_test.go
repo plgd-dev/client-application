@@ -21,7 +21,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestDeviceGatewayServerGetDeviceResourceLinks(t *testing.T) {
+func TestClientApplicationServerGetDeviceResourceLinks(t *testing.T) {
 	dev := test.MustFindDeviceByName(test.DevsimName, []pb.GetDevicesRequest_UseMulticast{pb.GetDevicesRequest_IPV4})
 
 	type args struct {

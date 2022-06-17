@@ -11,7 +11,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (s *DeviceGatewayServer) DisownDevice(ctx context.Context, req *pb.DisownDeviceRequest) (*pb.DisownDeviceResponse, error) {
+func (s *ClientApplicationServer) DisownDevice(ctx context.Context, req *pb.DisownDeviceRequest) (*pb.DisownDeviceResponse, error) {
 	dev, err := s.getDevice(req.GetDeviceId())
 	if err != nil {
 		return nil, err

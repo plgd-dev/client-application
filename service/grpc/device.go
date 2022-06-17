@@ -140,6 +140,21 @@ func (d *device) getResourceLink(ctx context.Context, resourceID *commands.Resou
 	return link, nil
 }
 
+func (d *device) checkAccess(link schema.ResourceLink) error {
+	if d.ToProto().GetOwnershipStatus() != grpcgwPb.Device_OWNED && len(link.Endpoints.FilterUnsecureEndpoints()) == 0 {
+		return status.Error(codes.PermissionDenied, "device is not owned")
+	}
+	return nil
+}
+
+func (d *device) getResourceLinkAndCheckAccess(ctx context.Context, resourceID *commands.ResourceId) (schema.ResourceLink, error) {
+	link, err := d.getResourceLink(ctx, resourceID)
+	if err != nil {
+		return link, err
+	}
+	return link, d.checkAccess(link)
+}
+
 func (d *device) updateDeviceMetadata(resourceTypes []string, endpoints schema.Endpoints, ownershipStatus grpcgwPb.Device_OwnershipStatus) {
 	d.private.mutex.Lock()
 	defer d.private.mutex.Unlock()

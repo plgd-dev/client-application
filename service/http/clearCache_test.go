@@ -19,7 +19,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestDeviceGatewayServerClearCache(t *testing.T) {
+func TestClientApplicationServerClearCache(t *testing.T) {
 	dev := test.MustFindDeviceByName(test.DevsimName, []pb.GetDevicesRequest_UseMulticast{pb.GetDevicesRequest_IPV4})
 	cfg := test.MakeConfig(t)
 	cfg.APIs.HTTP.TLS.ClientCertificateRequired = false

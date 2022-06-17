@@ -14,28 +14,15 @@ import (
 	"github.com/plgd-dev/hub/v2/resource-aggregate/commands"
 	"github.com/plgd-dev/hub/v2/resource-aggregate/events"
 	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 func getResourceAndRefreshCache(ctx context.Context, dev *device, link schema.ResourceLink) (*commands.Content, error) {
-	codec := rawcodec.GetRawCodec(message.AppOcfCbor)
-	var data []byte
-
-	if dev.ToProto().OwnershipStatus != grpcgwPb.Device_OWNED && len(link.Endpoints.FilterUnsecureEndpoints()) == 0 {
-		return nil, status.Error(codes.PermissionDenied, "device is not owned")
-	}
-	err := dev.GetResourceWithCodec(ctx, link, codec, &data)
+	var response []byte
+	err := dev.GetResourceWithCodec(ctx, link, rawcodec.GetRawCodec(message.AppOcfCbor), &response)
 	if err != nil {
 		return nil, convErrToGrpcStatus(codes.Unavailable, fmt.Errorf("cannot get resource %v for device %v: %w", link.Href, dev.ID, err)).Err()
 	}
-	contentType := ""
-	if len(data) > 0 {
-		contentType = message.AppOcfCbor.String()
-	}
-	content := &commands.Content{
-		ContentType: contentType,
-		Data:        data,
-	}
+	content := responseToData(response)
 	// we update device resource body only for device resource
 	if strings.Contains(link.ResourceTypes, plgdDevice.ResourceType) {
 		dev.updateDeviceResourceBody(content)
@@ -43,12 +30,23 @@ func getResourceAndRefreshCache(ctx context.Context, dev *device, link schema.Re
 	return content, nil
 }
 
-func (s *DeviceGatewayServer) GetResource(ctx context.Context, req *pb.GetResourceRequest) (*grpcgwPb.Resource, error) {
+func responseToData(response []byte) *commands.Content {
+	contentType := ""
+	if len(response) > 0 {
+		contentType = message.AppOcfCbor.String()
+	}
+	return &commands.Content{
+		ContentType: contentType,
+		Data:        response,
+	}
+}
+
+func (s *ClientApplicationServer) GetResource(ctx context.Context, req *pb.GetResourceRequest) (*grpcgwPb.Resource, error) {
 	dev, err := s.getDevice(req.GetResourceId().GetDeviceId())
 	if err != nil {
 		return nil, err
 	}
-	link, err := dev.getResourceLink(ctx, req.GetResourceId())
+	link, err := dev.getResourceLinkAndCheckAccess(ctx, req.GetResourceId())
 	if err != nil {
 		return nil, err
 	}

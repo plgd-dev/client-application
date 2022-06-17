@@ -17,7 +17,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestDeviceGatewayServerGetDevices(t *testing.T) {
+func TestClientApplicationServerGetDevices(t *testing.T) {
 	device := test.MustFindDeviceByName(test.DevsimName, []pb.GetDevicesRequest_UseMulticast{pb.GetDevicesRequest_IPV4})
 	u, err := url.Parse(device.Endpoints[0])
 	require.NoError(t, err)

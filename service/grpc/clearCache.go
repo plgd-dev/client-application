@@ -7,7 +7,7 @@ import (
 	"github.com/plgd-dev/client-application/pb"
 )
 
-func (s *DeviceGatewayServer) ClearCache(ctx context.Context, _ *pb.ClearCacheRequest) (*pb.ClearCacheResponse, error) {
+func (s *ClientApplicationServer) ClearCache(ctx context.Context, _ *pb.ClearCacheRequest) (*pb.ClearCacheResponse, error) {
 	var errors []error
 	s.devices.Range(func(key, value interface{}) bool {
 		dev, ok := value.(*device)

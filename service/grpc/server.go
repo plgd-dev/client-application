@@ -11,21 +11,21 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-type DeviceGatewayServer struct {
+type ClientApplicationServer struct {
 	serviceDevice *serviceDevice.Service
 	logger        log.Logger
 	devices       sync.Map
-	pb.UnimplementedDeviceGatewayServer
+	pb.UnimplementedClientApplicationServer
 }
 
-func NewDeviceGatewayServer(serviceDevice *serviceDevice.Service, logger log.Logger) *DeviceGatewayServer {
-	return &DeviceGatewayServer{
+func NewClientApplicationServer(serviceDevice *serviceDevice.Service, logger log.Logger) *ClientApplicationServer {
+	return &ClientApplicationServer{
 		serviceDevice: serviceDevice,
 		logger:        logger,
 	}
 }
 
-func (s *DeviceGatewayServer) getDevice(deviceID string) (*device, error) {
+func (s *ClientApplicationServer) getDevice(deviceID string) (*device, error) {
 	d, ok := s.devices.Load(deviceID)
 	if !ok {
 		return nil, status.Errorf(codes.NotFound, "device %v not found", deviceID)
@@ -37,7 +37,7 @@ func (s *DeviceGatewayServer) getDevice(deviceID string) (*device, error) {
 	return dev, nil
 }
 
-func (s *DeviceGatewayServer) deleteDevice(ctx context.Context, deviceID string) error {
+func (s *ClientApplicationServer) deleteDevice(ctx context.Context, deviceID string) error {
 	d, ok := s.devices.LoadAndDelete(deviceID)
 	if !ok {
 		return nil
