@@ -2,8 +2,6 @@ package grpc_test
 
 import (
 	"context"
-	"fmt"
-	"os"
 	"testing"
 	"time"
 
@@ -66,8 +64,6 @@ func TestDeviceGatewayServerClearCache(t *testing.T) {
 	err = cbor.Decode(d1.GetData().GetContent().GetData(), &v)
 	require.NoError(t, err)
 	require.Equal(t, newName, v.Name)
-
-	fmt.Printf("pid: %v\n", os.Getpid())
 
 	// clear cache - all connections will be closed
 	_, err = s.ClearCache(ctx, &pb.ClearCacheRequest{})
