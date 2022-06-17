@@ -35,7 +35,7 @@ def validate_yaml_key_format(key):
   """Check that key begins with lower-case letter and contains only supported characters."""
   valid = True
   # must be alphanumeric
-  if not re.match("^[a-z][a-zA-Z0-9_]*$", key):
+  if not re.match("^[a-z0-9][a-zA-Z0-9_]*$", key):
     valid = False
 
   if args.verbose:
