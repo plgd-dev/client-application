@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"net"
 	"strings"
 	"sync"
 	"time"
@@ -125,7 +126,7 @@ func (d *device) updateEndpointsLocked(endpoints schema.Endpoints) {
 	d.private.Endpoints = newEndpoints
 }
 
-func processDiscoveryResourceResponse(serviceDevice *serviceDevice.Service, logger log.Logger, resp *pool.Message) (*device, error) {
+func processDiscoveryResourceResponse(serviceDevice *serviceDevice.Service, logger log.Logger, remoteAddr net.Addr, resp *pool.Message) (*device, error) {
 	if resp.Code() != coapCodes.Content {
 		return nil, fmt.Errorf("unexpected response code: %d", resp.Code())
 	}
@@ -140,6 +141,13 @@ func processDiscoveryResourceResponse(serviceDevice *serviceDevice.Service, logg
 	if len(links) == 0 {
 		return nil, fmt.Errorf("no links in response")
 	}
+
+	addr, err := pkgNet.ParseString(string(schema.UDPScheme), remoteAddr.String())
+	if err != nil {
+		return nil, err
+	}
+	links = links.PatchEndpoint(addr, schema.Endpoints{})
+
 	var deviceID string
 	var endpoints schema.Endpoints
 	var resourceTypes []string
@@ -159,8 +167,8 @@ func processDiscoveryResourceResponse(serviceDevice *serviceDevice.Service, logg
 	return device, nil
 }
 
-func onDiscoveryResourceResponse(serviceDevice *serviceDevice.Service, logger log.Logger, resp *pool.Message, devices *sync.Map) error {
-	dev, err := processDiscoveryResourceResponse(serviceDevice, logger, resp)
+func onDiscoveryResourceResponse(serviceDevice *serviceDevice.Service, logger log.Logger, remoteAddr net.Addr, resp *pool.Message, devices *sync.Map) error {
+	dev, err := processDiscoveryResourceResponse(serviceDevice, logger, remoteAddr, resp)
 	if err != nil {
 		return err
 	}
@@ -310,7 +318,11 @@ func normalizeEndpoint(endpoint string) (pkgNet.Addr, error) {
 }
 
 func getDeviceByMulticastAddress(ctx context.Context, serviceDevice *serviceDevice.Service, logger log.Logger, addr pkgNet.Addr, devices *sync.Map) error {
-	address := fmt.Sprintf("%s:%d", addr.GetHostname(), addr.GetPort())
+	hostname := addr.GetHostname()
+	if strings.Contains(hostname, ":") {
+		hostname = "[" + hostname + "]"
+	}
+	address := fmt.Sprintf("%s:%d", hostname, addr.GetPort())
 	multicastAddr := []string{address}
 	discoveryConfiguration := core.DefaultDiscoveryConfiguration()
 	if strings.Contains(addr.GetHostname(), ":") {
@@ -335,7 +347,7 @@ func getDeviceByMulticastAddress(ctx context.Context, serviceDevice *serviceDevi
 		}
 	}, func(conn *client.ClientConn, resp *pool.Message) {
 		_ = conn.Close()
-		err := onDiscoveryResourceResponse(serviceDevice, logger, resp, devices)
+		err := onDiscoveryResourceResponse(serviceDevice, logger, conn.RemoteAddr(), resp, devices)
 		if err != nil {
 			return
 		}
@@ -350,7 +362,11 @@ func getDeviceByAddress(ctx context.Context, serviceDevice *serviceDevice.Servic
 	if addr.GetPort() == MulticastPort {
 		return getDeviceByMulticastAddress(ctx, serviceDevice, logger, addr, devices)
 	}
-	address := fmt.Sprintf("%s:%d", addr.GetHostname(), addr.GetPort())
+	hostname := addr.GetHostname()
+	if strings.Contains(hostname, ":") {
+		hostname = "[" + hostname + "]"
+	}
+	address := fmt.Sprintf("%s:%d", hostname, addr.GetPort())
 	client, err := udp.Dial(address, udp.WithContext(ctx))
 	if err != nil {
 		return err
@@ -373,7 +389,7 @@ func getDeviceByAddress(ctx context.Context, serviceDevice *serviceDevice.Servic
 	if err != nil {
 		return err
 	}
-	discoveryRes, err := processDiscoveryResourceResponse(serviceDevice, logger, resp)
+	discoveryRes, err := processDiscoveryResourceResponse(serviceDevice, logger, client.RemoteAddr(), resp)
 	if err != nil {
 		return err
 	}
@@ -550,7 +566,7 @@ func (s *ClientApplicationServer) GetDevices(req *pb.GetDevicesRequest, srv pb.C
 				_ = onDeviceResourceResponse(s.serviceDevice, s.logger, resp, &discoveredDevices)
 			}, func(conn *client.ClientConn, resp *pool.Message) {
 				_ = conn.Close()
-				_ = onDiscoveryResourceResponse(s.serviceDevice, s.logger, resp, &discoveredDevices)
+				_ = onDiscoveryResourceResponse(s.serviceDevice, s.logger, conn.RemoteAddr(), resp, &discoveredDevices)
 			})
 		},
 		)
