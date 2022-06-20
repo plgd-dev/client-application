@@ -48,7 +48,7 @@ func (c *CoapConfig) Validate() error {
 		return fmt.Errorf("maxMessageSize('%v')", c.MaxMessageSize)
 	}
 	if err := c.InactivityMonitor.Validate(); err != nil {
-		return fmt.Errorf("keepAlive.%w", err)
+		return fmt.Errorf("inactivityMonitor.%w", err)
 	}
 	if err := c.BlockwiseTransfer.Validate(); err != nil {
 		return fmt.Errorf("blockwiseTransfer.%w", err)

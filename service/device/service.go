@@ -61,7 +61,7 @@ func New(ctx context.Context, serviceName string, config Config, logger log.Logg
 			cc.AddOnClose(func() {
 				closeHander.OnClose(nil)
 			})
-			cc.SetContextValue(&closeHandlerKey, coap.NewOnCloseHandler())
+			cc.SetContextValue(&closeHandlerKey, closeHander)
 		}),
 		udp.WithMaxMessageSize(config.COAP.MaxMessageSize),
 		udp.WithBlockwise(config.COAP.BlockwiseTransfer.Enabled, config.COAP.BlockwiseTransfer.szx, config.COAP.InactivityMonitor.Timeout),

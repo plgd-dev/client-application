@@ -41,15 +41,17 @@ func TestClientApplicationServerGetDevice(t *testing.T) {
 	require.NoError(t, err)
 	defer teardown()
 	err = s.GetDevices(&pb.GetDevicesRequest{
-		UseMulticast: []pb.GetDevicesRequest_UseMulticast{pb.GetDevicesRequest_IPV4},
+		UseMulticast: []pb.GetDevicesRequest_UseMulticast{pb.GetDevicesRequest_IPV6},
 	}, test.NewClientApplicationGetDevicesServer(ctx))
 	require.NoError(t, err)
+
+	time.Sleep(time.Second)
 
 	d1, err := s.GetDevice(ctx, &pb.GetDeviceRequest{
 		DeviceId: dev.Id,
 	})
 	require.NoError(t, err)
-	require.Equal(t, dev, d1)
+	require.Equal(t, dev.GetData(), d1.GetData())
 
 	_, err = s.OwnDevice(ctx, &pb.OwnDeviceRequest{
 		DeviceId: dev.Id,
