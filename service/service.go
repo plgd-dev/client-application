@@ -1,3 +1,19 @@
+// ************************************************************************
+// Copyright (C) 2022 plgd.dev, s.r.o.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// 	http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// ************************************************************************
+
 package service
 
 import (
@@ -39,17 +55,17 @@ func New(ctx context.Context, config Config, logger log.Logger) (*Service, error
 		return nil, fmt.Errorf("cannot create device service: %w", err)
 	}
 
-	deviceGatewayServer := grpc.NewDeviceGatewayServer(deviceService, logger)
+	clientApplicationServer := grpc.NewClientApplicationServer(deviceService, logger)
 
 	if config.APIs.HTTP.Enabled {
-		httpService, err = http.New(ctx, serviceName, config.APIs.HTTP.Config, deviceGatewayServer, logger, tracerProvider)
+		httpService, err = http.New(ctx, serviceName, config.APIs.HTTP.Config, clientApplicationServer, logger, tracerProvider)
 		if err != nil {
 			return nil, fmt.Errorf("cannot create http service: %w", err)
 		}
 	}
 	var grpcService *grpc.Service
 	if config.APIs.GRPC.Enabled {
-		grpcService, err = grpc.New(ctx, serviceName, config.APIs.GRPC.Config, deviceGatewayServer, logger, tracerProvider)
+		grpcService, err = grpc.New(ctx, serviceName, config.APIs.GRPC.Config, clientApplicationServer, logger, tracerProvider)
 		if err != nil {
 			return nil, fmt.Errorf("cannot create grpc service: %w", err)
 		}

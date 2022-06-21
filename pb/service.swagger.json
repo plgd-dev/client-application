@@ -1,7 +1,7 @@
 {
   "swagger": "2.0",
   "info": {
-    "title": "plgd device - HTTP Gateway API",
+    "title": "plgd client application - API",
     "version": "1.0",
     "contact": {
       "name": "plgd.dev",
@@ -15,7 +15,7 @@
   },
   "tags": [
     {
-      "name": "DeviceGateway"
+      "name": "ClientApplication"
     }
   ],
   "schemes": [
@@ -33,7 +33,7 @@
     "/api/v1/devices": {
       "get": {
         "summary": "Discover devices by client application. This operation fills cache of mappings deviceId to endpoints and this cache is used by other calls.",
-        "operationId": "DeviceGateway_GetDevices",
+        "operationId": "ClientApplication_GetDevices",
         "responses": {
           "200": {
             "description": "A successful response.(streaming responses)",
@@ -132,7 +132,7 @@
       },
       "delete": {
         "summary": "Deletes all devices from the cache. To fill the cache again, call GetDevices.",
-        "operationId": "DeviceGateway_ClearCache",
+        "operationId": "ClientApplication_ClearCache",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -155,7 +155,7 @@
     "/api/v1/devices/{deviceId}": {
       "get": {
         "summary": "Get device information from the device. Device needs to be stored in cache otherwise it returns not found.",
-        "operationId": "DeviceGateway_GetDevice",
+        "operationId": "ClientApplication_GetDevice",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -186,7 +186,7 @@
     "/api/v1/devices/{deviceId}/disown": {
       "post": {
         "summary": "Disown the device. Device needs to be stored in cache otherwise it returns not found.",
-        "operationId": "DeviceGateway_DisownDevice",
+        "operationId": "ClientApplication_DisownDevice",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -217,7 +217,7 @@
     "/api/v1/devices/{deviceId}/own": {
       "post": {
         "summary": "Own the device. Device needs to be stored in cache otherwise it returns not found.",
-        "operationId": "DeviceGateway_OwnDevice",
+        "operationId": "ClientApplication_OwnDevice",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -248,7 +248,7 @@
     "/api/v1/devices/{deviceId}/resource-links": {
       "get": {
         "summary": "Get resource links of devices. Device needs to be stored in cache otherwise it returns not found.",
-        "operationId": "DeviceGateway_GetDeviceResourceLinks",
+        "operationId": "ClientApplication_GetDeviceResourceLinks",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -276,10 +276,90 @@
         ]
       }
     },
+    "/api/v1/devices/{resourceId.deviceId}/resource-links/{resourceId.href}": {
+      "delete": {
+        "summary": "Delete a resource at the device. Device needs to be stored in cache otherwise it returns not found.",
+        "operationId": "ClientApplication_DeleteResource",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/grpcgatewaypbDeleteResourceResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "resourceId.deviceId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "resourceId.href",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Resource"
+        ]
+      },
+      "post": {
+        "summary": "Create a resource at the device. Device needs to be stored in cache otherwise it returns not found.",
+        "operationId": "ClientApplication_CreateResource",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/grpcgatewaypbCreateResourceResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "resourceId.deviceId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "resourceId.href",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/grpcgatewaypbContent"
+            }
+          }
+        ],
+        "tags": [
+          "Resource"
+        ]
+      }
+    },
     "/api/v1/devices/{resourceId.deviceId}/resources/{resourceId.href}": {
       "get": {
-        "summary": "Get resource from the device. Device needs to be stored in cache otherwise it returns not found.",
-        "operationId": "DeviceGateway_GetResource",
+        "summary": "Get a resource from the device. Device needs to be stored in cache otherwise it returns not found.",
+        "operationId": "ClientApplication_GetResource",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -313,8 +393,8 @@
         ]
       },
       "put": {
-        "summary": "Update resource at the device. Device needs to be stored in cache otherwise it returns not found.",
-        "operationId": "DeviceGateway_UpdateResource",
+        "summary": "Update a resource at the device. Device needs to be stored in cache otherwise it returns not found.",
+        "operationId": "ClientApplication_UpdateResource",
         "responses": {
           "200": {
             "description": "A successful response.",
@@ -349,19 +429,6 @@
             "schema": {
               "$ref": "#/definitions/grpcgatewaypbContent"
             }
-          },
-          {
-            "name": "resourceInterface",
-            "in": "query",
-            "required": false,
-            "type": "string"
-          },
-          {
-            "name": "timeToLive",
-            "in": "query",
-            "required": false,
-            "type": "string",
-            "format": "int64"
           }
         ],
         "tags": [
@@ -437,6 +504,22 @@
         "data": {
           "type": "string",
           "format": "byte"
+        }
+      }
+    },
+    "grpcgatewaypbCreateResourceResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "$ref": "#/definitions/pbResourceCreated"
+        }
+      }
+    },
+    "grpcgatewaypbDeleteResourceResponse": {
+      "type": "object",
+      "properties": {
+        "data": {
+          "$ref": "#/definitions/pbResourceDeleted"
         }
       }
     },
@@ -620,6 +703,60 @@
         },
         "status": {
           "$ref": "#/definitions/resourceaggregatepbStatus"
+        },
+        "auditContext": {
+          "$ref": "#/definitions/pbAuditContext"
+        },
+        "eventMetadata": {
+          "$ref": "#/definitions/pbEventMetadata"
+        },
+        "openTelemetryCarrier": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "Open telemetry data propagated to asynchronous events"
+        }
+      }
+    },
+    "pbResourceCreated": {
+      "type": "object",
+      "properties": {
+        "resourceId": {
+          "$ref": "#/definitions/pbResourceId"
+        },
+        "status": {
+          "$ref": "#/definitions/resourceaggregatepbStatus"
+        },
+        "content": {
+          "$ref": "#/definitions/resourceaggregatepbContent"
+        },
+        "auditContext": {
+          "$ref": "#/definitions/pbAuditContext"
+        },
+        "eventMetadata": {
+          "$ref": "#/definitions/pbEventMetadata"
+        },
+        "openTelemetryCarrier": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          },
+          "title": "Open telemetry data propagated to asynchronous events"
+        }
+      }
+    },
+    "pbResourceDeleted": {
+      "type": "object",
+      "properties": {
+        "resourceId": {
+          "$ref": "#/definitions/pbResourceId"
+        },
+        "status": {
+          "$ref": "#/definitions/resourceaggregatepbStatus"
+        },
+        "content": {
+          "$ref": "#/definitions/resourceaggregatepbContent"
         },
         "auditContext": {
           "$ref": "#/definitions/pbAuditContext"

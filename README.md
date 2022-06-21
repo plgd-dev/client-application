@@ -1,3 +1,7 @@
+[![CI](https://github.com/plgd-dev/client-application/workflows/Test/badge.svg)](hhttps://github.com/plgd-dev/client-application/actions/workflows/test.yml)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=plgd-dev_client-application&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=plgd-dev_client-application)
+[![codecov](https://codecov.io/gh/plgd-dev/client-application/branch/main/graph/badge.svg)](https://codecov.io/gh/plgd-dev/client-application)
+
 # Client Application
 
 Provides GRPC and HTTP APIs to interact with the OCF devices via D2D communication.

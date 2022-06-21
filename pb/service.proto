@@ -1,7 +1,22 @@
+// ************************************************************************
+// Copyright (C) 2022 plgd.dev, s.r.o.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// 	http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// ************************************************************************
+
 syntax = "proto3";
 
 package service.pb;
-
 
 import "google/api/annotations.proto";
 import "protoc-gen-openapiv2/options/annotations.proto";
@@ -10,6 +25,9 @@ import "pb/clear_cache.proto";
 import "pb/get_device.proto";
 import "pb/get_devices.proto";
 import "pb/get_resource.proto";
+import "pb/create_resource.proto";
+import "pb/delete_resource.proto";
+import "pb/update_resource.proto";
 import "pb/get_device_resource_links.proto";
 import "pb/own_device.proto";
 import "pb/disown_device.proto";
@@ -19,7 +37,7 @@ import "resource-aggregate/pb/events.proto";
 
 option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
   info: {
-    title: "plgd device - HTTP Gateway API";
+    title: "plgd client application - API";
     version: "1.0";
     description: "";
     contact: {
@@ -40,7 +58,7 @@ option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
 option go_package = "github.com/plgd-dev/client-application/pb;pb";
 // https://github.com/googleapis/googleapis/blob/master/google/api/http.proto
 
-service DeviceGateway {
+service ClientApplication {
   // Discover devices by client application. This operation fills cache of mappings deviceId to endpoints and this cache is used by other calls.
   rpc GetDevices (GetDevicesRequest) returns (stream grpcgateway.pb.Device) {
     option (google.api.http) = {
@@ -73,7 +91,7 @@ service DeviceGateway {
   }
   
 
-  // Get resource from the device. Device needs to be stored in cache otherwise it returns not found.
+  // Get a resource from the device. Device needs to be stored in cache otherwise it returns not found.
   rpc GetResource(GetResourceRequest) returns (grpcgateway.pb.Resource) {
     option (google.api.http) = {
       get: "/api/v1/devices/{resource_id.device_id}/resources/{resource_id.href=**}"
@@ -83,8 +101,8 @@ service DeviceGateway {
     };
   }
 
-  // Update resource at the device. Device needs to be stored in cache otherwise it returns not found.
-  rpc UpdateResource(grpcgateway.pb.UpdateResourceRequest) returns (grpcgateway.pb.UpdateResourceResponse) {
+  // Update a resource at the device. Device needs to be stored in cache otherwise it returns not found.
+  rpc UpdateResource(UpdateResourceRequest) returns (grpcgateway.pb.UpdateResourceResponse) {
     option (google.api.http) = {
       put: "/api/v1/devices/{resource_id.device_id}/resources/{resource_id.href=**}"
       body: "content"
@@ -93,6 +111,28 @@ service DeviceGateway {
       tags: [ "Resource" ]
     };
   }
+
+  // Create a resource at the device. Device needs to be stored in cache otherwise it returns not found.
+  rpc CreateResource(CreateResourceRequest) returns (grpcgateway.pb.CreateResourceResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/devices/{resource_id.device_id}/resource-links/{resource_id.href=**}"
+      body: "content"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: [ "Resource" ]
+    };
+  }
+
+  // Delete a resource at the device. Device needs to be stored in cache otherwise it returns not found.
+  rpc DeleteResource(DeleteResourceRequest) returns (grpcgateway.pb.DeleteResourceResponse) {
+    option (google.api.http) = {
+      delete: "/api/v1/devices/{resource_id.device_id}/resource-links/{resource_id.href=**}"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: [ "Resource" ]
+    };
+  }
+
 
   // Own the device. Device needs to be stored in cache otherwise it returns not found.
   rpc OwnDevice(OwnDeviceRequest) returns (OwnDeviceResponse) {

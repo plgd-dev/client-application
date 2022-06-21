@@ -59,11 +59,21 @@ build: clean
 .PHONY: build
 
 test: env
-	LISTEN_FILE_CA_POOL=$(WORKING_DIRECTORY)/.tmp/certs/rootcacrt.pem \
-	LISTEN_FILE_CERT_DIR_PATH=$(WORKING_DIRECTORY)/.tmp/certs \
-	LISTEN_FILE_CERT_NAME=httpcrt.pem \
-	LISTEN_FILE_CERT_KEY_NAME=httpkey.pem \
-	go test -v --race -p 1 -covermode=atomic -coverpkg=./... -coverprofile=$(WORKING_DIRECTORY)/.tmp/coverage.txt  ./...
+	COVERAGE_FILE=$(WORKING_DIRECTORY)/.tmp/coverage.txt; \
+	JSON_REPORT_FILE=$(WORKING_DIRECTORY)/.tmp/report.json; \
+	export LISTEN_FILE_CA_POOL=$(WORKING_DIRECTORY)/.tmp/certs/rootcacrt.pem; \
+	export LISTEN_FILE_CERT_DIR_PATH=$(WORKING_DIRECTORY)/.tmp/certs; \
+	export LISTEN_FILE_CERT_NAME=httpcrt.pem; \
+	export LISTEN_FILE_CERT_KEY_NAME=httpkey.pem; \
+	if [ -n "$${JSON_REPORT}" ]; then \
+		go test -v --race -p 1 -covermode=atomic -coverpkg=./... -coverprofile=$${COVERAGE_FILE} -json ./... > "$${JSON_REPORT_FILE}" ; \
+	else \
+		go test -v --race -p 1 -covermode=atomic -coverpkg=./... -coverprofile=$${COVERAGE_FILE} ./... ; \
+	fi ; \
+	EXIT_STATUS=$$? ; \
+	if [ $${EXIT_STATUS} -ne 0 ]; then \
+		exit $${EXIT_STATUS}; \
+	fi ;
 .PHONY: test
 
 
@@ -75,6 +85,9 @@ proto/generate:
 	protoc -I=. -I=$(GOPATH)/src -I=$(PLGDHUB_MODULE_PATH) --go_out=$(GOPATH)/src $(WORKING_DIRECTORY)/pb/get_device.proto
 	protoc -I=. -I=$(GOPATH)/src -I=$(PLGDHUB_MODULE_PATH) --go_out=$(GOPATH)/src $(WORKING_DIRECTORY)/pb/get_devices.proto
 	protoc -I=. -I=$(GOPATH)/src -I=$(PLGDHUB_MODULE_PATH) --go_out=$(GOPATH)/src $(WORKING_DIRECTORY)/pb/get_resource.proto
+	protoc -I=. -I=$(GOPATH)/src -I=$(PLGDHUB_MODULE_PATH) --go_out=$(GOPATH)/src $(WORKING_DIRECTORY)/pb/update_resource.proto
+	protoc -I=. -I=$(GOPATH)/src -I=$(PLGDHUB_MODULE_PATH) --go_out=$(GOPATH)/src $(WORKING_DIRECTORY)/pb/create_resource.proto
+	protoc -I=. -I=$(GOPATH)/src -I=$(PLGDHUB_MODULE_PATH) --go_out=$(GOPATH)/src $(WORKING_DIRECTORY)/pb/delete_resource.proto
 	protoc -I=. -I=$(GOPATH)/src -I=$(PLGDHUB_MODULE_PATH) --go_out=$(GOPATH)/src $(WORKING_DIRECTORY)/pb/get_device_resource_links.proto
 	protoc -I=. -I=$(GOPATH)/src -I=$(PLGDHUB_MODULE_PATH) --go_out=$(GOPATH)/src $(WORKING_DIRECTORY)/pb/own_device.proto
 	protoc -I=. -I=$(GOPATH)/src -I=$(PLGDHUB_MODULE_PATH) --go_out=$(GOPATH)/src $(WORKING_DIRECTORY)/pb/disown_device.proto

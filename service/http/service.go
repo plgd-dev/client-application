@@ -1,3 +1,19 @@
+// ************************************************************************
+// Copyright (C) 2022 plgd.dev, s.r.o.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// 	http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// ************************************************************************
+
 package http
 
 import (
@@ -41,8 +57,7 @@ func splitURIPath(requestURI, prefix string) []string {
 
 func resourceMatcher(r *http.Request, rm *router.RouteMatch) bool {
 	paths := splitURIPath(r.RequestURI, Devices)
-	if len(paths) > 2 &&
-		paths[1] == ResourcesPathKey {
+	if len(paths) > 2 && (paths[1] == ResourcesPathKey || paths[1] == ResourceLinksPathKey) {
 		if rm.Vars == nil {
 			rm.Vars = make(map[string]string)
 		}
@@ -54,15 +69,15 @@ func resourceMatcher(r *http.Request, rm *router.RouteMatch) bool {
 }
 
 // New creates new HTTP service
-func New(ctx context.Context, serviceName string, config Config, deviceGatewayServer *grpc.DeviceGatewayServer, logger log.Logger, tracerProvider trace.TracerProvider) (*Service, error) {
+func New(ctx context.Context, serviceName string, config Config, clientApplicationServer *grpc.ClientApplicationServer, logger log.Logger, tracerProvider trace.TracerProvider) (*Service, error) {
 	listener, err := listener.New(config.Config, logger)
 	if err != nil {
 		return nil, fmt.Errorf("cannot create grpc server: %w", err)
 	}
 
 	ch := new(inprocgrpc.Channel)
-	pb.RegisterDeviceGatewayServer(ch, deviceGatewayServer)
-	grpcClient := pb.NewDeviceGatewayClient(ch)
+	pb.RegisterClientApplicationServer(ch, clientApplicationServer)
+	grpcClient := pb.NewClientApplicationClient(ch)
 
 	auth := func(ctx context.Context, method, uri string) (context.Context, error) {
 		return ctx, nil
@@ -80,12 +95,13 @@ func New(ctx context.Context, serviceName string, config Config, deviceGatewaySe
 	handler := handlers.CORS(corsOptions...)(r)
 
 	// register grpc-proxy handler
-	if err := pb.RegisterDeviceGatewayHandlerClient(context.Background(), mux, grpcClient); err != nil {
+	if err := pb.RegisterClientApplicationHandlerClient(context.Background(), mux, grpcClient); err != nil {
 		_ = listener.Close()
 		return nil, fmt.Errorf("failed to register grpc-gateway handler: %w", err)
 	}
 	requestHandler := &RequestHandler{mux: mux}
 	r.PathPrefix(Devices).Methods(http.MethodPut).MatcherFunc(resourceMatcher).HandlerFunc(requestHandler.updateResource)
+	r.PathPrefix(Devices).Methods(http.MethodPost).MatcherFunc(resourceMatcher).HandlerFunc(requestHandler.createResource)
 	r.PathPrefix(ApiV1).Handler(mux)
 
 	// serve www directory

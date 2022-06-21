@@ -1,3 +1,19 @@
+// ************************************************************************
+// Copyright (C) 2022 plgd.dev, s.r.o.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// 	http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// ************************************************************************
+
 package grpc
 
 import (
@@ -462,7 +478,7 @@ func tryToSetDefaultRequest(req *pb.GetDevicesRequest) *pb.GetDevicesRequest {
 	return req
 }
 
-func (s *DeviceGatewayServer) processDiscoverdDevices(discoveredDevices, cachedDevices *sync.Map) devices {
+func (s *ClientApplicationServer) processDiscoverdDevices(discoveredDevices, cachedDevices *sync.Map) devices {
 	devs := make(devices, 0, 128)
 	discoveredDevices.Range(func(key, value any) bool {
 		d, ok := value.(*device)
@@ -489,7 +505,28 @@ func (s *DeviceGatewayServer) processDiscoverdDevices(discoveredDevices, cachedD
 	return devs
 }
 
-func (s *DeviceGatewayServer) GetDevices(req *pb.GetDevicesRequest, srv pb.DeviceGateway_GetDevicesServer) error {
+func sendDevices(req *pb.GetDevicesRequest, devs devices, send func(*grpcgwPb.Device) error) error {
+	devs.Sort()
+	for _, device := range devs {
+		d := device.ToProto()
+		if d.GetData().GetContent() == nil {
+			continue
+		}
+		if !filterByType(d, req.GetTypeFilter()) {
+			continue
+		}
+		if !filterByOwnershipStatus(d, req.GetOwnershipStatusFilter()) {
+			continue
+		}
+		if err := send(d); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (s *ClientApplicationServer) GetDevices(req *pb.GetDevicesRequest, srv pb.ClientApplication_GetDevicesServer) error {
 	req = tryToSetDefaultRequest(req)
 	ctx := srv.Context()
 	var toCall []func()
@@ -541,22 +578,5 @@ func (s *DeviceGatewayServer) GetDevices(req *pb.GetDevicesRequest, srv pb.Devic
 		}
 		return true
 	})
-	devs.Sort()
-	for _, device := range devs {
-		d := device.ToProto()
-		if d.GetData().GetContent() == nil {
-			continue
-		}
-		if !filterByType(d, req.GetTypeFilter()) {
-			continue
-		}
-		if !filterByOwnershipStatus(d, req.GetOwnershipStatusFilter()) {
-			continue
-		}
-		if err := srv.Send(d); err != nil {
-			return err
-		}
-	}
-
-	return nil
+	return sendDevices(req, devs, srv.Send)
 }

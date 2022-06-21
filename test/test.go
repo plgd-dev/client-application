@@ -1,3 +1,19 @@
+// ************************************************************************
+// Copyright (C) 2022 plgd.dev, s.r.o.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// 	http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// ************************************************************************
+
 package test
 
 import (
@@ -144,9 +160,9 @@ func NewHttpService(ctx context.Context, t *testing.T) (*http.Service, func()) {
 	cfg := MakeConfig(t)
 	cfg.APIs.HTTP.TLS.ClientCertificateRequired = false
 	logger := log.NewLogger(cfg.Log)
-	deviceGatewayServer, tearDown, err := NewDeviceGatewayServer(ctx)
+	clientApplicationServer, tearDown, err := NewClientApplicationServer(ctx)
 	require.NoError(t, err)
-	s, err := http.New(ctx, "client-application-http", cfg.APIs.HTTP.Config, deviceGatewayServer, logger, trace.NewNoopTracerProvider())
+	s, err := http.New(ctx, "client-application-http", cfg.APIs.HTTP.Config, clientApplicationServer, logger, trace.NewNoopTracerProvider())
 	require.NoError(t, err)
 
 	var wg sync.WaitGroup
@@ -166,7 +182,7 @@ func NewHttpService(ctx context.Context, t *testing.T) (*http.Service, func()) {
 	return s, cleanUp
 }
 
-func NewDeviceGatewayServer(ctx context.Context) (*serviceGrpc.DeviceGatewayServer, func(), error) {
+func NewClientApplicationServer(ctx context.Context) (*serviceGrpc.ClientApplicationServer, func(), error) {
 	logger := log.NewLogger(log.MakeDefaultConfig())
 	cfg := MakeDeviceConfig()
 	if err := cfg.Validate(); err != nil {
@@ -183,30 +199,30 @@ func NewDeviceGatewayServer(ctx context.Context) (*serviceGrpc.DeviceGatewayServ
 		_ = d.Serve()
 	}()
 
-	return serviceGrpc.NewDeviceGatewayServer(d, logger), func() {
+	return serviceGrpc.NewClientApplicationServer(d, logger), func() {
 		d.Close()
 		wg.Wait()
 	}, nil
 }
 
-type DeviceGatewayGetDevicesServer struct {
+type ClientApplicationGetDevicesServer struct {
 	grpc.ServerStream
 	Devices []*grpcgwPb.Device
 	Ctx     context.Context
 }
 
-func NewDeviceGatewayGetDevicesServer(ctx context.Context) *DeviceGatewayGetDevicesServer {
-	return &DeviceGatewayGetDevicesServer{
+func NewClientApplicationGetDevicesServer(ctx context.Context) *ClientApplicationGetDevicesServer {
+	return &ClientApplicationGetDevicesServer{
 		Ctx: ctx,
 	}
 }
 
-func (s *DeviceGatewayGetDevicesServer) Send(d *grpcgwPb.Device) error {
+func (s *ClientApplicationGetDevicesServer) Send(d *grpcgwPb.Device) error {
 	s.Devices = append(s.Devices, d)
 	return nil
 }
 
-func (s *DeviceGatewayGetDevicesServer) Context() context.Context {
+func (s *ClientApplicationGetDevicesServer) Context() context.Context {
 	return s.Ctx
 }
 
@@ -214,8 +230,8 @@ func FindDeviceByName(name string, useMulticast []pb.GetDevicesRequest_UseMultic
 	for i := 0; i < 3; i++ {
 		ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 		defer cancel()
-		srv := NewDeviceGatewayGetDevicesServer(ctx)
-		s, teardown, err := NewDeviceGatewayServer(ctx)
+		srv := NewClientApplicationGetDevicesServer(ctx)
+		s, teardown, err := NewClientApplicationServer(ctx)
 		if err != nil {
 			return nil, err
 		}
