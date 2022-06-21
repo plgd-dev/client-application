@@ -1,11 +1,10 @@
 import { useMemo } from 'react'
 import PropTypes from 'prop-types'
 import { useIntl } from 'react-intl'
-import classNames from 'classnames'
 import { Badge } from '@/components/badge'
 import { Table } from '@/components/table'
 import { DevicesResourcesActionButton } from './_devices-resources-action-button'
-import { RESOURCES_DEFAULT_PAGE_SIZE, devicesStatuses } from './constants'
+import { RESOURCES_DEFAULT_PAGE_SIZE } from './constants'
 import { deviceResourceShape } from './shapes'
 import { messages as t } from './devices-i18n'
 import { canBeResourceEdited } from '@/containers/devices/utils'
@@ -15,14 +14,11 @@ export const DevicesResourcesList = ({
   onUpdate,
   onCreate,
   onDelete,
-  deviceStatus,
   deviceId,
   loading,
   isOwned,
 }) => {
   const { formatMessage: _ } = useIntl()
-  const isUnregistered = deviceStatus === devicesStatuses.UNREGISTERED
-  const greyedOutClassName = classNames({ 'grayed-out': isUnregistered })
 
   const columns = useMemo(
     () => [
@@ -34,7 +30,7 @@ export const DevicesResourcesList = ({
             original: { deviceId: deviceIdOrigin, href, endpointInformations },
           } = row
 
-          const edit = canBeResourceEdited(endpointInformations)
+          const edit = canBeResourceEdited(endpointInformations) || isOwned
 
           if (!edit) {
             return <span>{value}</span>
@@ -51,11 +47,12 @@ export const DevicesResourcesList = ({
             </div>
           )
         },
-        style: { width: '100%' },
+        style: { width: '70%' },
       },
       {
         Header: _(t.types),
         accessor: 'resourceTypes',
+        style: { width: '20%' },
         Cell: ({ value }) => {
           return (
             <div className="badges-box-horizontal">
@@ -70,13 +67,14 @@ export const DevicesResourcesList = ({
         Header: _(t.actions),
         accessor: 'actions',
         disableSortBy: true,
+        style: { textAlign: 'center' },
         Cell: ({ row }) => {
           const {
             original: { href, interfaces, endpointInformations },
           } = row
           return (
             <DevicesResourcesActionButton
-              disabled={isUnregistered || loading}
+              disabled={loading}
               href={href}
               deviceId={deviceId}
               interfaces={interfaces}
@@ -91,7 +89,7 @@ export const DevicesResourcesList = ({
         className: 'actions',
       },
     ],
-    [onUpdate, onCreate, onDelete, isUnregistered, loading] //eslint-disable-line
+    [onUpdate, onCreate, onDelete, loading] //eslint-disable-line
   )
 
   return (
@@ -106,11 +104,6 @@ export const DevicesResourcesList = ({
       ]}
       defaultPageSize={RESOURCES_DEFAULT_PAGE_SIZE}
       autoFillEmptyRows
-      className={greyedOutClassName}
-      paginationProps={{
-        className: greyedOutClassName,
-        disabled: isUnregistered,
-      }}
     />
   )
 }
@@ -121,10 +114,8 @@ DevicesResourcesList.propTypes = {
   onUpdate: PropTypes.func.isRequired,
   onDelete: PropTypes.func.isRequired,
   loading: PropTypes.bool.isRequired,
-  deviceStatus: PropTypes.oneOf(Object.values(devicesStatuses)),
 }
 
 DevicesResourcesList.defaultProps = {
   data: null,
-  deviceStatus: null,
 }

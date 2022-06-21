@@ -26,6 +26,7 @@ export const canCreateResource = interfaces =>
   interfaces.includes(knownInterfaces.OIC_IF_CREATE)
 
 export const canBeResourceEdited = endpoints =>
+  endpoints &&
   endpoints.some(
     e =>
       e.endpoint.indexOf('coap://') > -1 ||

@@ -59,7 +59,18 @@ const { reducer, actions } = createSlice({
       }
     },
     addDevice(state, { payload }) {
-      state.devicesList.push(payload)
+      const index = findIndex(
+        state.devicesList,
+        device => device.id === payload.id
+      )
+
+      if (index > -1) {
+        if (!isEqual(state.devicesList[index], payload)) {
+          state.devicesList[index] = payload
+        }
+      } else {
+        state.devicesList.push(payload)
+      }
     },
     flushDevices(state) {
       state.devicesList = []

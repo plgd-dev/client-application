@@ -56,9 +56,9 @@ export const DevicesResources = ({
           onUpdate={onUpdate}
           onCreate={onCreate}
           onDelete={onDelete}
-          deviceStatus={deviceStatus}
           loading={loading}
           deviceId={deviceId}
+          isOwned={isOwned}
         />
       ) : (
         <DevicesResourcesList
@@ -66,7 +66,6 @@ export const DevicesResources = ({
           onUpdate={onUpdate}
           onCreate={onCreate}
           onDelete={onDelete}
-          deviceStatus={deviceStatus}
           loading={loading}
           deviceId={deviceId}
           isOwned={isOwned}
