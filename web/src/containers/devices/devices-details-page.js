@@ -14,7 +14,6 @@ import { DevicesResources } from './_devices-resources'
 import { DevicesDetailsHeader } from './_devices-details-header'
 import { DevicesDetailsTitle } from './_devices-details-title'
 import { DevicesResourcesModal } from './_devices-resources-modal'
-import { CommanTimeoutControl } from './_command-timeout-control'
 import {
   devicesStatuses,
   defaultNewResource,
@@ -60,6 +59,7 @@ export const DevicesDetailsPage = () => {
     data: resourcesData,
     loading: loadingResources,
     error: resourcesError,
+    refresh: refreshResources,
   } = useDevicesResources(id)
 
   const [isOwned, setIsOwned] = useState(
@@ -258,6 +258,7 @@ export const DevicesDetailsPage = () => {
           message: _(t.resourceWasCreated),
         })
 
+        refreshResources()
         setResourceModalData(null) // close modal
         setSavingResource(false)
       }
@@ -276,7 +277,6 @@ export const DevicesDetailsPage = () => {
       await deleteDevicesResourceApi({
         deviceId: id,
         href: deleteResourceHref,
-        ttl,
       })
 
       if (isMounted.current) {
@@ -285,6 +285,7 @@ export const DevicesDetailsPage = () => {
           message: _(t.resourceWasDeleted),
         })
 
+        refreshResources()
         setLoadingResource(false)
         closeDeleteModal()
       }
@@ -384,6 +385,7 @@ export const DevicesDetailsPage = () => {
         deviceStatus={deviceStatus}
         loading={loadingResource}
         deviceId={id}
+        isOwned={isOwned}
       />
 
       <DevicesResourcesModal
@@ -399,16 +401,16 @@ export const DevicesDetailsPage = () => {
         deviceId={id}
         deviceName={deviceName}
         confirmDisabled={ttlHasError}
-        ttlControl={
-          <CommanTimeoutControl
-            defaultValue={ttl}
-            defaultTtlValue={defaultCommandTimeToLive}
-            onChange={setTtl}
-            disabled={loadingResource || savingResource}
-            ttlHasError={ttlHasError}
-            onTtlHasError={setTtlHasError}
-          />
-        }
+        // ttlControl={
+        //   <CommanTimeoutControl
+        //     defaultValue={ttl}
+        //     defaultTtlValue={defaultCommandTimeToLive}
+        //     onChange={setTtl}
+        //     disabled={loadingResource || savingResource}
+        //     ttlHasError={ttlHasError}
+        //     onTtlHasError={setTtlHasError}
+        //   />
+        // }
       />
 
       <ConfirmModal
@@ -423,15 +425,15 @@ export const DevicesDetailsPage = () => {
         body={
           <>
             {_(t.deleteResourceMessage)}
-            <CommanTimeoutControl
-              defaultValue={ttl}
-              defaultTtlValue={defaultCommandTimeToLive}
-              onChange={setTtl}
-              disabled={loadingResource}
-              ttlHasError={ttlHasError}
-              onTtlHasError={setTtlHasError}
-              isDelete
-            />
+            {/*<CommanTimeoutControl*/}
+            {/*  defaultValue={ttl}*/}
+            {/*  defaultTtlValue={defaultCommandTimeToLive}*/}
+            {/*  onChange={setTtl}*/}
+            {/*  disabled={loadingResource}*/}
+            {/*  ttlHasError={ttlHasError}*/}
+            {/*  onTtlHasError={setTtlHasError}*/}
+            {/*  isDelete*/}
+            {/*/>*/}
           </>
         }
         confirmButtonText={_(t.delete)}

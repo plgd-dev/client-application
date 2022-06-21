@@ -87,15 +87,14 @@ export const createDevicesResourceApi = (
 
 /**
  * Delete devices RESOURCE Rest Api endpoint
- * @param {*} params { deviceId, href - resource href, ttl - timeToLive }
- * @param {*} data
+ * @param {*} params { deviceId, href - resource href}
  */
-export const deleteDevicesResourceApi = ({ deviceId, href, ttl }) => {
+export const deleteDevicesResourceApi = ({ deviceId, href }) => {
   return fetchApi(
     `${security.getGeneralConfig().httpGatewayAddress}${
       devicesApiEndpoints.DEVICES
-    }/${deviceId}/resource-links${href}?timeToLive=${ttl}`,
-    { method: 'DELETE', timeToLive: ttl }
+    }/${deviceId}/resource-links${href}`,
+    { method: 'DELETE' }
   )
 }
 

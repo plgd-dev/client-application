@@ -206,7 +206,7 @@ DevicesResourcesModal.propTypes = {
   isDeviceOnline: PropTypes.bool.isRequired,
   isUnregistered: PropTypes.bool.isRequired,
   type: PropTypes.oneOf([CREATE_RESOURCE, UPDATE_RESOURCE]),
-  ttlControl: PropTypes.element.isRequired,
+  ttlControl: PropTypes.element,
   confirmDisabled: PropTypes.bool.isRequired,
 }
 
