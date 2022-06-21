@@ -23,6 +23,7 @@ import (
 	"fmt"
 	"net"
 	"sync"
+	"time"
 
 	"github.com/pion/dtls/v2"
 	"github.com/plgd-dev/device/client/core"
@@ -133,6 +134,22 @@ func (s *Service) DialJustWorks(ctx context.Context, addr string, dtlsCfg *dtls.
 	return coap.DialUDPSecure(ctx, addr, dtlsCfg, append(dialOpts, opts...)...)
 }
 
+type UDPClientConn struct {
+	*client.Client
+}
+
+func (c *UDPClientConn) Context() context.Context {
+	if cc, ok := c.Client.ClientConn().(*client.ClientConn); ok {
+		// we need to check if connection will be closed for inactivity
+		cc.CheckExpirations(time.Now().Add(50 * time.Millisecond))
+		if cc.Context().Err() == nil {
+			// move inactivity timeout to future
+			cc.InactivityMonitor().Notify()
+		}
+	}
+	return c.Client.Context()
+}
+
 func (s *Service) DialUDP(ctx context.Context, addr string, opts ...coap.DialOptionFunc) (*coap.ClientCloseHandler, error) {
 	udpAddr, err := net.ResolveUDPAddr("udp", addr)
 	if err != nil {
@@ -157,7 +174,7 @@ func (s *Service) DialUDP(ctx context.Context, addr string, opts ...coap.DialOpt
 		_ = cc.Close()
 		return nil, fmt.Errorf("failed to create client connection: close handler is not *coap.OnCloseHandler")
 	}
-	return coap.NewClientCloseHandler(cc.Client(), h), nil
+	return coap.NewClientCloseHandler(&UDPClientConn{Client: cc.Client()}, h), nil
 }
 
 func (s *Service) DialTCP(ctx context.Context, addr string, opts ...coap.DialOptionFunc) (*coap.ClientCloseHandler, error) {
