@@ -31,7 +31,7 @@ export const DevicesResourcesList = ({
         accessor: 'href',
         Cell: ({ value, row }) => {
           const {
-            original: { deviceId, href, endpointInformations },
+            original: { deviceId: deviceIdOrigin, href, endpointInformations },
           } = row
 
           const edit = canBeResourceEdited(endpointInformations)
@@ -43,7 +43,7 @@ export const DevicesResourcesList = ({
             <div className="tree-expander-container">
               <span
                 className="link reveal-icon-on-hover"
-                onClick={() => onUpdate({ deviceId, href })}
+                onClick={() => onUpdate({ deviceId: deviceIdOrigin, href })}
               >
                 {value}
               </span>
