@@ -25,6 +25,13 @@ export const interfaceGetParam = currentInterface =>
 export const canCreateResource = interfaces =>
   interfaces.includes(knownInterfaces.OIC_IF_CREATE)
 
+export const canBeResourceEdited = endpoints =>
+  endpoints.some(
+    e =>
+      e.endpoint.indexOf('coap://') > -1 ||
+      e.endpoint.indexOf('coap+tcp://') > -1
+  )
+
 // Returns true if a device has a resource oic.wk.con which holds the device name property
 export const canChangeDeviceName = links =>
   links.findIndex(link =>

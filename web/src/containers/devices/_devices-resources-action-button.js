@@ -2,7 +2,7 @@ import { useIntl } from 'react-intl'
 import PropTypes from 'prop-types'
 
 import { ActionButton } from '@/components/action-button'
-import { canCreateResource } from './utils'
+import { canCreateResource, canBeResourceEdited } from './utils'
 import { messages as t } from './devices-i18n'
 
 export const DevicesResourcesActionButton = ({
@@ -13,8 +13,17 @@ export const DevicesResourcesActionButton = ({
   onCreate,
   onUpdate,
   onDelete,
+  isOwned,
+  endpointInformations,
 }) => {
   const { formatMessage: _ } = useIntl()
+
+  const create = canCreateResource(interfaces) && isOwned
+  const edit = canBeResourceEdited(endpointInformations)
+
+  if (!create && !edit) {
+    return null
+  }
 
   return (
     <ActionButton
@@ -27,18 +36,20 @@ export const DevicesResourcesActionButton = ({
           onClick: () => onCreate(href),
           label: _(t.create),
           icon: 'fa-plus',
-          hidden: !canCreateResource(interfaces),
+          hidden: !create,
         },
         {
           onClick: () => onUpdate({ deviceId, href }),
           label: _(t.update),
           icon: 'fa-pen',
+          hidden: !edit,
         },
-        // {
-        //   onClick: () => onDelete(href),
-        //   label: _(t.delete),
-        //   icon: 'fa-trash-alt',
-        // },
+        {
+          onClick: () => onDelete(href),
+          label: _(t.delete),
+          icon: 'fa-trash-alt',
+          hidden: !edit,
+        },
       ]}
     >
       <i className="fas fa-ellipsis-h" />

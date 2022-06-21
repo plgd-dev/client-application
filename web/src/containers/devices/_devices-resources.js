@@ -18,6 +18,7 @@ export const DevicesResources = ({
   deviceStatus,
   deviceId,
   loading,
+  isOwned,
 }) => {
   const { formatMessage: _ } = useIntl()
   const [treeViewActive, setTreeViewActive] = useLocalStorage(
@@ -68,6 +69,7 @@ export const DevicesResources = ({
           deviceStatus={deviceStatus}
           loading={loading}
           deviceId={deviceId}
+          isOwned={isOwned}
         />
       )}
     </>

@@ -8,6 +8,7 @@ import { DevicesResourcesActionButton } from './_devices-resources-action-button
 import { RESOURCES_DEFAULT_PAGE_SIZE, devicesStatuses } from './constants'
 import { deviceResourceShape } from './shapes'
 import { messages as t } from './devices-i18n'
+import { canBeResourceEdited } from '@/containers/devices/utils'
 
 export const DevicesResourcesList = ({
   data,
@@ -17,6 +18,7 @@ export const DevicesResourcesList = ({
   deviceStatus,
   deviceId,
   loading,
+  isOwned,
 }) => {
   const { formatMessage: _ } = useIntl()
   const isUnregistered = deviceStatus === devicesStatuses.UNREGISTERED
@@ -29,9 +31,12 @@ export const DevicesResourcesList = ({
         accessor: 'href',
         Cell: ({ value, row }) => {
           const {
-            original: { deviceId, href },
+            original: { deviceId, href, endpointInformations },
           } = row
-          if (isUnregistered) {
+
+          const edit = canBeResourceEdited(endpointInformations)
+
+          if (!edit) {
             return <span>{value}</span>
           }
           return (
@@ -67,7 +72,7 @@ export const DevicesResourcesList = ({
         disableSortBy: true,
         Cell: ({ row }) => {
           const {
-            original: { href, interfaces },
+            original: { href, interfaces, endpointInformations },
           } = row
           return (
             <DevicesResourcesActionButton
@@ -78,6 +83,8 @@ export const DevicesResourcesList = ({
               onCreate={onCreate}
               onUpdate={onUpdate}
               onDelete={onDelete}
+              isOwned={isOwned}
+              endpointInformations={endpointInformations}
             />
           )
         },
