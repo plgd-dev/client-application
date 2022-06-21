@@ -14,7 +14,6 @@ export const useApi = (url, options = {}) => {
 
   useEffect(
     () => {
-      console.log({ refreshIndex })
       ;(async () => {
         try {
           // Set loading to true
