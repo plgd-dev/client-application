@@ -105,7 +105,7 @@ func MakeDeviceConfig() serviceDevice.Config {
 		COAP: serviceDevice.CoapConfig{
 			MaxMessageSize: 256 * 1024,
 			InactivityMonitor: serviceDevice.InactivityMonitor{
-				Timeout: time.Second * 10,
+				Timeout: time.Second * 1,
 			},
 			BlockwiseTransfer: serviceDevice.BlockwiseTransferConfig{
 				Enabled: true,
