@@ -18,8 +18,10 @@ package grpc_test
 
 import (
 	"context"
+	"fmt"
 	"net/url"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -29,6 +31,45 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
+
+func TestClientApplicationServerCheckForClosingInactivityConnection(t *testing.T) {
+	device := test.MustFindDeviceByName(test.DevsimName, []pb.GetDevicesRequest_UseMulticast{pb.GetDevicesRequest_IPV4})
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
+	defer cancel()
+	s, teardown, err := test.NewClientApplicationServer(ctx)
+	require.NoError(t, err)
+	defer teardown()
+	run := func() {
+		srv := test.NewClientApplicationGetDevicesServer(ctx)
+		err = s.GetDevices(&pb.GetDevicesRequest{}, srv)
+		require.NoError(t, err)
+		require.Greater(t, len(srv.Devices), 0)
+		time.Sleep(time.Second)
+		numParallel := 10
+		var wg sync.WaitGroup
+		wg.Add(numParallel)
+		fmt.Printf("%v test starts\n", time.Now())
+		errCh := make(chan error, numParallel)
+		for i := 0; i < numParallel; i++ {
+			go func(i int) {
+				defer wg.Done()
+				fmt.Printf("%v GetDevice %v start\n", time.Now(), i)
+				_, err := s.GetDevice(ctx, &pb.GetDeviceRequest{DeviceId: device.Id})
+				fmt.Printf("%v GetDevice %v end %v\n", time.Now(), i, err)
+				errCh <- err
+			}(i)
+		}
+		wg.Wait()
+		fmt.Printf("%v test ends\n", time.Now())
+		close(errCh)
+		for err := range errCh {
+			require.NoError(t, err)
+		}
+	}
+	for i := 0; i < 10; i++ {
+		run()
+	}
+}
 
 func TestClientApplicationServerGetDevices(t *testing.T) {
 	device := test.MustFindDeviceByName(test.DevsimName, []pb.GetDevicesRequest_UseMulticast{pb.GetDevicesRequest_IPV4})
