@@ -38,7 +38,7 @@ func validateHostPort(domain *regexp.Regexp, host, portStr string) error {
 	}
 	port, err := strconv.ParseUint(portStr, 10, 16)
 	if err != nil {
-		return fmt.Errorf("invalid port")
+		return fmt.Errorf("invalid port: %w", err)
 	}
 	if port == 0 {
 		return fmt.Errorf("invalid port")
