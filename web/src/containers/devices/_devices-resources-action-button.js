@@ -19,7 +19,7 @@ export const DevicesResourcesActionButton = ({
   const { formatMessage: _ } = useIntl()
 
   const create = canCreateResource(interfaces) && isOwned
-  const edit = canBeResourceEdited(endpointInformations)
+  const edit = canBeResourceEdited(endpointInformations) || isOwned
 
   if (!create && !edit) {
     return null

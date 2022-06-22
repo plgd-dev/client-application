@@ -1,14 +1,17 @@
 import { useMemo } from 'react'
 import PropTypes from 'prop-types'
 import { useIntl } from 'react-intl'
-import classNames from 'classnames'
 
 import { TreeExpander } from '@/components/tree-expander'
 import { TreeTable } from '@/components/table'
 import { Badge } from '@/components/badge'
 import { DevicesResourcesActionButton } from './_devices-resources-action-button'
-import { devicesStatuses, RESOURCE_TREE_DEPTH_SIZE } from './constants'
-import { createNestedResourceData, getLastPartOfAResourceHref } from './utils'
+import { RESOURCE_TREE_DEPTH_SIZE } from './constants'
+import {
+  canBeResourceEdited,
+  createNestedResourceData,
+  getLastPartOfAResourceHref,
+} from './utils'
 import { deviceResourceShape } from './shapes'
 import { messages as t } from './devices-i18n'
 
@@ -17,12 +20,11 @@ export const DevicesResourcesTree = ({
   onUpdate,
   onCreate,
   onDelete,
-  deviceStatus,
   loading,
+  isOwned,
+  deviceId,
 }) => {
   const { formatMessage: _ } = useIntl()
-  const isUnregistered = deviceStatus === devicesStatuses.UNREGISTERED
-  const greyedOutClassName = classNames({ 'grayed-out': isUnregistered })
   const data = useMemo(() => createNestedResourceData(rawData), [rawData])
 
   const columns = useMemo(
@@ -32,14 +34,17 @@ export const DevicesResourcesTree = ({
         accessor: 'href',
         Cell: ({ value, row }) => {
           const {
-            original: { deviceId, href },
+            original: { href, endpointInformations },
           } = row
+
           const lastValue = getLastPartOfAResourceHref(value)
           const onLinkClick = deviceId
             ? () => onUpdate({ deviceId, href: href.replace(/\/$/, '') })
             : null
 
-          if (isUnregistered) {
+          const edit = canBeResourceEdited(endpointInformations) || isOwned
+
+          if (!edit) {
             return <span>{lastValue}</span>
           }
 
@@ -54,12 +59,12 @@ export const DevicesResourcesTree = ({
                   }}
                 />
                 <span
-                  className={deviceId ? 'link reveal-icon-on-hover' : ''}
+                  className={!row.canExpand ? 'link reveal-icon-on-hover' : ''}
                   onClick={onLinkClick}
                 >
                   {`/${lastValue}/`}
                 </span>
-                {deviceId && <i className="fas fa-pen" />}
+                {!row.canExpand && <i className="fas fa-pen" />}
               </div>
             )
           }
@@ -87,8 +92,8 @@ export const DevicesResourcesTree = ({
       {
         Header: _(t.types),
         accessor: 'resourceTypes',
-        Cell: ({ value, row }) => {
-          if (!row.original.deviceId) {
+        Cell: ({ value }) => {
+          if (!deviceId) {
             return null
           }
 
@@ -106,38 +111,34 @@ export const DevicesResourcesTree = ({
         accessor: 'actions',
         disableSortBy: true,
         Cell: ({ row }) => {
-          if (!row.original.deviceId) {
+          if (row.canExpand) {
             return null
           }
 
           const {
-            original: { deviceId, href, interfaces },
+            original: { href, interfaces, endpointInformations },
           } = row
           const cleanHref = href.replace(/\/$/, '') // href without a trailing slash
           return (
             <DevicesResourcesActionButton
-              disabled={isUnregistered || loading}
+              disabled={loading}
               href={cleanHref}
               deviceId={deviceId}
               interfaces={interfaces}
               onCreate={onCreate}
               onUpdate={onUpdate}
               onDelete={onDelete}
+              isOwned={isOwned}
+              endpointInformations={endpointInformations || []}
             />
           )
         },
       },
     ],
-    [onUpdate, onCreate, onDelete, isUnregistered, loading] //eslint-disable-line
+    [onUpdate, onCreate, onDelete, loading] //eslint-disable-line
   )
 
-  return (
-    <TreeTable
-      columns={columns}
-      data={data || []}
-      className={greyedOutClassName}
-    />
-  )
+  return <TreeTable columns={columns} data={data || []} />
 }
 
 DevicesResourcesTree.propTypes = {
@@ -146,10 +147,8 @@ DevicesResourcesTree.propTypes = {
   onUpdate: PropTypes.func.isRequired,
   onDelete: PropTypes.func.isRequired,
   loading: PropTypes.bool.isRequired,
-  deviceStatus: PropTypes.oneOf(Object.values(devicesStatuses)),
 }
 
 DevicesResourcesTree.defaultProps = {
   data: null,
-  deviceStatus: null,
 }

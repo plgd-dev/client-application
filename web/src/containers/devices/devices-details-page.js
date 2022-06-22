@@ -39,6 +39,8 @@ import {
 import { useDeviceDetails, useDevicesResources } from './hooks'
 import { messages as t } from './devices-i18n'
 import './devices-details.scss'
+import { disOwnDevice } from '@/containers/devices/slice'
+import { useDispatch } from 'react-redux'
 
 export const DevicesDetailsPage = () => {
   const { formatMessage: _ } = useIntl()
@@ -61,6 +63,7 @@ export const DevicesDetailsPage = () => {
     error: resourcesError,
     refresh: refreshResources,
   } = useDevicesResources(id)
+  const dispatch = useDispatch()
 
   const [isOwned, setIsOwned] = useState(
     data?.ownershipStatus === devicesOwnerships.OWNED
@@ -332,7 +335,12 @@ export const DevicesDetailsPage = () => {
             ? _(t.deviceWasOwned, { name: deviceName })
             : _(t.deviceWasDisOwned, { name: deviceName }),
         })
-        !newOwnState && history.push('/')
+
+        // disOwn
+        if (!newOwnState) {
+          dispatch(disOwnDevice(id))
+          history.push('/')
+        }
       }
     } catch (error) {
       handleDeleteDevicesErrors(error, _, true)
