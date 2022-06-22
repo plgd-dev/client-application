@@ -55,7 +55,7 @@ func New(ctx context.Context, config Config, logger log.Logger) (*Service, error
 		return nil, fmt.Errorf("cannot create device service: %w", err)
 	}
 
-	clientApplicationServer := grpc.NewClientApplicationServer(deviceService, logger)
+	clientApplicationServer := grpc.NewClientApplicationServer(deviceService, logger, config.APIs.GRPC.DefaultGetDevicesRequest.ToGetDevicesRequest())
 
 	if config.APIs.HTTP.Enabled {
 		httpService, err = http.New(ctx, serviceName, config.APIs.HTTP.Config, clientApplicationServer, logger, tracerProvider)

@@ -23,10 +23,12 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"github.com/plgd-dev/client-application/pb"
 	"github.com/plgd-dev/client-application/pkg/net/grpc/server"
 	"github.com/plgd-dev/client-application/pkg/net/listener"
 	service "github.com/plgd-dev/client-application/service"
 	"github.com/plgd-dev/client-application/service/device"
+	"github.com/plgd-dev/client-application/service/grpc"
 	"github.com/plgd-dev/client-application/service/http"
 	"github.com/plgd-dev/hub/v2/pkg/log"
 	grpcServer "github.com/plgd-dev/hub/v2/pkg/net/grpc/server"
@@ -59,13 +61,20 @@ func createDefaultConfig(uiDirectory string) service.Config {
 			},
 			GRPC: service.GRPCConfig{
 				Enabled: true,
-				Config: server.Config{
-					Addr: ":8081",
-					TLS: server.TLSConfig{
-						Enabled: false,
+				Config: grpc.Config{
+					Config: server.Config{
+						Addr: ":8081",
+						TLS: server.TLSConfig{
+							Enabled: false,
+						},
+						EnforcementPolicy: grpcServer.EnforcementPolicyConfig{
+							MinTime: 5 * time.Minute,
+						},
 					},
-					EnforcementPolicy: grpcServer.EnforcementPolicyConfig{
-						MinTime: 5 * time.Minute,
+					DefaultGetDevicesRequest: pb.GetDevicesRequestConfig{
+						Timeout:      time.Second,
+						UseCache:     false,
+						UseMulticast: []string{"ipv4", "ipv6"},
 					},
 				},
 			},

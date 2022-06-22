@@ -17,7 +17,20 @@
 package grpc
 
 import (
+	"fmt"
+
+	"github.com/plgd-dev/client-application/pb"
 	"github.com/plgd-dev/client-application/pkg/net/grpc/server"
 )
 
-type Config = server.Config
+type Config struct {
+	server.Config            `yaml:",inline"`
+	DefaultGetDevicesRequest pb.GetDevicesRequestConfig `yaml:"defaultGetDevicesRequest" json:"defaultGetDevicesRequest"`
+}
+
+func (c *Config) Validate() error {
+	if err := c.DefaultGetDevicesRequest.Validate(); err != nil {
+		return fmt.Errorf("defaultGetDevicesRequest.%w", err)
+	}
+	return c.Config.Validate()
+}

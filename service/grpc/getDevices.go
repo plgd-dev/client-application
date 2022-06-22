@@ -483,13 +483,10 @@ func filterByOwnershipStatus(device *grpcgwPb.Device, filteredOwnershipStatus []
 	return false
 }
 
-// If use_cache, use_multicast, use_endpoints are not set, then it will set use_multicast with [IPV4,IPV6].
-func tryToSetDefaultRequest(req *pb.GetDevicesRequest) *pb.GetDevicesRequest {
-	if req == nil {
-		req = &pb.GetDevicesRequest{}
-	}
+// If use_cache, use_multicast, use_endpoints are not set, then it will use defaultGetDevicesRequest
+func (s *ClientApplicationServer) tryToSetDefaultRequest(req *pb.GetDevicesRequest) *pb.GetDevicesRequest {
 	if !req.GetUseCache() && len(req.GetUseMulticast()) == 0 && len(req.GetUseEndpoints()) == 0 {
-		req.UseMulticast = []pb.GetDevicesRequest_UseMulticast{pb.GetDevicesRequest_IPV4, pb.GetDevicesRequest_IPV6}
+		return s.defaultGetDevicesRequest
 	}
 	return req
 }
@@ -543,7 +540,7 @@ func sendDevices(req *pb.GetDevicesRequest, devs devices, send func(*grpcgwPb.De
 }
 
 func (s *ClientApplicationServer) GetDevices(req *pb.GetDevicesRequest, srv pb.ClientApplication_GetDevicesServer) error {
-	req = tryToSetDefaultRequest(req)
+	req = s.tryToSetDefaultRequest(req)
 	ctx := srv.Context()
 	var toCall []func()
 	var discoveredDevices sync.Map

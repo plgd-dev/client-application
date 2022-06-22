@@ -56,6 +56,15 @@ apis:
       keyFile: /certs/key.pem
       certFile: /certs/crt.pem
       clientCertificateRequired: true
+    defaultGetDevicesRequest:
+      useCache: false
+      useMulticast:
+        - ipv4
+        - ipv6
+      useEndpoints: []
+      timeout: 1s
+      ownershipStatusFilter: []
+      typeFilter: []
 clients:
   device:
     coap:

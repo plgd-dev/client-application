@@ -28,16 +28,18 @@ import (
 )
 
 type ClientApplicationServer struct {
-	serviceDevice *serviceDevice.Service
-	logger        log.Logger
-	devices       sync.Map
+	defaultGetDevicesRequest *pb.GetDevicesRequest
+	serviceDevice            *serviceDevice.Service
+	logger                   log.Logger
+	devices                  sync.Map
 	pb.UnimplementedClientApplicationServer
 }
 
-func NewClientApplicationServer(serviceDevice *serviceDevice.Service, logger log.Logger) *ClientApplicationServer {
+func NewClientApplicationServer(serviceDevice *serviceDevice.Service, logger log.Logger, defaultGetDevicesRequest *pb.GetDevicesRequest) *ClientApplicationServer {
 	return &ClientApplicationServer{
-		serviceDevice: serviceDevice,
-		logger:        logger,
+		serviceDevice:            serviceDevice,
+		logger:                   logger,
+		defaultGetDevicesRequest: defaultGetDevicesRequest,
 	}
 }
 

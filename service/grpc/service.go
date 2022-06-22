@@ -42,7 +42,7 @@ func New(ctx context.Context, serviceName string, config Config, clientApplicati
 		return nil, fmt.Errorf("cannot create grpc server options: %w", err)
 	}
 
-	server, err := pkgGrpcServer.New(config, logger, opts...)
+	server, err := pkgGrpcServer.New(config.Config, logger, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("cannot create grpc server: %w", err)
 	}

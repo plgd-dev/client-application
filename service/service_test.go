@@ -20,12 +20,19 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/plgd-dev/client-application/service"
 	"github.com/plgd-dev/client-application/test"
+	"github.com/stretchr/testify/require"
+	"gopkg.in/yaml.v3"
 )
 
 func TestServiceServe(t *testing.T) {
 	fmt.Printf("%v\n\n", test.MakeConfig(t))
 
-	shutDown := test.SetUp(t)
+	var cfg service.Config
+	err := yaml.Unmarshal([]byte(test.MakeConfig(t).String()), &cfg)
+	require.NoError(t, err)
+
+	shutDown := test.New(t, cfg)
 	defer shutDown()
 }

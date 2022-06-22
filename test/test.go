@@ -140,18 +140,29 @@ func MakeHttpConfig() service.HTTPConfig {
 	}
 }
 
+func MakeGetDevicesRequestConfig() pb.GetDevicesRequestConfig {
+	return pb.GetDevicesRequestConfig{
+		Timeout:      time.Second,
+		UseCache:     false,
+		UseMulticast: []string{"ipv4", "ipv6"},
+	}
+}
+
 func MakeGrpcConfig() service.GRPCConfig {
 	cfg := config.MakeGrpcServerConfig(CLIENT_APPLICATION_GRPC_HOST)
 	return service.GRPCConfig{
 		Enabled: true,
 		Config: serviceGrpc.Config{
-			Addr:              cfg.Addr,
-			EnforcementPolicy: cfg.EnforcementPolicy,
-			KeepAlive:         cfg.KeepAlive,
-			TLS: server.TLSConfig{
-				Enabled: true,
-				Config:  cfg.TLS,
+			Config: server.Config{
+				Addr:              cfg.Addr,
+				EnforcementPolicy: cfg.EnforcementPolicy,
+				KeepAlive:         cfg.KeepAlive,
+				TLS: server.TLSConfig{
+					Enabled: true,
+					Config:  cfg.TLS,
+				},
 			},
+			DefaultGetDevicesRequest: MakeGetDevicesRequestConfig(),
 		},
 	}
 }
@@ -199,7 +210,8 @@ func NewClientApplicationServer(ctx context.Context) (*serviceGrpc.ClientApplica
 		_ = d.Serve()
 	}()
 
-	return serviceGrpc.NewClientApplicationServer(d, logger), func() {
+	defaultGetDevicesRequest := MakeGetDevicesRequestConfig()
+	return serviceGrpc.NewClientApplicationServer(d, logger, defaultGetDevicesRequest.ToGetDevicesRequest()), func() {
 		d.Close()
 		wg.Wait()
 	}, nil

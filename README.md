@@ -77,6 +77,12 @@ gRPC API of the client application service as defined [service](./pb/service.pro
 | `api.grpc.tls.keyFile` | string | `File path to private key in PEM format.` | `""` |
 | `api.grpc.tls.certFile` | string | `File path to certificate in PEM format.` | `""` |
 | `api.grpc.tls.clientCertificateRequired` | bool | `If true, require client certificate.` | `true` |
+| `api.grpc.defaultGetDevicesRequest.useCache` | bool | `Devices are taken from the cache. It is used only when whole GetDevicesRequest is empty.` | `false` |
+| `api.grpc.defaultGetDevicesRequest.useMulticast` | []string | `Filter by multicast IP address version.  Supported values are: "ipv4","ipv6". It is used only when whole GetDevicesRequest is empty.`  | `["ipv4","ipv6"]` |
+| `api.grpc.defaultGetDevicesRequest.useEndpoints` | []string | `Returns devices via endpoints. Supported values are "<ip>","<ip>:<port>". It is used only when whole GetDevicesRequest is empty.` | `[]` |
+| `api.grpc.defaultGetDevicesRequest.timeout` | string | `How long to wait for the devices responses for responses. It is used only when whole GetDevicesRequest is empty.` | `"1s"` |
+| `api.grpc.defaultGetDevicesRequest.ownershipStatusFilter` | []string | `Filter by ownership status. Supported values are: "unowned","owned". It is used only when whole GetDevicesRequest is empty.`. | `[]`|
+| `api.grpc.defaultGetDevicesRequest.typeFilter` | []string | `Filter by device resource type of oic/d. It is used only when whole GetDevicesRequest is empty.`  | `[]`|
 
 ### Device client
 
