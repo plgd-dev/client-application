@@ -93,7 +93,7 @@
           },
           {
             "name": "timeout",
-            "description": "How long to wait for the devices responses for responses in milliseconds. Default: 0 - means 1sec.",
+            "description": "How long to wait for the devices responses for responses in milliseconds. Default: 0 - means 2sec.",
             "in": "query",
             "required": false,
             "type": "integer",

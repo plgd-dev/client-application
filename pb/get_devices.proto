@@ -44,7 +44,7 @@ message GetDevicesRequest {
   // - <host> is interpreted as coap://<host>:5683
   repeated string use_endpoints = 3;
 
-  // How long to wait for the devices responses for responses in milliseconds. Default: 0 - means 1sec.
+  // How long to wait for the devices responses for responses in milliseconds. Default: 0 - means 2sec.
   uint32 timeout = 4;
 
   // Filter by ownership status. Default: [UNOWNED,OWNED]. 

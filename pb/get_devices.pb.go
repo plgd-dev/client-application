@@ -145,7 +145,7 @@ type GetDevicesRequest struct {
 	// - <host>:<port> is interpreted as coap://<host>:<port>
 	// - <host> is interpreted as coap://<host>:5683
 	UseEndpoints []string `protobuf:"bytes,3,rep,name=use_endpoints,json=useEndpoints,proto3" json:"use_endpoints,omitempty"`
-	// How long to wait for the devices responses for responses in milliseconds. Default: 0 - means 1sec.
+	// How long to wait for the devices responses for responses in milliseconds. Default: 0 - means 2sec.
 	Timeout uint32 `protobuf:"varint,4,opt,name=timeout,proto3" json:"timeout,omitempty"`
 	// Filter by ownership status. Default: [UNOWNED,OWNED].
 	OwnershipStatusFilter []GetDevicesRequest_OwnershipStatusFilter `protobuf:"varint,5,rep,packed,name=ownership_status_filter,json=ownershipStatusFilter,proto3,enum=service.pb.GetDevicesRequest_OwnershipStatusFilter" json:"ownership_status_filter,omitempty"`

@@ -51,7 +51,7 @@ import (
 )
 
 const (
-	DefaultTimeout = 1000
+	DefaultTimeout = 2000
 	MulticastPort  = 5683
 )
 
