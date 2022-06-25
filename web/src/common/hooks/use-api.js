@@ -5,13 +5,8 @@ import { useIsMounted } from '@/common/hooks'
 import { fetchApi, streamApi } from '@/common/services'
 import { useAppConfig } from '@/containers/app'
 
-const getData = async (
-  method,
-  url,
-  options,
-  telemetryWebTracer,
-  telemetrySpan
-) => {
+const getData = async (method, url, options, telemetryWebTracer) => {
+  const { telemetrySpan } = options
   let dataToReturn = undefined
   if (telemetryWebTracer && telemetrySpan) {
     const singleSpan = telemetryWebTracer.startSpan(telemetrySpan)
@@ -45,7 +40,6 @@ export const useApi = (url, options = {}) => {
   })
   const [refreshIndex, setRefreshIndex] = useState(0)
   const { telemetryWebTracer } = useAppConfig()
-  const { telemetrySpan } = options
 
   useEffect(
     () => {
@@ -53,13 +47,7 @@ export const useApi = (url, options = {}) => {
         try {
           // Set loading to true
           setState({ ...state, loading: true })
-          const data = await getData(
-            fetchApi,
-            url,
-            options,
-            telemetryWebTracer,
-            telemetrySpan
-          )
+          const data = await getData(fetchApi, url, options, telemetryWebTracer)
 
           if (isMounted.current) {
             setState({
@@ -104,7 +92,6 @@ export const useStreamApi = (url, options = {}) => {
   })
   const [refreshIndex, setRefreshIndex] = useState(0)
   const { telemetryWebTracer } = useAppConfig()
-  const { telemetrySpan } = options
 
   useEffect(
     () => {
@@ -116,8 +103,7 @@ export const useStreamApi = (url, options = {}) => {
             streamApi,
             url,
             options,
-            telemetryWebTracer,
-            telemetrySpan
+            telemetryWebTracer
           )
 
           if (isMounted.current) {
