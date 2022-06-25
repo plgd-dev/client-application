@@ -36,7 +36,7 @@ import {
   ownDeviceApi,
   disownDeviceApi,
 } from './rest'
-import { useDeviceDetails, useDevicesResources } from './hooks'
+import { useDeviceDetails, useDeviceResources } from './hooks'
 import { messages as t } from './devices-i18n'
 import './devices-details.scss'
 import { disOwnDevice } from '@/containers/devices/slice'
@@ -62,7 +62,7 @@ export const DevicesDetailsPage = () => {
     loading: loadingResources,
     error: resourcesError,
     refresh: refreshResources,
-  } = useDevicesResources(id)
+  } = useDeviceResources(id)
   const dispatch = useDispatch()
 
   const [isOwned, setIsOwned] = useState(

@@ -14,7 +14,8 @@ export const useDevicesList = () => {
 
   // Fetch the data
   const { data, updateData, ...rest } = useStreamApi(
-    `${httpGatewayAddress}${devicesApiEndpoints.DEVICES}`
+    `${httpGatewayAddress}${devicesApiEndpoints.DEVICES}`,
+    { telemetrySpan: 'get-devices' }
   )
 
   // Update the metadata when a WS event is emitted
@@ -33,7 +34,10 @@ export const useDeviceDetails = deviceId => {
 
   // Fetch the data
   const { data, updateData, ...rest } = useApi(
-    `${httpGatewayAddress}${devicesApiEndpoints.DEVICES}/${deviceId}`
+    `${httpGatewayAddress}${devicesApiEndpoints.DEVICES}/${deviceId}`,
+    {
+      telemetrySpan: 'get-device-detail',
+    }
   )
 
   // Update the metadata when a WS event is emitted
@@ -59,13 +63,13 @@ export const useDeviceDetails = deviceId => {
   return { data, updateData, ...rest }
 }
 
-export const useDevicesResources = deviceId => {
+export const useDeviceResources = deviceId => {
   const { httpGatewayAddress } = useAppConfig()
 
   // Fetch the data
   const { data, updateData, ...rest } = useStreamApi(
     `${httpGatewayAddress}${devicesApiEndpoints.DEVICES}/${deviceId}/${devicesApiEndpoints.DEVICES_RESOURCES_SUFFIX}`,
-    { parseResult: 'json' }
+    { parseResult: 'json', telemetrySpan: 'get-device-resources' }
   )
 
   useEmitter(

@@ -1,7 +1,9 @@
 import { useEffect, useState } from 'react'
+import { context, trace } from '@opentelemetry/api'
 
 import { useIsMounted } from '@/common/hooks'
 import { fetchApi, streamApi } from '@/common/services'
+import { useAppConfig } from '@/containers/app'
 
 export const useApi = (url, options = {}) => {
   const isMounted = useIsMounted()
@@ -11,6 +13,8 @@ export const useApi = (url, options = {}) => {
     data: null,
   })
   const [refreshIndex, setRefreshIndex] = useState(0)
+  const { telemetryWebTracer } = useAppConfig()
+  const { telemetrySpan } = options
 
   useEffect(
     () => {
@@ -18,8 +22,27 @@ export const useApi = (url, options = {}) => {
         try {
           // Set loading to true
           setState({ ...state, loading: true })
+          let data = undefined
 
-          const { data } = await fetchApi(url, options)
+          if (telemetryWebTracer && telemetrySpan) {
+            const singleSpan = telemetryWebTracer.startSpan(telemetrySpan)
+            await context.with(
+              trace.setSpan(context.active(), singleSpan),
+              async () => {
+                data = await fetchApi(url, options).then(result => {
+                  trace
+                    .getSpan(context.active())
+                    .addEvent('fetching-single-span-completed')
+                  singleSpan.end()
+
+                  return result.data
+                })
+              }
+            )
+          } else {
+            const result = await fetchApi(url, options)
+            data = result.data
+          }
 
           if (isMounted.current) {
             setState({
@@ -37,6 +60,10 @@ export const useApi = (url, options = {}) => {
               error,
               loading: false,
             })
+
+            trace
+              .getSpan(context.active())
+              .addEvent('fetching-single-span-completed')
           }
         }
       })()
@@ -59,6 +86,8 @@ export const useStreamApi = (url, options = {}) => {
     data: null,
   })
   const [refreshIndex, setRefreshIndex] = useState(0)
+  const { telemetryWebTracer } = useAppConfig()
+  const { telemetrySpan } = options
 
   useEffect(
     () => {
@@ -66,7 +95,27 @@ export const useStreamApi = (url, options = {}) => {
         try {
           // Set loading to true
           setState({ ...state, loading: true })
-          const { data } = await streamApi(url, options)
+          let data = undefined
+
+          if (telemetryWebTracer && telemetrySpan) {
+            const singleSpan = telemetryWebTracer.startSpan(telemetrySpan)
+            await context.with(
+              trace.setSpan(context.active(), singleSpan),
+              async () => {
+                data = await streamApi(url, options).then(result => {
+                  trace
+                    .getSpan(context.active())
+                    .addEvent('fetching-single-span-completed')
+                  singleSpan.end()
+
+                  return result.data
+                })
+              }
+            )
+          } else {
+            const result = await streamApi(url, options)
+            data = result.data
+          }
 
           if (isMounted.current) {
             setState({
@@ -84,6 +133,10 @@ export const useStreamApi = (url, options = {}) => {
               error,
               loading: false,
             })
+
+            trace
+              .getSpan(context.active())
+              .addEvent('fetching-single-span-completed')
           }
         }
       })()

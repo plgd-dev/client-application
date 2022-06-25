@@ -17,13 +17,21 @@ import { Routes } from '@/routes'
 import { history } from '@/store/history'
 import { AppContext } from './app-context'
 import { security } from '@/common/services/security'
+import { openTelemetry } from '@/common/services/opentelemetry'
 import './app.scss'
 
 const App = ({ config }) => {
   const [collapsed, setCollapsed] = useLocalStorage('leftPanelCollapsed', true)
   security.setGeneralConfig(config)
+  openTelemetry.init()
   return (
-    <AppContext.Provider value={{ collapsed, ...config }}>
+    <AppContext.Provider
+      value={{
+        collapsed,
+        ...config,
+        telemetryWebTracer: openTelemetry.getWebTracer(),
+      }}
+    >
       <Router history={history}>
         {/*<InitServices />*/}
         <Helmet
