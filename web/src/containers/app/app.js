@@ -23,13 +23,16 @@ import './app.scss'
 const App = ({ config }) => {
   const [collapsed, setCollapsed] = useLocalStorage('leftPanelCollapsed', true)
   security.setGeneralConfig(config)
-  openTelemetry.init()
+  config.openTelemetry !== false && openTelemetry.init()
   return (
     <AppContext.Provider
       value={{
         collapsed,
         ...config,
-        telemetryWebTracer: openTelemetry.getWebTracer(),
+        telemetryWebTracer:
+          config.openTelemetry !== false
+            ? openTelemetry.getWebTracer()
+            : undefined,
       }}
     >
       <Router history={history}>
