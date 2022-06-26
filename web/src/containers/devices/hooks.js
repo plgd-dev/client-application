@@ -1,5 +1,5 @@
 import debounce from 'lodash/debounce'
-import { useApi, useStreamApi, useEmitter } from '@/common/hooks'
+import { useStreamApi, useEmitter } from '@/common/hooks'
 import { useAppConfig } from '@/containers/app'
 
 import {
@@ -33,9 +33,10 @@ export const useDeviceDetails = deviceId => {
   const { httpGatewayAddress } = useAppConfig()
 
   // Fetch the data
-  const { data, updateData, ...rest } = useApi(
+  const { data, updateData, ...rest } = useStreamApi(
     `${httpGatewayAddress}${devicesApiEndpoints.DEVICES}/${deviceId}`,
     {
+      streamApi: false,
       telemetrySpan: 'get-device-detail',
     }
   )

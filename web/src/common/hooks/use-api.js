@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { context, trace } from '@opentelemetry/api'
+import get from 'lodash/get'
 
 import { useIsMounted } from '@/common/hooks'
 import { fetchApi, streamApi } from '@/common/services'
@@ -31,58 +32,6 @@ const getData = async (method, url, options, telemetryWebTracer) => {
   return dataToReturn
 }
 
-export const useApi = (url, options = {}) => {
-  const isMounted = useIsMounted()
-  const [state, setState] = useState({
-    error: null,
-    loading: true,
-    data: null,
-  })
-  const [refreshIndex, setRefreshIndex] = useState(0)
-  const { telemetryWebTracer } = useAppConfig()
-
-  useEffect(
-    () => {
-      ;(async () => {
-        try {
-          // Set loading to true
-          setState({ ...state, loading: true })
-          const data = await getData(fetchApi, url, options, telemetryWebTracer)
-
-          if (isMounted.current) {
-            setState({
-              ...state,
-              data,
-              error: null,
-              loading: false,
-            })
-          }
-        } catch (error) {
-          if (isMounted.current) {
-            setState({
-              ...state,
-              data: null,
-              error,
-              loading: false,
-            })
-
-            trace
-              .getSpan(context.active())
-              .addEvent('fetching-single-span-completed')
-          }
-        }
-      })()
-    },
-    [url, refreshIndex] // eslint-disable-line
-  )
-
-  return {
-    ...state,
-    updateData: updatedData => setState({ ...state, data: updatedData }),
-    refresh: () => setRefreshIndex(refreshIndex + 1),
-  }
-}
-
 export const useStreamApi = (url, options = {}) => {
   const isMounted = useIsMounted()
   const [state, setState] = useState({
@@ -92,6 +41,7 @@ export const useStreamApi = (url, options = {}) => {
   })
   const [refreshIndex, setRefreshIndex] = useState(0)
   const { telemetryWebTracer } = useAppConfig()
+  const apiMethod = get(options, 'streamApi', true) ? streamApi : fetchApi
 
   useEffect(
     () => {
@@ -100,7 +50,7 @@ export const useStreamApi = (url, options = {}) => {
           // Set loading to true
           setState({ ...state, loading: true })
           const data = await getData(
-            streamApi,
+            apiMethod,
             url,
             options,
             telemetryWebTracer
