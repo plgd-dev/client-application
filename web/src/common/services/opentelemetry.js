@@ -5,6 +5,7 @@ import {
 } from '@opentelemetry/sdk-trace-base'
 import { registerInstrumentations } from '@opentelemetry/instrumentation'
 import { FetchInstrumentation } from '@opentelemetry/instrumentation-fetch'
+import { XMLHttpRequestInstrumentation } from '@opentelemetry/instrumentation-xml-http-request'
 import { ZoneContextManager } from '@opentelemetry/context-zone'
 import { B3Propagator } from '@opentelemetry/propagator-b3'
 
@@ -21,7 +22,11 @@ const init = () => {
   registerInstrumentations({
     instrumentations: [
       new FetchInstrumentation({
+        ignoreUrls: [/localhost:3000\/sockjs-node/],
         clearTimingResources: true,
+      }),
+      new XMLHttpRequestInstrumentation({
+        ignoreUrls: [/localhost:3000\/sockjs-node/],
       }),
     ],
   })
