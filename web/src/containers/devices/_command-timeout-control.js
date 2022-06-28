@@ -27,6 +27,7 @@ export const CommanTimeoutControl = ({
   ttlHasError,
   onTtlHasError,
   isDelete,
+  title,
 }) => {
   const { formatMessage: _ } = useIntl()
   const closestUnit = useMemo(
@@ -104,7 +105,7 @@ export const CommanTimeoutControl = ({
 
   return (
     <Label
-      title={_(t.commandTimeout)}
+      title={title || _(t.commandTimeout)}
       inline
       onClick={e => e.preventDefault()}
       className={classNames('command-timeout-label', {
@@ -161,6 +162,7 @@ CommanTimeoutControl.propTypes = {
   ttlHasError: PropTypes.bool.isRequired,
   onTtlHasError: PropTypes.func.isRequired,
   isDelete: PropTypes.bool,
+  title: PropTypes.string,
 }
 
 CommanTimeoutControl.defaultProps = {

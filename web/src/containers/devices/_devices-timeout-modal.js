@@ -23,6 +23,7 @@ export const DevicesTimeoutModal = ({ show, onClose }) => {
   const renderBody = () => {
     return (
       <CommanTimeoutControl
+        title={_(t.discoveryTimeout)}
         defaultValue={discoveryTimeout}
         defaultTtlValue={DISCOVERY_DEFAULT_TIMEOUT}
         onChange={val => setUserValue(val)}
