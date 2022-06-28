@@ -66,7 +66,12 @@ export const useStreamApi = (url, options = {}) => {
         try {
           // Set loading to true
           setState({ ...state, loading: true })
-          const { data } = await streamApi(url, options)
+          // change of url is watched by effect so base is same and shadow parameter is passed alone
+          const { shadowQueryParameter, ...restOptions } = options
+          const { data } = await streamApi(
+            url + shadowQueryParameter || '',
+            restOptions
+          )
 
           if (isMounted.current) {
             setState({

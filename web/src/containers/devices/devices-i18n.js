@@ -511,4 +511,12 @@ export const messages = defineMessages({
     id: 'devices.certificateAuthorities',
     defaultMessage: 'Certificate Authorities',
   },
+  changeTimeout: {
+    id: 'devices.changeTimeout',
+    defaultMessage: 'Change timout',
+  },
+  changeDiscoveryTimeout: {
+    id: 'devices.changeDiscoveryTimeout',
+    defaultMessage: 'Change discovery timout',
+  },
 })

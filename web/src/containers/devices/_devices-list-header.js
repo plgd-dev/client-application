@@ -1,18 +1,29 @@
 import { useIntl } from 'react-intl'
 import PropTypes from 'prop-types'
-import { Button } from '@/components/button'
 import FindNewDeviceByIp from './find-new-device-by-ip'
 import { messages as t } from './devices-i18n'
+import { SplitButton } from '@/components/split-button'
 
-export const DevicesListHeader = ({ loading, refresh }) => {
+export const DevicesListHeader = ({ loading, refresh, openTimeoutModal }) => {
   const { formatMessage: _ } = useIntl()
 
   return (
     <div className="d-flex align-items-center">
       <FindNewDeviceByIp />
-      <Button disabled={loading} onClick={refresh} icon="fa-sync">
+      <SplitButton
+        disabled={loading}
+        onClick={refresh}
+        icon="fa-sync"
+        items={[
+          {
+            onClick: openTimeoutModal,
+            label: _(t.changeTimeout),
+            icon: 'fa-pen',
+          },
+        ]}
+      >
         {`${_(t.discovery)}`}
-      </Button>
+      </SplitButton>
     </div>
   )
 }
@@ -20,4 +31,5 @@ export const DevicesListHeader = ({ loading, refresh }) => {
 DevicesListHeader.propTypes = {
   loading: PropTypes.bool.isRequired,
   refresh: PropTypes.func.isRequired,
+  openTimeoutModal: PropTypes.func.isRequired,
 }

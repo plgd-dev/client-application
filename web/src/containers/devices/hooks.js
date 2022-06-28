@@ -6,15 +6,24 @@ import {
   devicesApiEndpoints,
   DEVICES_STATUS_WS_KEY,
   resourceEventTypes,
+  TIMEOUT_UNIT_PRECISION,
 } from './constants'
 import { getResourceRegistrationNotificationKey } from './utils'
+import { useSelector } from 'react-redux'
+import { getDevicesDiscoveryTimeout } from '@/containers/devices/slice'
 
 export const useDevicesList = () => {
   const { httpGatewayAddress } = useAppConfig()
+  const discoveryTimeout = useSelector(getDevicesDiscoveryTimeout)
 
   // Fetch the data
   const { data, updateData, ...rest } = useStreamApi(
-    `${httpGatewayAddress}${devicesApiEndpoints.DEVICES}`
+    `${httpGatewayAddress}${devicesApiEndpoints.DEVICES}`,
+    {
+      shadowQueryParameter: `?timeout=${
+        discoveryTimeout / TIMEOUT_UNIT_PRECISION
+      }`,
+    }
   )
 
   // Update the metadata when a WS event is emitted

@@ -25,17 +25,18 @@ import {
   disOwnDevice,
 } from '@/containers/devices/slice'
 import { useDispatch, useSelector } from 'react-redux'
+import { DevicesTimeoutModal } from './_devices-timeout-modal'
 
 export const DevicesListPage = () => {
   const { formatMessage: _ } = useIntl()
   const { data, loading, error: deviceError, refresh } = useDevicesList()
   const [deleteModalOpen, setDeleteModalOpen] = useState(false)
+  const [timeoutModalOpen, setTimeoutModalOpen] = useState(false)
   const [selectedDevices, setSelectedDevices] = useState([])
   const [deleting, setDeleting] = useState(false)
   const [owning, setOwning] = useState(false)
   const isMounted = useIsMounted()
   const dispatch = useDispatch()
-
   const dataToDisplay = useSelector(getDevices)
 
   useEffect(() => {
@@ -126,6 +127,7 @@ export const DevicesListPage = () => {
         <DevicesListHeader
           loading={loading || owning}
           refresh={handleRefresh}
+          openTimeoutModal={() => setTimeoutModalOpen(true)}
         />
       }
     >
@@ -154,6 +156,11 @@ export const DevicesListPage = () => {
       >
         {_(t.flushCache)}
       </ConfirmModal>
+
+      <DevicesTimeoutModal
+        show={timeoutModalOpen}
+        onClose={() => setTimeoutModalOpen(false)}
+      />
     </Layout>
   )
 }
