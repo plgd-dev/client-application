@@ -4,6 +4,9 @@ name: Build test binaries
 
 # Controls when the action will run. Triggers the workflow push is only on main branch and PR on any branch.
 on:
+  push:
+    branches:
+      - main
   pull_request:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
@@ -17,14 +20,22 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
-      
+        with:
+          fetch-depth: 0
       - uses: actions/setup-go@v3
         with:
           go-version: "^1.18" # The Go version to download (if necessary) and use.
       
+      - name: Set version
+        id: vars
+        run: |
+          git tag $(git describe --tags --abbrev=0)-$(git rev-parse --short HEAD)
+          echo "::set-output name=version::$(git describe --tags --abbrev=0)"
+      
       - name: Build client
         uses: goreleaser/goreleaser-action@v3
         with:
+          # version of goreleaser which will be used
           version: latest
           args: release --rm-dist
         env:
@@ -34,6 +45,8 @@ jobs:
       - name: Upload assets
         uses: actions/upload-artifact@v3
         with:
-          name: client_application
-          path: .tmp/dist/*
+          name: client_application-${{ steps.vars.outputs.version }}
+          path: |
+            .tmp/dist/*.tar.gz
+            .tmp/dist/*.zip
           retention-days: 7
