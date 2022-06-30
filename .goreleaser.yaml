@@ -6,6 +6,8 @@ before:
 dist: .tmp/dist
 builds:
   - binary: client-application
+    env:
+      - CGO_ENABLED=0
     goos:
       - linux
       - windows
@@ -21,6 +23,7 @@ builds:
     ldflags:
       - -s -w -X main.Version={{.Version}}
       - -s -w -X main.UISeparator={{.Env.UI_SEPARATOR}}
+      - -extldflags '-static'
     hooks:
       post:
         - make inject-web CLIENT_APPLICATION_BINARY_PATH={{.Path}} UI_SEPARATOR={{.Env.UI_SEPARATOR}}
