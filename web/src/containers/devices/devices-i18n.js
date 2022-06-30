@@ -513,7 +513,7 @@ export const messages = defineMessages({
   },
   changeTimeout: {
     id: 'devices.changeTimeout',
-    defaultMessage: 'Change timout',
+    defaultMessage: 'Change timeout',
   },
   changeDiscoveryTimeout: {
     id: 'devices.changeDiscoveryTimeout',

@@ -11,6 +11,7 @@ import {
   getDevicesDiscoveryTimeout,
   setDiscoveryTimeout,
 } from '@/containers/devices/slice'
+import isFunction from 'lodash/isFunction'
 
 export const DevicesTimeoutModal = ({ show, onClose }) => {
   const { formatMessage: _ } = useIntl()
@@ -39,7 +40,7 @@ export const DevicesTimeoutModal = ({ show, onClose }) => {
       dispatch(setDiscoveryTimeout(userValue))
     }
 
-    onClose()
+    isFunction && onClose()
   }
 
   const renderFooter = () => (
@@ -67,11 +68,10 @@ export const DevicesTimeoutModal = ({ show, onClose }) => {
 }
 
 DevicesTimeoutModal.propTypes = {
-  onClose: PropTypes.func.isRequired,
+  onClose: PropTypes.func,
   show: PropTypes.bool.isRequired,
 }
 
 DevicesTimeoutModal.defaultProps = {
-  onClose: () => {},
   show: false,
 }
