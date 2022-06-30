@@ -37,9 +37,8 @@ jobs:
         with:
           # version of goreleaser which will be used
           version: latest
-          args: release --rm-dist
+          args: release --rm-dist --skip-publish --skip-announce
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           UI_SEPARATOR: "--------UI--------"
       
       - name: Upload assets
