@@ -2,7 +2,10 @@
 
 import { createSlice } from '@reduxjs/toolkit'
 import findIndex from 'lodash/findIndex'
-import { devicesOwnerships } from '@/containers/devices/constants'
+import {
+  devicesOwnerships,
+  DISCOVERY_DEFAULT_TIMEOUT,
+} from '@/containers/devices/constants'
 import isEqual from 'lodash/isEqual'
 
 const { OWNED } = devicesOwnerships
@@ -10,6 +13,7 @@ const { OWNED } = devicesOwnerships
 const initialState = {
   activeNotifications: [],
   devicesList: [],
+  discoveryTimeout: DISCOVERY_DEFAULT_TIMEOUT,
 }
 
 const { reducer, actions } = createSlice({
@@ -91,6 +95,9 @@ const { reducer, actions } = createSlice({
         1
       )
     },
+    setDiscoveryTimeout(state, { payload }) {
+      state.discoveryTimeout = payload
+    },
   },
 })
 
@@ -105,6 +112,7 @@ export const {
   ownDevice,
   disOwnDevice,
   updateDevices,
+  setDiscoveryTimeout,
 } = actions
 
 // Reducer
@@ -118,3 +126,6 @@ export const isNotificationActive = key => state =>
   state.devices.activeNotifications?.includes?.(key) || false
 
 export const getDevices = state => state.devices.devicesList
+
+export const getDevicesDiscoveryTimeout = state =>
+  state.devices.discoveryTimeout

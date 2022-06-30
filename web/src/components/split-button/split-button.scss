@@ -1,0 +1,13 @@
+
+.split-button {
+  .split-button-left{
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+
+  .split-button-right{
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+    min-width: 20px;
+  }
+}
