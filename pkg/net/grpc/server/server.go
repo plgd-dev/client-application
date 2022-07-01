@@ -19,6 +19,7 @@ package server
 import (
 	"fmt"
 
+	"github.com/plgd-dev/hub/v2/pkg/fsnotify"
 	"github.com/plgd-dev/hub/v2/pkg/log"
 	"github.com/plgd-dev/hub/v2/pkg/net/grpc/server"
 	certManager "github.com/plgd-dev/hub/v2/pkg/security/certManager/server"
@@ -27,14 +28,14 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-func New(config Config, logger log.Logger, opts ...grpc.ServerOption) (*server.Server, error) {
+func New(config Config, fileWatcher *fsnotify.Watcher, logger log.Logger, opts ...grpc.ServerOption) (*server.Server, error) {
 	v := []grpc.ServerOption{
 		grpc.KeepaliveEnforcementPolicy(config.EnforcementPolicy.ToGrpc()),
 		grpc.KeepaliveParams(config.KeepAlive.ToGrpc()),
 	}
 	var tlsClose func()
 	if config.TLS.Enabled {
-		tls, err := certManager.New(config.TLS.Config, logger)
+		tls, err := certManager.New(config.TLS.Config, fileWatcher, logger)
 		if err != nil {
 			return nil, fmt.Errorf("cannot create cert manager %w", err)
 		}

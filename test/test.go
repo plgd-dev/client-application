@@ -36,6 +36,7 @@ import (
 	"github.com/plgd-dev/device/schema/device"
 	deviceTest "github.com/plgd-dev/device/test"
 	grpcgwPb "github.com/plgd-dev/hub/v2/grpc-gateway/pb"
+	"github.com/plgd-dev/hub/v2/pkg/fsnotify"
 	"github.com/plgd-dev/hub/v2/pkg/log"
 	"github.com/plgd-dev/hub/v2/test/config"
 	"github.com/plgd-dev/kit/v2/codec/cbor"
@@ -84,7 +85,9 @@ func New(t *testing.T, cfg service.Config) func() {
 	ctx := context.Background()
 	logger := log.NewLogger(cfg.Log)
 
-	s, err := service.New(ctx, cfg, logger)
+	fileWatcher, err := fsnotify.NewWatcher()
+	require.NoError(t, err)
+	s, err := service.New(ctx, cfg, fileWatcher, logger)
 	require.NoError(t, err)
 
 	var wg sync.WaitGroup
@@ -162,7 +165,10 @@ func NewHttpService(ctx context.Context, t *testing.T) (*http.Service, func()) {
 	logger := log.NewLogger(cfg.Log)
 	clientApplicationServer, tearDown, err := NewClientApplicationServer(ctx)
 	require.NoError(t, err)
-	s, err := http.New(ctx, "client-application-http", cfg.APIs.HTTP.Config, clientApplicationServer, logger, trace.NewNoopTracerProvider())
+
+	fileWatcher, err := fsnotify.NewWatcher()
+	require.NoError(t, err)
+	s, err := http.New(ctx, "client-application-http", cfg.APIs.HTTP.Config, clientApplicationServer, fileWatcher, logger, trace.NewNoopTracerProvider())
 	require.NoError(t, err)
 
 	var wg sync.WaitGroup

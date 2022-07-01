@@ -20,6 +20,7 @@ import (
 	"fmt"
 	"net"
 
+	"github.com/plgd-dev/hub/v2/pkg/fsnotify"
 	"github.com/plgd-dev/hub/v2/pkg/log"
 	"github.com/plgd-dev/hub/v2/pkg/net/listener"
 )
@@ -39,12 +40,12 @@ type Server struct {
 
 // NewServer instantiates a listen server.
 // When passing addr with an unspecified port or ":", use Addr().
-func New(config Config, logger log.Logger) (Listener, error) {
+func New(config Config, fileWatcher *fsnotify.Watcher, logger log.Logger) (Listener, error) {
 	if config.TLS.Enabled {
 		return listener.New(listener.Config{
 			Addr: config.Addr,
 			TLS:  config.TLS.Config,
-		}, logger)
+		}, fileWatcher, logger)
 	}
 
 	lis, err := net.Listen("tcp", config.Addr)
