@@ -28,6 +28,7 @@ import (
 	"github.com/plgd-dev/client-application/service/device"
 	"github.com/plgd-dev/client-application/service/grpc"
 	"github.com/plgd-dev/client-application/service/http"
+	"github.com/plgd-dev/hub/v2/pkg/fsnotify"
 	"github.com/plgd-dev/hub/v2/pkg/log"
 	"go.opentelemetry.io/otel/trace"
 )
@@ -47,7 +48,7 @@ type Service struct {
 const serviceName = "client-application"
 
 // New creates server.
-func New(ctx context.Context, config Config, logger log.Logger) (*Service, error) {
+func New(ctx context.Context, config Config, fileWatcher *fsnotify.Watcher, logger log.Logger) (*Service, error) {
 	tracerProvider := trace.NewNoopTracerProvider()
 	var httpService *http.Service
 	deviceService, err := device.New(ctx, serviceName, config.Clients.Device, logger, tracerProvider)
@@ -58,14 +59,14 @@ func New(ctx context.Context, config Config, logger log.Logger) (*Service, error
 	clientApplicationServer := grpc.NewClientApplicationServer(deviceService, logger)
 
 	if config.APIs.HTTP.Enabled {
-		httpService, err = http.New(ctx, serviceName, config.APIs.HTTP.Config, clientApplicationServer, logger, tracerProvider)
+		httpService, err = http.New(ctx, serviceName, config.APIs.HTTP.Config, clientApplicationServer, fileWatcher, logger, tracerProvider)
 		if err != nil {
 			return nil, fmt.Errorf("cannot create http service: %w", err)
 		}
 	}
 	var grpcService *grpc.Service
 	if config.APIs.GRPC.Enabled {
-		grpcService, err = grpc.New(ctx, serviceName, config.APIs.GRPC.Config, clientApplicationServer, logger, tracerProvider)
+		grpcService, err = grpc.New(ctx, serviceName, config.APIs.GRPC.Config, clientApplicationServer, fileWatcher, logger, tracerProvider)
 		if err != nil {
 			return nil, fmt.Errorf("cannot create grpc service: %w", err)
 		}

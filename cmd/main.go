@@ -24,6 +24,7 @@ import (
 	"github.com/jessevdk/go-flags"
 	service "github.com/plgd-dev/client-application/service"
 	"github.com/plgd-dev/hub/v2/pkg/config"
+	"github.com/plgd-dev/hub/v2/pkg/fsnotify"
 	"github.com/plgd-dev/hub/v2/pkg/log"
 )
 
@@ -40,26 +41,38 @@ func main() {
 		return
 	}
 	if err := resolveDefaultConfig(opts.ConfigPath); err != nil {
-		log.Fatalf("cannot create default config: %v", err)
+		log.Errorf("cannot create default config: %v", err)
+		return
 	}
 	var cfg service.Config
 	if err := config.LoadAndValidateConfig(&cfg); err != nil {
-		log.Fatalf("cannot load config: %v", err)
+		log.Errorf("cannot load config: %v", err)
+		return
 	}
 	if _, err := os.Stat(cfg.APIs.HTTP.UI.Directory); cfg.APIs.HTTP.UI.Enabled && err != nil {
 		if err := extractUI(cfg.APIs.HTTP.UI.Directory); err != nil {
-			log.Fatalf("cannot extract UI: %v", err)
+			log.Errorf("cannot extract UI: %v", err)
 		}
 	}
+	fileWatcher, err := fsnotify.NewWatcher()
+	if err != nil {
+		log.Errorf("cannot create file fileWatcher: %v", err)
+		return
+	}
+	defer func() {
+		_ = fileWatcher.Close()
+	}()
 	logger := log.NewLogger(cfg.Log)
 	log.Set(logger)
 	log.Debugf("config:\n%v", cfg.String())
-	s, err := service.New(context.Background(), cfg, logger)
+	s, err := service.New(context.Background(), cfg, fileWatcher, logger)
 	if err != nil {
-		log.Fatalf("cannot create service: %v", err)
+		log.Errorf("cannot create service: %v", err)
+		return
 	}
 	err = s.Serve()
 	if err != nil {
-		log.Fatalf("cannot serve service: %v", err)
+		log.Errorf("cannot serve service: %v", err)
+		return
 	}
 }

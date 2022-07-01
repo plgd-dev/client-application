@@ -31,6 +31,7 @@ import (
 	"github.com/plgd-dev/client-application/pkg/net/listener"
 	"github.com/plgd-dev/client-application/service/grpc"
 	"github.com/plgd-dev/hub/v2/http-gateway/serverMux"
+	"github.com/plgd-dev/hub/v2/pkg/fsnotify"
 	"github.com/plgd-dev/hub/v2/pkg/log"
 	kitNetHttp "github.com/plgd-dev/hub/v2/pkg/net/http"
 	"go.opentelemetry.io/otel/trace"
@@ -69,8 +70,8 @@ func resourceMatcher(r *http.Request, rm *router.RouteMatch) bool {
 }
 
 // New creates new HTTP service
-func New(ctx context.Context, serviceName string, config Config, clientApplicationServer *grpc.ClientApplicationServer, logger log.Logger, tracerProvider trace.TracerProvider) (*Service, error) {
-	listener, err := listener.New(config.Config, logger)
+func New(ctx context.Context, serviceName string, config Config, clientApplicationServer *grpc.ClientApplicationServer, fileWatcher *fsnotify.Watcher, logger log.Logger, tracerProvider trace.TracerProvider) (*Service, error) {
+	listener, err := listener.New(config.Config, fileWatcher, logger)
 	if err != nil {
 		return nil, fmt.Errorf("cannot create grpc server: %w", err)
 	}
