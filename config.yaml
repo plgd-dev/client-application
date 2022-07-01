@@ -38,6 +38,9 @@ apis:
         - OPTIONS
         - DELETE
       allowCredentials: false
+    ui:
+      enabled: false
+      directory: ""
   grpc:
     enabled: true
     address: 0.0.0.0:8081
