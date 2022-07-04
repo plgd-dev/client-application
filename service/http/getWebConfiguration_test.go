@@ -23,6 +23,7 @@ import (
 	serviceHttp "github.com/plgd-dev/client-application/service/http"
 	"github.com/plgd-dev/client-application/test"
 	httpgwTest "github.com/plgd-dev/hub/v2/http-gateway/test"
+	"github.com/plgd-dev/kit/v2/codec/json"
 	"github.com/stretchr/testify/require"
 )
 
@@ -37,4 +38,8 @@ func TestClientApplicationServerGetWebConfiguration(t *testing.T) {
 		Host(test.CLIENT_APPLICATION_HTTP_HOST).Build()
 	resp := httpgwTest.HTTPDo(t, request)
 	require.Equal(t, http.StatusOK, resp.StatusCode)
+	var webCfg serviceHttp.WebConfigurationConfig
+	err := json.ReadFrom(resp.Body, &webCfg)
+	require.NoError(t, err)
+	require.Equal(t, test.VERSION, webCfg.Version)
 }

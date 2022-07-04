@@ -27,6 +27,7 @@ import (
 // WebConfiguration represents web configuration for user interface
 type WebConfigurationConfig struct {
 	HTTPGatewayAddress string `yaml:"httpGatewayAddress" json:"httpGatewayAddress"`
+	Version            string `yaml:"-" json:"version"`
 }
 
 const contentTypeHeaderKey = "Content-Type"
@@ -40,13 +41,14 @@ func jsonResponseWriter(w http.ResponseWriter, v interface{}) error {
 	return json.WriteTo(w, v)
 }
 
-func getWebConfiguration(w http.ResponseWriter, r *http.Request) {
+func (requestHandler *RequestHandler) getWebConfiguration(w http.ResponseWriter, r *http.Request) {
 	scheme := "http"
 	if r.TLS != nil {
 		scheme = "https"
 	}
 	cfg := WebConfigurationConfig{
 		HTTPGatewayAddress: scheme + "://" + r.Host,
+		Version:            requestHandler.version,
 	}
 	if err := jsonResponseWriter(w, cfg); err != nil {
 		log.Errorf("failed to write response: %w", err)

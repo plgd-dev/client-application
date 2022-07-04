@@ -48,6 +48,7 @@ import (
 const (
 	CLIENT_APPLICATION_HTTP_HOST = "localhost:40050"
 	CLIENT_APPLICATION_GRPC_HOST = "localhost:40051"
+	VERSION                      = "v0.0.1-test"
 )
 
 var DevsimName string
@@ -87,7 +88,7 @@ func New(t *testing.T, cfg service.Config) func() {
 
 	fileWatcher, err := fsnotify.NewWatcher()
 	require.NoError(t, err)
-	s, err := service.New(ctx, cfg, fileWatcher, logger)
+	s, err := service.New(ctx, cfg, VERSION, fileWatcher, logger)
 	require.NoError(t, err)
 
 	var wg sync.WaitGroup
@@ -205,7 +206,7 @@ func NewClientApplicationServer(ctx context.Context) (*serviceGrpc.ClientApplica
 		_ = d.Serve()
 	}()
 
-	return serviceGrpc.NewClientApplicationServer(d, logger), func() {
+	return serviceGrpc.NewClientApplicationServer(d, VERSION, logger), func() {
 		d.Close()
 		wg.Wait()
 	}, nil

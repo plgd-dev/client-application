@@ -64,8 +64,9 @@ func main() {
 	}()
 	logger := log.NewLogger(cfg.Log)
 	log.Set(logger)
+	log.Debugf("version: %v", Version)
 	log.Debugf("config:\n%v", cfg.String())
-	s, err := service.New(context.Background(), cfg, fileWatcher, logger)
+	s, err := service.New(context.Background(), cfg, Version, fileWatcher, logger)
 	if err != nil {
 		log.Errorf("cannot create service: %v", err)
 		return
