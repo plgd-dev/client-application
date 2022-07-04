@@ -29,16 +29,22 @@ import (
 
 type ClientApplicationServer struct {
 	serviceDevice *serviceDevice.Service
+	version       string
 	logger        log.Logger
 	devices       sync.Map
 	pb.UnimplementedClientApplicationServer
 }
 
-func NewClientApplicationServer(serviceDevice *serviceDevice.Service, logger log.Logger) *ClientApplicationServer {
+func NewClientApplicationServer(serviceDevice *serviceDevice.Service, version string, logger log.Logger) *ClientApplicationServer {
 	return &ClientApplicationServer{
 		serviceDevice: serviceDevice,
+		version:       version,
 		logger:        logger,
 	}
+}
+
+func (s *ClientApplicationServer) Version() string {
+	return s.version
 }
 
 func (s *ClientApplicationServer) getDevice(deviceID string) (*device, error) {
