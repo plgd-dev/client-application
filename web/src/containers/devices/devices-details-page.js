@@ -315,7 +315,13 @@ export const DevicesDetailsPage = () => {
   const updateDeviceNameInData = name => {
     updateData({
       ...data,
-      name,
+      data: {
+        ...data.data,
+        content: {
+          ...data.data.content,
+          n: name,
+        },
+      },
     })
   }
 
@@ -371,10 +377,10 @@ export const DevicesDetailsPage = () => {
         )}
         updateDeviceName={updateDeviceNameInData}
         loading={loading}
-        isOnline={isOnline}
+        isOwned={isOwned}
         deviceName={deviceName}
         deviceId={id}
-        links={resources}
+        resources={resources}
         ttl={ttl}
       />
       <DevicesDetails

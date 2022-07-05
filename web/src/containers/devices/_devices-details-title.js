@@ -18,8 +18,8 @@ export const DevicesDetailsTitle = ({
   deviceName,
   deviceId,
   updateDeviceName,
-  isOnline,
-  links,
+  isOwned,
+  resources,
   ttl,
   loading,
   ...rest
@@ -30,8 +30,8 @@ export const DevicesDetailsTitle = ({
   const [saving, setSaving] = useState(false)
   const isMounted = useIsMounted()
   const canUpdate = useMemo(
-    () => canChangeDeviceName(links) && isOnline,
-    [links, isOnline]
+    () => canChangeDeviceName(resources) && isOwned,
+    [resources, isOwned]
   )
 
   const onEditClick = () => {
@@ -50,7 +50,7 @@ export const DevicesDetailsTitle = ({
 
   const onSave = async () => {
     if (inputTitle.trim() !== '' && inputTitle !== deviceName && canUpdate) {
-      const href = getDeviceChangeResourceHref(links)
+      const href = getDeviceChangeResourceHref(resources)
 
       setSaving(true)
 
@@ -146,8 +146,8 @@ DevicesDetailsTitle.propTypes = {
   deviceId: PropTypes.string,
   loading: PropTypes.bool.isRequired,
   updateDeviceName: PropTypes.func.isRequired,
-  isOnline: PropTypes.bool.isRequired,
-  links: PropTypes.arrayOf(deviceResourceShape),
+  isOwned: PropTypes.bool.isRequired,
+  resources: PropTypes.arrayOf(deviceResourceShape),
   ttl: PropTypes.number,
 }
 
@@ -155,6 +155,6 @@ DevicesDetailsTitle.defaultProps = {
   className: null,
   deviceName: null,
   deviceId: null,
-  links: [],
+  resources: [],
   ttl: 0,
 }
