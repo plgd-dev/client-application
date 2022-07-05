@@ -47,6 +47,7 @@ export const knownInterfaces = {
 
 export const knownResourceTypes = {
   OIC_WK_CON: 'oic.wk.con', // contains device name
+  X_PLGD_DPS_CONF: 'x.plgd.dps.conf',
 }
 
 export const shadowSynchronizationStates = {
@@ -101,3 +102,8 @@ export const TIMEOUT_UNIT_PRECISION = 1000000
 
 export const DISCOVERY_DEFAULT_TIMEOUT =
   DISCOVERY_DEFAULT_TIMEOUT_RAW * TIMEOUT_UNIT_PRECISION
+
+export const RESOURCE_DEFAULT_TTL_RAW = 1000
+
+export const RESOURCE_DEFAULT_TTL =
+  RESOURCE_DEFAULT_TTL_RAW * TIMEOUT_UNIT_PRECISION

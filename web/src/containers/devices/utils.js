@@ -12,8 +12,12 @@ import {
   shadowSynchronizationStates,
   commandTimeoutUnits,
   MINIMAL_TTL_VALUE_MS,
+  RESOURCE_DEFAULT_TTL_RAW,
 } from './constants'
 import { messages as t } from './devices-i18n'
+import { updateDevicesResourceApi } from '@/containers/devices/rest'
+import isFunction from 'lodash/isFunction'
+import * as isMounted from 'units-converter'
 
 const { INFINITE, NS, MS, S, M, H } = commandTimeoutUnits
 
@@ -37,6 +41,11 @@ export const canBeResourceEdited = endpoints =>
 export const canChangeDeviceName = links =>
   links.findIndex(link =>
     link.resourceTypes.includes(knownResourceTypes.OIC_WK_CON)
+  ) !== -1
+
+export const canSetDPSEndpoint = resources =>
+  resources.findIndex(resource =>
+    resource.resourceTypes.includes(knownResourceTypes.X_PLGD_DPS_CONF)
   ) !== -1
 
 // Returns the href for the resource which can do a device name change
@@ -351,3 +360,28 @@ export const getResourceRegistrationNotificationKey = deviceId =>
 // Redux and event key for the notification state for an update of a single resource
 export const getResourceUpdateNotificationKey = (deviceId, href) =>
   `${DEVICES_RESOURCE_UPDATE_WS_KEY}.${deviceId}.${href}`
+
+export const isValidEndpoint = endpoint => !!!endpoint.match(/[^a-zA-Z0-9\-/]/)
+
+// Updates the resource through rest API
+export const updateResourceMethod = async (
+  { deviceId, href, currentInterface = '', ttl = RESOURCE_DEFAULT_TTL_RAW },
+  resourceDataUpdate,
+  successCallback,
+  errorCallback
+) => {
+  try {
+    await updateDevicesResourceApi(
+      { deviceId, href, currentInterface, ttl },
+      resourceDataUpdate
+    )
+
+    if (isMounted.current && isFunction(successCallback)) {
+      successCallback()
+    }
+  } catch (error) {
+    if (error && isMounted.current) {
+      isFunction(errorCallback) && errorCallback(error)
+    }
+  }
+}

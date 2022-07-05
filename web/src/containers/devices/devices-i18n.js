@@ -523,4 +523,16 @@ export const messages = defineMessages({
     id: 'devices.discoveryTimeout',
     defaultMessage: 'Discovery timeout',
   },
+  setDpsEndpoint: {
+    id: 'devices.setDpsEndpoint',
+    defaultMessage: 'Set DPS Endpoint',
+  },
+  provisionNewDeviceTitle: {
+    id: 'devices.provisionNewDeviceTitle',
+    defaultMessage: 'Provision a new device using Device Provisioning Service',
+  },
+  deviceProvisioningServiceEndpoint: {
+    id: 'devices.deviceProvisioningServiceEndpoint',
+    defaultMessage: 'Device Provisioning Service Endpoint',
+  },
 })

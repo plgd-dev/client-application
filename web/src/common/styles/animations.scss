@@ -46,3 +46,7 @@
     transform: rotate(360deg);
   }
 }
+
+.fa-spinner {
+  animation: spin 0.9s linear infinite;
+}

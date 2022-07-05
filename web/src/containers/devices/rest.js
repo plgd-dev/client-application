@@ -33,6 +33,17 @@ export const deleteDevicesApi = () => {
 
 /**
  * Get devices RESOURCES Rest Api endpoint
+ * @param deviceId
+ */
+export const getDevicesResourcesAllApi = deviceId =>
+  fetchApi(
+    `${security.getGeneralConfig().httpGatewayAddress}${
+      devicesApiEndpoints.DEVICES
+    }/${deviceId}/${devicesApiEndpoints.DEVICES_RESOURCES_SUFFIX}`
+  )
+
+/**
+ * Get devices RESOURCES Rest Api endpoint
  * @param {*} params { deviceId, href - resource href, currentInterface - interface }
  * @param {*} data
  */

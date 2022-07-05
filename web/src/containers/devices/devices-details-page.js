@@ -14,23 +14,25 @@ import { DevicesResources } from './_devices-resources'
 import { DevicesDetailsHeader } from './_devices-details-header'
 import { DevicesDetailsTitle } from './_devices-details-title'
 import { DevicesResourcesModal } from './_devices-resources-modal'
+import { DevicesDPSModal } from './_devices-dps-modal'
 import {
   devicesStatuses,
   defaultNewResource,
   resourceModalTypes,
   NO_DEVICE_NAME,
   devicesOwnerships,
+  RESOURCE_DEFAULT_TTL,
 } from './constants'
 import {
   handleCreateResourceErrors,
-  handleUpdateResourceErrors,
   handleFetchResourceErrors,
   handleDeleteResourceErrors,
   handleDeleteDevicesErrors,
+  updateResourceMethod,
+  handleUpdateResourceErrors,
 } from './utils'
 import {
   getDevicesResourcesApi,
-  updateDevicesResourceApi,
   createDevicesResourceApi,
   deleteDevicesResourceApi,
   ownDeviceApi,
@@ -48,12 +50,12 @@ export const DevicesDetailsPage = () => {
   const [resourceModalData, setResourceModalData] = useState(null)
   const [loadingResource, setLoadingResource] = useState(false)
   const [savingResource, setSavingResource] = useState(false)
+  const [showDpsModal, setShowDpsModal] = useState(false)
   const [deleteResourceHref, setDeleteResourceHref] = useState()
   // const {
   //   wellKnownConfig: { defaultCommandTimeToLive },
   // } = useAppConfig()
-  const defaultCommandTimeToLive = 1000000000
-  const [ttl] = useState(defaultCommandTimeToLive)
+  const [ttl] = useState(RESOURCE_DEFAULT_TTL)
   const [ttlHasError] = useState(false)
   const isMounted = useIsMounted()
   const { data, updateData, loading, error: deviceError } = useDeviceDetails(id)
@@ -219,27 +221,22 @@ export const DevicesDetailsPage = () => {
   ) => {
     setSavingResource(true)
 
-    try {
-      await updateDevicesResourceApi(
-        { deviceId: id, href, currentInterface, ttl },
-        resourceDataUpdate
-      )
-
-      if (isMounted.current) {
+    await updateResourceMethod(
+      { deviceId: id, href, currentInterface },
+      resourceDataUpdate,
+      () => {
         showSuccessToast({
           title: _(t.resourceUpdateSuccess),
           message: _(t.resourceWasUpdated),
         })
-
         handleCloseUpdateModal()
         setSavingResource(false)
-      }
-    } catch (error) {
-      if (error && isMounted.current) {
-        handleUpdateResourceErrors(error, { id, href }, _)
+      },
+      error => {
         setSavingResource(false)
+        handleUpdateResourceErrors(error, { id, href }, _)
       }
-    }
+    )
   }
 
   // Created a new resource through rest API
@@ -359,6 +356,8 @@ export const DevicesDetailsPage = () => {
           isOwned={isOwned}
           onOwnChange={handleOwnChange}
           isUnregistered={isUnregistered}
+          resources={resources}
+          openDpsModal={() => setShowDpsModal(true)}
         />
       }
     >
@@ -374,7 +373,7 @@ export const DevicesDetailsPage = () => {
         isOnline={isOnline}
         deviceName={deviceName}
         deviceId={id}
-        links={resources}
+        resources={resources}
         ttl={ttl}
       />
       <DevicesDetails
@@ -409,16 +408,6 @@ export const DevicesDetailsPage = () => {
         deviceId={id}
         deviceName={deviceName}
         confirmDisabled={ttlHasError}
-        // ttlControl={
-        //   <CommanTimeoutControl
-        //     defaultValue={ttl}
-        //     defaultTtlValue={defaultCommandTimeToLive}
-        //     onChange={setTtl}
-        //     disabled={loadingResource || savingResource}
-        //     ttlHasError={ttlHasError}
-        //     onTtlHasError={setTtlHasError}
-        //   />
-        // }
       />
 
       <ConfirmModal
@@ -430,20 +419,7 @@ export const DevicesDetailsPage = () => {
             {`${_(t.delete)} ${deleteResourceHref}`}
           </>
         }
-        body={
-          <>
-            {_(t.deleteResourceMessage)}
-            {/*<CommanTimeoutControl*/}
-            {/*  defaultValue={ttl}*/}
-            {/*  defaultTtlValue={defaultCommandTimeToLive}*/}
-            {/*  onChange={setTtl}*/}
-            {/*  disabled={loadingResource}*/}
-            {/*  ttlHasError={ttlHasError}*/}
-            {/*  onTtlHasError={setTtlHasError}*/}
-            {/*  isDelete*/}
-            {/*/>*/}
-          </>
-        }
+        body={<>{_(t.deleteResourceMessage)}</>}
         confirmButtonText={_(t.delete)}
         loading={loadingResource}
         onClose={closeDeleteModal}
@@ -451,6 +427,13 @@ export const DevicesDetailsPage = () => {
       >
         {_(t.delete)}
       </ConfirmModal>
+
+      <DevicesDPSModal
+        show={showDpsModal}
+        onClose={() => setShowDpsModal(false)}
+        updateResource={updateResource}
+        resources={resources}
+      />
     </Layout>
   )
 }

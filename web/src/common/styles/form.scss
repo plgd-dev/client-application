@@ -17,6 +17,10 @@
     color: $primary_100;
     border-color: $primary_100;
   }
+
+  &.error {
+    border-color: $error_75;
+  }
 }
 
 .form-control-with-button {
