@@ -361,7 +361,8 @@ export const getResourceRegistrationNotificationKey = deviceId =>
 export const getResourceUpdateNotificationKey = (deviceId, href) =>
   `${DEVICES_RESOURCE_UPDATE_WS_KEY}.${deviceId}.${href}`
 
-export const isValidEndpoint = endpoint => !!!endpoint.match(/[^a-zA-Z0-9\-/]/)
+export const isValidEndpoint = endpoint =>
+  !!!endpoint.match(/[^a-zA-Z0-9\-+:./]/)
 
 // Updates the resource through rest API
 export const updateResourceMethod = async (
