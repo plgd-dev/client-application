@@ -26,6 +26,7 @@ builds:
       - -extldflags '-static'
     hooks:
       post:
+        - bash -c "test {{.Os}} == "windows" || test {{.Os}} == "darwin" || upx --best --lzma {{.Path}}"
         - make inject-web CLIENT_APPLICATION_BINARY_PATH={{.Path}} UI_SEPARATOR={{.Env.UI_SEPARATOR}}
 archives:
   - replacements:
