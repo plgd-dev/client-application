@@ -1,18 +1,12 @@
 import PropTypes from 'prop-types'
 import BDropdown from 'react-bootstrap/Dropdown'
+import omit from 'lodash/omit'
 
 import { dropdownTypes } from './constants'
 
 const { PRIMARY, SECONDARY, EMPTY } = dropdownTypes
 
-export const ActionButton = ({
-  children,
-  type,
-  menuProps,
-  items,
-  onToggle,
-  ...rest
-}) => {
+export const ActionButton = ({ type, menuProps, items, onToggle, ...rest }) => {
   const getIcon = item => {
     if (item.loading) {
       return <i className={`fas fa-spinner m-r-10`} />
@@ -22,7 +16,7 @@ export const ActionButton = ({
   }
   return (
     <BDropdown className="action-button" onToggle={onToggle}>
-      <BDropdown.Toggle variant={type} {...rest}>
+      <BDropdown.Toggle variant={type} {...omit(rest, 'children')}>
         <span />
         <span />
         <span />
