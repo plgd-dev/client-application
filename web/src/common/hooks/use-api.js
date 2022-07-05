@@ -69,7 +69,7 @@ export const useStreamApi = (url, options = {}) => {
           // change of url is watched by effect so base is same and shadow parameter is passed alone
           const { shadowQueryParameter, ...restOptions } = options
           const { data } = await streamApi(
-            url + shadowQueryParameter || '',
+            shadowQueryParameter ? url + shadowQueryParameter : url,
             restOptions
           )
 
