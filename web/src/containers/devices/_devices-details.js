@@ -70,7 +70,8 @@ export const DevicesDetails = memo(
           })
         }, DEVICE_PROVISION_STATUS_TIMEOUT)
       }
-    }, [dpsEndpoint, isOwned])
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [dpsEndpoint, isOwned, deviceResourceData])
 
     const provisionStatus = deviceResourceData?.content?.provisionStatus
 

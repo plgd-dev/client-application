@@ -58,7 +58,7 @@ export const DevicesListActionButton = ({
 
       setItems(() => {
         const newItems = []
-        items.map(item => {
+        items.forEach(item => {
           if (item.id === 'dps') {
             if (hasDPS) {
               newItems.push({
