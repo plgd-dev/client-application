@@ -97,7 +97,7 @@ export const DevicesDetails = memo(
               {isOwned ? _(t.owned) : _(t.unowned)}
             </Badge>
           </LabelWithLoading>
-          <Display when={dpsEndpoint}>
+          <Display when={!!dpsEndpoint}>
             <LabelWithLoading title={_(t.dpsStatus)} loading={resourceLoading}>
               <Badge
                 className={
