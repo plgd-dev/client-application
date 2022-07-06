@@ -382,6 +382,8 @@ export const DevicesDetailsPage = () => {
         loading={loading}
         shadowSyncLoading={false}
         setShadowSynchronization={setShadowSynchronization}
+        resources={resources}
+        deviceId={id}
       />
 
       <DevicesResources

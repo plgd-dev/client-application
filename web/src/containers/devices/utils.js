@@ -13,6 +13,7 @@ import {
   commandTimeoutUnits,
   MINIMAL_TTL_VALUE_MS,
   RESOURCE_DEFAULT_TTL_RAW,
+  devicesProvisionStatuses,
 } from './constants'
 import { messages as t } from './devices-i18n'
 import { updateDevicesResourceApi } from '@/containers/devices/rest'
@@ -43,10 +44,14 @@ export const canChangeDeviceName = links =>
     link.resourceTypes.includes(knownResourceTypes.OIC_WK_CON)
   ) !== -1
 
-export const canSetDPSEndpoint = resources =>
-  resources.findIndex(resource =>
+export const canSetDPSEndpoint = resources => !!getDPSEndpoint(resources)
+
+export const getDPSEndpoint = resources => {
+  const index = resources.findIndex(resource =>
     resource.resourceTypes.includes(knownResourceTypes.X_PLGD_DPS_CONF)
-  ) !== -1
+  )
+  return index >= 0 ? resources[index] : null
+}
 
 // Returns the href for the resource which can do a device name change
 export const getDeviceChangeResourceHref = links =>
@@ -384,5 +389,31 @@ export const updateResourceMethod = async (
     if (error && isMounted.current) {
       isFunction(errorCallback) && errorCallback(error)
     }
+  }
+}
+
+export const getColorByProvisionStatus = provisionStatus => {
+  if (provisionStatus === devicesProvisionStatuses.UNINITIALIZED) {
+    return 'secondary'
+  } else if (
+    [
+      devicesProvisionStatuses.INITIALIZED,
+      devicesProvisionStatuses.PROVISIONING_CREDENTIALS,
+      devicesProvisionStatuses.PROVISIONED_CREDENTIALS,
+      devicesProvisionStatuses.PROVISIONING_ACLS,
+      devicesProvisionStatuses.PROVISIONED_ACLS,
+      devicesProvisionStatuses.PROVISIONING_CLOUD,
+      devicesProvisionStatuses.PROVISIONED_CLOUD,
+      devicesProvisionStatuses.PROVISIONED,
+    ].includes(provisionStatus)
+  ) {
+    return 'success'
+  } else if (
+    [
+      devicesProvisionStatuses.TRANSIENT_FAILURE,
+      devicesProvisionStatuses.FAILURE,
+    ].includes(provisionStatus)
+  ) {
+    return 'error'
   }
 }

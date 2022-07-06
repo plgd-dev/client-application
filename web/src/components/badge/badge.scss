@@ -48,6 +48,12 @@ $margin_size: 5px;
     color: $warning_100;
     border-color: $warning_50;
   }
+
+  &.grey {
+    background-color: $secondary_25;
+    color: $secondary_40;
+    border-color: $secondary_25;
+  }
 }
 
 .badges-box-vertical {

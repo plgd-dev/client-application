@@ -74,6 +74,21 @@ export const commandTimeoutUnits = {
   NS: 'ns',
 }
 
+export const devicesProvisionStatuses = {
+  UNINITIALIZED: 'uninitialized',
+  INITIALIZED: 'initialized',
+  PROVISIONING_CREDENTIALS: 'provisioning credentials',
+  PROVISIONED_CREDENTIALS: 'provisioned credentials',
+  PROVISIONING_ACLS: 'provisioning acls',
+  PROVISIONED_ACLS: 'provisioned acls',
+  PROVISIONING_CLOUD: 'provisioning cloud',
+  PROVISIONED_CLOUD: 'provisioned cloud',
+  PROVISIONED: 'provisioned',
+  TRANSIENT_FAILURE: 'transient failure',
+  FAILURE: 'failure',
+}
+export const DEVICE_PROVISION_STATUS_TIMEOUT = 100
+
 export const MINIMAL_TTL_VALUE_MS = 100
 
 export const NO_DEVICE_NAME = '<no-name>'

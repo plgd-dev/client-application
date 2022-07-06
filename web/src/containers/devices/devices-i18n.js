@@ -535,4 +535,12 @@ export const messages = defineMessages({
     id: 'devices.deviceProvisioningServiceEndpoint',
     defaultMessage: 'Device Provisioning Service Endpoint',
   },
+  dpsStatus: {
+    id: 'devices.dpsStatus',
+    defaultMessage: 'DPS status',
+  },
+  notAvailable: {
+    id: 'devices.notAvailable',
+    defaultMessage: 'n/a',
+  },
 })

@@ -15,32 +15,40 @@ export const DevicesListActionButton = ({
   showDpsModal,
   resourcesLoadedCallback,
 }) => {
+  const getDefaultItems = () => {
+    const items = [
+      {
+        id: 'detail',
+        onClick: () => onView(deviceId),
+        label: _(t.details),
+        icon: 'fa-eye',
+      },
+      {
+        id: 'own',
+        onClick: () => onOwnChange(),
+        label: isOwned ? _(t.disOwnDevice) : _(t.ownDevice),
+        icon: isOwned ? 'fa-cloud-download-alt' : 'fa-cloud-upload-alt',
+      },
+    ]
+
+    if (isOwned) {
+      items.push({
+        id: 'dps',
+        onClick: () => showDpsModal(deviceId),
+        label: _(t.setDpsEndpoint),
+        icon: 'fa-bacon',
+        loading: true,
+      })
+    }
+
+    return items
+  }
   const { formatMessage: _ } = useIntl()
   const [resources, setResources] = useState(undefined)
-  const [items, setItems] = useState([
-    {
-      id: 'detail',
-      onClick: () => onView(deviceId),
-      label: _(t.details),
-      icon: 'fa-eye',
-    },
-    {
-      id: 'own',
-      onClick: () => onOwnChange(),
-      label: isOwned ? _(t.disOwnDevice) : _(t.ownDevice),
-      icon: isOwned ? 'fa-cloud-download-alt' : 'fa-cloud-upload-alt',
-    },
-    {
-      id: 'dps',
-      onClick: () => showDpsModal(deviceId),
-      label: _(t.setDpsEndpoint),
-      icon: 'fa-bacon',
-      loading: true,
-    },
-  ])
+  const [items, setItems] = useState(getDefaultItems())
 
   const handleToggle = async isOpen => {
-    if (isOpen && !resources) {
+    if (isOpen && isOwned && !resources) {
       const { data } = await getDevicesResourcesAllApi(deviceId)
 
       setResources(data.resources)
