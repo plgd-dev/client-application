@@ -22,6 +22,7 @@ import {
 import { getDevicesResourcesApi } from '@/containers/devices/rest'
 import * as isMounted from 'units-converter'
 import omit from 'lodash/omit'
+import { Display } from '@/components/display'
 
 export const DevicesDetails = memo(
   ({ data, loading, isOwned, resources, deviceId }) => {
@@ -96,7 +97,7 @@ export const DevicesDetails = memo(
               {isOwned ? _(t.owned) : _(t.unowned)}
             </Badge>
           </LabelWithLoading>
-          {dpsEndpoint && (
+          <Display when={dpsEndpoint}>
             <LabelWithLoading title={_(t.dpsStatus)} loading={resourceLoading}>
               <Badge
                 className={
@@ -108,7 +109,7 @@ export const DevicesDetails = memo(
                   : _(t.notAvailable)}
               </Badge>
             </LabelWithLoading>
-          )}
+          </Display>
         </Col>
         <Col>
           <LabelWithLoading title={_(t.endpoints)}>
