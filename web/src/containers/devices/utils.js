@@ -394,7 +394,7 @@ export const updateResourceMethod = async (
 
 export const getColorByProvisionStatus = provisionStatus => {
   if (provisionStatus === devicesProvisionStatuses.UNINITIALIZED) {
-    return 'secondary'
+    return 'grey'
   } else if (
     [
       devicesProvisionStatuses.INITIALIZED,
