@@ -417,3 +417,5 @@ export const getColorByProvisionStatus = provisionStatus => {
     return 'error'
   }
 }
+
+export const resourceToUrl = resource => resource.split('.').join('/')

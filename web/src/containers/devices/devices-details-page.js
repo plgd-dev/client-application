@@ -37,6 +37,7 @@ import {
   deleteDevicesResourceApi,
   ownDeviceApi,
   disownDeviceApi,
+  checkDeviceOwnerApi,
 } from './rest'
 import { useDeviceDetails, useDevicesResources } from './hooks'
 import { messages as t } from './devices-i18n'
@@ -52,6 +53,7 @@ export const DevicesDetailsPage = () => {
   const [savingResource, setSavingResource] = useState(false)
   const [showDpsModal, setShowDpsModal] = useState(false)
   const [deleteResourceHref, setDeleteResourceHref] = useState()
+  const [ownerCheck, setOwnerCheck] = useState(false)
   // const {
   //   wellKnownConfig: { defaultCommandTimeToLive },
   // } = useAppConfig()
@@ -90,6 +92,24 @@ export const DevicesDetailsPage = () => {
     },
     [hrefParam, loading, loadingResources] // eslint-disable-line
   )
+
+  const checkDeviceOwner = async () => {
+    try {
+      await checkDeviceOwnerApi(id)
+    } catch (error) {
+      if (error && isMounted.current) {
+        console.log(error)
+      }
+    }
+  }
+
+  useEffect(() => {
+    if (!ownerCheck && isOwned) {
+      checkDeviceOwner().then(() => {
+        setOwnerCheck(true)
+      })
+    }
+  }, [isOwned, ownerCheck]) // eslint-disable-line
 
   if (deviceError) {
     return (

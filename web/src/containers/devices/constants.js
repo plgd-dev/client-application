@@ -47,7 +47,8 @@ export const knownInterfaces = {
 
 export const knownResourceTypes = {
   OIC_WK_CON: 'oic.wk.con', // contains device name
-  X_PLGD_DPS_CONF: 'x.plgd.dps.conf',
+  X_PLGD_DPS_CONF: 'x.plgd.dps.conf', // can set dps
+  OIC_SEC_DOXM: 'oic.sec.doxm', // is device owned by user
 }
 
 export const shadowSynchronizationStates = {

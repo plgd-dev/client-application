@@ -1,7 +1,7 @@
 import { fetchApi, security } from '@/common/services'
 import { DEVICE_AUTH_CODE_SESSION_KEY } from '@/constants'
-import { devicesApiEndpoints } from './constants'
-import { interfaceGetParam } from './utils'
+import { devicesApiEndpoints, knownResourceTypes } from './constants'
+import { interfaceGetParam, resourceToUrl } from './utils'
 
 /**
  * Get a single thing by its ID Rest Api endpoint
@@ -197,13 +197,13 @@ export const getDeviceAuthCode = deviceId => {
 
 /**
  * Add device by IP
- * @param {*} deviceIp
+ * @param {*} deviceId
  */
-export const addDeviceByIp = deviceIp => {
+export const addDeviceByIp = deviceId => {
   return fetchApi(
     `${security.getGeneralConfig().httpGatewayAddress}${
       devicesApiEndpoints.DEVICES
-    }?useEndpoints=${deviceIp}`
+    }?useEndpoints=${deviceId}`
   )
 }
 
@@ -230,5 +230,17 @@ export const disownDeviceApi = deviceId => {
       devicesApiEndpoints.DEVICES
     }/${deviceId}/disown`,
     { method: 'POST' }
+  )
+}
+
+/**
+ * Check if device is owned by user
+ * @param {*} deviceId
+ */
+export const checkDeviceOwnerApi = deviceId => {
+  return fetchApi(
+    `${security.getGeneralConfig().httpGatewayAddress}${
+      devicesApiEndpoints.DEVICES
+    }/${deviceId}/resources/${resourceToUrl(knownResourceTypes.OIC_SEC_DOXM)}`
   )
 }
