@@ -16,7 +16,7 @@ export const DevicesListActionButton = ({
   resourcesLoadedCallback,
 }) => {
   const getDefaultItems = () => {
-    const items = [
+    const defaultItems = [
       {
         id: 'detail',
         onClick: () => onView(deviceId),
@@ -32,7 +32,7 @@ export const DevicesListActionButton = ({
     ]
 
     if (isOwned) {
-      items.push({
+      defaultItems.push({
         id: 'dps',
         onClick: () => showDpsModal(deviceId),
         label: _(t.setDpsEndpoint),
@@ -41,7 +41,7 @@ export const DevicesListActionButton = ({
       })
     }
 
-    return items
+    return defaultItems
   }
   const { formatMessage: _ } = useIntl()
   const [resources, setResources] = useState(undefined)

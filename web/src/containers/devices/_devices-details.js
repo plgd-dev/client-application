@@ -50,9 +50,7 @@ export const DevicesDetails = memo(
           href,
         })
 
-        if (isMounted.current) {
-          setResourceLoading(false)
-        }
+        isMounted.current && setResourceLoading(false)
 
         return deviceData.data
       } catch (error) {
@@ -66,8 +64,8 @@ export const DevicesDetails = memo(
     useEffect(() => {
       if (dpsEndpoint && isOwned && !deviceResourceData) {
         setTimeout(() => {
-          loadResourceData(dpsEndpoint.href).then(data => {
-            setDeviceResourceData(data)
+          loadResourceData(dpsEndpoint.href).then(rData => {
+            setDeviceResourceData(rData)
           })
         }, DEVICE_PROVISION_STATUS_TIMEOUT)
       }
@@ -81,15 +79,20 @@ export const DevicesDetails = memo(
           <LabelWithLoading title="ID">{getValue(data?.id)}</LabelWithLoading>
           <LabelWithLoading title={_(t.types)}>
             <div className="align-items-end badges-box-vertical">
-              {data?.types?.map?.(type =>
-                type !== DEVICE_TYPE_OIC_WK_D ? (
+              {data?.types
+                ?.filter(type => type !== DEVICE_TYPE_OIC_WK_D)
+                .map?.(type => (
                   <Badge key={type}>{type}</Badge>
-                ) : null
-              )}
+                ))}
             </div>
           </LabelWithLoading>
           <LabelWithLoading title={_(t.ownershipStatus)}>
-            <Badge className={isOwned ? 'green' : 'red'}>
+            <Badge
+              className={classNames({
+                green: isOwned,
+                red: !isOwned,
+              })}
+            >
               {isOwned ? _(t.owned) : _(t.unowned)}
             </Badge>
           </LabelWithLoading>
