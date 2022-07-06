@@ -407,13 +407,10 @@ export const getColorByProvisionStatus = provisionStatus => {
       devicesProvisionStatuses.PROVISIONED,
     ].includes(provisionStatus)
   ) {
-    return 'success'
-  } else if (
-    [
-      devicesProvisionStatuses.TRANSIENT_FAILURE,
-      devicesProvisionStatuses.FAILURE,
-    ].includes(provisionStatus)
-  ) {
-    return 'error'
+    return 'green'
+  } else if (provisionStatus === devicesProvisionStatuses.TRANSIENT_FAILURE) {
+    return 'orange'
+  } else if (provisionStatus === devicesProvisionStatuses.FAILURE) {
+    return 'red'
   }
 }

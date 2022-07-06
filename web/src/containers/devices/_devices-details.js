@@ -44,7 +44,6 @@ export const DevicesDetails = memo(
     const dpsEndpoint = useMemo(() => getDPSEndpoint(resources), [resources])
 
     const loadResourceData = async href => {
-      setResourceLoading(true)
       try {
         const { data: deviceData } = await getDevicesResourcesApi({
           deviceId,
@@ -64,9 +63,11 @@ export const DevicesDetails = memo(
 
     useEffect(() => {
       if (dpsEndpoint && isOwned && !deviceResourceData) {
+        setResourceLoading(true)
         setTimeout(() => {
           loadResourceData(dpsEndpoint.href).then(rData => {
             setDeviceResourceData(rData)
+            setResourceLoading(false)
           })
         }, DEVICE_PROVISION_STATUS_TIMEOUT)
       }
