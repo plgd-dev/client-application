@@ -8,7 +8,7 @@ import { Badge } from '@/components/badge'
 import { Label } from '@/components/label'
 import { getValue } from '@/common/utils'
 import {
-  DEVICE_PROVISION_STATUS_TIMEOUT,
+  DEVICE_PROVISION_STATUS_DELAY_MS,
   DEVICE_TYPE_OIC_WK_D,
   devicesStatuses,
 } from './constants'
@@ -69,7 +69,7 @@ export const DevicesDetails = memo(
             setDeviceResourceData(rData)
             setResourceLoading(false)
           })
-        }, DEVICE_PROVISION_STATUS_TIMEOUT)
+        }, DEVICE_PROVISION_STATUS_DELAY_MS)
       }
       // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [dpsEndpoint, isOwned, deviceResourceData])

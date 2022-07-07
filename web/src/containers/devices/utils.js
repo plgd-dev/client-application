@@ -14,6 +14,7 @@ import {
   MINIMAL_TTL_VALUE_MS,
   RESOURCE_DEFAULT_TTL_RAW,
   devicesProvisionStatuses,
+  devicesStatusSeverities,
 } from './constants'
 import { messages as t } from './devices-i18n'
 import { updateDevicesResourceApi } from '@/containers/devices/rest'
@@ -393,24 +394,22 @@ export const updateResourceMethod = async (
 }
 
 export const getColorByProvisionStatus = provisionStatus => {
-  if (provisionStatus === devicesProvisionStatuses.UNINITIALIZED) {
-    return 'grey'
-  } else if (
-    [
-      devicesProvisionStatuses.INITIALIZED,
-      devicesProvisionStatuses.PROVISIONING_CREDENTIALS,
-      devicesProvisionStatuses.PROVISIONED_CREDENTIALS,
-      devicesProvisionStatuses.PROVISIONING_ACLS,
-      devicesProvisionStatuses.PROVISIONED_ACLS,
-      devicesProvisionStatuses.PROVISIONING_CLOUD,
-      devicesProvisionStatuses.PROVISIONED_CLOUD,
-      devicesProvisionStatuses.PROVISIONED,
-    ].includes(provisionStatus)
-  ) {
-    return 'green'
-  } else if (provisionStatus === devicesProvisionStatuses.TRANSIENT_FAILURE) {
-    return 'orange'
-  } else if (provisionStatus === devicesProvisionStatuses.FAILURE) {
-    return 'red'
+  switch (provisionStatus) {
+    case devicesProvisionStatuses.INITIALIZED:
+    case devicesProvisionStatuses.PROVISIONING_CREDENTIALS:
+    case devicesProvisionStatuses.PROVISIONED_CREDENTIALS:
+    case devicesProvisionStatuses.PROVISIONING_ACLS:
+    case devicesProvisionStatuses.PROVISIONED_ACLS:
+    case devicesProvisionStatuses.PROVISIONING_CLOUD:
+    case devicesProvisionStatuses.PROVISIONED_CLOUD:
+    case devicesProvisionStatuses.PROVISIONED:
+      return devicesStatusSeverities.SUCCESS
+    case devicesProvisionStatuses.TRANSIENT_FAILURE:
+      return devicesStatusSeverities.WARNING
+    case devicesProvisionStatuses.FAILURE:
+      return devicesStatusSeverities.ERROR
+    case devicesProvisionStatuses.UNINITIALIZED:
+    default:
+      return devicesStatusSeverities.GREY
   }
 }

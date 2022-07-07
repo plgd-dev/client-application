@@ -87,7 +87,15 @@ export const devicesProvisionStatuses = {
   TRANSIENT_FAILURE: 'transient failure',
   FAILURE: 'failure',
 }
-export const DEVICE_PROVISION_STATUS_TIMEOUT = 100
+
+export const devicesStatusSeverities = {
+  GREY: 'grey',
+  SUCCESS: 'success',
+  WARNING: 'warning',
+  ERROR: 'error',
+}
+
+export const DEVICE_PROVISION_STATUS_DELAY_MS = 100 // ms
 
 export const MINIMAL_TTL_VALUE_MS = 100
 
