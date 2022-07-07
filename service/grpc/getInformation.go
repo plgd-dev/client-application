@@ -17,10 +17,15 @@
 package grpc
 
 import (
+	"context"
+
 	"github.com/plgd-dev/client-application/pb"
-	"github.com/plgd-dev/client-application/pkg/net/grpc/server"
 )
 
-type Config = server.Config
-
-type ServiceInformation = pb.GetInformationResponse
+func (s *ClientApplicationServer) GetInformation(ctx context.Context, _ *pb.GetInformationRequest) (*pb.GetInformationResponse, error) {
+	return &pb.GetInformationResponse{
+		Version:    s.info.Version,
+		BuildDate:  s.info.BuildDate,
+		CommitHash: s.info.CommitHash,
+	}, nil
+}

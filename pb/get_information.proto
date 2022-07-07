@@ -14,13 +14,18 @@
 // limitations under the License.
 // ************************************************************************
 
-package grpc
+syntax = "proto3";
 
-import (
-	"github.com/plgd-dev/client-application/pb"
-	"github.com/plgd-dev/client-application/pkg/net/grpc/server"
-)
+package service.pb;
 
-type Config = server.Config
+option go_package = "github.com/plgd-dev/client-application/pb;pb";
 
-type ServiceInformation = pb.GetInformationResponse
+message GetInformationRequest {}
+
+message GetInformationResponse {
+    string version = 1;
+    string build_date = 2;
+    string commit_hash = 3;
+    string commit_date = 4;
+    string release_url = 5;
+}

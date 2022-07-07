@@ -31,6 +31,7 @@ import "pb/update_resource.proto";
 import "pb/get_device_resource_links.proto";
 import "pb/own_device.proto";
 import "pb/disown_device.proto";
+import "pb/get_information.proto";
 import "grpc-gateway/pb/devices.proto";
 import "resource-aggregate/pb/events.proto";
 
@@ -163,4 +164,14 @@ service ClientApplication {
       tags: [ "Devices" ]
     };
   }
+
+  rpc GetInformation(GetInformationRequest) returns (GetInformationResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/information"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: [ "client-application" ]
+    };
+  }
+
 }

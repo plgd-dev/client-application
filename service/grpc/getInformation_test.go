@@ -14,13 +14,28 @@
 // limitations under the License.
 // ************************************************************************
 
-package grpc
+package grpc_test
 
 import (
+	"context"
+	"testing"
+	"time"
+
 	"github.com/plgd-dev/client-application/pb"
-	"github.com/plgd-dev/client-application/pkg/net/grpc/server"
+	"github.com/plgd-dev/client-application/test"
+	"github.com/stretchr/testify/require"
 )
 
-type Config = server.Config
+func TestClientApplicationServerGetInformation(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*120)
+	defer cancel()
 
-type ServiceInformation = pb.GetInformationResponse
+	s, teardown, err := test.NewClientApplicationServer(ctx)
+	require.NoError(t, err)
+	defer teardown()
+
+	// get device
+	d1, err := s.GetInformation(ctx, &pb.GetInformationRequest{})
+	require.NoError(t, err)
+	require.Equal(t, test.NewServiceInformation(), d1)
+}
