@@ -49,6 +49,8 @@ const (
 	CLIENT_APPLICATION_HTTP_HOST = "localhost:40050"
 	CLIENT_APPLICATION_GRPC_HOST = "localhost:40051"
 	VERSION                      = "v0.0.1-test"
+	BUILD_DATE                   = "1.1.1970"
+	COMMIT_HASH                  = "aaa"
 )
 
 var DevsimName string
@@ -88,7 +90,7 @@ func New(t *testing.T, cfg service.Config) func() {
 
 	fileWatcher, err := fsnotify.NewWatcher()
 	require.NoError(t, err)
-	s, err := service.New(ctx, cfg, VERSION, fileWatcher, logger)
+	s, err := service.New(ctx, cfg, NewServiceInformation(), fileWatcher, logger)
 	require.NoError(t, err)
 
 	var wg sync.WaitGroup
@@ -189,6 +191,14 @@ func NewHttpService(ctx context.Context, t *testing.T) (*http.Service, func()) {
 	return s, cleanUp
 }
 
+func NewServiceInformation() *serviceGrpc.ServiceInformation {
+	return &serviceGrpc.ServiceInformation{
+		Version:    VERSION,
+		BuildDate:  BUILD_DATE,
+		CommitHash: COMMIT_HASH,
+	}
+}
+
 func NewClientApplicationServer(ctx context.Context) (*serviceGrpc.ClientApplicationServer, func(), error) {
 	logger := log.NewLogger(log.MakeDefaultConfig())
 	cfg := MakeDeviceConfig()
@@ -206,7 +216,7 @@ func NewClientApplicationServer(ctx context.Context) (*serviceGrpc.ClientApplica
 		_ = d.Serve()
 	}()
 
-	return serviceGrpc.NewClientApplicationServer(d, VERSION, logger), func() {
+	return serviceGrpc.NewClientApplicationServer(d, NewServiceInformation(), logger), func() {
 		d.Close()
 		wg.Wait()
 	}, nil

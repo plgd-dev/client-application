@@ -48,7 +48,7 @@ type Service struct {
 const serviceName = "client-application"
 
 // New creates server.
-func New(ctx context.Context, config Config, version string, fileWatcher *fsnotify.Watcher, logger log.Logger) (*Service, error) {
+func New(ctx context.Context, config Config, info *grpc.ServiceInformation, fileWatcher *fsnotify.Watcher, logger log.Logger) (*Service, error) {
 	tracerProvider := trace.NewNoopTracerProvider()
 	var httpService *http.Service
 	deviceService, err := device.New(ctx, serviceName, config.Clients.Device, logger, tracerProvider)
@@ -56,7 +56,7 @@ func New(ctx context.Context, config Config, version string, fileWatcher *fsnoti
 		return nil, fmt.Errorf("cannot create device service: %w", err)
 	}
 
-	clientApplicationServer := grpc.NewClientApplicationServer(deviceService, version, logger)
+	clientApplicationServer := grpc.NewClientApplicationServer(deviceService, info, logger)
 
 	if config.APIs.HTTP.Enabled {
 		httpService, err = http.New(ctx, serviceName, config.APIs.HTTP.Config, clientApplicationServer, fileWatcher, logger, tracerProvider)
