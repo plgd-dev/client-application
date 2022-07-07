@@ -62,11 +62,15 @@ $table_row_height: 60px;
     }
 
     tbody {
+      border: 0;
+
       tr {
         height: $table_row_height;
 
         td {
           height: $table_row_height;
+          box-shadow: none;
+          color: $secondary_40;
         }
       }
     }
