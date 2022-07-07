@@ -40,7 +40,7 @@ export const DevicesTimeoutModal = ({ show, onClose }) => {
       dispatch(setDiscoveryTimeout(userValue))
     }
 
-    isFunction && onClose()
+    isFunction(onClose) && onClose()
   }
 
   const renderFooter = () => (

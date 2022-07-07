@@ -12,8 +12,14 @@ import {
   shadowSynchronizationStates,
   commandTimeoutUnits,
   MINIMAL_TTL_VALUE_MS,
+  RESOURCE_DEFAULT_TTL_RAW,
+  devicesProvisionStatuses,
+  devicesStatusSeverities,
 } from './constants'
 import { messages as t } from './devices-i18n'
+import { updateDevicesResourceApi } from '@/containers/devices/rest'
+import isFunction from 'lodash/isFunction'
+import * as isMounted from 'units-converter'
 
 const { INFINITE, NS, MS, S, M, H } = commandTimeoutUnits
 
@@ -38,6 +44,15 @@ export const canChangeDeviceName = links =>
   links.findIndex(link =>
     link.resourceTypes.includes(knownResourceTypes.OIC_WK_CON)
   ) !== -1
+
+export const canSetDPSEndpoint = resources => !!getDPSEndpoint(resources)
+
+export const getDPSEndpoint = resources => {
+  const index = resources.findIndex(resource =>
+    resource.resourceTypes.includes(knownResourceTypes.X_PLGD_DPS_CONF)
+  )
+  return index >= 0 ? resources[index] : null
+}
 
 // Returns the href for the resource which can do a device name change
 export const getDeviceChangeResourceHref = links =>
@@ -351,3 +366,50 @@ export const getResourceRegistrationNotificationKey = deviceId =>
 // Redux and event key for the notification state for an update of a single resource
 export const getResourceUpdateNotificationKey = (deviceId, href) =>
   `${DEVICES_RESOURCE_UPDATE_WS_KEY}.${deviceId}.${href}`
+
+export const isValidEndpoint = endpoint =>
+  !!!endpoint.match(/[^a-zA-Z0-9\-+:./]/)
+
+// Updates the resource through rest API
+export const updateResourceMethod = async (
+  { deviceId, href, currentInterface = '', ttl = RESOURCE_DEFAULT_TTL_RAW },
+  resourceDataUpdate,
+  successCallback,
+  errorCallback
+) => {
+  try {
+    await updateDevicesResourceApi(
+      { deviceId, href, currentInterface, ttl },
+      resourceDataUpdate
+    )
+
+    if (isMounted.current && isFunction(successCallback)) {
+      successCallback()
+    }
+  } catch (error) {
+    if (error && isMounted.current) {
+      isFunction(errorCallback) && errorCallback(error)
+    }
+  }
+}
+
+export const getColorByProvisionStatus = provisionStatus => {
+  switch (provisionStatus) {
+    case devicesProvisionStatuses.INITIALIZED:
+    case devicesProvisionStatuses.PROVISIONING_CREDENTIALS:
+    case devicesProvisionStatuses.PROVISIONED_CREDENTIALS:
+    case devicesProvisionStatuses.PROVISIONING_ACLS:
+    case devicesProvisionStatuses.PROVISIONED_ACLS:
+    case devicesProvisionStatuses.PROVISIONING_CLOUD:
+    case devicesProvisionStatuses.PROVISIONED_CLOUD:
+    case devicesProvisionStatuses.PROVISIONED:
+      return devicesStatusSeverities.SUCCESS
+    case devicesProvisionStatuses.TRANSIENT_FAILURE:
+      return devicesStatusSeverities.WARNING
+    case devicesProvisionStatuses.FAILURE:
+      return devicesStatusSeverities.ERROR
+    case devicesProvisionStatuses.UNINITIALIZED:
+    default:
+      return devicesStatusSeverities.GREY
+  }
+}

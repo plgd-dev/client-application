@@ -1,14 +1,22 @@
 import PropTypes from 'prop-types'
 import BDropdown from 'react-bootstrap/Dropdown'
+import omit from 'lodash/omit'
 
 import { dropdownTypes } from './constants'
 
 const { PRIMARY, SECONDARY, EMPTY } = dropdownTypes
 
-export const ActionButton = ({ children, type, menuProps, items, ...rest }) => {
+export const ActionButton = ({ type, menuProps, items, onToggle, ...rest }) => {
+  const getIcon = item => {
+    if (item.loading) {
+      return <i className={`fas fa-spinner m-r-10`} />
+    } else if (item.icon) {
+      return <i className={`fas ${item.icon} m-r-10`} />
+    }
+  }
   return (
-    <BDropdown className="action-button">
-      <BDropdown.Toggle variant={type} {...rest}>
+    <BDropdown className="action-button" onToggle={onToggle}>
+      <BDropdown.Toggle variant={type} {...omit(rest, 'children')}>
         <span />
         <span />
         <span />
@@ -37,9 +45,10 @@ export const ActionButton = ({ children, type, menuProps, items, ...rest }) => {
                   className="btn btn-secondary"
                   key={item.id || item.label}
                   onClick={item.onClick}
+                  disabled={item.loading}
                 >
-                  {item.icon && <i className={`fas ${item.icon} m-r-10`} />}
-                  {item.label}
+                  {getIcon(item)}
+                  {!item.loading && item.label}
                 </BDropdown.Item>
               )
             )
@@ -59,6 +68,7 @@ ActionButton.propTypes = {
       id: PropTypes.string,
       hidden: PropTypes.bool,
       component: PropTypes.node,
+      loading: PropTypes.bool,
     })
   ).isRequired,
   menuProps: PropTypes.shape({

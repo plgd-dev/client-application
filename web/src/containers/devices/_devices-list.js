@@ -25,6 +25,8 @@ export const DevicesList = ({
   onDeleteClick,
   unselectRowsToken,
   ownDevice,
+  showDpsModal,
+  resourcesLoadedCallback,
 }) => {
   const { formatMessage: _ } = useIntl()
   const history = useHistory()
@@ -94,6 +96,8 @@ export const DevicesList = ({
               onDelete={onDeleteClick}
               isOwned={isOwned}
               onOwnChange={() => ownDevice(isOwned, id, data.content.name)}
+              showDpsModal={showDpsModal}
+              resourcesLoadedCallback={resourcesLoadedCallback}
             />
           )
         },
