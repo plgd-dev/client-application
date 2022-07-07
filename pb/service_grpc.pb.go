@@ -40,6 +40,7 @@ type ClientApplicationClient interface {
 	DisownDevice(ctx context.Context, in *DisownDeviceRequest, opts ...grpc.CallOption) (*DisownDeviceResponse, error)
 	// Deletes all devices from the cache. To fill the cache again, call GetDevices.
 	ClearCache(ctx context.Context, in *ClearCacheRequest, opts ...grpc.CallOption) (*ClearCacheResponse, error)
+	GetInformation(ctx context.Context, in *GetInformationRequest, opts ...grpc.CallOption) (*GetInformationResponse, error)
 }
 
 type clientApplicationClient struct {
@@ -163,6 +164,15 @@ func (c *clientApplicationClient) ClearCache(ctx context.Context, in *ClearCache
 	return out, nil
 }
 
+func (c *clientApplicationClient) GetInformation(ctx context.Context, in *GetInformationRequest, opts ...grpc.CallOption) (*GetInformationResponse, error) {
+	out := new(GetInformationResponse)
+	err := c.cc.Invoke(ctx, "/service.pb.ClientApplication/GetInformation", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ClientApplicationServer is the server API for ClientApplication service.
 // All implementations must embed UnimplementedClientApplicationServer
 // for forward compatibility
@@ -187,6 +197,7 @@ type ClientApplicationServer interface {
 	DisownDevice(context.Context, *DisownDeviceRequest) (*DisownDeviceResponse, error)
 	// Deletes all devices from the cache. To fill the cache again, call GetDevices.
 	ClearCache(context.Context, *ClearCacheRequest) (*ClearCacheResponse, error)
+	GetInformation(context.Context, *GetInformationRequest) (*GetInformationResponse, error)
 	mustEmbedUnimplementedClientApplicationServer()
 }
 
@@ -223,6 +234,9 @@ func (UnimplementedClientApplicationServer) DisownDevice(context.Context, *Disow
 }
 func (UnimplementedClientApplicationServer) ClearCache(context.Context, *ClearCacheRequest) (*ClearCacheResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ClearCache not implemented")
+}
+func (UnimplementedClientApplicationServer) GetInformation(context.Context, *GetInformationRequest) (*GetInformationResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetInformation not implemented")
 }
 func (UnimplementedClientApplicationServer) mustEmbedUnimplementedClientApplicationServer() {}
 
@@ -420,6 +434,24 @@ func _ClientApplication_ClearCache_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ClientApplication_GetInformation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetInformationRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ClientApplicationServer).GetInformation(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/service.pb.ClientApplication/GetInformation",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ClientApplicationServer).GetInformation(ctx, req.(*GetInformationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // ClientApplication_ServiceDesc is the grpc.ServiceDesc for ClientApplication service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -462,6 +494,10 @@ var ClientApplication_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ClearCache",
 			Handler:    _ClientApplication_ClearCache_Handler,
+		},
+		{
+			MethodName: "GetInformation",
+			Handler:    _ClientApplication_GetInformation_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{
