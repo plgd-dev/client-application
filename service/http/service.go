@@ -43,7 +43,8 @@ type Service struct {
 }
 
 type RequestHandler struct {
-	mux *runtime.ServeMux
+	mux     *runtime.ServeMux
+	version string
 }
 
 func splitURIPath(requestURI, prefix string) []string {
@@ -100,7 +101,7 @@ func New(ctx context.Context, serviceName string, config Config, clientApplicati
 		_ = listener.Close()
 		return nil, fmt.Errorf("failed to register grpc-gateway handler: %w", err)
 	}
-	requestHandler := &RequestHandler{mux: mux}
+	requestHandler := &RequestHandler{mux: mux, version: clientApplicationServer.Version()}
 	r.PathPrefix(Devices).Methods(http.MethodPut).MatcherFunc(resourceMatcher).HandlerFunc(requestHandler.updateResource)
 	r.PathPrefix(Devices).Methods(http.MethodPost).MatcherFunc(resourceMatcher).HandlerFunc(requestHandler.createResource)
 	r.PathPrefix(ApiV1).Handler(mux)

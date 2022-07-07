@@ -435,6 +435,28 @@
           "Resource"
         ]
       }
+    },
+    "/api/v1/information": {
+      "get": {
+        "operationId": "ClientApplication_GetInformation",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbGetInformationResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "client-application"
+        ]
+      }
     }
   },
   "definitions": {
@@ -666,6 +688,26 @@
         "sequence": {
           "type": "string",
           "format": "uint64"
+        }
+      }
+    },
+    "pbGetInformationResponse": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "type": "string"
+        },
+        "buildDate": {
+          "type": "string"
+        },
+        "commitHash": {
+          "type": "string"
+        },
+        "commitDate": {
+          "type": "string"
+        },
+        "releaseUrl": {
+          "type": "string"
         }
       }
     },
