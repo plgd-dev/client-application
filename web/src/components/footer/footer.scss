@@ -31,3 +31,27 @@
     width: calc(100% - 55px);
   }
 }
+
+.footerBuildInfo {
+  font-size: 13px;
+
+  .line {
+    display: flex;
+    justify-content: flex-start;
+    padding: 2px 0;
+
+    .attr {
+      white-space: nowrap;
+      padding-right: 5px;
+      text-align: left;
+    }
+
+    .val {
+      display: flex;
+      justify-content: flex-start;
+      white-space: nowrap;
+      font-weight: bold;
+      text-align: left;
+    }
+  }
+}
