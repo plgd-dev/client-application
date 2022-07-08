@@ -9,7 +9,7 @@ export const DevicesListHeader = ({ loading, refresh, openTimeoutModal }) => {
 
   return (
     <div className="d-flex align-items-center">
-      <FindNewDeviceByIp />
+      <FindNewDeviceByIp disabled={loading} />
       <SplitButton
         disabled={loading}
         onClick={refresh}

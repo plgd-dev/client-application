@@ -31,22 +31,28 @@ $margin_size: 5px;
     margin-bottom: $margin_size;
   }
 
-  &.green {
+  &.green, &.success {
     background-color: $success_50;
     color: $success_100;
     border-color: $success_50;
   }
 
-  &.red {
+  &.red, &.error {
     background-color: $error_50;
     color: $error_100;
     border-color: $error_50;
   }
 
-  &.orange {
+  &.orange, &.warning {
     background-color: $warning_50;
     color: $warning_100;
     border-color: $warning_50;
+  }
+
+  &.grey, &.disabled {
+    background-color: $secondary_25;
+    color: $secondary_40;
+    border-color: $secondary_25;
   }
 }
 

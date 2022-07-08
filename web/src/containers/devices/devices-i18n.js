@@ -527,4 +527,24 @@ export const messages = defineMessages({
     id: 'devices.enterDeviceName',
     defaultMessage: 'Enter device name',
   },
+  setDpsEndpoint: {
+    id: 'devices.setDpsEndpoint',
+    defaultMessage: 'Set DPS Endpoint',
+  },
+  provisionNewDeviceTitle: {
+    id: 'devices.provisionNewDeviceTitle',
+    defaultMessage: 'Provision a new device using Device Provisioning Service',
+  },
+  deviceProvisioningServiceEndpoint: {
+    id: 'devices.deviceProvisioningServiceEndpoint',
+    defaultMessage: 'Device Provisioning Service Endpoint',
+  },
+  dpsStatus: {
+    id: 'devices.dpsStatus',
+    defaultMessage: 'DPS status',
+  },
+  notAvailable: {
+    id: 'devices.notAvailable',
+    defaultMessage: 'n/a',
+  },
 })

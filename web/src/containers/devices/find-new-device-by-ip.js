@@ -11,7 +11,7 @@ import { useIsMounted } from '@/common/hooks'
 import { addDevice } from '@/containers/devices/slice'
 import { useDispatch } from 'react-redux'
 
-const FindNewDevice = () => {
+const FindNewDevice = ({ disabled }) => {
   const [fetching, setFetching] = useState(false)
   const [show, setShow] = useState(false)
   const [error, setError] = useState(false)
@@ -108,7 +108,12 @@ const FindNewDevice = () => {
 
   return (
     <>
-      <Button onClick={() => setShow(true)} className="m-r-30" icon="fa-plus">
+      <Button
+        onClick={() => setShow(true)}
+        className="m-r-30"
+        icon="fa-plus"
+        disabled={disabled}
+      >
         {_(t.deviceByIp)}
       </Button>
 

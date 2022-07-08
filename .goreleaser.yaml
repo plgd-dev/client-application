@@ -21,11 +21,16 @@ builds:
       - "7"
     main: ./cmd
     ldflags:
+      - -s -w -X main.ReleaseURL={{.ReleaseURL}}
+      - -s -w -X main.CommitDate={{.CommitDate}}
+      - -s -w -X main.CommitHash={{.ShortCommit}}
+      - -s -w -X main.BuildDate={{.Date}}
       - -s -w -X main.Version={{.Version}}
       - -s -w -X main.UISeparator={{.Env.UI_SEPARATOR}}
       - -extldflags '-static'
     hooks:
       post:
+        - bash -c "test {{.Os}} == "windows" || test {{.Os}} == "darwin" || upx --best --lzma {{.Path}}"
         - make inject-web CLIENT_APPLICATION_BINARY_PATH={{.Path}} UI_SEPARATOR={{.Env.UI_SEPARATOR}}
 archives:
   - replacements:

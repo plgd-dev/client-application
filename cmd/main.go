@@ -23,12 +23,19 @@ import (
 
 	"github.com/jessevdk/go-flags"
 	service "github.com/plgd-dev/client-application/service"
+	"github.com/plgd-dev/client-application/service/grpc"
 	"github.com/plgd-dev/hub/v2/pkg/config"
 	"github.com/plgd-dev/hub/v2/pkg/fsnotify"
 	"github.com/plgd-dev/hub/v2/pkg/log"
 )
 
-var Version = "unknown version"
+var (
+	Version    = "unknown version"
+	BuildDate  = "unknown date"
+	CommitHash = "unknown hash"
+	CommitDate = "unknown commit date"
+	ReleaseURL = "unknown url"
+)
 
 func main() {
 	var opts struct {
@@ -64,8 +71,17 @@ func main() {
 	}()
 	logger := log.NewLogger(cfg.Log)
 	log.Set(logger)
+	log.Debugf("version: %v, buildDate: %v, buildRevision %v", Version, BuildDate, CommitHash)
 	log.Debugf("config:\n%v", cfg.String())
-	s, err := service.New(context.Background(), cfg, fileWatcher, logger)
+	info := grpc.ServiceInformation{
+		Version:    Version,
+		BuildDate:  BuildDate,
+		CommitHash: CommitHash,
+		CommitDate: CommitDate,
+		ReleaseUrl: ReleaseURL,
+	}
+
+	s, err := service.New(context.Background(), cfg, &info, fileWatcher, logger)
 	if err != nil {
 		log.Errorf("cannot create service: %v", err)
 		return

@@ -47,6 +47,7 @@ export const knownInterfaces = {
 
 export const knownResourceTypes = {
   OIC_WK_CON: 'oic.wk.con', // contains device name
+  X_PLGD_DPS_CONF: 'x.plgd.dps.conf',
 }
 
 export const shadowSynchronizationStates = {
@@ -72,6 +73,29 @@ export const commandTimeoutUnits = {
   H: 'h',
   NS: 'ns',
 }
+
+export const devicesProvisionStatuses = {
+  UNINITIALIZED: 'uninitialized',
+  INITIALIZED: 'initialized',
+  PROVISIONING_CREDENTIALS: 'provisioning credentials',
+  PROVISIONED_CREDENTIALS: 'provisioned credentials',
+  PROVISIONING_ACLS: 'provisioning acls',
+  PROVISIONED_ACLS: 'provisioned acls',
+  PROVISIONING_CLOUD: 'provisioning cloud',
+  PROVISIONED_CLOUD: 'provisioned cloud',
+  PROVISIONED: 'provisioned',
+  TRANSIENT_FAILURE: 'transient failure',
+  FAILURE: 'failure',
+}
+
+export const devicesStatusSeverities = {
+  GREY: 'grey',
+  SUCCESS: 'success',
+  WARNING: 'warning',
+  ERROR: 'error',
+}
+
+export const DEVICE_PROVISION_STATUS_DELAY_MS = 100 // ms
 
 export const MINIMAL_TTL_VALUE_MS = 100
 
@@ -101,3 +125,8 @@ export const TIMEOUT_UNIT_PRECISION = 1000000
 
 export const DISCOVERY_DEFAULT_TIMEOUT =
   DISCOVERY_DEFAULT_TIMEOUT_RAW * TIMEOUT_UNIT_PRECISION
+
+export const RESOURCE_DEFAULT_TTL_RAW = 1000
+
+export const RESOURCE_DEFAULT_TTL =
+  RESOURCE_DEFAULT_TTL_RAW * TIMEOUT_UNIT_PRECISION

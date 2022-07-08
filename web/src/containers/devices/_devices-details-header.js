@@ -1,10 +1,10 @@
-import { useRef } from 'react'
+import { useMemo, useRef } from 'react'
 import { useIntl } from 'react-intl'
 import { useSelector } from 'react-redux'
 import classNames from 'classnames'
 import PropTypes from 'prop-types'
 import { Button } from '@/components/button'
-import { getDeviceNotificationKey } from './utils'
+import { canSetDPSEndpoint, getDeviceNotificationKey } from './utils'
 import { isNotificationActive } from './slice'
 import { messages as t } from './devices-i18n'
 
@@ -13,6 +13,8 @@ export const DevicesDetailsHeader = ({
   isUnregistered,
   onOwnChange,
   isOwned,
+  resources,
+  openDpsModal,
 }) => {
   const { formatMessage: _ } = useIntl()
   const deviceNotificationKey = getDeviceNotificationKey(deviceId)
@@ -24,6 +26,8 @@ export const DevicesDetailsHeader = ({
   const greyedOutClassName = classNames({
     'grayed-out': isUnregistered,
   })
+
+  const hasDPS = useMemo(() => canSetDPSEndpoint(resources), [resources])
 
   return (
     <div
@@ -37,6 +41,17 @@ export const DevicesDetailsHeader = ({
       >
         {isOwned ? _(t.disOwnDevice) : _(t.ownDevice)}
       </Button>
+      {hasDPS && (
+        <Button
+          icon="fa-bacon"
+          variant="secondary"
+          disabled={!isOwned}
+          className="m-l-10"
+          onClick={openDpsModal}
+        >
+          {_(t.setDpsEndpoint)}
+        </Button>
+      )}
     </div>
   )
 }

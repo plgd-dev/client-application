@@ -12,7 +12,9 @@ import { deleteDevicesApi, disownDeviceApi, ownDeviceApi } from './rest'
 import {
   handleDeleteDevicesErrors,
   handleOwnDevicesErrors,
+  handleUpdateResourceErrors,
   sleep,
+  updateResourceMethod,
 } from './utils'
 import { messages as t } from './devices-i18n'
 import { toast } from 'react-toastify'
@@ -26,6 +28,7 @@ import {
 } from '@/containers/devices/slice'
 import { useDispatch, useSelector } from 'react-redux'
 import { DevicesTimeoutModal } from './_devices-timeout-modal'
+import { DevicesDPSModal } from '@/containers/devices/_devices-dps-modal'
 
 export const DevicesListPage = () => {
   const { formatMessage: _ } = useIntl()
@@ -35,6 +38,11 @@ export const DevicesListPage = () => {
   const [selectedDevices, setSelectedDevices] = useState([])
   const [deleting, setDeleting] = useState(false)
   const [owning, setOwning] = useState(false)
+  const [showDpsModal, setShowDpsModal] = useState(false)
+  const [dpsData, setDpsData] = useState({
+    deviceId: undefined,
+    resources: undefined,
+  })
   const isMounted = useIsMounted()
   const dispatch = useDispatch()
   const dataToDisplay = useSelector(getDevices)
@@ -112,6 +120,28 @@ export const DevicesListPage = () => {
     }
   }
 
+  // Updates the resource through rest API
+  const updateResource = async (
+    { href, currentInterface = '' },
+    resourceDataUpdate
+  ) => {
+    await updateResourceMethod(
+      { deviceId: dpsData.deviceId, href, currentInterface },
+      resourceDataUpdate,
+      () => {
+        showSuccessToast({
+          title: _(t.resourceUpdateSuccess),
+          message: _(t.resourceWasUpdated),
+        })
+        setShowDpsModal(false)
+        setDpsData({ deviceId: undefined, resources: undefined })
+      },
+      error => {
+        handleUpdateResourceErrors(error, { id: dpsData.deviceId, href }, _)
+      }
+    )
+  }
+
   const loadingOrDeleting = loading || deleting || owning
 
   return (
@@ -138,6 +168,16 @@ export const DevicesListPage = () => {
         loading={loadingOrDeleting}
         onDeleteClick={handleOpenDeleteModal}
         ownDevice={handleOwnDevice}
+        showDpsModal={deviceId => {
+          setDpsData(prevData => ({ ...prevData, deviceId }))
+          setShowDpsModal(true)
+        }}
+        resourcesLoadedCallback={resources => {
+          setDpsData(prevData => ({
+            ...prevData,
+            resources,
+          }))
+        }}
       />
 
       <ConfirmModal
@@ -160,6 +200,13 @@ export const DevicesListPage = () => {
       <DevicesTimeoutModal
         show={timeoutModalOpen}
         onClose={() => setTimeoutModalOpen(false)}
+      />
+
+      <DevicesDPSModal
+        show={showDpsModal}
+        onClose={() => setShowDpsModal(false)}
+        updateResource={updateResource}
+        resources={dpsData.resources}
       />
     </Layout>
   )
