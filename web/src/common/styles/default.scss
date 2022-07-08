@@ -143,6 +143,24 @@ $sides: (top, bottom, left, right); // Leave this variable alone
     line-height: 1.1;
   }
 
+  &.interactive {
+    .popover-body {
+      position: relative;
+
+      &:after {
+        content: '';
+        display: block;
+        position: absolute;
+        bottom: -20px;
+        left: 0;
+        right: 50%;
+        width: 50%;
+        height: 20px;
+
+      }
+    }
+  }
+
   .arrow::before {
     display: none;
   }

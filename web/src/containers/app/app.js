@@ -36,7 +36,7 @@ const App = ({ config }) => {
       value={{
         collapsed,
         ...config,
-        buildInformation: buildInformation || [],
+        buildInformation: buildInformation || null,
       }}
     >
       <Router history={history}>

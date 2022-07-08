@@ -5,6 +5,7 @@ import OverlayTrigger from 'react-bootstrap/OverlayTrigger'
 import Tooltip from 'react-bootstrap/Tooltip'
 import Popover from 'react-bootstrap/Popover'
 import PopoverContent from 'react-bootstrap/PopoverContent'
+import { format } from 'date-fns'
 
 import { messages as t } from './footer-i18n'
 import './footer.scss'
@@ -32,63 +33,74 @@ export const Footer = memo(() => {
     })
   }
 
-  return (
-    <footer id="footer">
-      <div className="left">
-        <Display when={!!buildInformation}>
-          <OverlayTrigger
-            placement="top"
-            overlay={
-              <Tooltip className="plgd-tooltip" id="footer-version">
-                {_(t.clickToCopy)}
-              </Tooltip>
-            }
-          >
-            <span className="copy" onClick={copyVersion}>
-              <i className={`fas fa-copy m-r-10`} />
-            </span>
-          </OverlayTrigger>
+  const BuildInformation = () => {
+    if (!buildInformation?.buildDate) {
+      return null
+    }
+    return (
+      <Display when={!!buildInformation}>
+        <OverlayTrigger
+          placement="top"
+          overlay={
+            <Tooltip className="plgd-tooltip" id="footer-version">
+              {_(t.clickToCopy)}
+            </Tooltip>
+          }
+        >
+          <span className="copy" onClick={copyVersion}>
+            <i className={`fas fa-copy m-r-10`} />
+          </span>
+        </OverlayTrigger>
 
-          <OverlayTrigger
-            placement="top-start"
-            show={show}
-            delay={{ hide: 400 }}
-            overlay={
-              <Popover
-                id="popover-positioned-top"
-                className="plgd-popover"
-                onMouseEnter={handleOnMouseEnter}
-                onMouseLeave={handleOnMouseLeave}
-              >
-                <PopoverContent>
-                  <div className="footerBuildInfo">
-                    <div className="line">
-                      <div className="attr">Build time:</div>
-                      <div className="val">{buildInformation.buildDate}</div>
-                    </div>
-                    <div className="line">
-                      <div className="attr">Commit hash:</div>
-                      <a
-                        className="val"
-                        href={`https://github.com/plgd-dev/client-application/commit/${buildInformation.commitHash}`}
-                        target="_blank"
-                      >
-                        {buildInformation.commitHash}
-                      </a>
-                    </div>
-                  </div>
-                </PopoverContent>
-              </Popover>
-            }
-          >
-            <span
+        <OverlayTrigger
+          placement="top-start"
+          show={show}
+          delay={{ hide: 1000 }}
+          overlay={
+            <Popover
+              id="popover-positioned-top"
+              className="plgd-popover interactive"
               onMouseEnter={handleOnMouseEnter}
               onMouseLeave={handleOnMouseLeave}
             >
-              {buildInformation.version}
-            </span>
-          </OverlayTrigger>
-        </Display>
+              <PopoverContent>
+                <div className="footerBuildInfo">
+                  <div className="line">
+                    <div className="attr">Build time:</div>
+                    <div className="val">
+                      {format(new Date(buildInformation.buildDate), 'Pp')}
+                    </div>
+                  </div>
+                  <div className="line">
+                    <div className="attr">Commit hash:</div>
+                    <a
+                      className="val"
+                      href={`https://github.com/plgd-dev/client-application/commit/${buildInformation.commitHash}`}
+                      target="_blank"
+                    >
+                      {buildInformation.commitHash}
+                    </a>
+                  </div>
+                </div>
+              </PopoverContent>
+            </Popover>
+          }
+        >
+          <span
+            onMouseEnter={handleOnMouseEnter}
+            onMouseLeave={handleOnMouseLeave}
+          >
+            {buildInformation.version}
+          </span>
+        </OverlayTrigger>
+      </Display>
+    )
+  }
+
+  return (
+    <footer id="footer">
+      <div className="left">
+        <BuildInformation />
       </div>
       <div className="right">
         <a
