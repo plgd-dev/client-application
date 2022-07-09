@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useIntl } from 'react-intl'
 import { useParams } from 'react-router-dom'
 import classNames from 'classnames'
@@ -41,7 +41,7 @@ import {
 import { useDeviceDetails, useDevicesResources } from './hooks'
 import { messages as t } from './devices-i18n'
 import './devices-details.scss'
-import { disOwnDevice } from '@/containers/devices/slice'
+import { disOwnDevice, ownDevice } from '@/containers/devices/slice'
 import { useDispatch } from 'react-redux'
 
 export const DevicesDetailsPage = () => {
@@ -67,17 +67,10 @@ export const DevicesDetailsPage = () => {
   } = useDevicesResources(id)
   const dispatch = useDispatch()
 
-  const [isOwned, setIsOwned] = useState(
-    data?.ownershipStatus === devicesOwnerships.OWNED
+  const isOwned = useMemo(
+    () => data?.ownershipStatus === devicesOwnerships.OWNED,
+    [data]
   )
-
-  useEffect(() => {
-    const ownState = data?.ownershipStatus === devicesOwnerships.OWNED
-    if (ownState !== isOwned) {
-      setIsOwned(ownState)
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [data])
 
   const resources = resourcesData?.resources || []
 
@@ -329,21 +322,28 @@ export const DevicesDetailsPage = () => {
     try {
       ;(await isOwned) ? disownDeviceApi(id) : ownDeviceApi(id)
       const newOwnState = !isOwned
-      setIsOwned(newOwnState)
 
       if (isMounted.current) {
+        updateData({
+          ...data,
+          ownershipStatus: newOwnState
+            ? devicesOwnerships.OWNED
+            : devicesOwnerships.UNOWNED,
+        })
+
+        if (!newOwnState) {
+          dispatch(disOwnDevice(id))
+          history.push('/')
+        } else {
+          dispatch(ownDevice(id))
+        }
+
         showSuccessToast({
           title: newOwnState ? _(t.deviceOwned) : _(t.deviceDisOwned),
           message: newOwnState
             ? _(t.deviceWasOwned, { name: deviceName })
             : _(t.deviceWasDisOwned, { name: deviceName }),
         })
-
-        // disOwn
-        if (!newOwnState) {
-          dispatch(disOwnDevice(id))
-          history.push('/')
-        }
       }
     } catch (error) {
       handleDeleteDevicesErrors(error, _, true)
