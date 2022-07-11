@@ -523,6 +523,10 @@ export const messages = defineMessages({
     id: 'devices.discoveryTimeout',
     defaultMessage: 'Discovery timeout',
   },
+  enterDeviceName: {
+    id: 'devices.enterDeviceName',
+    defaultMessage: 'Enter device name',
+  },
   setDpsEndpoint: {
     id: 'devices.setDpsEndpoint',
     defaultMessage: 'Set DPS Endpoint',
