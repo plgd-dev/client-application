@@ -1,4 +1,4 @@
-import { useContext } from 'react'
+import { useContext, useEffect, useState } from 'react'
 import classNames from 'classnames'
 import { Router } from 'react-router-dom'
 import Container from 'react-bootstrap/Container'
@@ -18,12 +18,27 @@ import { history } from '@/store/history'
 import { AppContext } from './app-context'
 import { security } from '@/common/services/security'
 import './app.scss'
+import { fetchApi } from '@/common/services'
 
 const App = ({ config }) => {
   const [collapsed, setCollapsed] = useLocalStorage('leftPanelCollapsed', true)
+  const [buildInformation, setBuildInformation] = useState(undefined)
   security.setGeneralConfig(config)
+
+  useEffect(() => {
+    fetchApi(`${config.httpGatewayAddress}/api/v1/information`).then(result => {
+      setBuildInformation(result.data)
+    })
+  }, []) // eslint-disable-line
+
   return (
-    <AppContext.Provider value={{ collapsed, ...config }}>
+    <AppContext.Provider
+      value={{
+        collapsed,
+        ...config,
+        buildInformation: buildInformation || null,
+      }}
+    >
       <Router history={history}>
         {/*<InitServices />*/}
         <Helmet
