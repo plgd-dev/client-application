@@ -4,7 +4,6 @@ import { useIntl } from 'react-intl'
 import OverlayTrigger from 'react-bootstrap/OverlayTrigger'
 import Tooltip from 'react-bootstrap/Tooltip'
 import Popover from 'react-bootstrap/Popover'
-import PopoverContent from 'react-bootstrap/PopoverContent'
 import { format } from 'date-fns'
 
 import { messages as t } from './footer-i18n'
@@ -63,7 +62,7 @@ export const Footer = memo(() => {
               onMouseEnter={handleOnMouseEnter}
               onMouseLeave={handleOnMouseLeave}
             >
-              <PopoverContent>
+              <Popover.Body>
                 <div className="footerBuildInfo">
                   <div className="line">
                     <div className="attr">Build time:</div>
@@ -82,7 +81,7 @@ export const Footer = memo(() => {
                     </a>
                   </div>
                 </div>
-              </PopoverContent>
+              </Popover.Body>
             </Popover>
           }
         >
