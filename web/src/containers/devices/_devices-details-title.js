@@ -18,7 +18,7 @@ export const DevicesDetailsTitle = ({
   deviceName,
   deviceId,
   updateDeviceName,
-  isOnline,
+  isOwned,
   resources,
   ttl,
   loading,
@@ -30,8 +30,8 @@ export const DevicesDetailsTitle = ({
   const [saving, setSaving] = useState(false)
   const isMounted = useIsMounted()
   const canUpdate = useMemo(
-    () => canChangeDeviceName(resources) && isOnline,
-    [resources, isOnline]
+    () => canChangeDeviceName(resources) && isOwned,
+    [resources, isOwned]
   )
 
   const onEditClick = () => {
@@ -146,7 +146,7 @@ DevicesDetailsTitle.propTypes = {
   deviceId: PropTypes.string,
   loading: PropTypes.bool.isRequired,
   updateDeviceName: PropTypes.func.isRequired,
-  isOnline: PropTypes.bool.isRequired,
+  isOwned: PropTypes.bool.isRequired,
   resources: PropTypes.arrayOf(deviceResourceShape),
   ttl: PropTypes.number,
 }

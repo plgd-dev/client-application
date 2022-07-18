@@ -1,6 +1,6 @@
 msgid ""
 msgstr ""
-"POT-Creation-Date: 2021-02-07T14:27:26.123Z\n"
+"POT-Creation-Date: 2022-07-11T12:24:26.789Z\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "MIME-Version: 1.0\n"
@@ -15,10 +15,134 @@ msgid "API"
 msgstr ""
 
 #: ./i18n/template.json
+#. [devices.actions]
+#. defaultMessage is:
+#. Actions
+#: ./i18n/template.json
+#. [pendingCommands.actions]
+#. defaultMessage is:
+#. Actions
+msgid "Actions"
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.addDevice]
+#. defaultMessage is:
+#. Add device
+msgid "Add device"
+msgstr ""
+
+#: ./i18n/template.json
+#. [pendingCommands.doYouWantToCancelThisCommand]
+#. defaultMessage is:
+#. Are you sure you want to cancel this pending command? This action cannot be undone.
+msgid "Are you sure you want to cancel this pending command? This action cannot be undone."
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.deleteDeviceMessage]
+#. defaultMessage is:
+#. Are you sure you want to delete all devices? This action cannot be undone.
+msgid "Are you sure you want to delete all devices? This action cannot be undone."
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.deleteDevicesMessage]
+#. defaultMessage is:
+#. Are you sure you want to delete these {count} devices? This action cannot be undone.
+msgid "Are you sure you want to delete these {count} devices? This action cannot be undone."
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.deleteResourceMessage]
+#. defaultMessage is:
+#. Are you sure you want to delete this Resource? This action cannot be undone.
+msgid "Are you sure you want to delete this Resource? This action cannot be undone."
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.authorizationCode]
+#. defaultMessage is:
+#. Authorization Code
+msgid "Authorization Code"
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.authorizationProvider]
+#. defaultMessage is:
+#. Authorization Provider
+msgid "Authorization Provider"
+msgstr ""
+
+#: ./i18n/template.json
 #. [app.authError]
 #. defaultMessage is:
 #. Authorization server error
 msgid "Authorization server error"
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.back]
+#. defaultMessage is:
+#. Back
+msgid "Back"
+msgstr ""
+
+#: ./i18n/template.json
+#. [confirm-modal.cancel]
+#. defaultMessage is:
+#. Cancel
+#: ./i18n/template.json
+#. [devices.cancel]
+#. defaultMessage is:
+#. Cancel
+#: ./i18n/template.json
+#. [pendingCommands.cancel]
+#. defaultMessage is:
+#. Cancel
+msgid "Cancel"
+msgstr ""
+
+#: ./i18n/template.json
+#. [pendingCommands.cancelPendingCommand]
+#. defaultMessage is:
+#. Cancel Pending Command
+msgid "Cancel Pending Command"
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.certificateAuthorities]
+#. defaultMessage is:
+#. Certificate Authorities
+msgid "Certificate Authorities"
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.changeDiscoveryTimeout]
+#. defaultMessage is:
+#. Change discovery timeout
+msgid "Change discovery timeout"
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.changeTimeout]
+#. defaultMessage is:
+#. Change timeout
+msgid "Change timeout"
+msgstr ""
+
+#: ./i18n/template.json
+#. [footer.clickToCopy]
+#. defaultMessage is:
+#. Click to copy.
+msgid "Click to copy."
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.close]
+#. defaultMessage is:
+#. Close
+msgid "Close"
 msgstr ""
 
 #: ./i18n/template.json
@@ -29,10 +153,28 @@ msgid "Collapse"
 msgstr ""
 
 #: ./i18n/template.json
+#. [devices.commandTimeout]
+#. defaultMessage is:
+#. Command Timeout
+msgid "Command Timeout"
+msgstr ""
+
+#: ./i18n/template.json
 #. [menu.configuration]
 #. defaultMessage is:
 #. Configuration
 msgid "Configuration"
+msgstr ""
+
+#: ./i18n/template.json
+#. [confirm-modal.confirm]
+#. defaultMessage is:
+#. Confirm
+#: ./i18n/template.json
+#. [pendingCommands.confirm]
+#. defaultMessage is:
+#. Confirm
+msgid "Confirm"
 msgstr ""
 
 #: ./i18n/template.json
@@ -43,6 +185,55 @@ msgid "Contribute"
 msgstr ""
 
 #: ./i18n/template.json
+#. [copy-box.copied]
+#. defaultMessage is:
+#. Copied
+msgid "Copied"
+msgstr ""
+
+#: ./i18n/template.json
+#. [copy-box.copyToClipboard]
+#. defaultMessage is:
+#. Copy to clipboard
+msgid "Copy to clipboard"
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.create]
+#. defaultMessage is:
+#. Create
+msgid "Create"
+msgstr ""
+
+#: ./i18n/template.json
+#. [pendingCommands.resourceCreatePending]
+#. defaultMessage is:
+#. Create resource
+msgid "Create resource"
+msgstr ""
+
+#: ./i18n/template.json
+#. [pendingCommands.created]
+#. defaultMessage is:
+#. Created
+msgid "Created"
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.creating]
+#. defaultMessage is:
+#. Creating
+msgid "Creating"
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.dpsStatus]
+#. defaultMessage is:
+#. DPS status
+msgid "DPS status"
+msgstr ""
+
+#: ./i18n/template.json
 #. [menu.dashboard]
 #. defaultMessage is:
 #. Dashboard
@@ -50,17 +241,214 @@ msgid "Dashboard"
 msgstr ""
 
 #: ./i18n/template.json
-#. [things.deviceId]
+#. [devices.default]
+#. defaultMessage is:
+#. Default
+msgid "Default"
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.delete]
+#. defaultMessage is:
+#. Delete
+msgid "Delete"
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.deleteDevices]
+#. defaultMessage is:
+#. Delete devices
+msgid "Delete devices"
+msgstr ""
+
+#: ./i18n/template.json
+#. [pendingCommands.resourceDeletePending]
+#. defaultMessage is:
+#. Delete resource
+msgid "Delete resource"
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.deleting]
+#. defaultMessage is:
+#. Deleting
+msgid "Deleting"
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.resourceWasDeletedOffline]
+#. defaultMessage is:
+#. Deleting of the resource was scheduled, it will be deleted once the device is online.
+msgid "Deleting of the resource was scheduled, it will be deleted once the device is online."
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.details]
+#. defaultMessage is:
+#. Details
+#: ./i18n/template.json
+#. [pendingCommands.details]
+#. defaultMessage is:
+#. Details
+msgid "Details"
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.device]
+#. defaultMessage is:
+#. Device
+msgid "Device"
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.deviceWasUnregistered]
+#. defaultMessage is:
+#. Device "{name}" was unregistered.
+msgid "Device \"{name}\" was unregistered."
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.deviceWentOffline]
+#. defaultMessage is:
+#. Device "{name}" went offline.
+msgid "Device \"{name}\" went offline."
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.deviceWentOnline]
+#. defaultMessage is:
+#. Device "{name}" went online.
+msgid "Device \"{name}\" went online."
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.deviceAuthCodeError]
+#. defaultMessage is:
+#. Device Authorization Code Error
+msgid "Device Authorization Code Error"
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.deviceEndpoint]
+#. defaultMessage is:
+#. Device Endpoint
+msgid "Device Endpoint"
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.deviceAddByIpError]
+#. defaultMessage is:
+#. Device Error
+msgid "Device Error"
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.deviceId]
+#. defaultMessage is:
+#. Device ID
+#: ./i18n/template.json
+#. [pendingCommands.deviceId]
 #. defaultMessage is:
 #. Device ID
 msgid "Device ID"
 msgstr ""
 
 #: ./i18n/template.json
-#. [things.deviceInterfaces]
+#. [devices.deviceInterfaces]
 #. defaultMessage is:
 #. Device Interfaces
 msgid "Device Interfaces"
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.deviceProvisioningServiceEndpoint]
+#. defaultMessage is:
+#. Device Provisioning Service Endpoint
+msgid "Device Provisioning Service Endpoint"
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.deviceByIp]
+#. defaultMessage is:
+#. Device by IP
+msgid "Device by IP"
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.deviceDisOwned]
+#. defaultMessage is:
+#. Device disowned
+msgid "Device disowned"
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.deviceOwned]
+#. defaultMessage is:
+#. Device own error
+msgid "Device own error"
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.devicestatusChange]
+#. defaultMessage is:
+#. Device status change
+msgid "Device status change"
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.deviceAddByIpSuccess]
+#. defaultMessage is:
+#. Device was added successfully
+msgid "Device was added successfully"
+msgstr ""
+
+#: ./i18n/template.json
+#. [menu.devices]
+#. defaultMessage is:
+#. Devices
+msgid "Devices"
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.devicesDeleted]
+#. defaultMessage is:
+#. Devices deleted
+msgid "Devices deleted"
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.devicesDeletedMessage]
+#. defaultMessage is:
+#. Devices were successfully deleted.
+msgid "Devices were successfully deleted."
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.disabled]
+#. defaultMessage is:
+#. Disabled
+msgid "Disabled"
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.discovery]
+#. defaultMessage is:
+#. Discovery
+msgid "Discovery"
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.discoveryTimeout]
+#. defaultMessage is:
+#. Discovery timeout
+msgid "Discovery timeout"
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.disOwnDevice]
+#. defaultMessage is:
+#. Disown Device
+msgid "Disown Device"
 msgstr ""
 
 #: ./i18n/template.json
@@ -71,10 +459,172 @@ msgid "Docs"
 msgstr ""
 
 #: ./i18n/template.json
-#. [things.interfaces]
+#. [footer.done]
+#. defaultMessage is:
+#. Done
+msgid "Done"
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.enabled]
+#. defaultMessage is:
+#. Enabled
+msgid "Enabled"
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.endpoints]
+#. defaultMessage is:
+#. Endpoints
+msgid "Endpoints"
+msgstr ""
+
+#: ./i18n/template.json
+#. [language-switcher.english]
+#. defaultMessage is:
+#. English
+msgid "English"
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.enterdeviceName]
+#. defaultMessage is:
+#. Enter device name
+#: ./i18n/template.json
+#. [devices.enterDeviceName]
+#. defaultMessage is:
+#. Enter device name
+msgid "Enter device name"
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.enterDeviceId]
+#. defaultMessage is:
+#. Enter the device ID
+msgid "Enter the device ID"
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.enterDeviceIp]
+#. defaultMessage is:
+#. Enter the device IP
+msgid "Enter the device IP"
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.resourceCreateError]
+#. defaultMessage is:
+#. Failed to create a resource
+msgid "Failed to create a resource"
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.resourceDeleteError]
+#. defaultMessage is:
+#. Failed to delete a resource
+msgid "Failed to delete a resource"
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.devicesDeletion]
+#. defaultMessage is:
+#. Failed to delete selected devices.
+msgid "Failed to delete selected devices."
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.deviceDeletionError]
+#. defaultMessage is:
+#. Failed to delete this device.
+msgid "Failed to delete this device."
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.resourceRetrieveError]
+#. defaultMessage is:
+#. Failed to retrieve a resource
+msgid "Failed to retrieve a resource"
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.shadowSynchronizationError]
+#. defaultMessage is:
+#. Failed to set shadow synchronization
+msgid "Failed to set shadow synchronization"
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.resourceUpdateError]
+#. defaultMessage is:
+#. Failed to update a resource
+msgid "Failed to update a resource"
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.findDeviceByIp]
+#. defaultMessage is:
+#. Find a device by IP
+msgid "Find a device by IP"
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.flushCache]
+#. defaultMessage is:
+#. Flush Cache
+msgid "Flush Cache"
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.flushDevices]
+#. defaultMessage is:
+#. Flush Devices
+#: ./i18n/template.json
+#. [devices.flushDevicesMessage]
+#. defaultMessage is:
+#. Flush Devices
+msgid "Flush Devices"
+msgstr ""
+
+#: ./i18n/template.json
+#. [pendingCommands.forever]
+#. defaultMessage is:
+#. Forever
+msgid "Forever"
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.getCode]
+#. defaultMessage is:
+#. Get the Code
+msgid "Get the Code"
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.href]
+#. defaultMessage is:
+#. Href
+msgid "Href"
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.hubId]
+#. defaultMessage is:
+#. Hub ID
+msgid "Hub ID"
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.interfaces]
 #. defaultMessage is:
 #. Interfaces
 msgid "Interfaces"
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.invalidIp]
+#. defaultMessage is:
+#. Invalid device IP
+msgid "Invalid device IP"
 msgstr ""
 
 #: ./i18n/template.json
@@ -85,13 +635,6 @@ msgid "Loading"
 msgstr ""
 
 #: ./i18n/template.json
-#. [things.location]
-#. defaultMessage is:
-#. Location
-msgid "Location"
-msgstr ""
-
-#: ./i18n/template.json
 #. [user-widget.logOut]
 #. defaultMessage is:
 #. Log Out
@@ -99,10 +642,38 @@ msgid "Log Out"
 msgstr ""
 
 #: ./i18n/template.json
-#. [things.name]
+#. [devices.minimalValueIs]
+#. defaultMessage is:
+#. Minimal value is {minimalValue}.
+msgid "Minimal value is {minimalValue}."
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.name]
 #. defaultMessage is:
 #. Name
 msgid "Name"
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.newResource]
+#. defaultMessage is:
+#. New Resource
+msgid "New Resource"
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.newResources]
+#. defaultMessage is:
+#. New Resources
+msgid "New Resources"
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.resourceAdded]
+#. defaultMessage is:
+#. New resource {href} was added to the device {deviceName} ({deviceId}).
+msgid "New resource {href} was added to the device {deviceName} ({deviceId})."
 msgstr ""
 
 #: ./i18n/template.json
@@ -113,10 +684,42 @@ msgid "Next"
 msgstr ""
 
 #: ./i18n/template.json
+#. [pendingCommands.no]
+#. defaultMessage is:
+#. No
+msgid "No"
+msgstr ""
+
+#: ./i18n/template.json
 #. [menu.notifications]
 #. defaultMessage is:
 #. Notifications
+#: ./i18n/template.json
+#. [devices.notifications]
+#. defaultMessage is:
+#. Notifications
 msgid "Notifications"
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.ownDevice]
+#. defaultMessage is:
+#. Own Device
+msgid "Own Device"
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.owned]
+#. defaultMessage is:
+#. Owned
+msgid "Owned"
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.ownershipStatus]
+#. defaultMessage is:
+#. Ownership status
+msgid "Ownership status"
 msgstr ""
 
 #: ./i18n/template.json
@@ -127,6 +730,13 @@ msgid "Page not found"
 msgstr ""
 
 #: ./i18n/template.json
+#. [menu.pendingCommands]
+#. defaultMessage is:
+#. Pending Commands
+msgid "Pending Commands"
+msgstr ""
+
+#: ./i18n/template.json
 #. [table-pagination.prev]
 #. defaultMessage is:
 #. Prev
@@ -134,45 +744,164 @@ msgid "Prev"
 msgstr ""
 
 #: ./i18n/template.json
-#. [things.resourceRetrieveError]
+#. [devices.provisionNewDevice]
 #. defaultMessage is:
-#. Resource retrieve failed
-msgid "Resource retrieve failed"
+#. Provision a new device
+msgid "Provision a new device"
 msgstr ""
 
 #: ./i18n/template.json
-#. [things.resourceUpdateError]
+#. [devices.provisionNewDeviceTitle]
 #. defaultMessage is:
-#. Resource update failed
-msgid "Resource update failed"
+#. Provision a new device using Device Provisioning Service
+msgid "Provision a new device using Device Provisioning Service"
 msgstr ""
 
 #: ./i18n/template.json
-#. [things.resourceUpdateSuccess]
+#. [pendingCommands.recentTasks]
+#. defaultMessage is:
+#. Recent tasks
+msgid "Recent tasks"
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.refresh]
+#. defaultMessage is:
+#. Refresh
+msgid "Refresh"
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.resourceDeleted]
+#. defaultMessage is:
+#. Resource Deleted
+msgid "Resource Deleted"
+msgstr ""
+
+#: ./i18n/template.json
+#. [pendingCommands.resourceHref]
+#. defaultMessage is:
+#. Resource Href
+msgid "Resource Href"
+msgstr ""
+
+#: ./i18n/template.json
+#. [menu.resourceLinks]
+#. defaultMessage is:
+#. Resource Links
+msgid "Resource Links"
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.resourceUpdated]
+#. defaultMessage is:
+#. Resource Updated
+msgid "Resource Updated"
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.resourceCreateSuccess]
+#. defaultMessage is:
+#. Resource created successfully
+msgid "Resource created successfully"
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.resourceCreate]
+#. defaultMessage is:
+#. Resource creation
+msgid "Resource creation"
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.resourceDeleteSuccess]
+#. defaultMessage is:
+#. Resource delete scheduled
+msgid "Resource delete scheduled"
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.resourceDelete]
+#. defaultMessage is:
+#. Resource deletion
+msgid "Resource deletion"
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.resourceUpdate]
+#. defaultMessage is:
+#. Resource update
+msgid "Resource update"
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.resourceUpdateSuccess]
 #. defaultMessage is:
 #. Resource update successful
 msgid "Resource update successful"
 msgstr ""
 
 #: ./i18n/template.json
-#. [things.resources]
+#. [devices.resourceUpdatedDesc]
+#. defaultMessage is:
+#. Resource {href} on a device called {deviceName} was updated.
+msgid "Resource {href} on a device called {deviceName} was updated."
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.resourceWithHrefWasDeleted]
+#. defaultMessage is:
+#. Resource {href} was deleted from device {deviceName} ({deviceId}).
+msgid "Resource {href} was deleted from device {deviceName} ({deviceId})."
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.resources]
 #. defaultMessage is:
 #. Resources
 msgid "Resources"
 msgstr ""
 
 #: ./i18n/template.json
-#. [things.retrieve]
+#. [devices.resourcesDeleted]
+#. defaultMessage is:
+#. Resources Deleted
+msgid "Resources Deleted"
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.retrieve]
 #. defaultMessage is:
 #. Retrieve
 msgid "Retrieve"
 msgstr ""
 
 #: ./i18n/template.json
-#. [things.retrieving]
+#. [pendingCommands.resourceRetrievePending]
+#. defaultMessage is:
+#. Retrieve resource
+msgid "Retrieve resource"
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.retrieving]
 #. defaultMessage is:
 #. Retrieving
 msgid "Retrieving"
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.save]
+#. defaultMessage is:
+#. Save
+msgid "Save"
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.saving]
+#. defaultMessage is:
+#. Saving
+msgid "Saving"
 msgstr ""
 
 #: ./i18n/template.json
@@ -183,10 +912,42 @@ msgid "Services"
 msgstr ""
 
 #: ./i18n/template.json
-#. [things.status]
+#. [devices.setDpsEndpoint]
+#. defaultMessage is:
+#. Set DPS Endpoint
+msgid "Set DPS Endpoint"
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.shadowSynchronization]
+#. defaultMessage is:
+#. Shadow synchronization
+msgid "Shadow synchronization"
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.shadowSynchronizationWasSetOffline]
+#. defaultMessage is:
+#. Shadow synchronization was scheduled, changes will be applied once the device is online.
+msgid "Shadow synchronization was scheduled, changes will be applied once the device is online."
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.status]
+#. defaultMessage is:
+#. Status
+#: ./i18n/template.json
+#. [pendingCommands.status]
 #. defaultMessage is:
 #. Status
 msgid "Status"
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.supportedTypes]
+#. defaultMessage is:
+#. Supported Types
+msgid "Supported Types"
 msgstr ""
 
 #: ./i18n/template.json
@@ -197,85 +958,267 @@ msgid "The page you are looking for does not exist."
 msgstr ""
 
 #: ./i18n/template.json
-#. [things.resourceWasUpdatedOffline]
+#. [devices.resourceWasCreatedOffline]
 #. defaultMessage is:
-#. The resource was updated successfully, changes will be applied once the device is online.
-msgid "The resource was updated successfully, changes will be applied once the device is online."
+#. The resource creation was scheduled, changes will be applied once the device is online.
+msgid "The resource creation was scheduled, changes will be applied once the device is online."
 msgstr ""
 
 #: ./i18n/template.json
-#. [things.resourceWasUpdated]
+#. [devices.resourceWasDeleted]
+#. defaultMessage is:
+#. The resource delete was scheduled, you will be notified when the resource was deleted.
+msgid "The resource delete was scheduled, you will be notified when the resource was deleted."
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.resourceWasUpdatedOffline]
+#. defaultMessage is:
+#. The resource update was scheduled, changes will be applied once the device is online.
+msgid "The resource update was scheduled, changes will be applied once the device is online."
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.resourceWasCreated]
+#. defaultMessage is:
+#. The resource was created successfully.
+msgid "The resource was created successfully."
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.resourceWasUpdated]
 #. defaultMessage is:
 #. The resource was updated successfully.
 msgid "The resource was updated successfully."
 msgstr ""
 
 #: ./i18n/template.json
-#. [things.invalidArgument]
+#. [devices.invalidArgument]
 #. defaultMessage is:
 #. There was an invalid argument in the JSON structure.
 msgid "There was an invalid argument in the JSON structure."
 msgstr ""
 
 #: ./i18n/template.json
-#. [things.thingNotFound]
+#. [devices.treeView]
 #. defaultMessage is:
-#. Thing not found
-msgid "Thing not found"
+#. Tree view
+msgid "Tree view"
 msgstr ""
 
 #: ./i18n/template.json
-#. [things.thingNotFoundMessage]
+#. [pendingCommands.type]
 #. defaultMessage is:
-#. Thing with ID "{id}" does not exist.
-msgid "Thing with ID \"{id}\" does not exist."
+#. Type
+msgid "Type"
 msgstr ""
 
 #: ./i18n/template.json
-#. [menu.things]
-#. defaultMessage is:
-#. Things
-msgid "Things"
-msgstr ""
-
-#: ./i18n/template.json
-#. [things.types]
+#. [devices.types]
 #. defaultMessage is:
 #. Types
 msgid "Types"
 msgstr ""
 
 #: ./i18n/template.json
-#. [things.update]
+#. [devices.unowned]
+#. defaultMessage is:
+#. Unowned
+msgid "Unowned"
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.update]
 #. defaultMessage is:
 #. Update
 msgid "Update"
 msgstr ""
 
 #: ./i18n/template.json
-#. [things.updating]
+#. [pendingCommands.deviceMetadataUpdatePending]
+#. defaultMessage is:
+#. Update metadata
+msgid "Update metadata"
+msgstr ""
+
+#: ./i18n/template.json
+#. [pendingCommands.resourceUpdatePending]
+#. defaultMessage is:
+#. Update resource
+msgid "Update resource"
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.updating]
 #. defaultMessage is:
 #. Updating
 msgid "Updating"
 msgstr ""
 
 #: ./i18n/template.json
-#. [things.offline]
+#. [pendingCommands.validUntil]
+#. defaultMessage is:
+#. Valid until
+msgid "Valid until"
+msgstr ""
+
+#: ./i18n/template.json
+#. [footer.copied]
+#. defaultMessage is:
+#. Version is in your clipboard.
+msgid "Version is in your clipboard."
+msgstr ""
+
+#: ./i18n/template.json
+#. [pendingCommands.yes]
+#. defaultMessage is:
+#. Yes
+msgid "Yes"
+msgstr ""
+
+#: ./i18n/template.json
+#. [pendingCommands.canceled]
+#. defaultMessage is:
+#. canceled
+msgid "canceled"
+msgstr ""
+
+#: ./i18n/template.json
+#. [pendingCommands.commandContent]
+#. defaultMessage is:
+#. command content
+msgid "command content"
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.commandOnResourceExpired]
+#. defaultMessage is:
+#. command on resource {deviceId}{href} has expired.
+msgid "command on resource {deviceId}{href} has expired."
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.deviceDeleted]
+#. defaultMessage is:
+#. device deleted
+msgid "device deleted"
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.deviceNameChangeFailed]
+#. defaultMessage is:
+#. device name change failed
+msgid "device name change failed"
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.deviceNotFound]
+#. defaultMessage is:
+#. device not found
+msgid "device not found"
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.deviceResourcesNotFoundMessage]
+#. defaultMessage is:
+#. device resources for device with ID "{id}" does not exist.
+msgid "device resources for device with ID \"{id}\" does not exist."
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.deviceResourcesNotFound]
+#. defaultMessage is:
+#. device resources not found
+msgid "device resources not found"
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.deviceNotFoundMessage]
+#. defaultMessage is:
+#. device with ID "{id}" does not exist.
+msgid "device with ID \"{id}\" does not exist."
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.deviceWasDeleted]
+#. defaultMessage is:
+#. device {name} was successfully deleted.
+msgid "device {name} was successfully deleted."
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.deviceWasDisOwned]
+#. defaultMessage is:
+#. device {name} was successfully disowned.
+msgid "device {name} was successfully disowned."
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.deviceWasOwned]
+#. defaultMessage is:
+#. device {name} was successfully owned.
+msgid "device {name} was successfully owned."
+msgstr ""
+
+#: ./i18n/template.json
+#. [pendingCommands.error]
+#. defaultMessage is:
+#. error
+msgid "error"
+msgstr ""
+
+#: ./i18n/template.json
+#. [pendingCommands.expired]
+#. defaultMessage is:
+#. expired
+msgid "expired"
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.notAvailable]
+#. defaultMessage is:
+#. n/a
+msgid "n/a"
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.offline]
 #. defaultMessage is:
 #. offline
 msgid "offline"
 msgstr ""
 
 #: ./i18n/template.json
-#. [things.online]
+#. [devices.online]
 #. defaultMessage is:
 #. online
 msgid "online"
 msgstr ""
 
 #: ./i18n/template.json
-#. [app.defaultTitle]
+#. [pendingCommands.pending]
 #. defaultMessage is:
-#. plgd Dashboard
-msgid "plgd Dashboard"
+#. pending
+msgid "pending"
+msgstr ""
+
+#: ./i18n/template.json
+#. [pendingCommands.successful]
+#. defaultMessage is:
+#. successful
+msgid "successful"
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.resourcesAdded]
+#. defaultMessage is:
+#. {count} new resources were added to the device {deviceName} ({deviceId}).
+msgid "{count} new resources were added to the device {deviceName} ({deviceId})."
+msgstr ""
+
+#: ./i18n/template.json
+#. [devices.resourcesWereDeleted]
+#. defaultMessage is:
+#. {count} resources were deleted from device {deviceName} ({deviceId}).
+msgid "{count} resources were deleted from device {deviceName} ({deviceId})."
 msgstr ""

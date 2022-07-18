@@ -125,6 +125,66 @@ $sides: (top, bottom, left, right); // Leave this variable alone
   }
 }
 
+
+.plgd-popover.popover {
+  border-radius: 0;
+  border: 0;
+
+  &.show {
+    opacity: 1;
+  }
+
+  .popover-body {
+    background-color: $secondary_20;
+    color: $secondary_40;
+    border-radius: 0;
+    font-size: 14px;
+    padding: 10px;
+    line-height: 1.1;
+  }
+
+  &.interactive {
+    .popover-body {
+      position: relative;
+
+      &:after {
+        content: '';
+        display: block;
+        position: absolute;
+        bottom: -20px;
+        left: 0;
+        right: 50%;
+        width: 50%;
+        height: 20px;
+      }
+    }
+  }
+
+  .arrow::before {
+    display: none;
+  }
+
+  &.bs-popover-auto[x-placement^='bottom'] .arrow::after,
+  &.bs-popover-bottom .arrow::after {
+    border-bottom-color: $secondary_20;
+  }
+
+  &.bs-popover-auto[x-placement^='top'] .arrow::after,
+  &.bs-popover-top .arrow::after {
+    border-top-color: $secondary_20;
+  }
+
+  &.bs-popover-auto[x-placement^='left'] .arrow::after,
+  &.bs-popover-left .arrow::after {
+    border-left-color: $secondary_20;
+  }
+
+  &.bs-popover-auto[x-placement^='right'] .arrow::after,
+  &.bs-popover-right .arrow::after {
+    border-right-color: $secondary_20;
+  }
+}
+
 h2.title-with-icon {
   i.fas {
     font-size: 14px;
@@ -136,4 +196,8 @@ h2.title-with-icon {
   height: 20px;
   width: 1px;
   background-color: $secondary_20;
+}
+
+.tooltip-inner {
+  max-width: 250px;
 }
