@@ -13,6 +13,8 @@ export const ActionButton = ({ type, menuProps, items, onToggle, ...rest }) => {
     } else if (item.icon) {
       return <i className={`fas ${item.icon} m-r-10`} />
     }
+
+    return null
   }
   return (
     <BDropdown className="action-button" onToggle={onToggle}>
@@ -23,6 +25,7 @@ export const ActionButton = ({ type, menuProps, items, onToggle, ...rest }) => {
       </BDropdown.Toggle>
 
       <BDropdown.Menu
+        renderOnMount={true}
         {...menuProps}
         popperConfig={{
           strategy: 'fixed',

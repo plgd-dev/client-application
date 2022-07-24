@@ -10,7 +10,7 @@ $margin_size: 5px;
   font-weight: 400;
   white-space: nowrap;
   color: $primary_100;
-  background-color: $light_100;
+  background-color: $light_100 !important;
   box-sizing: border-box;
   border: 1px solid $secondary_20;
   border-radius: 10rem;
@@ -19,6 +19,7 @@ $margin_size: 5px;
   &.mh-l {
     margin-left: $margin_size;
   }
+
   &.mh-r {
     margin-right: $margin_size;
   }
@@ -27,30 +28,31 @@ $margin_size: 5px;
   &.mv-t {
     margin-top: $margin_size;
   }
+
   &.mv-b {
     margin-bottom: $margin_size;
   }
 
   &.green, &.success {
-    background-color: $success_50;
+    background-color: $success_50 !important;
     color: $success_100;
     border-color: $success_50;
   }
 
   &.red, &.error {
-    background-color: $error_50;
+    background-color: $error_50 !important;
     color: $error_100;
     border-color: $error_50;
   }
 
   &.orange, &.warning {
-    background-color: $warning_50;
+    background-color: $warning_50 !important;
     color: $warning_100;
     border-color: $warning_50;
   }
 
   &.grey, &.disabled {
-    background-color: $secondary_25;
+    background-color: $secondary_25 !important;
     color: $secondary_40;
     border-color: $secondary_25;
   }

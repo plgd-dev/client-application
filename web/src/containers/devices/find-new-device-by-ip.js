@@ -110,7 +110,7 @@ const FindNewDevice = ({ disabled }) => {
     <>
       <Button
         onClick={() => setShow(true)}
-        className="m-r-30"
+        className="m-r-10"
         icon="fa-plus"
         disabled={disabled}
       >
