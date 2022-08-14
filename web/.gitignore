@@ -25,3 +25,5 @@ yarn-error.log*
 
 # public
 /public/web_configuration.json
+
+.idea

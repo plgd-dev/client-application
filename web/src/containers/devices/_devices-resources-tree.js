@@ -2,9 +2,9 @@ import { useMemo } from 'react'
 import PropTypes from 'prop-types'
 import { useIntl } from 'react-intl'
 
-import { TreeExpander } from '@/components/tree-expander'
-import { TreeTable } from '@/components/table'
-import { Badge } from '@/components/badge'
+import { TreeExpander } from '@shared-ui/components/old/tree-expander'
+import { TreeTable } from '@shared-ui/components/old/table'
+import { Badge } from '@shared-ui/components/old/badge'
 import { DevicesResourcesActionButton } from './_devices-resources-action-button'
 import { RESOURCE_TREE_DEPTH_SIZE } from './constants'
 import {

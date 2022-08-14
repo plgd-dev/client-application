@@ -1,13 +1,16 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { useIntl } from 'react-intl'
-import { Button } from '@/components/button'
-import { Modal } from '@/components/modal'
-import { TextField } from '@/components/text-field'
-import { Label } from '@/components/label'
-import { showErrorToast, showSuccessToast } from '@/components/toast'
+import { Button } from '@shared-ui/components/old/button'
+import { Modal } from '@shared-ui/components/old/modal'
+import { TextField } from '@shared-ui/components/old/text-field'
+import { Label } from '@shared-ui/components/old/label'
+import {
+  showErrorToast,
+  showSuccessToast,
+} from '@shared-ui/components/old/toast'
 import { addDeviceByIp } from './rest'
 import { messages as t } from './devices-i18n'
-import { useIsMounted } from '@/common/hooks'
+import { useIsMounted } from '@shared-ui/common/hooks'
 import { addDevice } from '@/containers/devices/slice'
 import { useDispatch } from 'react-redux'
 

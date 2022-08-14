@@ -3,8 +3,7 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["src/*"],
-      "shared/*": ["shared/src/*"],
-      "sharedOut/*": ["../shared/src/*"]
+      "@shared-ui/*": ["shared-ui/src/*"]
     }
   },
   "exclude": ["node_modules", "build"]

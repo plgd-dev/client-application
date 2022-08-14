@@ -4,9 +4,9 @@ import PropTypes from 'prop-types'
 import classNames from 'classnames'
 import Row from 'react-bootstrap/Row'
 import Col from 'react-bootstrap/Col'
-import { Badge } from '@/components/badge'
-import { Label } from '@/components/label'
-import { getValue } from '@/common/utils'
+import { Badge } from '@shared-ui/components/old/badge'
+import { Label } from '@shared-ui/components/old/label'
+import { getValue } from '@shared-ui/common/utils'
 import {
   DEVICE_PROVISION_STATUS_DELAY_MS,
   DEVICE_TYPE_OIC_WK_D,
@@ -22,7 +22,7 @@ import {
 import { getDevicesResourcesApi } from '@/containers/devices/rest'
 import * as isMounted from 'units-converter'
 import omit from 'lodash/omit'
-import { Display } from '@/components/display'
+import { Display } from '@shared-ui/components/old/display'
 
 export const DevicesDetails = memo(
   ({ data, loading, isOwned, resources, deviceId }) => {

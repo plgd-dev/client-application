@@ -3,9 +3,9 @@ import { useMemo } from 'react'
 import { useIntl } from 'react-intl'
 import { Link, useHistory } from 'react-router-dom'
 import classNames from 'classnames'
-import { Button } from '@/components/button'
-import { Badge } from '@/components/badge'
-import { Table } from '@/components/table'
+import { Button } from '@shared-ui/components/old/button'
+import { Badge } from '@shared-ui/components/old/badge'
+import { Table } from '@shared-ui/components/old/table'
 import { DevicesListActionButton } from './_devices-list-action-button'
 import {
   DEVICES_DEFAULT_PAGE_SIZE,

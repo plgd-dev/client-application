@@ -1,4 +1,4 @@
-import { fetchApi, security } from '@/common/services'
+import { fetchApi, security } from '@shared-ui/common/services'
 import { DEVICE_AUTH_CODE_SESSION_KEY } from '@/constants'
 import { devicesApiEndpoints } from './constants'
 import { interfaceGetParam } from './utils'

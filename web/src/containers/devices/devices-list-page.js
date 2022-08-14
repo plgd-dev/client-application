@@ -1,10 +1,10 @@
 import { useEffect, useState } from 'react'
 import { useIntl } from 'react-intl'
-import { showSuccessToast } from '@/components/toast'
-import { ConfirmModal } from '@/components/confirm-modal'
-import { Layout } from '@/components/layout'
-import { useIsMounted } from '@/common/hooks'
-import { messages as menuT } from '@/components/menu/menu-i18n'
+import { showSuccessToast } from '@shared-ui/components/old/toast'
+import { ConfirmModal } from '@shared-ui/components/old/confirm-modal'
+import { Layout } from '@shared-ui/components/old/layout'
+import { useIsMounted } from '@shared-ui/common/hooks'
+import { messages as menuT } from '@shared-ui/components/old/menu/menu-i18n'
 import { useDevicesList } from './hooks'
 import { DevicesList } from './_devices-list'
 import { DevicesListHeader } from './_devices-list-header'
@@ -18,7 +18,7 @@ import {
 } from './utils'
 import { messages as t } from './devices-i18n'
 import { toast } from 'react-toastify'
-import { getApiErrorMessage } from '@/common/utils'
+import { getApiErrorMessage } from '@shared-ui/common/utils'
 import {
   getDevices,
   updateDevices,

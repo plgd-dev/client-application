@@ -7,18 +7,27 @@ import appConfig from '@/config'
 import {
   ToastContainer,
   BrowserNotificationsContainer,
-} from '@/components/toast'
-import { LeftPanel } from '@/components/left-panel'
-import { Menu } from '@/components/menu'
-import { StatusBar } from '@/components/status-bar'
-import { Footer } from '@/components/footer'
-import { useLocalStorage } from '@/common/hooks'
+} from '@shared-ui/components/old/toast'
+import { LeftPanel } from '@shared-ui/components/old/left-panel'
+import { Menu } from '@shared-ui/components/old/menu'
+import { StatusBar } from '@shared-ui/components/old/status-bar'
+import { Footer } from '@shared-ui/components/old/footer'
+import { useLocalStorage } from '@shared-ui/common/hooks'
 import { Routes } from '@/routes'
 import { history } from '@/store/history'
 import { AppContext } from './app-context'
-import { security } from '@/common/services/security'
+import { security } from '@shared-ui/common/services/security'
 import './app.scss'
-import { fetchApi } from '@/common/services'
+import { fetchApi } from '@shared-ui/common/services'
+
+const menuItems = [
+  {
+    to: '/',
+    icon: 'fa-list',
+    nameKey: 'devices',
+    className: 'devices',
+  },
+]
 
 const App = ({ config }) => {
   const [collapsed, setCollapsed] = useLocalStorage('leftPanelCollapsed', true)
@@ -49,6 +58,7 @@ const App = ({ config }) => {
           <StatusBar />
           <LeftPanel>
             <Menu
+              menuItems={{ menuItems }}
               collapsed={collapsed}
               toggleCollapsed={() => setCollapsed(!collapsed)}
             />
