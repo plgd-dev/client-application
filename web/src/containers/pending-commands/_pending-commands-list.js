@@ -6,7 +6,7 @@ import Tooltip from 'react-bootstrap/Tooltip'
 import { toast } from 'react-toastify'
 
 import { ConfirmModal } from '@shared-ui/components/old/confirm-modal'
-import { Badge } from '@shared-ui/components/old/badge'
+import Badge from '@shared-ui/components/new/Badge'
 import { Table } from '@shared-ui/components/old/table'
 import { useIsMounted } from '@shared-ui/common/hooks'
 import { getApiErrorMessage } from '@shared-ui/common/utils'

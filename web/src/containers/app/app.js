@@ -20,24 +20,21 @@ import { security } from '@shared-ui/common/services/security'
 import './app.scss'
 import { fetchApi } from '@shared-ui/common/services'
 
-const menuItems = [
-  {
-    to: '/',
-    icon: 'fa-list',
-    nameKey: 'devices',
-    className: 'devices',
-  },
-]
-
 const App = ({ config }) => {
   const [collapsed, setCollapsed] = useLocalStorage('leftPanelCollapsed', true)
   const [buildInformation, setBuildInformation] = useState(undefined)
   security.setGeneralConfig(config)
 
   useEffect(() => {
-    fetchApi(`${config.httpGatewayAddress}/api/v1/information`).then(result => {
-      setBuildInformation(result.data)
-    })
+    try {
+      fetchApi(`${config.httpGatewayAddress}/api/v1/information`).then(
+        result => {
+          setBuildInformation(result.data)
+        }
+      )
+    } catch (e) {
+      console.error(e)
+    }
   }, []) // eslint-disable-line
 
   return (
@@ -58,14 +55,36 @@ const App = ({ config }) => {
           <StatusBar />
           <LeftPanel>
             <Menu
-              menuItems={{ menuItems }}
+              menuItems={[
+                {
+                  to: '/',
+                  icon: 'fa-list',
+                  nameKey: 'devices',
+                  className: 'devices',
+                },
+              ]}
               collapsed={collapsed}
               toggleCollapsed={() => setCollapsed(!collapsed)}
             />
           </LeftPanel>
           <div id="content">
             <Routes />
-            <Footer />
+            <Footer
+              links={[
+                {
+                  to: 'https://github.com/plgd-dev/client-application/blob/main/pb/service.swagger.json',
+                  i18key: 'API',
+                },
+                {
+                  to: 'https://docs.plgd.dev/',
+                  i18key: 'docs',
+                },
+                {
+                  to: 'https://discord.gg/Pcusx938kg',
+                  i18key: 'contribute',
+                },
+              ]}
+            />
           </div>
         </Container>
         <ToastContainer />

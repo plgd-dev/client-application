@@ -4,7 +4,7 @@ import classNames from 'classnames'
 import Form from 'react-bootstrap/Form'
 import { useIntl } from 'react-intl'
 
-import { Button } from '@shared-ui/components/old/button'
+import Button from '@shared-ui/components/new/Button'
 import { showErrorToast } from '@shared-ui/components/old/toast'
 import { useIsMounted } from '@shared-ui/common/hooks'
 import { getApiErrorMessage } from '@shared-ui/common/utils'

@@ -1,7 +1,7 @@
 import { useMemo } from 'react'
 import PropTypes from 'prop-types'
 import { useIntl } from 'react-intl'
-import { Badge } from '@shared-ui/components/old/badge'
+import Badge from '@shared-ui/components/new/Badge'
 import { Table } from '@shared-ui/components/old/table'
 import { DevicesResourcesActionButton } from './_devices-resources-action-button'
 import { RESOURCES_DEFAULT_PAGE_SIZE } from './constants'

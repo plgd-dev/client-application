@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Modal } from '@shared-ui/components/old/modal'
 import { messages as t } from '@/containers/devices/devices-i18n'
-import { Button } from '@shared-ui/components/old/button'
+import Button from '@shared-ui/components/new/Button'
 import PropTypes from 'prop-types'
 import { useIntl } from 'react-intl'
 import isFunction from 'lodash/isFunction'
