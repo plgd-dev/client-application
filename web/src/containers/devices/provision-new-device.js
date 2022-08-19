@@ -7,7 +7,7 @@ import { TextField } from '@shared-ui/components/old/text-field'
 import { Label } from '@shared-ui/components/old/label'
 import { showErrorToast } from '@shared-ui/components/old/toast'
 import { AppContext } from '@/containers/app/app-context'
-import { CopyBox } from '@shared-ui/components/old/copy-box'
+import CopyBox from '@shared-ui/components/new/CopyBox'
 import { isValidGuid } from '@shared-ui/common/utils'
 
 import { getDeviceAuthCode } from './rest'

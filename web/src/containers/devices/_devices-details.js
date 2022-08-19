@@ -22,7 +22,7 @@ import {
 import { getDevicesResourcesApi } from '@/containers/devices/rest'
 import * as isMounted from 'units-converter'
 import omit from 'lodash/omit'
-import { Display } from '@shared-ui/components/old/display'
+import Display from '@shared-ui/components/new/Display'
 
 export const DevicesDetails = memo(
   ({ data, loading, isOwned, resources, deviceId }) => {

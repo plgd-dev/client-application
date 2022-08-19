@@ -54,6 +54,7 @@
   "devDependencies": {
     "@formatjs/cli": "^4.5.0",
     "@types/lodash": "^4.14.184",
+    "@types/uuid": "^8.3.4",
     "babel-plugin-formatjs": "^10.3.12",
     "react-app-alias-ex": "^2.1.0",
     "shelljs": "^0.8.5"
