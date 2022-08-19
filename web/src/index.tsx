@@ -31,6 +31,6 @@ fetch('/web_configuration.json')
     )
   })
   .catch(error => {
-    const rootDiv = document.getElementById('root')
+    const rootDiv = document.getElementById('root') as HTMLDivElement
     rootDiv.innerHTML = `<div class="client-error-message">${error.message}</div>`
   })
