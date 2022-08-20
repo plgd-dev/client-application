@@ -2,7 +2,7 @@ import React from 'react'
 import ReactDOM from 'react-dom'
 import { Provider } from 'react-redux'
 import { store } from '@/store'
-import { App } from '@/containers/app'
+import { App } from '@/containers/App'
 import { IntlProvider } from '@shared-ui/components/old/intl-provider'
 import reportWebVitals from './reportWebVitals'
 

@@ -6,7 +6,7 @@ import { Editor } from '@shared-ui/components/old/editor'
 import { Select } from '@shared-ui/components/old/select'
 import Button from '@shared-ui/components/new/Button'
 import Badge from '@shared-ui/components/new/Badge'
-import { Label } from '@shared-ui/components/old/label'
+import Label from '@shared-ui/components/new/Label'
 import { Modal } from '@shared-ui/components/old/modal'
 
 import { resourceModalTypes } from './constants'

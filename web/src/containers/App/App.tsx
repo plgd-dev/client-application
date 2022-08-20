@@ -7,22 +7,24 @@ import appConfig from '@/config'
 import {
   ToastContainer,
   BrowserNotificationsContainer,
-} from '@shared-ui/components/old/toast'
-import { LeftPanel } from '@shared-ui/components/old/left-panel'
-import { Menu } from '@shared-ui/components/old/menu'
-import { StatusBar } from '@shared-ui/components/old/status-bar'
-import { Footer } from '@shared-ui/components/old/footer'
+} from '@shared-ui/components/new/Toast/Toast'
+import LeftPanel from '@shared-ui/components/new/LeftPanel'
+import Menu from '@shared-ui/components/new/Menu'
+import StatusBar from '@shared-ui/components/new/StatusBar'
+import Footer from '@shared-ui/components/new/Footer'
 import { useLocalStorage } from '@shared-ui/common/hooks'
 import { Routes } from '@/routes'
 import { history } from '@/store/history'
-import { AppContext } from './app-context'
+import AppContext from './AppContext'
 import { security } from '@shared-ui/common/services/security'
-import './app.scss'
+import './App.scss'
 import { fetchApi } from '@shared-ui/common/services'
+import { Props, BuildInformationType } from '@/containers/App/App.types'
 
-const App = ({ config }) => {
+const App = ({ config }: Props) => {
   const [collapsed, setCollapsed] = useLocalStorage('leftPanelCollapsed', true)
-  const [buildInformation, setBuildInformation] = useState(undefined)
+  const [buildInformation, setBuildInformation] =
+    useState<BuildInformationType | null>(null)
   security.setGeneralConfig(config)
 
   useEffect(() => {

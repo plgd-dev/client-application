@@ -5,7 +5,7 @@ import isFinite from 'lodash/isFinite'
 import classNames from 'classnames'
 
 import { Select } from '@shared-ui/components/old/select'
-import { Label } from '@shared-ui/components/old/label'
+import Label from '@shared-ui/components/new/Label'
 import { TextField } from '@shared-ui/components/old/text-field'
 import { commandTimeoutUnits } from './constants'
 import {

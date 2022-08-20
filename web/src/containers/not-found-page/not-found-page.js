@@ -1,6 +1,5 @@
 import { useIntl } from 'react-intl'
-
-import { Layout } from '@shared-ui/components/old/layout'
+import Layout from '@shared-ui/components/new/Layout'
 
 import { messages as t } from './not-found-page-i18n'
 

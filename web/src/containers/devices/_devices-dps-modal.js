@@ -7,7 +7,7 @@ import { useIntl } from 'react-intl'
 import isFunction from 'lodash/isFunction'
 import classNames from 'classnames'
 import { TextField } from '@shared-ui/components/old/text-field'
-import { Label } from '@shared-ui/components/old/label'
+import Label from '@shared-ui/components/new/Label'
 import { isValidEndpoint } from '@/containers/devices/utils'
 import { knownResourceTypes } from '@/containers/devices/constants'
 

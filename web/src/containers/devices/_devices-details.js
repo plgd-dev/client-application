@@ -5,7 +5,7 @@ import classNames from 'classnames'
 import Row from 'react-bootstrap/Row'
 import Col from 'react-bootstrap/Col'
 import Badge from '@shared-ui/components/new/Badge'
-import { Label } from '@shared-ui/components/old/label'
+import Label from '@shared-ui/components/new/Label'
 import { getValue } from '@shared-ui/common/utils'
 import {
   DEVICE_PROVISION_STATUS_DELAY_MS,
