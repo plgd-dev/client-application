@@ -4,9 +4,9 @@ import { useIntl } from 'react-intl'
 import isFinite from 'lodash/isFinite'
 import classNames from 'classnames'
 
-import { Select } from '@shared-ui/components/old/select'
+import Select from '@shared-ui/components/new/Select'
 import Label from '@shared-ui/components/new/Label'
-import { TextField } from '@shared-ui/components/old/text-field'
+import TextField from '@shared-ui/components/new/TextField'
 import { commandTimeoutUnits } from './constants'
 import {
   convertValueToNs,

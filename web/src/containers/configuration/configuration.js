@@ -1,7 +1,7 @@
 import { useIntl } from 'react-intl'
 
-import { Layout } from '@shared-ui/components/old/layout'
-import { messages as menuT } from '@shared-ui/components/old/menu/menu-i18n'
+import Layout from '@shared-ui/components/new/Layout'
+import { messages as menuT } from '@shared-ui/components/new/Menu/Menu.i18n'
 
 export const Configuration = () => {
   const { formatMessage: _ } = useIntl()

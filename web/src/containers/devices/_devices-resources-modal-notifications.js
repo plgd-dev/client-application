@@ -4,7 +4,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import PropTypes from 'prop-types'
 
 import { WebSocketEventClient, eventFilters } from '@shared-ui/common/services'
-import { Switch } from '@shared-ui/components/old/switch'
+import Switch from '@shared-ui/components/new/Switch'
 import { getResourceUpdateNotificationKey } from './utils'
 import { isNotificationActive, toggleActiveNotification } from './slice'
 import { deviceResourceUpdateListener } from './websockets'

@@ -2,7 +2,7 @@ import { useIntl } from 'react-intl'
 import PropTypes from 'prop-types'
 import FindNewDeviceByIp from './find-new-device-by-ip'
 import { messages as t } from './devices-i18n'
-import { SplitButton } from '@shared-ui/components/old/split-button'
+import SplitButton from '@shared-ui/components/new/SplitButton'
 
 export const DevicesListHeader = ({ loading, refresh, openTimeoutModal }) => {
   const { formatMessage: _ } = useIntl()

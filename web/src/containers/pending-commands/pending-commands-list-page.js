@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useIntl } from 'react-intl'
 
-import { Layout } from '@shared-ui/components/old/layout'
+import Layout from '@shared-ui/components/new/Layout'
 import { messages as menuT } from '@/components/menu/menu-i18n'
 
 import { PendingCommandsList } from './_pending-commands-list'

@@ -3,7 +3,7 @@ import PropTypes from 'prop-types'
 import { useIntl } from 'react-intl'
 
 import { Editor } from '@shared-ui/components/old/editor'
-import { Select } from '@shared-ui/components/old/select'
+import Select from '@shared-ui/components/new/Select'
 import Button from '@shared-ui/components/new/Button'
 import Badge from '@shared-ui/components/new/Badge'
 import Label from '@shared-ui/components/new/Label'

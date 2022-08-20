@@ -2,7 +2,7 @@ import PropTypes from 'prop-types'
 import { useIntl } from 'react-intl'
 import classNames from 'classnames'
 
-import { Switch } from '@shared-ui/components/old/switch'
+import Switch from '@shared-ui/components/new/Switch'
 import { useLocalStorage } from '@shared-ui/common/hooks'
 import { DevicesResourcesList } from './_devices-resources-list'
 import { DevicesResourcesTree } from './_devices-resources-tree'
