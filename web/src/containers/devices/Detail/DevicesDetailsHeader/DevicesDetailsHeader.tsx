@@ -1,14 +1,14 @@
-import { useMemo, useRef } from 'react'
+import { FC, useMemo, useRef } from 'react'
 import { useIntl } from 'react-intl'
 import { useSelector } from 'react-redux'
 import classNames from 'classnames'
-import PropTypes from 'prop-types'
 import Button from '@shared-ui/components/new/Button'
-import { canSetDPSEndpoint, getDeviceNotificationKey } from './utils'
-import { isNotificationActive } from './slice'
-import { messages as t } from './devices-i18n'
+import { canSetDPSEndpoint, getDeviceNotificationKey } from '../../utils'
+import { isNotificationActive } from '../../slice'
+import { messages as t } from '../../Devices.i18n'
+import { Props } from './DevicesDetailsHeader.types'
 
-export const DevicesDetailsHeader = ({
+export const DevicesDetailsHeader: FC<Props> = ({
   deviceId,
   isUnregistered,
   onOwnChange,
@@ -56,13 +56,6 @@ export const DevicesDetailsHeader = ({
   )
 }
 
-DevicesDetailsHeader.propTypes = {
-  deviceId: PropTypes.string,
-  deviceName: PropTypes.string,
-  isUnregistered: PropTypes.bool.isRequired,
-}
+DevicesDetailsHeader.displayName = 'DevicesDetailsHeader'
 
-DevicesDetailsHeader.defaultProps = {
-  deviceId: null,
-  deviceName: null,
-}
+export default DevicesDetailsHeader

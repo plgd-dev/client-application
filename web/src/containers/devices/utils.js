@@ -4,7 +4,7 @@ import {
   showErrorToast,
   showWarningToast,
 } from '@shared-ui/components/new/Toast/Toast'
-import { compareIgnoreCase } from '@shared-ui/components/old/table/utils'
+import { compareIgnoreCase } from '@shared-ui/components/new/Table/Utils'
 import { errorCodes } from '@shared-ui/common/services/fetch-api'
 import {
   knownInterfaces,
@@ -19,7 +19,7 @@ import {
   devicesProvisionStatuses,
   devicesStatusSeverities,
 } from './constants'
-import { messages as t } from './devices-i18n'
+import { messages as t } from './Devices.i18n'
 import { updateDevicesResourceApi } from '@/containers/devices/rest'
 import isFunction from 'lodash/isFunction'
 import * as isMounted from 'units-converter'

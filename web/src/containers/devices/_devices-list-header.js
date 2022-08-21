@@ -1,7 +1,7 @@
 import { useIntl } from 'react-intl'
 import PropTypes from 'prop-types'
-import FindNewDeviceByIp from './FindNewDeviceByIp/FindNewDeviceByIp'
-import { messages as t } from './devices-i18n'
+import FindNewDeviceByIp from './LIst/FindNewDeviceByIp/FindNewDeviceByIp'
+import { messages as t } from './Devices.i18n'
 import SplitButton from '@shared-ui/components/new/SplitButton'
 
 export const DevicesListHeader = ({ loading, refresh, openTimeoutModal }) => {

@@ -2,8 +2,8 @@ import { useMemo } from 'react'
 import PropTypes from 'prop-types'
 import { useIntl } from 'react-intl'
 
-import { TreeExpander } from '@shared-ui/components/old/tree-expander'
-import { TreeTable } from '@shared-ui/components/old/table'
+import TreeExpander from '@shared-ui/components/new/TreeExpander'
+import TreeTable from '@shared-ui/components/new/Table'
 import Badge from '@shared-ui/components/new/Badge'
 import { DevicesResourcesActionButton } from './_devices-resources-action-button'
 import { RESOURCE_TREE_DEPTH_SIZE } from './constants'
@@ -13,7 +13,7 @@ import {
   getLastPartOfAResourceHref,
 } from './utils'
 import { deviceResourceShape } from './shapes'
-import { messages as t } from './devices-i18n'
+import { messages as t } from './Devices.i18n'
 
 export const DevicesResourcesTree = ({
   data: rawData,

@@ -5,7 +5,7 @@ import { Link, useHistory } from 'react-router-dom'
 import classNames from 'classnames'
 import Button from '@shared-ui/components/new/Button'
 import Badge from '@shared-ui/components/new/Badge'
-import { Table } from '@shared-ui/components/old/table'
+import Table from '@shared-ui/components/new/Table'
 import { DevicesListActionButton } from './_devices-list-action-button'
 import {
   DEVICES_DEFAULT_PAGE_SIZE,
@@ -14,7 +14,7 @@ import {
   DEVICE_TYPE_OIC_WK_D,
 } from './constants'
 import { deviceShape } from './shapes'
-import { messages as t } from './devices-i18n'
+import { messages as t } from './Devices.i18n'
 
 const { OWNED, UNOWNED } = devicesOwnerships
 

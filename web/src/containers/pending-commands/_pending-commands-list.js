@@ -7,7 +7,7 @@ import { toast } from 'react-toastify'
 
 import ConfirmModal from '@shared-ui/components/new/ConfirmModal'
 import Badge from '@shared-ui/components/new/Badge'
-import { Table } from '@shared-ui/components/old/table'
+import Table from '@shared-ui/components/new/Table'
 import { useIsMounted } from '@shared-ui/common/hooks'
 import { getApiErrorMessage } from '@shared-ui/common/utils'
 import { WebSocketEventClient, eventFilters } from '@shared-ui/common/services'

@@ -8,8 +8,8 @@ import {
   showErrorToast,
   showSuccessToast,
 } from '@shared-ui/components/new/Toast/Toast'
-import { addDeviceByIp } from '../rest'
-import { messages as t } from '../devices-i18n'
+import { addDeviceByIp } from '../../rest'
+import { messages as t } from '../../Devices.i18n'
 import { useIsMounted } from '@shared-ui/common/hooks'
 import { addDevice } from '@/containers/devices/slice'
 import { useDispatch } from 'react-redux'

@@ -1,6 +1,5 @@
-import { createElement, memo, useEffect, useMemo, useState } from 'react'
+import { createElement, FC, memo, useEffect, useMemo, useState } from 'react'
 import { useIntl } from 'react-intl'
-import PropTypes from 'prop-types'
 import classNames from 'classnames'
 import Row from 'react-bootstrap/Row'
 import Col from 'react-bootstrap/Col'
@@ -11,27 +10,28 @@ import {
   DEVICE_PROVISION_STATUS_DELAY_MS,
   DEVICE_TYPE_OIC_WK_D,
   devicesStatuses,
-} from './constants'
-import { deviceShape } from './shapes'
-import { messages as t } from './devices-i18n'
+} from '../../constants'
+import { messages as t } from '../../Devices.i18n'
 import {
   getColorByProvisionStatus,
   getDPSEndpoint,
   handleFetchResourceErrors,
 } from '@/containers/devices/utils'
 import { getDevicesResourcesApi } from '@/containers/devices/rest'
-import * as isMounted from 'units-converter'
 import omit from 'lodash/omit'
 import Display from '@shared-ui/components/new/Display'
+import { Props } from './DevicesDetails.types'
+import { useIsMounted } from '@shared-ui/common/hooks/use-is-mounted'
 
-export const DevicesDetails = memo(
+const DevicesDetails: FC<Props> = memo(
   ({ data, loading, isOwned, resources, deviceId }) => {
     const { formatMessage: _ } = useIntl()
     const [resourceLoading, setResourceLoading] = useState(false)
-    const [deviceResourceData, setDeviceResourceData] = useState(undefined)
+    const [deviceResourceData, setDeviceResourceData] = useState<any>(undefined)
     const deviceStatus = data?.metadata?.status?.value
     const isUnregistered = devicesStatuses.UNREGISTERED === deviceStatus
-    const LabelWithLoading = p =>
+    const isMounted = useIsMounted()
+    const LabelWithLoading = (p: any) =>
       createElement(Label, {
         ...omit(p, 'loading'),
         inline: true,
@@ -39,11 +39,11 @@ export const DevicesDetails = memo(
           shimmering: loading || p.loading,
           'grayed-out': isUnregistered,
         }),
-      })
+      } as any)
 
     const dpsEndpoint = useMemo(() => getDPSEndpoint(resources), [resources])
 
-    const loadResourceData = async href => {
+    const loadResourceData = async (href: string) => {
       try {
         const { data: deviceData } = await getDevicesResourcesApi({
           deviceId,
@@ -83,8 +83,8 @@ export const DevicesDetails = memo(
           <LabelWithLoading title={_(t.types)}>
             <div className="align-items-end badges-box-vertical">
               {data?.types
-                ?.filter(type => type !== DEVICE_TYPE_OIC_WK_D)
-                .map?.(type => (
+                ?.filter((type: string) => type !== DEVICE_TYPE_OIC_WK_D)
+                .map?.((type: string) => (
                   <Badge key={type}>{type}</Badge>
                 ))}
             </div>
@@ -116,7 +116,7 @@ export const DevicesDetails = memo(
         <Col>
           <LabelWithLoading title={_(t.endpoints)}>
             <div className="align-items-end badges-box-vertical">
-              {data?.endpoints?.map?.(endpoint => (
+              {data?.endpoints?.map?.((endpoint: string) => (
                 <Badge key={endpoint}>{endpoint}</Badge>
               ))}
             </div>
@@ -127,11 +127,6 @@ export const DevicesDetails = memo(
   }
 )
 
-DevicesDetails.propTypes = {
-  data: deviceShape,
-  loading: PropTypes.bool.isRequired,
-}
+DevicesDetails.displayName = 'DevicesDetails'
 
-DevicesDetails.defaultProps = {
-  data: null,
-}
+export default DevicesDetails

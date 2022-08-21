@@ -3,7 +3,7 @@ import PropTypes from 'prop-types'
 
 import ActionButton from '@shared-ui/components/new/ActionButton'
 import { canCreateResource, canBeResourceEdited } from './utils'
-import { messages as t } from './devices-i18n'
+import { messages as t } from './Devices.i18n'
 
 export const DevicesResourcesActionButton = ({
   disabled,

@@ -4,7 +4,7 @@ import { showSuccessToast } from '@shared-ui/components/new/Toast/Toast'
 import ConfirmModal from '@shared-ui/components/new/ConfirmModal'
 import Layout from '@shared-ui/components/new/Layout'
 import { useIsMounted } from '@shared-ui/common/hooks'
-import { messages as menuT } from '@shared-ui/components/old/menu/menu-i18n'
+import { messages as menuT } from '@shared-ui/components/new/Menu/Menu.i18n'
 import { useDevicesList } from './hooks'
 import { DevicesList } from './_devices-list'
 import { DevicesListHeader } from './_devices-list-header'
@@ -16,7 +16,7 @@ import {
   sleep,
   updateResourceMethod,
 } from './utils'
-import { messages as t } from './devices-i18n'
+import { messages as t } from './Devices.i18n'
 import { toast } from 'react-toastify'
 import { getApiErrorMessage } from '@shared-ui/common/utils'
 import {

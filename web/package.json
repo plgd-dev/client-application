@@ -57,6 +57,7 @@
     "@types/lodash": "^4.14.184",
     "@types/react-helmet": "^6.1.5",
     "@types/react-router-dom": "^5.3.3",
+    "@types/react-table": "^7.7.12",
     "@types/uuid": "^8.3.4",
     "babel-plugin-formatjs": "^10.3.12",
     "react-app-alias-ex": "^2.1.0",

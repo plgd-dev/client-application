@@ -37,14 +37,16 @@ export const useDevicesList = () => {
   return { data, updateData, ...rest }
 }
 
-export const useDeviceDetails = deviceId => {
+export const useDeviceDetails = (deviceId: string) => {
   const { httpGatewayAddress } = useAppConfig()
 
   // Fetch the data
-  const { data, updateData, ...rest } = useStreamApi(
-    `${httpGatewayAddress}${devicesApiEndpoints.DEVICES}/${deviceId}`,
-    { streamApi: false }
-  )
+  // TODO: TS
+  const { data, updateData, ...rest }: { data: any; updateData: any } =
+    useStreamApi(
+      `${httpGatewayAddress}${devicesApiEndpoints.DEVICES}/${deviceId}`,
+      { streamApi: false }
+    )
 
   // Update the metadata when a WS event is emitted
   useEmitter(
@@ -69,29 +71,39 @@ export const useDeviceDetails = deviceId => {
   return { data, updateData, ...rest }
 }
 
-export const useDevicesResources = deviceId => {
+export const useDevicesResources = (deviceId: string) => {
   const { httpGatewayAddress } = useAppConfig()
 
   // Fetch the data
-  const { data, updateData, ...rest } = useStreamApi(
-    `${httpGatewayAddress}${devicesApiEndpoints.DEVICES}/${deviceId}/${devicesApiEndpoints.DEVICES_RESOURCES_SUFFIX}`,
-    { parseResult: 'json' }
-  )
+  // TODO: TS
+  const { data, updateData, ...rest }: { data: any; updateData: any } =
+    useStreamApi(
+      `${httpGatewayAddress}${devicesApiEndpoints.DEVICES}/${deviceId}/${devicesApiEndpoints.DEVICES_RESOURCES_SUFFIX}`,
+      { parseResult: 'json' }
+    )
 
   useEmitter(
     getResourceRegistrationNotificationKey(deviceId),
-    ({ event, resources: updatedResources }) => {
+    ({
+      event,
+      resources: updatedResources,
+    }: {
+      event: any
+      resources: any
+    }) => {
       if (data?.resources) {
         const resources = data.resources // get the first set of resources from an array, since it came from a stream of data
-        let updatedLinks = []
+        let updatedLinks: any = []
 
-        updatedResources.forEach(resource => {
+        updatedResources.forEach((resource: any) => {
           if (event === resourceEventTypes.ADDED) {
             const linkExists =
-              resources.findIndex(link => link.href === resource.href) !== -1
+              resources.findIndex(
+                (link: any) => link.href === resource.href
+              ) !== -1
             if (linkExists) {
               // Already exists, update
-              updatedLinks = resources.map(link => {
+              updatedLinks = resources.map((link: any) => {
                 if (link.href === resource.href) {
                   return resource
                 }
@@ -102,7 +114,9 @@ export const useDevicesResources = deviceId => {
               updatedLinks = resources.concat(resource)
             }
           } else {
-            updatedLinks = resources.filter(link => link.href !== resource.href)
+            updatedLinks = resources.filter(
+              (link: any) => link.href !== resource.href
+            )
           }
         })
 

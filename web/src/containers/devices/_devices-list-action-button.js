@@ -1,7 +1,7 @@
 import { useIntl } from 'react-intl'
 import PropTypes from 'prop-types'
 import ActionButton from '@shared-ui/components/new/ActionButton'
-import { messages as t } from './devices-i18n'
+import { messages as t } from './Devices.i18n'
 import { useState } from 'react'
 import { getDevicesResourcesAllApi } from '@/containers/devices/rest'
 import { canSetDPSEndpoint } from '@/containers/devices/utils'

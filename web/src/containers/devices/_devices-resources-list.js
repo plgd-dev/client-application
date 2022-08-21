@@ -2,11 +2,11 @@ import { useMemo } from 'react'
 import PropTypes from 'prop-types'
 import { useIntl } from 'react-intl'
 import Badge from '@shared-ui/components/new/Badge'
-import { Table } from '@shared-ui/components/old/table'
+import Table from '@shared-ui/components/new/Table'
 import { DevicesResourcesActionButton } from './_devices-resources-action-button'
 import { RESOURCES_DEFAULT_PAGE_SIZE } from './constants'
 import { deviceResourceShape } from './shapes'
-import { messages as t } from './devices-i18n'
+import { messages as t } from './Devices.i18n'
 import { canBeResourceEdited } from '@/containers/devices/utils'
 
 export const DevicesResourcesList = ({

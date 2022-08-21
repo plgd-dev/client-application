@@ -10,7 +10,7 @@ import Label from '@shared-ui/components/new/Label'
 import Modal from '@shared-ui/components/new/Modal'
 
 import { resourceModalTypes } from './constants'
-import { messages as t } from './devices-i18n'
+import { messages as t } from './Devices.i18n'
 
 const NOOP = () => {}
 const { CREATE_RESOURCE, UPDATE_RESOURCE } = resourceModalTypes

@@ -1,5 +1,4 @@
-import { useState, useMemo } from 'react'
-import PropTypes from 'prop-types'
+import { useState, useMemo, FC } from 'react'
 import classNames from 'classnames'
 import Form from 'react-bootstrap/Form'
 import { useIntl } from 'react-intl'
@@ -8,12 +7,12 @@ import Button from '@shared-ui/components/new/Button'
 import { showErrorToast } from '@shared-ui/components/new/Toast/Toast'
 import { useIsMounted } from '@shared-ui/common/hooks'
 import { getApiErrorMessage } from '@shared-ui/common/utils'
-import { updateDevicesResourceApi } from './rest'
-import { canChangeDeviceName, getDeviceChangeResourceHref } from './utils'
-import { deviceResourceShape } from './shapes'
-import { messages as t } from './devices-i18n'
+import { updateDevicesResourceApi } from '../../rest'
+import { canChangeDeviceName, getDeviceChangeResourceHref } from '../../utils'
+import { messages as t } from '../../Devices.i18n'
+import { defaultProps, Props } from './DevicesDetailsTitle.types'
 
-export const DevicesDetailsTitle = ({
+const DevicesDetailsTitle: FC<Props> = ({
   className,
   deviceName,
   deviceId,
@@ -80,7 +79,7 @@ export const DevicesDetailsTitle = ({
     }
   }
 
-  const handleKeyDown = e => {
+  const handleKeyDown = (e: any) => {
     if (e.keyCode === 13) {
       // Enter
       onSave()
@@ -102,6 +101,7 @@ export const DevicesDetailsTitle = ({
           disabled={saving}
           autoFocus
         />
+
         <Button
           variant="primary"
           onClick={onSave}
@@ -128,10 +128,12 @@ export const DevicesDetailsTitle = ({
       className={classNames(className, 'd-inline-flex align-items-center', {
         'title-with-icon': canUpdate,
       })}
-      onClick={canUpdate ? onEditClick : null}
+      onClick={canUpdate ? onEditClick : undefined}
     >
       <span
-        className={canUpdate ? 'link reveal-icon-on-hover icon-visible' : null}
+        className={
+          canUpdate ? 'link reveal-icon-on-hover icon-visible' : undefined
+        }
       >
         {deviceName}
       </span>
@@ -140,21 +142,7 @@ export const DevicesDetailsTitle = ({
   )
 }
 
-DevicesDetailsTitle.propTypes = {
-  className: PropTypes.string,
-  deviceName: PropTypes.string,
-  deviceId: PropTypes.string,
-  loading: PropTypes.bool.isRequired,
-  updateDeviceName: PropTypes.func.isRequired,
-  isOwned: PropTypes.bool.isRequired,
-  resources: PropTypes.arrayOf(deviceResourceShape),
-  ttl: PropTypes.number,
-}
+DevicesDetailsTitle.displayName = 'DevicesDetailsTitle'
+DevicesDetailsTitle.defaultProps = defaultProps
 
-DevicesDetailsTitle.defaultProps = {
-  className: null,
-  deviceName: null,
-  deviceId: null,
-  resources: [],
-  ttl: 0,
-}
+export default DevicesDetailsTitle

@@ -8,7 +8,7 @@ import Switch from '@shared-ui/components/new/Switch'
 import { getResourceUpdateNotificationKey } from './utils'
 import { isNotificationActive, toggleActiveNotification } from './slice'
 import { deviceResourceUpdateListener } from './websockets'
-import { messages as t } from './devices-i18n'
+import { messages as t } from './Devices.i18n'
 
 export const DevicesResourcesModalNotifications = ({
   deviceId,

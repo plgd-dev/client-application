@@ -8,7 +8,7 @@ import { DevicesResourcesList } from './_devices-resources-list'
 import { DevicesResourcesTree } from './_devices-resources-tree'
 import { devicesStatuses } from './constants'
 import { deviceResourceShape } from './shapes'
-import { messages as t } from './devices-i18n'
+import { messages as t } from './Devices.i18n'
 
 export const DevicesResources = ({
   data,

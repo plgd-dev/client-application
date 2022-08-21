@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom'
 import { Provider } from 'react-redux'
 import { store } from '@/store'
 import { App } from '@/containers/App'
-import { IntlProvider } from '@shared-ui/components/old/intl-provider'
+import IntlProvider from '@shared-ui/components/new/IntlProvider'
 import reportWebVitals from './reportWebVitals'
 
 fetch('/web_configuration.json')
