@@ -3,7 +3,7 @@ import { getApiErrorMessage } from '@shared-ui/common/utils'
 import {
   showErrorToast,
   showWarningToast,
-} from '@shared-ui/components/old/toast'
+} from '@shared-ui/components/new/Toast/Toast'
 import { compareIgnoreCase } from '@shared-ui/components/old/table/utils'
 import { errorCodes } from '@shared-ui/common/services/fetch-api'
 import {

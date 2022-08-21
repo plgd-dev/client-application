@@ -2,12 +2,12 @@ import React, { useEffect, useRef, useState } from 'react'
 import { useIntl } from 'react-intl'
 import Button from '@shared-ui/components/new/Button'
 import { Modal } from '@shared-ui/components/old/modal'
-import { TextField } from '@shared-ui/components/old/text-field'
+import TextField from '@shared-ui/components/new/TextField'
 import Label from '@shared-ui/components/new/Label'
 import {
   showErrorToast,
   showSuccessToast,
-} from '@shared-ui/components/old/toast'
+} from '@shared-ui/components/new/Toast/Toast'
 import { addDeviceByIp } from './rest'
 import { messages as t } from './devices-i18n'
 import { useIsMounted } from '@shared-ui/common/hooks'

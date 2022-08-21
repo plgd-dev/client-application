@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useIntl } from 'react-intl'
-import { showSuccessToast } from '@shared-ui/components/old/toast'
+import { showSuccessToast } from '@shared-ui/components/new/Toast/Toast'
 import ConfirmModal from '@shared-ui/components/new/ConfirmModal'
 import Layout from '@shared-ui/components/new/Layout'
 import { useIsMounted } from '@shared-ui/common/hooks'

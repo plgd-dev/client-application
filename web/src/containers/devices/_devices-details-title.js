@@ -5,7 +5,7 @@ import Form from 'react-bootstrap/Form'
 import { useIntl } from 'react-intl'
 
 import Button from '@shared-ui/components/new/Button'
-import { showErrorToast } from '@shared-ui/components/old/toast'
+import { showErrorToast } from '@shared-ui/components/new/Toast/Toast'
 import { useIsMounted } from '@shared-ui/common/hooks'
 import { getApiErrorMessage } from '@shared-ui/common/utils'
 import { updateDevicesResourceApi } from './rest'
