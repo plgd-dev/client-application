@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Modal } from '@shared-ui/components/old/modal'
+import Modal from '@shared-ui/components/new/Modal'
 import { messages as t } from '@/containers/devices/devices-i18n'
 import Button from '@shared-ui/components/new/Button'
 import PropTypes from 'prop-types'

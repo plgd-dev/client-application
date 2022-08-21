@@ -1,6 +1,6 @@
 import { useIntl } from 'react-intl'
 import PropTypes from 'prop-types'
-import FindNewDeviceByIp from './find-new-device-by-ip'
+import FindNewDeviceByIp from './FindNewDeviceByIp/FindNewDeviceByIp'
 import { messages as t } from './devices-i18n'
 import SplitButton from '@shared-ui/components/new/SplitButton'
 

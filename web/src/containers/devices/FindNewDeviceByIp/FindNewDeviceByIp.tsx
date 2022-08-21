@@ -1,26 +1,27 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { FC, useEffect, useRef, useState } from 'react'
 import { useIntl } from 'react-intl'
 import Button from '@shared-ui/components/new/Button'
-import { Modal } from '@shared-ui/components/old/modal'
+import Modal from '@shared-ui/components/new/Modal'
 import TextField from '@shared-ui/components/new/TextField'
 import Label from '@shared-ui/components/new/Label'
 import {
   showErrorToast,
   showSuccessToast,
 } from '@shared-ui/components/new/Toast/Toast'
-import { addDeviceByIp } from './rest'
-import { messages as t } from './devices-i18n'
+import { addDeviceByIp } from '../rest'
+import { messages as t } from '../devices-i18n'
 import { useIsMounted } from '@shared-ui/common/hooks'
 import { addDevice } from '@/containers/devices/slice'
 import { useDispatch } from 'react-redux'
+import { Props } from './FindNewDeviceByIp.types'
 
-const FindNewDevice = ({ disabled }) => {
-  const [fetching, setFetching] = useState(false)
-  const [show, setShow] = useState(false)
-  const [error, setError] = useState(false)
-  const [deviceIp, setDeviceIp] = useState('')
+const FindNewDeviceByIp: FC<Props> = ({ disabled }) => {
+  const [fetching, setFetching] = useState<boolean>(false)
+  const [show, setShow] = useState<boolean>(false)
+  const [error, setError] = useState<boolean>(false)
+  const [deviceIp, setDeviceIp] = useState<string>('')
   const { formatMessage: _ } = useIntl()
-  const baseInputRef = useRef(undefined)
+  const baseInputRef = useRef<HTMLInputElement | undefined>(undefined)
   const isMounted = useIsMounted()
   const dispatch = useDispatch()
 
@@ -39,7 +40,10 @@ const FindNewDevice = ({ disabled }) => {
   }, [show])
 
   const onClose = () => {
-    !fetching && setShow(false) && setDeviceIp('')
+    if (!fetching) {
+      setShow(false)
+      setDeviceIp('')
+    }
   }
 
   const renderBody = () => (
@@ -51,7 +55,7 @@ const FindNewDevice = ({ disabled }) => {
       <TextField
         value={deviceIp}
         onChange={e => setDeviceIp(e.target.value.trim())}
-        placeholder={_(t.enterDeviceIp)}
+        placeholder={_(t.enterDeviceIp) as string}
         disabled={fetching}
         inputRef={baseInputRef}
         onKeyPress={e => (e.charCode === 13 ? handleFetch() : undefined)}
@@ -80,7 +84,7 @@ const FindNewDevice = ({ disabled }) => {
           setShow(false)
         }
       })
-    } catch (e) {
+    } catch (e: any) {
       showErrorToast({
         title: _(t.deviceAddByIpError),
         message: e.message,
@@ -132,4 +136,4 @@ const FindNewDevice = ({ disabled }) => {
   )
 }
 
-export default FindNewDevice
+export default FindNewDeviceByIp

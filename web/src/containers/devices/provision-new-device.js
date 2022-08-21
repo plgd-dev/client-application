@@ -2,7 +2,7 @@ import React, { PureComponent } from 'react'
 import { injectIntl } from 'react-intl'
 
 import Button from '@shared-ui/components/new/Button'
-import { Modal } from '@shared-ui/components/old/modal'
+import Modal from '@shared-ui/components/new/Modal'
 import TextField from '@shared-ui/components/new/TextField'
 import Label from '@shared-ui/components/new/Label'
 import { showErrorToast } from '@shared-ui/components/new/Toast/Toast'
