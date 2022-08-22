@@ -5,7 +5,7 @@ import { useIntl } from 'react-intl'
 import TreeExpander from '@shared-ui/components/new/TreeExpander'
 import TreeTable from '@shared-ui/components/new/Table'
 import Badge from '@shared-ui/components/new/Badge'
-import { DevicesResourcesActionButton } from './_devices-resources-action-button'
+import DevicesResourcesActionButton from './Resoruces/DevicesResourcesActionButton'
 import { RESOURCE_TREE_DEPTH_SIZE } from './constants'
 import {
   canBeResourceEdited,

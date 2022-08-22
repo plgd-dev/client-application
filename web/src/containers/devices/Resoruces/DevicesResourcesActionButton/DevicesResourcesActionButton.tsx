@@ -1,12 +1,12 @@
 import { useIntl } from 'react-intl'
-import PropTypes from 'prop-types'
 
 import ActionButton from '@shared-ui/components/new/ActionButton'
-import { canCreateResource, canBeResourceEdited } from './utils'
-import { messages as t } from './Devices.i18n'
+import { canCreateResource, canBeResourceEdited } from '../../utils'
+import { messages as t } from '../../Devices.i18n'
+import { FC } from 'react'
+import { defaultProps, Props } from './DevicesResourcesActionButton.types'
 
-export const DevicesResourcesActionButton = ({
-  disabled,
+export const DevicesResourcesActionButton: FC<Props> = ({
   href,
   deviceId,
   interfaces,
@@ -27,9 +27,8 @@ export const DevicesResourcesActionButton = ({
 
   return (
     <ActionButton
-      disabled={disabled}
       menuProps={{
-        align: 'right',
+        align: 'start',
       }}
       items={[
         {
@@ -57,16 +56,7 @@ export const DevicesResourcesActionButton = ({
   )
 }
 
-DevicesResourcesActionButton.propTypes = {
-  disabled: PropTypes.bool.isRequired,
-  href: PropTypes.string.isRequired,
-  deviceId: PropTypes.string.isRequired,
-  onCreate: PropTypes.func.isRequired,
-  onUpdate: PropTypes.func.isRequired,
-  onDelete: PropTypes.func.isRequired,
-  interfaces: PropTypes.arrayOf(PropTypes.string),
-}
+DevicesResourcesActionButton.displayName = 'DevicesResourcesActionButton'
+DevicesResourcesActionButton.defaultProps = defaultProps
 
-DevicesResourcesActionButton.defaultProps = {
-  interfaces: [],
-}
+export default DevicesResourcesActionButton

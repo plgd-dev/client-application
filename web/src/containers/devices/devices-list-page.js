@@ -7,7 +7,7 @@ import { useIsMounted } from '@shared-ui/common/hooks'
 import { messages as menuT } from '@shared-ui/components/new/Menu/Menu.i18n'
 import { useDevicesList } from './hooks'
 import { DevicesList } from './_devices-list'
-import { DevicesListHeader } from './_devices-list-header'
+import DevicesListHeader from './List/DevicesListHeader'
 import { deleteDevicesApi, disownDeviceApi, ownDeviceApi } from './rest'
 import {
   handleDeleteDevicesErrors,

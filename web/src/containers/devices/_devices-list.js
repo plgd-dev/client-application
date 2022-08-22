@@ -6,7 +6,7 @@ import classNames from 'classnames'
 import Button from '@shared-ui/components/new/Button'
 import Badge from '@shared-ui/components/new/Badge'
 import Table from '@shared-ui/components/new/Table'
-import { DevicesListActionButton } from './_devices-list-action-button'
+import DevicesListActionButton from './List/DevicesListActionButton'
 import {
   DEVICES_DEFAULT_PAGE_SIZE,
   NO_DEVICE_NAME,

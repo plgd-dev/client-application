@@ -1,13 +1,14 @@
 import { useIntl } from 'react-intl'
-import PropTypes from 'prop-types'
 import ActionButton from '@shared-ui/components/new/ActionButton'
-import { messages as t } from './Devices.i18n'
-import { useState } from 'react'
+import { messages as t } from '../../Devices.i18n'
+import { FC, useState } from 'react'
 import { getDevicesResourcesAllApi } from '@/containers/devices/rest'
 import { canSetDPSEndpoint } from '@/containers/devices/utils'
 import isFunction from 'lodash/isFunction'
+import { Props } from './DevicesListActionButton.types'
+import { ActionButtonItemType } from '@shared-ui/components/new/ActionButton/ActionButton.types'
 
-export const DevicesListActionButton = ({
+const DevicesListActionButton: FC<Props> = ({
   deviceId,
   onView,
   isOwned,
@@ -16,7 +17,7 @@ export const DevicesListActionButton = ({
   resourcesLoadedCallback,
 }) => {
   const getDefaultItems = () => {
-    const defaultItems = [
+    const defaultItems: ActionButtonItemType[] = [
       {
         id: 'detail',
         onClick: () => onView(deviceId),
@@ -47,7 +48,7 @@ export const DevicesListActionButton = ({
   const [resources, setResources] = useState(undefined)
   const [items, setItems] = useState(getDefaultItems())
 
-  const handleToggle = async isOpen => {
+  const handleToggle = async (isOpen: boolean) => {
     if (isOpen && isOwned && !resources) {
       const { data } = await getDevicesResourcesAllApi(deviceId)
 
@@ -57,7 +58,7 @@ export const DevicesListActionButton = ({
       const hasDPS = canSetDPSEndpoint(data.resources)
 
       setItems(() => {
-        const newItems = []
+        const newItems: any = []
         items.forEach(item => {
           if (item.id === 'dps') {
             if (hasDPS) {
@@ -78,9 +79,9 @@ export const DevicesListActionButton = ({
 
   return (
     <ActionButton
-      onToggle={handleToggle}
+      onToggle={handleToggle as any}
       menuProps={{
-        align: 'right',
+        align: 'end',
       }}
       items={items}
     >
@@ -89,7 +90,6 @@ export const DevicesListActionButton = ({
   )
 }
 
-DevicesListActionButton.propTypes = {
-  deviceId: PropTypes.string.isRequired,
-  onView: PropTypes.func.isRequired,
-}
+DevicesListActionButton.displayName = 'DevicesListActionButton'
+
+export default DevicesListActionButton

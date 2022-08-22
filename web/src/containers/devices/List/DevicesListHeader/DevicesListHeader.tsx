@@ -1,10 +1,15 @@
 import { useIntl } from 'react-intl'
-import PropTypes from 'prop-types'
-import FindNewDeviceByIp from './LIst/FindNewDeviceByIp/FindNewDeviceByIp'
-import { messages as t } from './Devices.i18n'
+import FindNewDeviceByIp from '../FindNewDeviceByIp'
+import { messages as t } from '../../Devices.i18n'
 import SplitButton from '@shared-ui/components/new/SplitButton'
+import { FC } from 'react'
+import { Props } from './DevicesListHeader.types'
 
-export const DevicesListHeader = ({ loading, refresh, openTimeoutModal }) => {
+const DevicesListHeader: FC<Props> = ({
+  loading,
+  refresh,
+  openTimeoutModal,
+}) => {
   const { formatMessage: _ } = useIntl()
 
   return (
@@ -28,8 +33,6 @@ export const DevicesListHeader = ({ loading, refresh, openTimeoutModal }) => {
   )
 }
 
-DevicesListHeader.propTypes = {
-  loading: PropTypes.bool.isRequired,
-  refresh: PropTypes.func.isRequired,
-  openTimeoutModal: PropTypes.func.isRequired,
-}
+DevicesListHeader.displayName = 'DevicesListHeader'
+
+export default DevicesListHeader
