@@ -10,6 +10,10 @@ apis:
   http:
     enabled: true
     address: 0.0.0.0:8080
+    readTimeout: 8s
+    readHeaderTimeout: 4s
+    writeTimeout: 16s
+    idleTimeout: 30s
     tls:
       enabled: false
       caPool: /certs/ca.pem
@@ -18,7 +22,7 @@ apis:
       clientCertificateRequired: true
     cors:
       allowedOrigins:
-        - '*'
+        - "*"
       allowedHeaders:
         - Accept
         - Accept-Language

@@ -59,7 +59,7 @@ linters:
     - ineffassign      # Detects when assignments to existing variables are not used
     - misspell         # Finds commonly misspelled English words in comments
     - nakedret         # Finds naked returns in functions greater than a specified function length
-    # - nilerr           # Finds the code that returns nil even if it checks that the error is not nil.
+    - nilerr           # Finds the code that returns nil even if it checks that the error is not nil.
     - nilnil           # Checks that there is no simultaneous return of `nil` error and an invalid value.
     # - noctx            # noctx finds sending http request without context.Context
     - nolintlint       # Reports ill-formed or insufficient nolint directives
@@ -72,12 +72,11 @@ linters:
     # - tparallel        # tparallel detects inappropriate usage of t.Parallel() method in your Go test codes
     - typecheck        # Like the front-end of a Go compiler, parses and type-checks Go code
     - unconvert        # Remove unnecessary type conversions
-    # - unparam          # Reports unused function parameters
+    - unparam          # Reports unused function parameters
     - unused           # Checks Go code for unused constants, variables, functions and types
     - varcheck         # Finds unused global variables and constants
     # - wastedassign     # wastedassign finds wasted assignment statements
     - whitespace       # Tool for detection of leading and trailing whitespace
-    - ifshort          # Checks that your code uses short syntax for if-statements whenever possible
     - makezero         # Finds slice declarations with non-zero initial length
     - nestif           # Reports deeply nested if statements
     - prealloc         # Finds slice declarations that could potentially be preallocated

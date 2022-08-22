@@ -342,7 +342,7 @@ func getDeviceByMulticastAddress(ctx context.Context, serviceDevice *serviceDevi
 		if err != nil {
 			return
 		}
-		if deviceResource.CAS(false, true) && discoveryResource.Load() {
+		if deviceResource.CompareAndSwap(false, true) && discoveryResource.Load() {
 			cancel()
 		}
 	}, func(conn *client.ClientConn, resp *pool.Message) {
@@ -351,7 +351,7 @@ func getDeviceByMulticastAddress(ctx context.Context, serviceDevice *serviceDevi
 		if err != nil {
 			return
 		}
-		if discoveryResource.CAS(false, true) && deviceResource.Load() {
+		if discoveryResource.CompareAndSwap(false, true) && deviceResource.Load() {
 			cancel()
 		}
 	})
