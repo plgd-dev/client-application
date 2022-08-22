@@ -19,14 +19,14 @@ The client application can be run by executing the following command:
 
 ### Supported options
 
-- `--config`: path to the config file
-- `--version`: print the version of the client application
+* `--config`: path to the config file
+* `--version`: print the version of the client application
 
 ## Build
 
 The build process uses goreleaser, so you will need to commit all changes and create a tag on the local machine.
 
-```
+```sh
 git commit -a -m "my changes"
 git tag -f v0.0.1-myversion
 make build
@@ -59,6 +59,10 @@ HTTP API of the client application service as defined [swagger](./pb/service.swa
 | `apis.http.cors.allowedMethods` | []string | `Explicitly set allowed methods in the Access-Control-Allow-Methods header. This is a replacement operation so you must also pass GET, HEAD, and POST if you wish to support those methods.` | `"GET","PATCH","HEAD","POST","PUT","OPTIONS","DELETE"` |
 | `apis.http.cors.allowCredentials` | bool | `User agent may pass authentication details along with the request.` | `false` |
 | `apis.http.address` | string | `Listen specification <host>:<port> for http client connection.` | `"0.0.0.0:8080"` |
+| `apis.http.readTimeout` | string | `The maximum duration for reading the entire request, including the body by the server. A zero or negative value means there will be no timeout.` | `8s` |
+| `apis.http.readHeaderTimeout` | string | `The amount of time allowed to read request headers by the server. If readHeaderTimeout is zero, the value of readTimeout is used. If both are zero, there is no timeout.` | `4s` |
+| `apis.http.writeTimeout` | string | `The maximum duration before the server times out writing of the response. A zero or negative value means there will be no timeout.` | `16s` |
+| `apis.http.idleTimeout` | string | `The maximum amount of time the server waits for the next request when keep-alives are enabled. If idleTimeout is zero, the value of readTimeout is used. If both are zero, there is no timeout.` | `30s` |
 | `apis.http.ui.enabled` | bool | `Set to true if you would like to run the web UI.` | `false` |
 | `apis.http.ui.directory` | string | `A path to the directory with web UI files. When it is not present, it creates <client_application_binary>/www with default ui.` | `""` |
 | `apis.http.tls.enabled` | bool | `Enable HTTPS.` | `false` |
