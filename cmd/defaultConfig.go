@@ -86,6 +86,9 @@ func createDefaultConfig(uiDirectory string) service.Config {
 						SubjectUUID:      uuid.NewString(),
 						PreSharedKeyUUID: uuid.NewString(),
 					},
+					OwnershipTransfer: device.OwnershipTransferConfig{
+						Method: device.OwnershipTransferJustWorks,
+					},
 				},
 			},
 		},

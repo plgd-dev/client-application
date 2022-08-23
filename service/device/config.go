@@ -17,12 +17,16 @@
 package device
 
 import (
+	"crypto/tls"
+	"crypto/x509"
 	"fmt"
 	"strings"
 	"time"
 
 	"github.com/google/uuid"
 	"github.com/plgd-dev/go-coap/v2/net/blockwise"
+	"github.com/plgd-dev/hub/v2/pkg/security/certManager/client"
+	"github.com/plgd-dev/kit/v2/security"
 )
 
 type Config struct {
@@ -36,10 +40,85 @@ func (c *Config) Validate() error {
 	return nil
 }
 
+type ManufacturerTLSConfig struct {
+	CAPool      string              `yaml:"caPool" json:"caPool" description:"file path to the root certificates in PEM format"`
+	KeyFile     string              `yaml:"keyFile" json:"keyFile" description:"file name of private key in PEM format"`
+	CertFile    string              `yaml:"certFile" json:"certFile" description:"file name of certificate in PEM format"`
+	certificate tls.Certificate     `yaml:"-"`
+	caPool      []*x509.Certificate `yaml:"-"`
+}
+
+func (c *ManufacturerTLSConfig) Validate() error {
+	caPool, err := security.LoadX509(c.CAPool)
+	if err != nil {
+		return fmt.Errorf("caPool('%v') - %w", c.CAPool, err)
+	}
+	certificate, err := tls.LoadX509KeyPair(c.CertFile, c.KeyFile)
+	if err != nil {
+		return fmt.Errorf("certFile('%v'), keyFile('%v') - %w", c.CertFile, c.KeyFile, err)
+	}
+	c.caPool = caPool
+	c.certificate = certificate
+	return nil
+}
+
+func (c *ManufacturerTLSConfig) ToCertMangerConfig() client.Config {
+	return client.Config{
+		CAPool:          c.CAPool,
+		KeyFile:         c.KeyFile,
+		CertFile:        c.CertFile,
+		UseSystemCAPool: false,
+	}
+}
+
+type ManufacturerConfig struct {
+	TLS ManufacturerTLSConfig `yaml:"tls" json:"tls"`
+}
+
+func (c *ManufacturerConfig) Validate() error {
+	if err := c.TLS.Validate(); err != nil {
+		return fmt.Errorf("tls.%w", err)
+	}
+	return nil
+}
+
+type OwnershipTransferMethod string
+
+const (
+	OwnershipTransferJustWorks    OwnershipTransferMethod = "justWorks"
+	OwnershipTransferManufacturer OwnershipTransferMethod = "manufacturer"
+)
+
+var validOwnershipTransfers = map[OwnershipTransferMethod]bool{
+	OwnershipTransferJustWorks:    true,
+	OwnershipTransferManufacturer: true,
+}
+
+type OwnershipTransferConfig struct {
+	Method       OwnershipTransferMethod `yaml:"method" json:"method"`
+	Manufacturer ManufacturerConfig      `yaml:"manufacturer" json:"manufacturer"`
+}
+
+func (c *OwnershipTransferConfig) Validate() error {
+	if ok := validOwnershipTransfers[c.Method]; !ok {
+		return fmt.Errorf("method('%v') - supports only '%v,%v'", c.Method, OwnershipTransferJustWorks, OwnershipTransferManufacturer)
+	}
+	switch c.Method {
+	case OwnershipTransferJustWorks:
+		return nil
+	case OwnershipTransferManufacturer:
+		if err := c.Manufacturer.Validate(); err != nil {
+			return fmt.Errorf("manufacturer.%w", err)
+		}
+	}
+	return nil
+}
+
 type CoapConfig struct {
 	MaxMessageSize    uint32                  `yaml:"maxMessageSize" json:"maxMessageSize"`
 	InactivityMonitor InactivityMonitor       `yaml:"inactivityMonitor" json:"inactivityMonitor"`
 	BlockwiseTransfer BlockwiseTransferConfig `yaml:"blockwiseTransfer" json:"blockwiseTransfer"`
+	OwnershipTransfer OwnershipTransferConfig `yaml:"ownershipTransfer" json:"ownershipTransfer"`
 	TLS               TLSConfig               `yaml:"tls" json:"tls"`
 }
 
@@ -52,6 +131,9 @@ func (c *CoapConfig) Validate() error {
 	}
 	if err := c.BlockwiseTransfer.Validate(); err != nil {
 		return fmt.Errorf("blockwiseTransfer.%w", err)
+	}
+	if err := c.OwnershipTransfer.Validate(); err != nil {
+		return fmt.Errorf("ownershipTransfer.%w", err)
 	}
 	if err := c.TLS.Validate(); err != nil {
 		return fmt.Errorf("tls.%w", err)

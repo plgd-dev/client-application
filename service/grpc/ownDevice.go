@@ -35,7 +35,7 @@ func (s *ClientApplicationServer) OwnDevice(ctx context.Context, req *pb.OwnDevi
 		return nil, err
 	}
 
-	err = dev.Own(ctx, links, s.serviceDevice.GetJustWorksClient(), s.serviceDevice.GetOwnOptions()...)
+	err = dev.Own(ctx, links, s.serviceDevice.GetOwnershipClient(), s.serviceDevice.GetOwnOptions()...)
 	if err != nil {
 		return nil, convErrToGrpcStatus(codes.Unavailable, fmt.Errorf("cannot own device %v: %w", dev.ID, err)).Err()
 	}

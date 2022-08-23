@@ -72,6 +72,13 @@ clients:
       blockwiseTransfer:
         enabled: true
         blockSize: "1024"
+      ownershipTransfer:
+        method: justWorks
+        manufacturer:
+          tls:
+            caPool: /certs/mfg_ca.pem
+            keyFile: /certs/mfg_key.pem
+            certFile: /certs/mfg_crt.pem
       tls:
         subjectUuid: 57b3fae9-adf5-4e34-90ea-e77784407103
         preSharedKeyUuid: 46178d21-d480-4e95-9bd3-6c9eefa8d9d8

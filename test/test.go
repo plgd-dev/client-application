@@ -53,6 +53,12 @@ const (
 	COMMIT_HASH                  = "aaa"
 )
 
+var (
+	MFG_ROOT_CA_CRT            = os.Getenv("MFG_ROOT_CA_CRT")
+	MFG_CLIENT_APPLICATION_CRT = os.Getenv("MFG_CLIENT_APPLICATION_CRT")
+	MFG_CLIENT_APPLICATION_KEY = os.Getenv("MFG_CLIENT_APPLICATION_KEY")
+)
+
 var DevsimName string
 
 func init() {
@@ -120,6 +126,16 @@ func MakeDeviceConfig() serviceDevice.Config {
 			TLS: serviceDevice.TLSConfig{
 				SubjectUUID:      "57b3fae9-adf5-4e34-90ea-e77784407103",
 				PreSharedKeyUUID: "46178d21-d480-4e95-9bd3-6c9eefa8d9d8",
+			},
+			OwnershipTransfer: serviceDevice.OwnershipTransferConfig{
+				Method: serviceDevice.OwnershipTransferJustWorks,
+				Manufacturer: serviceDevice.ManufacturerConfig{
+					TLS: serviceDevice.ManufacturerTLSConfig{
+						CAPool:   MFG_ROOT_CA_CRT,
+						CertFile: MFG_CLIENT_APPLICATION_CRT,
+						KeyFile:  MFG_CLIENT_APPLICATION_KEY,
+					},
+				},
 			},
 		},
 	}
@@ -199,13 +215,30 @@ func NewServiceInformation() *serviceGrpc.ServiceInformation {
 	}
 }
 
-func NewClientApplicationServer(ctx context.Context) (*serviceGrpc.ClientApplicationServer, func(), error) {
+type ClientApplicationServerCfg struct {
+	Cfg serviceDevice.Config
+}
+
+type ClientApplicationServerOpt = func(c *ClientApplicationServerCfg)
+
+func WithDeviceConfig(cfg serviceDevice.Config) ClientApplicationServerOpt {
+	return func(c *ClientApplicationServerCfg) {
+		c.Cfg = cfg
+	}
+}
+
+func NewClientApplicationServer(ctx context.Context, opts ...ClientApplicationServerOpt) (*serviceGrpc.ClientApplicationServer, func(), error) {
 	logger := log.NewLogger(log.MakeDefaultConfig())
-	cfg := MakeDeviceConfig()
-	if err := cfg.Validate(); err != nil {
+	cfg := ClientApplicationServerCfg{
+		Cfg: MakeDeviceConfig(),
+	}
+	for _, o := range opts {
+		o(&cfg)
+	}
+	if err := cfg.Cfg.Validate(); err != nil {
 		return nil, nil, err
 	}
-	d, err := serviceDevice.New(ctx, "client-application-device", cfg, logger, trace.NewNoopTracerProvider())
+	d, err := serviceDevice.New(ctx, "client-application-device", cfg.Cfg, logger, trace.NewNoopTracerProvider())
 	if err != nil {
 		return nil, nil, err
 	}
