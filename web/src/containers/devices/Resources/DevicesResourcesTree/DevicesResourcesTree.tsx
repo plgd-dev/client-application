@@ -1,21 +1,20 @@
-import { useMemo } from 'react'
-import PropTypes from 'prop-types'
+import { FC, useMemo } from 'react'
 import { useIntl } from 'react-intl'
 
 import TreeExpander from '@shared-ui/components/new/TreeExpander'
 import TreeTable from '@shared-ui/components/new/Table'
 import Badge from '@shared-ui/components/new/Badge'
-import DevicesResourcesActionButton from './Resoruces/DevicesResourcesActionButton'
-import { RESOURCE_TREE_DEPTH_SIZE } from './constants'
+import DevicesResourcesActionButton from '../DevicesResourcesActionButton'
+import { RESOURCE_TREE_DEPTH_SIZE } from '../../constants'
 import {
   canBeResourceEdited,
   createNestedResourceData,
   getLastPartOfAResourceHref,
-} from './utils'
-import { deviceResourceShape } from './shapes'
-import { messages as t } from './Devices.i18n'
+} from '../../utils'
+import { messages as t } from '../../Devices.i18n'
+import { Props } from './DevicesResourcesTree.types'
 
-export const DevicesResourcesTree = ({
+const DevicesResourcesTree: FC<Props> = ({
   data: rawData,
   onUpdate,
   onCreate,
@@ -32,7 +31,7 @@ export const DevicesResourcesTree = ({
       {
         Header: _(t.href),
         accessor: 'href',
-        Cell: ({ value, row }) => {
+        Cell: ({ value, row }: { value: any; row: any }) => {
           const {
             original: { href, endpointInformations },
           } = row
@@ -53,14 +52,14 @@ export const DevicesResourcesTree = ({
               <div className="tree-expander-container">
                 <TreeExpander
                   {...row.getToggleRowExpandedProps({ title: null })}
-                  expanded={!!row.isExpanded}
+                  expanded={row.isExpanded}
                   style={{
                     marginLeft: `${row.depth * RESOURCE_TREE_DEPTH_SIZE}px`,
                   }}
                 />
                 <span
                   className={!row.canExpand ? 'link reveal-icon-on-hover' : ''}
-                  onClick={onLinkClick}
+                  onClick={() => onLinkClick}
                 >
                   {`/${lastValue}/`}
                 </span>
@@ -80,7 +79,10 @@ export const DevicesResourcesTree = ({
                 }px`,
               }}
             >
-              <span className="link reveal-icon-on-hover" onClick={onLinkClick}>
+              <span
+                className="link reveal-icon-on-hover"
+                onClick={() => onLinkClick}
+              >
                 {`/${lastValue}`}
               </span>
               <i className="fas fa-pen" />
@@ -92,14 +94,14 @@ export const DevicesResourcesTree = ({
       {
         Header: _(t.types),
         accessor: 'resourceTypes',
-        Cell: ({ value }) => {
+        Cell: ({ value }: { value: any }) => {
           if (!deviceId) {
             return null
           }
 
           return (
             <div className="badges-box-horizontal">
-              {value?.map?.(type => (
+              {value?.map?.((type: string) => (
                 <Badge key={type}>{type}</Badge>
               ))}
             </div>
@@ -110,7 +112,7 @@ export const DevicesResourcesTree = ({
         Header: _(t.actions),
         accessor: 'actions',
         disableSortBy: true,
-        Cell: ({ row }) => {
+        Cell: ({ row }: { row: any }) => {
           if (row.canExpand) {
             return null
           }
@@ -141,14 +143,6 @@ export const DevicesResourcesTree = ({
   return <TreeTable columns={columns} data={data || []} />
 }
 
-DevicesResourcesTree.propTypes = {
-  data: PropTypes.arrayOf(deviceResourceShape),
-  onCreate: PropTypes.func.isRequired,
-  onUpdate: PropTypes.func.isRequired,
-  onDelete: PropTypes.func.isRequired,
-  loading: PropTypes.bool.isRequired,
-}
+DevicesResourcesTree.displayName = 'DevicesResourcesTree'
 
-DevicesResourcesTree.defaultProps = {
-  data: null,
-}
+export default DevicesResourcesTree

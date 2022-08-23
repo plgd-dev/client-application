@@ -1,5 +1,4 @@
-import { useEffect, useState, useRef } from 'react'
-import PropTypes from 'prop-types'
+import { useEffect, useState, useRef, FC } from 'react'
 import { useIntl } from 'react-intl'
 
 import { Editor } from '@shared-ui/components/old/editor'
@@ -9,16 +8,15 @@ import Badge from '@shared-ui/components/new/Badge'
 import Label from '@shared-ui/components/new/Label'
 import Modal from '@shared-ui/components/new/Modal'
 
-import { resourceModalTypes } from './constants'
-import { messages as t } from './Devices.i18n'
+import { resourceModalTypes } from '../../constants'
+import { messages as t } from '../../Devices.i18n'
+import { Props, defaultProps } from './DevicesResourcesModal.types'
 
-const NOOP = () => {}
-const { CREATE_RESOURCE, UPDATE_RESOURCE } = resourceModalTypes
+const { UPDATE_RESOURCE } = resourceModalTypes
 
-export const DevicesResourcesModal = ({
+const DevicesResourcesModal: FC<Props> = ({
   data,
   deviceId,
-  deviceName,
   resourceData,
   onClose,
   retrieving,
@@ -33,7 +31,7 @@ export const DevicesResourcesModal = ({
 }) => {
   const { formatMessage: _ } = useIntl()
   const editor = useRef()
-  const [jsonData, setJsonData] = useState(null)
+  const [jsonData, setJsonData] = useState<object | undefined>(undefined)
   const [interfaceJsonError, setInterfaceJsonError] = useState(false)
 
   const disabled = retrieving || loading
@@ -51,8 +49,10 @@ export const DevicesResourcesModal = ({
     if (resourceData) {
       // Set the retrieved JSON object to the editor
       if (typeof resourceData === 'object') {
+        // @ts-ignore
         editor?.current?.set(resourceData)
       } else if (typeof resourceData === 'string') {
+        // @ts-ignore
         editor?.current?.setText(resourceData)
       }
     }
@@ -80,16 +80,17 @@ export const DevicesResourcesModal = ({
 
   const handleCleanup = () => {
     setSelectedInterface(initialInterfaceValue)
-    setJsonData(null)
+    setJsonData(undefined)
   }
 
-  const handleOnEditorChange = json => {
+  const handleOnEditorChange = (json: object) => {
     if (json) {
       setJsonData(json)
     }
   }
 
-  const handleOnEditorError = error => setInterfaceJsonError(error.length > 0)
+  const handleOnEditorError = (error: any) =>
+    setInterfaceJsonError(error.length > 0)
 
   const renderBody = () => {
     return (
@@ -121,7 +122,7 @@ export const DevicesResourcesModal = ({
               json={jsonData}
               onChange={handleOnEditorChange}
               onError={handleOnEditorError}
-              editorRef={node => {
+              editorRef={(node: any) => {
                 editor.current = node
               }}
               disabled={disabled}
@@ -178,7 +179,7 @@ export const DevicesResourcesModal = ({
   return (
     <Modal
       show={!!data}
-      onClose={!disabled ? onClose : NOOP}
+      onClose={!disabled ? onClose : undefined}
       title={data?.href}
       renderBody={renderBody}
       renderFooter={renderFooter}
@@ -188,33 +189,7 @@ export const DevicesResourcesModal = ({
   )
 }
 
-DevicesResourcesModal.propTypes = {
-  onClose: PropTypes.func,
-  data: PropTypes.shape({
-    href: PropTypes.string.isRequired,
-    types: PropTypes.arrayOf(PropTypes.string),
-    interfaces: PropTypes.arrayOf(PropTypes.string),
-  }),
-  deviceId: PropTypes.string,
-  deviceName: PropTypes.string,
-  resourceData: PropTypes.object,
-  retrieving: PropTypes.bool.isRequired,
-  fetchResource: PropTypes.func.isRequired,
-  loading: PropTypes.bool.isRequired,
-  updateResource: PropTypes.func.isRequired,
-  createResource: PropTypes.func.isRequired,
-  isDeviceOnline: PropTypes.bool.isRequired,
-  isUnregistered: PropTypes.bool.isRequired,
-  type: PropTypes.oneOf([CREATE_RESOURCE, UPDATE_RESOURCE]),
-  ttlControl: PropTypes.element,
-  confirmDisabled: PropTypes.bool.isRequired,
-}
+DevicesResourcesModal.displayName = 'DevicesResourcesModal'
+DevicesResourcesModal.defaultProps = defaultProps
 
-DevicesResourcesModal.defaultProps = {
-  onClose: NOOP,
-  data: null,
-  deviceId: null,
-  deviceName: null,
-  resourceData: null,
-  type: UPDATE_RESOURCE,
-}
+export default DevicesResourcesModal

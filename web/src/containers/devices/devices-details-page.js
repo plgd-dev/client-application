@@ -13,7 +13,7 @@ import DevicesDetails from './Detail/DevicesDetails'
 import { DevicesResources } from './_devices-resources'
 import DevicesDetailsHeader from './Detail/DevicesDetailsHeader'
 import DevicesDetailsTitle from './Detail/DevicesDetailsTitle'
-import { DevicesResourcesModal } from './_devices-resources-modal'
+import DevicesResourcesModal from './Resources/DevicesResourcesModal'
 import { DevicesDPSModal } from './_devices-dps-modal'
 import {
   devicesStatuses,
