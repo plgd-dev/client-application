@@ -220,18 +220,25 @@ func (s *Service) GetDeviceConfiguration() core.DeviceConfiguration {
 	}
 }
 
-func (s *Service) GetOwnershipClient() otm.Client {
-	if s.config.COAP.OwnershipTransfer.Method == OwnershipTransferManufacturer {
-		return s.getManufacturerClient()
+func (s *Service) GetOwnershipClients() []otm.Client {
+	clients := make([]otm.Client, 0, 2)
+	for _, m := range s.config.COAP.OwnershipTransfer.Methods {
+		var c otm.Client
+		if m == OwnershipTransferManufacturerCertificate {
+			c = s.getManufacturerCertificateClient()
+		} else {
+			c = s.getJustWorksClient()
+		}
+		clients = append(clients, c)
 	}
-	return s.getJustWorksClient()
+	return clients
 }
 
 func (s *Service) getJustWorksClient() *justworks.Client {
 	return justworks.NewClient(justworks.WithDialDTLS(s.DialOwnership))
 }
 
-func (s *Service) getManufacturerClient() *manufacturer.Client {
+func (s *Service) getManufacturerCertificateClient() *manufacturer.Client {
 	return manufacturer.NewClient(s.config.COAP.OwnershipTransfer.Manufacturer.TLS.certificate, s.config.COAP.OwnershipTransfer.Manufacturer.TLS.caPool, manufacturer.WithDialDTLS(s.DialOwnership))
 }
 

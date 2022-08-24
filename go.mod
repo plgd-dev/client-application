@@ -12,7 +12,7 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.11.2
 	github.com/jessevdk/go-flags v1.5.0
 	github.com/pion/dtls/v2 v2.1.5
-	github.com/plgd-dev/device v1.2.2-0.20220801125405-be755427f012
+	github.com/plgd-dev/device v1.2.2-0.20220824100753-b64c1bcbea93
 	github.com/plgd-dev/go-coap/v2 v2.6.1-0.20220802124654-948a0bcf18a6
 	github.com/plgd-dev/hub/v2 v2.4.7
 	github.com/plgd-dev/kit/v2 v2.0.0-20211006190727-057b33161b90

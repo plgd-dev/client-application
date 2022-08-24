@@ -62,7 +62,7 @@ func TestClientApplicationServerOwnDeviceViaManufacturerCertificate(t *testing.T
 	defer cancel()
 
 	cfg := test.MakeDeviceConfig()
-	cfg.COAP.OwnershipTransfer.Method = device.OwnershipTransferManufacturer
+	cfg.COAP.OwnershipTransfer.Methods = []device.OwnershipTransferMethod{device.OwnershipTransferManufacturerCertificate}
 	cfg.COAP.OwnershipTransfer.Manufacturer.TLS.CAPool = os.Getenv("MFG_ROOT_CA_CRT")
 	cfg.COAP.OwnershipTransfer.Manufacturer.TLS.CertFile = os.Getenv("MFG_CLIENT_APPLICATION_CRT")
 	cfg.COAP.OwnershipTransfer.Manufacturer.TLS.KeyFile = os.Getenv("MFG_CLIENT_APPLICATION_KEY")

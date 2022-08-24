@@ -129,7 +129,7 @@ func TestManufacturerConfigValidate(t *testing.T) {
 
 func TestOwnershipTransferConfigValidate(t *testing.T) {
 	type fields struct {
-		Method       device.OwnershipTransferMethod
+		Methods      []device.OwnershipTransferMethod
 		Manufacturer device.ManufacturerConfig
 	}
 	tests := []struct {
@@ -140,27 +140,27 @@ func TestOwnershipTransferConfigValidate(t *testing.T) {
 		{
 			name: string(device.OwnershipTransferJustWorks),
 			fields: fields{
-				Method: device.OwnershipTransferJustWorks,
+				Methods: []device.OwnershipTransferMethod{device.OwnershipTransferJustWorks},
 			},
 		},
 		{
-			name: string(device.OwnershipTransferManufacturer),
+			name: string(device.OwnershipTransferManufacturerCertificate),
 			fields: fields{
-				Method:       device.OwnershipTransferManufacturer,
+				Methods:      []device.OwnershipTransferMethod{device.OwnershipTransferManufacturerCertificate},
 				Manufacturer: test.MakeDeviceConfig().COAP.OwnershipTransfer.Manufacturer,
 			},
 		},
 		{
 			name: "invalid method",
 			fields: fields{
-				Method: "invalid",
+				Methods: []device.OwnershipTransferMethod{"invalid"},
 			},
 			wantErr: true,
 		},
 		{
-			name: "invalid manufacturer",
+			name: "invalid manufacturerCertificate",
 			fields: fields{
-				Method: device.OwnershipTransferManufacturer,
+				Methods: []device.OwnershipTransferMethod{device.OwnershipTransferManufacturerCertificate},
 			},
 			wantErr: true,
 		},
@@ -168,7 +168,7 @@ func TestOwnershipTransferConfigValidate(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			c := &device.OwnershipTransferConfig{
-				Method:       tt.fields.Method,
+				Methods:      tt.fields.Methods,
 				Manufacturer: tt.fields.Manufacturer,
 			}
 			err := c.Validate()

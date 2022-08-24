@@ -73,8 +73,9 @@ clients:
         enabled: true
         blockSize: "1024"
       ownershipTransfer:
-        method: justWorks
-        manufacturer:
+        methods:
+          - justWorks
+        manufacturerCertificate:
           tls:
             caPool: /certs/mfg_ca.pem
             keyFile: /certs/mfg_key.pem

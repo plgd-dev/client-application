@@ -128,7 +128,7 @@ func MakeDeviceConfig() serviceDevice.Config {
 				PreSharedKeyUUID: "46178d21-d480-4e95-9bd3-6c9eefa8d9d8",
 			},
 			OwnershipTransfer: serviceDevice.OwnershipTransferConfig{
-				Method: serviceDevice.OwnershipTransferJustWorks,
+				Methods: []serviceDevice.OwnershipTransferMethod{serviceDevice.OwnershipTransferJustWorks, serviceDevice.OwnershipTransferManufacturerCertificate},
 				Manufacturer: serviceDevice.ManufacturerConfig{
 					TLS: serviceDevice.ManufacturerTLSConfig{
 						CAPool:   MFG_ROOT_CA_CRT,

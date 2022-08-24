@@ -85,32 +85,39 @@ func (c *ManufacturerConfig) Validate() error {
 type OwnershipTransferMethod string
 
 const (
-	OwnershipTransferJustWorks    OwnershipTransferMethod = "justWorks"
-	OwnershipTransferManufacturer OwnershipTransferMethod = "manufacturer"
+	OwnershipTransferJustWorks               OwnershipTransferMethod = "justWorks"
+	OwnershipTransferManufacturerCertificate OwnershipTransferMethod = "manufacturerCertificate"
 )
 
 var validOwnershipTransfers = map[OwnershipTransferMethod]bool{
-	OwnershipTransferJustWorks:    true,
-	OwnershipTransferManufacturer: true,
+	OwnershipTransferJustWorks:               true,
+	OwnershipTransferManufacturerCertificate: true,
 }
 
 type OwnershipTransferConfig struct {
-	Method       OwnershipTransferMethod `yaml:"method" json:"method"`
-	Manufacturer ManufacturerConfig      `yaml:"manufacturer" json:"manufacturer"`
+	Methods      []OwnershipTransferMethod `yaml:"methods" json:"methods"`
+	Manufacturer ManufacturerConfig        `yaml:"manufacturerCertificate" json:"manufacturerCertificate"`
 }
 
 func (c *OwnershipTransferConfig) Validate() error {
-	if ok := validOwnershipTransfers[c.Method]; !ok {
-		return fmt.Errorf("method('%v') - supports only '%v,%v'", c.Method, OwnershipTransferJustWorks, OwnershipTransferManufacturer)
+	containsManufacturerCertificate := false
+	if len(c.Methods) == 0 {
+		return fmt.Errorf("methods('%v') - is empty", c.Methods)
 	}
-	switch c.Method {
-	case OwnershipTransferJustWorks:
-		return nil
-	case OwnershipTransferManufacturer:
-		if err := c.Manufacturer.Validate(); err != nil {
-			return fmt.Errorf("manufacturer.%w", err)
+	for idx, method := range c.Methods {
+		if ok := validOwnershipTransfers[method]; !ok {
+			return fmt.Errorf("methods[%v]('%v') - supports only '%v,%v'", idx, method, OwnershipTransferJustWorks, OwnershipTransferManufacturerCertificate)
+		}
+		if method == OwnershipTransferManufacturerCertificate {
+			containsManufacturerCertificate = true
 		}
 	}
+	if containsManufacturerCertificate {
+		if err := c.Manufacturer.Validate(); err != nil {
+			return fmt.Errorf("manufacturerCertificate.%w", err)
+		}
+	}
+
 	return nil
 }
 
