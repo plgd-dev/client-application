@@ -27,7 +27,9 @@ import (
 
 	"github.com/pion/dtls/v2"
 	"github.com/plgd-dev/device/client/core"
+	"github.com/plgd-dev/device/client/core/otm"
 	justworks "github.com/plgd-dev/device/client/core/otm/just-works"
+	"github.com/plgd-dev/device/client/core/otm/manufacturer"
 	"github.com/plgd-dev/device/pkg/net/coap"
 	"github.com/plgd-dev/go-coap/v2/message"
 	"github.com/plgd-dev/go-coap/v2/message/codes"
@@ -124,7 +126,7 @@ func (s *Service) DialDTLS(ctx context.Context, addr string, _ *dtls.Config, opt
 	return coap.DialUDPSecure(ctx, addr, dtlsCfg, append(dialOpts, opts...)...)
 }
 
-func (s *Service) DialJustWorks(ctx context.Context, addr string, dtlsCfg *dtls.Config, opts ...coap.DialOptionFunc) (*coap.ClientCloseHandler, error) {
+func (s *Service) DialOwnership(ctx context.Context, addr string, dtlsCfg *dtls.Config, opts ...coap.DialOptionFunc) (*coap.ClientCloseHandler, error) {
 	dialOpts := []coap.DialOptionFunc{
 		coap.WithInactivityMonitor(s.config.COAP.InactivityMonitor.Timeout),
 		coap.WithMaxMessageSize(s.config.COAP.MaxMessageSize),
@@ -218,8 +220,26 @@ func (s *Service) GetDeviceConfiguration() core.DeviceConfiguration {
 	}
 }
 
-func (s *Service) GetJustWorksClient() *justworks.Client {
-	return justworks.NewClient(justworks.WithDialDTLS(s.DialJustWorks))
+func (s *Service) GetOwnershipClients() []otm.Client {
+	clients := make([]otm.Client, 0, 2)
+	for _, m := range s.config.COAP.OwnershipTransfer.Methods {
+		var c otm.Client
+		if m == OwnershipTransferManufacturerCertificate {
+			c = s.getManufacturerCertificateClient()
+		} else {
+			c = s.getJustWorksClient()
+		}
+		clients = append(clients, c)
+	}
+	return clients
+}
+
+func (s *Service) getJustWorksClient() *justworks.Client {
+	return justworks.NewClient(justworks.WithDialDTLS(s.DialOwnership))
+}
+
+func (s *Service) getManufacturerCertificateClient() *manufacturer.Client {
+	return manufacturer.NewClient(s.config.COAP.OwnershipTransfer.Manufacturer.TLS.certificate, s.config.COAP.OwnershipTransfer.Manufacturer.TLS.caPool, manufacturer.WithDialDTLS(s.DialOwnership))
 }
 
 func (s *Service) GetOwnOptions() []core.OwnOption {
