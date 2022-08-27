@@ -3,6 +3,7 @@ export type Props = {
   isOwned: boolean
   onOwnChange: () => void
   onView: (deviceId: string) => void
-  resourcesLoadedCallback: () => void
+  resourcesLoadedCallback: (data: any) => void
   showDpsModal: (deviceId: string) => void
+  onDelete: () => void
 }

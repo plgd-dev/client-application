@@ -1,3 +1,8 @@
+import {
+  DevicesDetailMetaDataStatusShadowSynchronizationType,
+  DevicesDetailMetaDataStatusValueType
+} from "@/containers/devices/Detail/DevicesDetails/DevicesDetails.types";
+
 export type ResourcesType = {
   deviceId: string
   href: string
@@ -24,4 +29,17 @@ export type DeviceResourcesCrudType = {
     currentInterface?: string
     href: string
   }) => void | Promise<void>
+}
+
+export type DeviceDataType = {
+  id: string
+  types: string[]
+  endpoints: string[]
+  name: string
+  metadata: {
+    status: {
+      value: DevicesDetailMetaDataStatusValueType
+    }
+    shadowSynchronization: DevicesDetailMetaDataStatusShadowSynchronizationType
+  }
 }
