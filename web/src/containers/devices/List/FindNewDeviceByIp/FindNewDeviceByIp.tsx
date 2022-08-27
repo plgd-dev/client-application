@@ -27,9 +27,7 @@ const FindNewDeviceByIp: FC<Props> = ({ disabled }) => {
 
   useEffect(() => {
     if (deviceIp !== '') {
-      // TODO: validation
-      // !isIP(deviceIp) && !error && setError(true)
-      // isIP(deviceIp) && error && setError(false)
+      // validation ?
     } else {
       error && setError(false)
     }

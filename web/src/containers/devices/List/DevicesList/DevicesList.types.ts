@@ -1,15 +1,15 @@
-import {DeviceDataType} from "@/containers/devices/Devices.types";
+import {DeviceDataType, ResourcesType} from "@/containers/devices/Devices.types";
 
 export type Props = {
     data: DeviceDataType
-    selectedDevices: string[]
-    setSelectedDevices: (data?: any) => void
     loading: boolean
     onDeleteClick: () => void
-    unselectRowsToken: string | number
     ownDevice: (isOwned: boolean, id: string, name: string) => void
-    showDpsModal: () => void
-    resourcesLoadedCallback: () => void
+    resourcesLoadedCallback: (resources: ResourcesType[]) => void
+    selectedDevices: string[]
+    setSelectedDevices: (data?: any) => void
+    showDpsModal: (deviceId: string) => void
+    unselectRowsToken?: string | number
 }
 
 export const defaultProps = {

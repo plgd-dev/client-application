@@ -68,9 +68,6 @@ const DevicesDetailsPage = () => {
   const [deleteResourceHref, setDeleteResourceHref] = useState<
     string | undefined
   >(undefined)
-  // const {
-  //   wellKnownConfig: { defaultCommandTimeToLive },
-  // } = useAppConfig()
   const [ttl] = useState(RESOURCE_DEFAULT_TTL)
   const [ttlHasError] = useState(false)
   const isMounted = useIsMounted()
