@@ -11,6 +11,7 @@ import {
 import { getResourceRegistrationNotificationKey } from './utils'
 import { useSelector } from 'react-redux'
 import { getDevicesDiscoveryTimeout } from '@/containers/devices/slice'
+import { StreamApiPropsType } from '@/containers/devices/Devices.types'
 
 export const useDevicesList = () => {
   const { httpGatewayAddress } = useAppConfig()
@@ -41,12 +42,10 @@ export const useDeviceDetails = (deviceId: string) => {
   const { httpGatewayAddress } = useAppConfig()
 
   // Fetch the data
-  // TODO: TS
-  const { data, updateData, ...rest }: { data: any; updateData: any } =
-    useStreamApi(
-      `${httpGatewayAddress}${devicesApiEndpoints.DEVICES}/${deviceId}`,
-      { streamApi: false }
-    )
+  const { data, updateData, ...rest }: StreamApiPropsType = useStreamApi(
+    `${httpGatewayAddress}${devicesApiEndpoints.DEVICES}/${deviceId}`,
+    { streamApi: false }
+  )
 
   // Update the metadata when a WS event is emitted
   useEmitter(
@@ -75,12 +74,10 @@ export const useDevicesResources = (deviceId: string) => {
   const { httpGatewayAddress } = useAppConfig()
 
   // Fetch the data
-  // TODO: TS
-  const { data, updateData, ...rest }: { data: any; updateData: any } =
-    useStreamApi(
-      `${httpGatewayAddress}${devicesApiEndpoints.DEVICES}/${deviceId}/${devicesApiEndpoints.DEVICES_RESOURCES_SUFFIX}`,
-      { parseResult: 'json' }
-    )
+  const { data, updateData, ...rest }: StreamApiPropsType = useStreamApi(
+    `${httpGatewayAddress}${devicesApiEndpoints.DEVICES}/${deviceId}/${devicesApiEndpoints.DEVICES_RESOURCES_SUFFIX}`,
+    { parseResult: 'json' }
+  )
 
   useEmitter(
     getResourceRegistrationNotificationKey(deviceId),

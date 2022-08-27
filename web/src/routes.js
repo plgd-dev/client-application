@@ -1,5 +1,6 @@
 import { Switch, Route } from 'react-router-dom'
-import { DevicesListPage, DevicesDetailsPage } from '@/containers/devices'
+import { DevicesListPage } from '@/containers/devices'
+import DevicesDetailsPage from '@/containers/devices/Detail/DevicesDetailsPage'
 import { NotFoundPage } from '@/containers/not-found-page'
 
 export const Routes = () => (

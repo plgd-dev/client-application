@@ -28,7 +28,7 @@ import {
 } from '@/containers/devices/slice'
 import { useDispatch, useSelector } from 'react-redux'
 import { DevicesTimeoutModal } from './_devices-timeout-modal'
-import { DevicesDPSModal } from '@/containers/devices/_devices-dps-modal'
+import DevicesDPSModal  from './DevicesDPSModal'
 
 export const DevicesListPage = () => {
   const { formatMessage: _ } = useIntl()

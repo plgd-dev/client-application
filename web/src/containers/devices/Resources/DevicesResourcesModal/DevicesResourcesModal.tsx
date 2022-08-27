@@ -60,14 +60,14 @@ const DevicesResourcesModal: FC<Props> = ({
 
   const handleRetrieve = () => {
     fetchResource({
-      href: data?.href,
+      href: data?.href as string,
       currentInterface: selectedInterface.value,
     })
   }
 
   const handleSubmit = () => {
     const params = {
-      href: data?.href,
+      href: data?.href as string,
       currentInterface: selectedInterface.value,
     }
 

@@ -9,12 +9,12 @@ import { NotFoundPage } from '@/containers/not-found-page'
 import { useIsMounted } from '@shared-ui/common/hooks'
 import { messages as menuT } from '@shared-ui/components/new/Menu/Menu.i18n'
 import { showSuccessToast } from '@shared-ui/components/new/Toast/Toast'
-import DevicesDetails from './Detail/DevicesDetails'
-import { DevicesResources } from './_devices-resources'
-import DevicesDetailsHeader from './Detail/DevicesDetailsHeader'
-import DevicesDetailsTitle from './Detail/DevicesDetailsTitle'
-import DevicesResourcesModal from './Resources/DevicesResourcesModal'
-import { DevicesDPSModal } from './_devices-dps-modal'
+import DevicesDetails from '../DevicesDetails'
+import DevicesResources from '../../Resources/DevicesResources'
+import DevicesDetailsHeader from '../DevicesDetailsHeader'
+import DevicesDetailsTitle from '../DevicesDetailsTitle'
+import DevicesResourcesModal from '../../Resources/DevicesResourcesModal'
+import DevicesDPSModal  from '../../DevicesDPSModal'
 import {
   devicesStatuses,
   defaultNewResource,
@@ -22,7 +22,7 @@ import {
   NO_DEVICE_NAME,
   devicesOwnerships,
   RESOURCE_DEFAULT_TTL,
-} from './constants'
+} from '../../constants'
 import {
   handleCreateResourceErrors,
   handleFetchResourceErrors,
@@ -30,28 +30,44 @@ import {
   handleDeleteDevicesErrors,
   updateResourceMethod,
   handleUpdateResourceErrors,
-} from './utils'
+} from '../../utils'
 import {
   getDevicesResourcesApi,
   createDevicesResourceApi,
   deleteDevicesResourceApi,
   ownDeviceApi,
   disownDeviceApi,
-} from './rest'
-import { useDeviceDetails, useDevicesResources } from './hooks'
-import { messages as t } from './Devices.i18n'
-import './devices-details.scss'
+} from '../../rest'
+import { useDeviceDetails, useDevicesResources } from '../../hooks'
+import { messages as t } from '../../Devices.i18n'
+import './DevicesDetailsPage.scss'
 import { disOwnDevice, ownDevice } from '@/containers/devices/slice'
 import { useDispatch } from 'react-redux'
+import { BreadcrumbItem } from '@shared-ui/components/new/Breadcrumbs/Breadcrumbs.types'
+import omit from 'lodash/omit'
+import { DevicesDetailsResourceModalData } from '@/containers/devices/Detail/DevicesDetailsPage/DevicesDetailsPage.types'
+import {
+  DevicesResourcesModalParamsType
+} from "@/containers/devices/Resources/DevicesResourcesModal/DevicesResourcesModal.types";
 
-export const DevicesDetailsPage = () => {
+const DevicesDetailsPage = () => {
   const { formatMessage: _ } = useIntl()
-  const { id, href: hrefParam } = useParams()
-  const [resourceModalData, setResourceModalData] = useState(null)
+  const {
+    id,
+    href: hrefParam,
+  }: {
+    id: string
+    href: string
+  } = useParams()
+  const [resourceModalData, setResourceModalData] = useState<
+    DevicesDetailsResourceModalData | undefined
+  >(undefined)
   const [loadingResource, setLoadingResource] = useState(false)
   const [savingResource, setSavingResource] = useState(false)
   const [showDpsModal, setShowDpsModal] = useState(false)
-  const [deleteResourceHref, setDeleteResourceHref] = useState()
+  const [deleteResourceHref, setDeleteResourceHref] = useState<
+    string | undefined
+  >(undefined)
   // const {
   //   wellKnownConfig: { defaultCommandTimeToLive },
   // } = useAppConfig()
@@ -109,7 +125,7 @@ export const DevicesDetailsPage = () => {
     'grayed-out': isUnregistered,
   })
   const deviceName = data?.data?.content?.n || NO_DEVICE_NAME
-  const breadcrumbs = [
+  const breadcrumbs: BreadcrumbItem[] = [
     {
       to: '/',
       label: _(menuT.devices),
@@ -121,7 +137,13 @@ export const DevicesDetailsPage = () => {
   }
 
   // Fetches the resource and sets its values to the modal data, which opens the modal.
-  const openUpdateModal = async ({ href, currentInterface = '' }) => {
+  const openUpdateModal = async ({
+    href,
+    currentInterface = '',
+  }: {
+    href: string
+    currentInterface?: string
+  }) => {
     // If there is already a fetch for a resource, disable the next attempt for a fetch until the previous fetch finishes
     if (loadingResource) {
       return
@@ -130,16 +152,21 @@ export const DevicesDetailsPage = () => {
     setLoadingResource(true)
 
     try {
-      const {
-        data: { data: { content: { if: ifs, rt, ...resourceData } = {} } = {} }, // exclude the if and rt
-      } = await getDevicesResourcesApi({ deviceId: id, href, currentInterface })
+      const { data: resourceData } = await getDevicesResourcesApi({
+        deviceId: id,
+        href,
+        currentInterface,
+      })
+
+      omit(resourceData, ['data.content.if', 'data.content.rt'])
 
       if (isMounted.current) {
         setLoadingResource(false)
 
         // Retrieve the types and interfaces of this resource
         const { resourceTypes: types = [], interfaces = [] } =
-          resources?.find?.(link => link.href === href) || {}
+          resources?.find?.((link: { href: string }) => link.href === href) ||
+          {}
 
         // Setting the data and opening the modal
         setResourceModalData({
@@ -160,7 +187,7 @@ export const DevicesDetailsPage = () => {
   }
 
   // Fetches the resources supported types and sets its values to the modal data, which opens the modal.
-  const openCreateModal = async href => {
+  const openCreateModal = async (href: string) => {
     // If there is already a fetch for a resource, disable the next attempt for a fetch until the previous fetch finishes
     if (loadingResource) {
       return
@@ -199,18 +226,18 @@ export const DevicesDetailsPage = () => {
     }
   }
 
-  const openDeleteModal = href => {
+  const openDeleteModal = (href: string) => {
     setDeleteResourceHref(href)
   }
 
   const closeDeleteModal = () => {
-    setDeleteResourceHref(null)
+    setDeleteResourceHref(undefined)
   }
 
   // Updates the resource through rest API
   const updateResource = async (
-    { href, currentInterface = '' },
-    resourceDataUpdate
+    { href, currentInterface = '' }: DevicesResourcesModalParamsType,
+    resourceDataUpdate: any
   ) => {
     setSavingResource(true)
 
@@ -225,7 +252,7 @@ export const DevicesDetailsPage = () => {
         handleCloseUpdateModal()
         setSavingResource(false)
       },
-      error => {
+      (error: any) => {
         setSavingResource(false)
         handleUpdateResourceErrors(error, { id, href }, _)
       }
@@ -234,8 +261,8 @@ export const DevicesDetailsPage = () => {
 
   // Created a new resource through rest API
   const createResource = async (
-    { href, currentInterface = '' },
-    resourceDataCreate
+    { href, currentInterface = '' }: DevicesResourcesModalParamsType,
+    resourceDataCreate: object
   ) => {
     setSavingResource(true)
 
@@ -252,7 +279,7 @@ export const DevicesDetailsPage = () => {
         })
 
         refreshResources()
-        setResourceModalData(null) // close modal
+        setResourceModalData(undefined) // close modal
         setSavingResource(false)
       }
     } catch (error) {
@@ -293,7 +320,7 @@ export const DevicesDetailsPage = () => {
 
   // Handler which cleans up the resource modal data and updates the URL
   const handleCloseUpdateModal = () => {
-    setResourceModalData(null)
+    setResourceModalData(undefined)
 
     if (hrefParam) {
       // Remove the href from the URL when the update modal is closed
@@ -302,7 +329,7 @@ export const DevicesDetailsPage = () => {
   }
 
   // Update the device name in the data object
-  const updateDeviceNameInData = name => {
+  const updateDeviceNameInData = (name: string) => {
     updateData({
       ...data,
       data: {
@@ -314,9 +341,6 @@ export const DevicesDetailsPage = () => {
       },
     })
   }
-
-  // Handler for setting the shadow synchronization on a device
-  const setShadowSynchronization = async () => {}
 
   const handleOwnChange = async () => {
     try {
@@ -332,9 +356,11 @@ export const DevicesDetailsPage = () => {
         })
 
         if (!newOwnState) {
+          // @ts-ignore
           dispatch(disOwnDevice(id))
           history.push('/')
         } else {
+          // @ts-ignore
           dispatch(ownDevice(id))
         }
 
@@ -386,8 +412,6 @@ export const DevicesDetailsPage = () => {
         data={data}
         isOwned={isOwned}
         loading={loading}
-        shadowSyncLoading={false}
-        setShadowSynchronization={setShadowSynchronization}
         resources={resources}
         deviceId={id}
       />
@@ -414,7 +438,6 @@ export const DevicesDetailsPage = () => {
         isDeviceOnline={isOnline}
         isUnregistered={isUnregistered}
         deviceId={id}
-        deviceName={deviceName}
         confirmDisabled={ttlHasError}
       />
 
@@ -445,3 +468,5 @@ export const DevicesDetailsPage = () => {
     </Layout>
   )
 }
+
+export default DevicesDetailsPage
