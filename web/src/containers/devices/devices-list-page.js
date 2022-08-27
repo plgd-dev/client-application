@@ -27,7 +27,7 @@ import {
   disOwnDevice,
 } from '@/containers/devices/slice'
 import { useDispatch, useSelector } from 'react-redux'
-import { DevicesTimeoutModal } from './_devices-timeout-modal'
+import DevicesTimeoutModal  from './List/DevicesTimeoutModal'
 import DevicesDPSModal  from './DevicesDPSModal'
 
 export const DevicesListPage = () => {
