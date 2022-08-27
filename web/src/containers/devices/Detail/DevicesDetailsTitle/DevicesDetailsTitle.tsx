@@ -49,7 +49,7 @@ const DevicesDetailsTitle: FC<Props> = ({
 
   const onSave = async () => {
     if (inputTitle.trim() !== '' && inputTitle !== deviceName && canUpdate) {
-      const href = getDeviceChangeResourceHref(resources)
+      const href: string = getDeviceChangeResourceHref(resources)
 
       setSaving(true)
 

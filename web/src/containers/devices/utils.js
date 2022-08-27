@@ -28,7 +28,7 @@ const { INFINITE, NS, MS, S, M, H } = commandTimeoutUnits
 
 // Returns the extension for resources API for the selected interface
 export const interfaceGetParam = currentInterface =>
-  currentInterface ? `resourceInterface=${currentInterface}` : ''
+  currentInterface && currentInterface !== '' ? `resourceInterface=${currentInterface}` : ''
 
 // Return true if a resource contains the oic.if.create interface, meaning a new resource can be created from this resource
 export const canCreateResource = interfaces =>

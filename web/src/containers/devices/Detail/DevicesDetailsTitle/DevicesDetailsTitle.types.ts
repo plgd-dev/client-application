@@ -2,7 +2,7 @@ import { ResourcesType } from '@/containers/devices/Devices.types'
 
 export type Props = {
   className?: string
-  deviceId?: string | number
+  deviceId: string
   deviceName?: string
   isOwned: boolean
   loading: boolean

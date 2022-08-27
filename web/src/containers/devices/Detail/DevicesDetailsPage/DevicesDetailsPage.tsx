@@ -293,7 +293,7 @@ const DevicesDetailsPage = () => {
     try {
       await deleteDevicesResourceApi({
         deviceId: id,
-        href: deleteResourceHref,
+        href: deleteResourceHref || '',
       })
 
       if (isMounted.current) {

@@ -13,5 +13,5 @@ export type Props = {
   loading: boolean
   isOwned: boolean
   resources: ResourcesType[]
-  deviceId?: string
+  deviceId: string
 }
