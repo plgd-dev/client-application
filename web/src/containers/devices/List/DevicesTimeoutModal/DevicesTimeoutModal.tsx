@@ -3,7 +3,7 @@ import Modal from '@shared-ui/components/new/Modal'
 import {messages as t} from '@/containers/devices/Devices.i18n'
 import Button from '@shared-ui/components/new/Button'
 import {useIntl} from 'react-intl'
-import {CommanTimeoutControl} from '../../_command-timeout-control'
+import CommandTimeoutControl from '../CommandTimeoutControl'
 import {DISCOVERY_DEFAULT_TIMEOUT} from '@/containers/devices/constants'
 import {useDispatch, useSelector} from 'react-redux'
 import {
@@ -17,14 +17,14 @@ const DevicesTimeoutModal: FC<Props> = (props) => {
     const {show, onClose} = {...defaultProps, ...props}
     const {formatMessage: _} = useIntl()
     const dispatch = useDispatch()
-    const discoveryTimeout = useSelector(getDevicesDiscoveryTimeout)
+    const discoveryTimeout: string | number = useSelector(getDevicesDiscoveryTimeout)
 
     const [userValue, setUserValue] = useState(discoveryTimeout)
     const [ttlHasError, setTtlHasError] = useState(false)
 
     const renderBody = () => {
         return (
-            <CommanTimeoutControl
+            <CommandTimeoutControl
                 title={_(t.discoveryTimeout)}
                 defaultValue={discoveryTimeout}
                 defaultTtlValue={DISCOVERY_DEFAULT_TIMEOUT}
