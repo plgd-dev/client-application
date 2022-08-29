@@ -5,7 +5,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import { WebSocketEventClient, eventFilters } from '@shared-ui/common/services'
 import Switch from '@shared-ui/components/new/Switch'
 import { getResourceUpdateNotificationKey } from '../../utils'
-import { isNotificationActive, toggleActiveNotification } from '../../slice'
+import { isNotificationActive } from '../../slice'
 import { deviceResourceUpdateListener } from '../../websockets'
 import { messages as t } from '../../Devices.i18n'
 import { Props } from './DevicesResourcesModalNotifications.types'
@@ -53,7 +53,7 @@ const DevicesResourcesModalNotifications: FC<Props> = ({
       WebSocketEventClient.unsubscribe(resourceUpdateObservationWSKey)
     }
 
-    dispatch(toggleActiveNotification(resourceUpdateObservationWSKey))
+    // dispatch(toggleActiveNotification(resourceUpdateObservationWSKey))
   }
 
   return (

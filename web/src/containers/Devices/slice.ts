@@ -10,7 +10,17 @@ import isEqual from 'lodash/isEqual'
 
 const { OWNED } = devicesOwnerships
 
-const initialState = {
+type Store = {
+  devices: StoreType
+}
+
+type StoreType = {
+  activeNotifications: any
+  devicesList: any
+  discoveryTimeout: number
+}
+
+const initialState: StoreType = {
   activeNotifications: [],
   devicesList: [],
   discoveryTimeout: DISCOVERY_DEFAULT_TIMEOUT,
@@ -20,29 +30,6 @@ const { reducer, actions } = createSlice({
   name: 'devices',
   initialState,
   reducers: {
-    addActiveNotification(state, { payload }) {
-      state.activeNotifications.push(payload)
-    },
-    deleteActiveNotification(state, { payload }) {
-      state.activeNotifications.splice(
-        state.activeNotifications.findIndex(
-          notification => notification === payload
-        ),
-        1
-      )
-    },
-    toggleActiveNotification(state, { payload }) {
-      if (!state.activeNotifications.includes(payload)) {
-        state.activeNotifications.push(payload)
-      } else {
-        state.activeNotifications.splice(
-          state.activeNotifications.findIndex(
-            notification => notification === payload
-          ),
-          1
-        )
-      }
-    },
     setDevices(state, { payload }) {
       state.devicesList = payload
     },
@@ -50,8 +37,11 @@ const { reducer, actions } = createSlice({
       if (state.devicesList.length === 0) {
         state.devicesList = payload
       } else {
-        payload.forEach(device => {
-          const index = findIndex(state.devicesList, d => d.id === device.id)
+        payload.forEach((device: any) => {
+          const index = findIndex(
+            state.devicesList,
+            (d: any) => d.id === device.id
+          )
           if (index > -1) {
             if (!isEqual(state.devicesList[index], device)) {
               state.devicesList[index] = device
@@ -65,7 +55,7 @@ const { reducer, actions } = createSlice({
     addDevice(state, { payload }) {
       const index = findIndex(
         state.devicesList,
-        device => device.id === payload.id
+        (device: any) => device.id === payload.id
       )
 
       if (index > -1) {
@@ -82,7 +72,7 @@ const { reducer, actions } = createSlice({
     ownDevice(state, { payload }) {
       const index = findIndex(
         state.devicesList,
-        device => device.id === payload
+        (device: any) => device.id === payload
       )
 
       if (index > -1) {
@@ -91,7 +81,7 @@ const { reducer, actions } = createSlice({
     },
     disOwnDevice(state, { payload }) {
       state.devicesList.splice(
-        state.devicesList.findIndex(device => device.id === payload),
+        state.devicesList.findIndex((device: any) => device.id === payload),
         1
       )
     },
@@ -103,9 +93,6 @@ const { reducer, actions } = createSlice({
 
 // Actions
 export const {
-  addActiveNotification,
-  deleteActiveNotification,
-  toggleActiveNotification,
   setDevices,
   addDevice,
   flushDevices,
@@ -118,14 +105,10 @@ export const {
 // Reducer
 export default reducer
 
-// Selectors
-export const selectActiveNotifications = state =>
-  state.devices.activeNotifications
-
-export const isNotificationActive = key => state =>
+export const isNotificationActive = (key: string) => (state: Store) =>
   state.devices.activeNotifications?.includes?.(key) || false
 
-export const getDevices = state => state.devices.devicesList
+export const getDevices = (state: Store) => state.devices.devicesList
 
-export const getDevicesDiscoveryTimeout = state =>
+export const getDevicesDiscoveryTimeout = (state: Store) =>
   state.devices.discoveryTimeout
