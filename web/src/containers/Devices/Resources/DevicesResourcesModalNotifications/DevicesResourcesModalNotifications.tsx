@@ -1,6 +1,6 @@
 import { FC, useEffect } from 'react'
 import { useIntl } from 'react-intl'
-import { useSelector, useDispatch } from 'react-redux'
+import { useSelector } from 'react-redux'
 
 import { WebSocketEventClient, eventFilters } from '@shared-ui/common/services'
 import Switch from '@shared-ui/components/new/Switch'
@@ -17,7 +17,6 @@ const DevicesResourcesModalNotifications: FC<Props> = ({
   isUnregistered,
 }) => {
   const { formatMessage: _ } = useIntl()
-  const dispatch = useDispatch()
   const resourceUpdateObservationWSKey = getResourceUpdateNotificationKey(
     deviceId,
     href
