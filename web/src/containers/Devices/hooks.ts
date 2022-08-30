@@ -100,13 +100,9 @@ export const useDevicesResources = (deviceId: string) => {
               ) !== -1
             if (linkExists) {
               // Already exists, update
-              updatedLinks = resources.map((link: any) => {
-                if (link.href === resource.href) {
-                  return resource
-                }
-
-                return link
-              })
+              updatedLinks = resources.map((link: any) =>
+                link.href === resource.href ? resource : link
+              )
             } else {
               updatedLinks = resources.concat(resource)
             }
