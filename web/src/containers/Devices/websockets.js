@@ -37,16 +37,15 @@ export const deviceStatusListener = async ({
           status: { value: deviceStatus } = {},
           shadowSynchronization,
         } = deviceMetadataUpdated || {}
-        const eventType = deviceRegistered
-          ? REGISTERED
-          : deviceUnregistered
-          ? UNREGISTERED
-          : null
-        const deviceIds = deviceId
-          ? [deviceId]
-          : deviceRegistered
+
+        const deviceUnregistered = deviceUnregistered ? UNREGISTERED : null
+        const eventType = deviceRegistered ? REGISTERED : deviceUnregistered
+
+        const deviceRegistered = deviceRegistered
           ? deviceRegistered.deviceIds
           : deviceUnregistered.deviceIds
+        const deviceIds = deviceId ? [deviceId] : deviceRegistered
+
         const status = deviceStatus || eventType
 
         try {
