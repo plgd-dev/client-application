@@ -128,7 +128,13 @@ func New(ctx context.Context, serviceName string, config Config, clientApplicati
 		}))
 	}
 
-	httpServer := &http.Server{Handler: kitNetHttp.OpenTelemetryNewHandler(handler, serviceName, tracerProvider)}
+	httpServer := &http.Server{
+		Handler:           kitNetHttp.OpenTelemetryNewHandler(handler, serviceName, tracerProvider),
+		ReadTimeout:       config.Server.ReadTimeout,
+		ReadHeaderTimeout: config.Server.ReadHeaderTimeout,
+		WriteTimeout:      config.Server.WriteTimeout,
+		IdleTimeout:       config.Server.IdleTimeout,
+	}
 
 	return &Service{
 		httpServer: httpServer,

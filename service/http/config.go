@@ -20,6 +20,7 @@ import (
 	"fmt"
 
 	"github.com/plgd-dev/client-application/pkg/net/listener"
+	"github.com/plgd-dev/hub/v2/pkg/net/http/server"
 )
 
 type CORSConfig struct {
@@ -31,8 +32,9 @@ type CORSConfig struct {
 
 type Config struct {
 	listener.Config `yaml:",inline"`
-	CORS            CORSConfig `yaml:"cors"  json:"cors"`
-	UI              UIConfig   `yaml:"ui" json:"ui"`
+	Server          server.Config `yaml:",inline" json:",inline"`
+	CORS            CORSConfig    `yaml:"cors"  json:"cors"`
+	UI              UIConfig      `yaml:"ui" json:"ui"`
 }
 
 type UIConfig struct {

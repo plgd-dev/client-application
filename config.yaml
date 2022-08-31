@@ -10,6 +10,10 @@ apis:
   http:
     enabled: true
     address: 0.0.0.0:8080
+    readTimeout: 8s
+    readHeaderTimeout: 4s
+    writeTimeout: 16s
+    idleTimeout: 30s
     tls:
       enabled: false
       caPool: /certs/ca.pem
@@ -18,7 +22,7 @@ apis:
       clientCertificateRequired: true
     cors:
       allowedOrigins:
-        - '*'
+        - "*"
       allowedHeaders:
         - Accept
         - Accept-Language
@@ -68,6 +72,14 @@ clients:
       blockwiseTransfer:
         enabled: true
         blockSize: "1024"
+      ownershipTransfer:
+        methods:
+          - justWorks
+        manufacturerCertificate:
+          tls:
+            caPool: /certs/mfg_ca.pem
+            keyFile: /certs/mfg_key.pem
+            certFile: /certs/mfg_crt.pem
       tls:
         subjectUuid: 57b3fae9-adf5-4e34-90ea-e77784407103
         preSharedKeyUuid: 46178d21-d480-4e95-9bd3-6c9eefa8d9d8

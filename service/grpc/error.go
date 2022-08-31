@@ -25,7 +25,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func convErrToGrpcStatus(defaultCode codes.Code, err error) *status.Status {
+func convErrToGrpcStatus(defaultCode codes.Code, err error) *status.Status { //nolint:unparam
 	var coapStatus coapStatus.Status
 	if errors.As(err, &coapStatus) {
 		return status.New(coapconv.ToGrpcCode(coapStatus.Code(), defaultCode), err.Error())

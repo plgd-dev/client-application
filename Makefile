@@ -15,13 +15,21 @@ CERT_TOOL_IMAGE ?= ghcr.io/plgd-dev/hub/cert-tool:vnext
 DEVSIM_IMAGE ?= ghcr.io/iotivity/iotivity-lite/cloud-server-discovery-resource-observable-debug:master
 DEVSIM_PATH = $(shell pwd)/.tmp/devsim
 CERT_PATH = $(TMP_PATH)/certs
+MFG_CERT_PATH = $(DEVSIM_PATH)/pki_certs
+MFG_ROOT_CA_CRT = $(MFG_CERT_PATH)/cloudca.pem
+MFG_CLIENT_APPLICATION_CRT = $(MFG_CERT_PATH)/mfgclientapplicationcrt.pem
+MFG_CLIENT_APPLICATION_KEY = $(MFG_CERT_PATH)/mfgclientapplicationkey.pem
 UI_SEPARATOR ?= "--------UI--------"
 
 certificates:
 	mkdir -p $(CERT_PATH)
 	docker pull $(CERT_TOOL_IMAGE)
 	docker run --rm --user $(USER_ID):$(GROUP_ID) -v $(CERT_PATH):/out $(CERT_TOOL_IMAGE) --outCert=/out/rootcacrt.pem --outKey=/out/rootcakey.pem --cert.subject.cn="ca" --cmd.generateRootCA
-	docker run --rm --user $(USER_ID):$(GROUP_ID) -v $(CERT_PATH):/out $(CERT_TOOL_IMAGE) --signerCert=/out/rootcacrt.pem --signerKey=/out/rootcakey.pem --outCert=/out/httpcrt.pem --outKey=/out/httpkey.pem --cert.san.domain=localhost --cert.san.ip=127.0.0.1 --cert.subject.cn="mfg" --cmd.generateCertificate
+	docker run --rm --user $(USER_ID):$(GROUP_ID) -v $(CERT_PATH):/out $(CERT_TOOL_IMAGE) --signerCert=/out/rootcacrt.pem --signerKey=/out/rootcakey.pem --outCert=/out/httpcrt.pem --outKey=/out/httpkey.pem --cert.san.domain=localhost --cert.san.ip=127.0.0.1 --cert.subject.cn="http-server" --cmd.generateCertificate
+	mkdir -p $(MFG_CERT_PATH)
+	docker run --rm --user $(USER_ID):$(GROUP_ID) -v $(MFG_CERT_PATH):/out $(CERT_TOOL_IMAGE) --outCert=/out/cloudca.pem --outKey=/out/cloudcakey.pem --cert.subject.cn=MfgRootCA --cmd.generateRootCA
+	docker run --rm --user $(USER_ID):$(GROUP_ID) -v $(MFG_CERT_PATH):/out $(CERT_TOOL_IMAGE) --signerCert=/out/cloudca.pem --signerKey=/out/cloudcakey.pem --outCert=/out/mfgcrt.pem --outKey=/out/mfgkey.pem --cert.subject.cn="mfg-device-cert" --cmd.generateCertificate
+	docker run --rm --user $(USER_ID):$(GROUP_ID) -v $(MFG_CERT_PATH):/out $(CERT_TOOL_IMAGE) --signerCert=/out/cloudca.pem --signerKey=/out/cloudcakey.pem --outCert=/out/mfgclientapplicationcrt.pem --outKey=/out/mfgclientapplicationkey.pem --cert.subject.cn="mfg-client-application-cert" --cmd.generateCertificate
 .PHONY: certificates
 
 env: clean certificates
@@ -32,6 +40,7 @@ env: clean certificates
 		--network=host \
 		--name devsim \
 		-v $(DEVSIM_PATH):/tmp \
+		-v $(MFG_CERT_PATH):/pki_certs \
 		$(DEVSIM_IMAGE) devsim-$(SIMULATOR_NAME_SUFFIX)
 .PHONY: env
 
@@ -65,6 +74,9 @@ test: env
 	export LISTEN_FILE_CERT_DIR_PATH=$(WORKING_DIRECTORY)/.tmp/certs; \
 	export LISTEN_FILE_CERT_NAME=httpcrt.pem; \
 	export LISTEN_FILE_CERT_KEY_NAME=httpkey.pem; \
+	export MFG_ROOT_CA_CRT=$(MFG_ROOT_CA_CRT); \
+	export MFG_CLIENT_APPLICATION_CRT=$(MFG_CLIENT_APPLICATION_CRT); \
+	export MFG_CLIENT_APPLICATION_KEY=$(MFG_CLIENT_APPLICATION_KEY); \
 	if [ -n "$${JSON_REPORT}" ]; then \
 		go test -v --race -p 1 -covermode=atomic -coverpkg=./... -coverprofile=$${COVERAGE_FILE} -json ./... > "$${JSON_REPORT_FILE}" ; \
 	else \
