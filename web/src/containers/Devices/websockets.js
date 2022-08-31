@@ -19,6 +19,20 @@ import { messages as t } from './Devices.i18n'
 const { ONLINE, REGISTERED, UNREGISTERED } = devicesStatuses
 const DEFAULT_NOTIFICATION_DELAY = 500
 
+const getDeviceIds = (deviceId, deviceRegistered, deviceUnregistered) => {
+  const _deviceRegistered = deviceRegistered
+    ? deviceRegistered.deviceIds
+    : deviceUnregistered.deviceIds
+
+  return deviceId ? [deviceId] : _deviceRegistered
+}
+
+const getEventType = deviceUnregistered => {
+  const _deviceUnregistered = deviceUnregistered ? UNREGISTERED : null
+
+  return _deviceUnregistered ? REGISTERED : _deviceUnregistered
+}
+
 // WebSocket listener for device status change.
 export const deviceStatusListener = async ({
   deviceMetadataUpdated,
@@ -38,13 +52,12 @@ export const deviceStatusListener = async ({
           shadowSynchronization,
         } = deviceMetadataUpdated || {}
 
-        const deviceUnregistered = deviceUnregistered ? UNREGISTERED : null
-        const eventType = deviceRegistered ? REGISTERED : deviceUnregistered
-
-        const deviceRegistered = deviceRegistered
-          ? deviceRegistered.deviceIds
-          : deviceUnregistered.deviceIds
-        const deviceIds = deviceId ? [deviceId] : deviceRegistered
+        const eventType = getEventType(deviceUnregistered)
+        const deviceIds = getDeviceIds(
+          deviceId,
+          deviceRegistered,
+          deviceUnregistered
+        )
 
         const status = deviceStatus || eventType
 
@@ -100,6 +113,16 @@ export const deviceStatusListener = async ({
   }
 }
 
+const getResources = (resourcePublished, resourceUnpublished) =>
+  resourcePublished
+    ? resourcePublished.resources // if resource was published, use the resources list from the event
+    : resourceUnpublished.hrefs.map(href => ({ href })) // if the resource was unpublished, create an array of ojects contaning hrefs, so that it matches the resources object
+
+const getEvent = resourcePublished =>
+  resourcePublished ? resourceEventTypes.ADDED : resourceEventTypes.REMOVED
+
+const getToastText = (isNew, s1, s2) => (isNew ? s1 : s2)
+
 export const deviceResourceRegistrationListener =
   ({ deviceId, deviceName }) =>
   ({ resourcePublished, resourceUnpublished }) => {
@@ -109,14 +132,10 @@ export const deviceResourceRegistrationListener =
         getDeviceNotificationKey(deviceId)
       )(store.getState())
 
-      const resources = resourcePublished
-        ? resourcePublished.resources // if resource was published, use the resources list from the event
-        : resourceUnpublished.hrefs.map(href => ({ href })) // if the resource was unpublished, create an array of ojects contaning hrefs, so that it matches the resources object
+      const resources = getResources(resourcePublished, resourceUnpublished)
       const resourceRegistrationObservationWSKey =
         getResourceRegistrationNotificationKey(deviceId)
-      const event = resourcePublished
-        ? resourceEventTypes.ADDED
-        : resourceEventTypes.REMOVED
+      const event = getEvent(resourcePublished)
 
       // Emit an event: things.resource.registration.{deviceId}
       Emitter.emit(`${resourceRegistrationObservationWSKey}.${event}`, {
@@ -129,8 +148,16 @@ export const deviceResourceRegistrationListener =
 
         // If 5 or more resources came in the WS, show only one notification message
         if (resources.length >= 5) {
-          const toastTitle = isNew ? t.newResources : t.resourcesDeleted
-          const toastMessage = isNew ? t.resourcesAdded : t.resourcesWereDeleted
+          const toastTitle = getToastText(
+            isNew,
+            t.newResources,
+            t.resourcesDeleted
+          )
+          const toastMessage = getToastText(
+            isNew,
+            t.resourcesAdded,
+            t.resourcesWereDeleted
+          )
           const onClickAction = () => {
             history.push(`/devices/${deviceId}`)
           }
@@ -150,10 +177,16 @@ export const deviceResourceRegistrationListener =
           )
         } else {
           resources.forEach(({ href }) => {
-            const toastTitle = isNew ? t.newResource : t.resourceDeleted
-            const toastMessage = isNew
-              ? t.resourceAdded
-              : t.resourceWithHrefWasDeleted
+            const toastTitle = getToastText(
+              isNew,
+              t.newResource,
+              t.resourceDeleted
+            )
+            const toastMessage = getToastText(
+              isNew,
+              t.resourceAdded,
+              t.resourceWithHrefWasDeleted
+            )
             const onClickAction = () => {
               if (isNew) {
                 // redirect to resource and open resource modal
