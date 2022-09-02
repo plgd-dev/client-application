@@ -1,6 +1,4 @@
 import axios from 'axios'
-// import { time } from 'units-converter'
-// import { security } from './security'
 
 // Time needed to cancel the request
 const CANCEL_REQUEST_DEADLINE_MS = 30000
