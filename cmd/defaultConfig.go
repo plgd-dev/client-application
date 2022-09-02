@@ -90,8 +90,11 @@ func createDefaultConfig(uiDirectory string) service.Config {
 						SZX:     "1024",
 					},
 					TLS: device.TLSConfig{
-						SubjectUUID:      uuid.NewString(),
-						PreSharedKeyUUID: uuid.NewString(),
+						Authentication: device.AuthenticationPreSharedKey,
+						PreSharedKey: device.PreSharedKeyConfig{
+							SubjectUUID: uuid.NewString(),
+							KeyUUID:     uuid.NewString(),
+						},
 					},
 					OwnershipTransfer: device.OwnershipTransferConfig{
 						Methods: []device.OwnershipTransferMethod{device.OwnershipTransferJustWorks},

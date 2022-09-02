@@ -32,6 +32,9 @@ import "pb/get_device_resource_links.proto";
 import "pb/own_device.proto";
 import "pb/disown_device.proto";
 import "pb/get_information.proto";
+import "pb/get_identity_csr.proto";
+import "pb/set_identity_certificate.proto";
+
 import "grpc-gateway/pb/devices.proto";
 import "resource-aggregate/pb/events.proto";
 
@@ -168,6 +171,26 @@ service ClientApplication {
   rpc GetInformation(GetInformationRequest) returns (GetInformationResponse) {
     option (google.api.http) = {
       get: "/api/v1/information"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: [ "client-application" ]
+    };
+  }
+
+  // Get identity CSR from the client application for creating a new identity certificate.
+  rpc GetIdentityCSR(GetIdentityCSRRequest) returns (GetIdentityCSRResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/identity/csr"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: [ "client-application" ]
+    };
+  }
+
+  // Set identity certificate for the client application.
+  rpc SetIdentityCertificate(SetIdentityCertificateRequest) returns (SetIdentityCertificateResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/identity/certificate"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       tags: [ "client-application" ]

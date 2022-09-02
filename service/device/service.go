@@ -31,9 +31,6 @@ import (
 	justworks "github.com/plgd-dev/device/client/core/otm/just-works"
 	"github.com/plgd-dev/device/client/core/otm/manufacturer"
 	"github.com/plgd-dev/device/pkg/net/coap"
-	"github.com/plgd-dev/go-coap/v2/message"
-	"github.com/plgd-dev/go-coap/v2/message/codes"
-	"github.com/plgd-dev/go-coap/v2/message/status"
 	coapNet "github.com/plgd-dev/go-coap/v2/net"
 	"github.com/plgd-dev/go-coap/v2/net/monitor/inactivity"
 	"github.com/plgd-dev/go-coap/v2/udp"
@@ -42,21 +39,48 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
+type authenticationClient interface {
+	DialDTLS(ctx context.Context, addr string, dtlsCfg *dtls.Config, opts ...coap.DialOptionFunc) (*coap.ClientCloseHandler, error)
+	DialTLS(ctx context.Context, addr string, tlsCfg *tls.Config, opts ...coap.DialOptionFunc) (*coap.ClientCloseHandler, error)
+	GetOwnerID() (string, error)
+	GetOwnOptions() []core.OwnOption
+
+	GetCSR(id string) ([]byte, error)
+	SetCertificate(chainPem []byte) error
+	GetCertificate() (tls.Certificate, error)
+	GetCertificateAuthorities() ([]*x509.Certificate, error)
+}
+
 type Service struct {
-	config         Config
-	logger         log.Logger
-	tracerProvider trace.TracerProvider
-	udp4server     *udp.Server
-	udp6server     *udp.Server
-	udp4Listener   *coapNet.UDPConn
-	udp6Listener   *coapNet.UDPConn
-	done           chan struct{}
+	config               Config
+	logger               log.Logger
+	tracerProvider       trace.TracerProvider
+	udp4server           *udp.Server
+	udp6server           *udp.Server
+	udp4Listener         *coapNet.UDPConn
+	udp6Listener         *coapNet.UDPConn
+	done                 chan struct{}
+	authenticationClient authenticationClient
 }
 
 var closeHandlerKey = "close-handler"
 
 // New creates new GRPC service
 func New(ctx context.Context, serviceName string, config Config, logger log.Logger, tracerProvider trace.TracerProvider) (*Service, error) {
+	var err error
+	var authenticationClient authenticationClient
+	switch config.COAP.TLS.Authentication {
+	case AuthenticationNone:
+		authenticationClient = newAuthenticationNone()
+	case AuthenticationPreSharedKey:
+		authenticationClient = newAuthenticationPreSharedKey(config)
+	case AuthenticationX509:
+		authenticationClient, err = newAuthenticationX509(config)
+		if err != nil {
+			return nil, fmt.Errorf("cannot create authentication client: %w", err)
+		}
+	}
+
 	opts := []udp.ServerOption{
 		udp.WithContext(ctx),
 		udp.WithOnNewClientConn(func(cc *client.ClientConn) {
@@ -92,14 +116,15 @@ func New(ctx context.Context, serviceName string, config Config, logger log.Logg
 	udp6server := udp.NewServer(opts...)
 
 	return &Service{
-		config:         config,
-		logger:         logger,
-		tracerProvider: tracerProvider,
-		udp4server:     udp4server,
-		udp6server:     udp6server,
-		udp4Listener:   udp4Listener,
-		udp6Listener:   udp6Listener,
-		done:           make(chan struct{}),
+		config:               config,
+		logger:               logger,
+		tracerProvider:       tracerProvider,
+		udp4server:           udp4server,
+		udp6server:           udp6server,
+		udp4Listener:         udp4Listener,
+		udp6Listener:         udp6Listener,
+		done:                 make(chan struct{}),
+		authenticationClient: authenticationClient,
 	}, nil
 }
 
@@ -107,23 +132,14 @@ func errFunc(err error) {
 	log.Debug(err)
 }
 
-func (s *Service) DialDTLS(ctx context.Context, addr string, _ *dtls.Config, opts ...coap.DialOptionFunc) (*coap.ClientCloseHandler, error) {
+func (s *Service) DialDTLS(ctx context.Context, addr string, dtlsCfg *dtls.Config, opts ...coap.DialOptionFunc) (*coap.ClientCloseHandler, error) {
 	dialOpts := []coap.DialOptionFunc{
 		coap.WithInactivityMonitor(s.config.COAP.InactivityMonitor.Timeout),
 		coap.WithMaxMessageSize(s.config.COAP.MaxMessageSize),
 		coap.WithBlockwise(s.config.COAP.BlockwiseTransfer.Enabled, s.config.COAP.BlockwiseTransfer.szx, s.config.COAP.InactivityMonitor.Timeout),
 		coap.WithErrors(s.ErrFunc),
 	}
-	idBin, _ := s.config.COAP.TLS.subjectUUID.MarshalBinary()
-	dtlsCfg := &dtls.Config{
-		PSKIdentityHint: idBin,
-		PSK: func(b []byte) ([]byte, error) {
-			// iotivity-lite supports only 16-byte PSK
-			return s.config.COAP.TLS.preSharedKeyUUID[:16], nil
-		},
-		CipherSuites: []dtls.CipherSuiteID{dtls.TLS_ECDHE_PSK_WITH_AES_128_CBC_SHA256},
-	}
-	return coap.DialUDPSecure(ctx, addr, dtlsCfg, append(dialOpts, opts...)...)
+	return s.authenticationClient.DialDTLS(ctx, addr, dtlsCfg, append(dialOpts, opts...)...)
 }
 
 func (s *Service) DialOwnership(ctx context.Context, addr string, dtlsCfg *dtls.Config, opts ...coap.DialOptionFunc) (*coap.ClientCloseHandler, error) {
@@ -190,9 +206,13 @@ func (s *Service) DialTCP(ctx context.Context, addr string, opts ...coap.DialOpt
 }
 
 func (s *Service) DialTLS(ctx context.Context, addr string, tlsCfg *tls.Config, opts ...coap.DialOptionFunc) (*coap.ClientCloseHandler, error) {
-	return nil, status.Errorf(&message.Message{
-		Code: codes.NotImplemented,
-	}, "not implemented")
+	dialOpts := []coap.DialOptionFunc{
+		coap.WithInactivityMonitor(s.config.COAP.InactivityMonitor.Timeout),
+		coap.WithMaxMessageSize(s.config.COAP.MaxMessageSize),
+		coap.WithBlockwise(s.config.COAP.BlockwiseTransfer.Enabled, s.config.COAP.BlockwiseTransfer.szx, s.config.COAP.InactivityMonitor.Timeout),
+		coap.WithErrors(s.ErrFunc),
+	}
+	return s.authenticationClient.DialTLS(ctx, addr, tlsCfg, append(dialOpts, opts...)...)
 }
 
 func (s *Service) ErrFunc(err error) {
@@ -207,16 +227,10 @@ func (s *Service) GetDeviceConfiguration() core.DeviceConfiguration {
 		DialTLS:  s.DialTLS,
 		ErrFunc:  s.ErrFunc,
 		TLSConfig: &core.TLSConfig{
-			GetCertificate: func() (tls.Certificate, error) {
-				return tls.Certificate{}, nil
-			},
-			GetCertificateAuthorities: func() ([]*x509.Certificate, error) {
-				return nil, nil
-			},
+			GetCertificate:            s.authenticationClient.GetCertificate,
+			GetCertificateAuthorities: s.authenticationClient.GetCertificateAuthorities,
 		},
-		GetOwnerID: func() (string, error) {
-			return s.config.COAP.TLS.SubjectUUID, nil
-		},
+		GetOwnerID: s.authenticationClient.GetOwnerID,
 	}
 }
 
@@ -243,7 +257,7 @@ func (s *Service) getManufacturerCertificateClient() *manufacturer.Client {
 }
 
 func (s *Service) GetOwnOptions() []core.OwnOption {
-	return []core.OwnOption{core.WithPresharedKey(s.config.COAP.TLS.preSharedKeyUUID[:16])}
+	return s.authenticationClient.GetOwnOptions()
 }
 
 // Serve starts a device provisioning service on the configured address in *Service.
@@ -305,7 +319,15 @@ func (s *Service) serveWithHandlingSignal() error {
 	}
 }
 
-// Shutdown turn off server.
+// Close turn off server.
 func (s *Service) Close() {
 	close(s.done)
+}
+
+func (s *Service) GetCSR(id string) ([]byte, error) {
+	return s.authenticationClient.GetCSR(id)
+}
+
+func (s *Service) SetCertificate(chainPem []byte) error {
+	return s.authenticationClient.SetCertificate(chainPem)
 }

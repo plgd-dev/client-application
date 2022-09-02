@@ -25,6 +25,7 @@ import (
 	"github.com/plgd-dev/hub/v2/pkg/log"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"github.com/jellydator/ttlcache/v3"
 )
 
 type ClientApplicationServer struct {
@@ -33,6 +34,7 @@ type ClientApplicationServer struct {
 	logger        log.Logger
 	devices       sync.Map
 	pb.UnimplementedClientApplicationServer
+	csrCache *ttlcache.Cache
 }
 
 func NewClientApplicationServer(serviceDevice *serviceDevice.Service, info *ServiceInformation, logger log.Logger) *ClientApplicationServer {

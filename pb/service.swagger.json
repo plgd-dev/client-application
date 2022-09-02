@@ -436,6 +436,52 @@
         ]
       }
     },
+    "/api/v1/identity/certificate": {
+      "post": {
+        "summary": "Set identity certificate for the client application.",
+        "operationId": "ClientApplication_SetIdentityCertificate",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbSetIdentityCertificateResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "client-application"
+        ]
+      }
+    },
+    "/api/v1/identity/csr": {
+      "get": {
+        "summary": "Get identity CSR from the client application for creating a new identity certificate.",
+        "operationId": "ClientApplication_GetIdentityCSR",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbGetIdentityCSRResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "client-application"
+        ]
+      }
+    },
     "/api/v1/information": {
       "get": {
         "operationId": "ClientApplication_GetInformation",
@@ -691,6 +737,19 @@
         }
       }
     },
+    "pbGetIdentityCSRResponse": {
+      "type": "object",
+      "properties": {
+        "certificateSigningRequest": {
+          "type": "string",
+          "format": "byte"
+        },
+        "state": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
     "pbGetInformationResponse": {
       "type": "object",
       "properties": {
@@ -880,6 +939,9 @@
           "title": "Open telemetry data propagated to asynchronous events"
         }
       }
+    },
+    "pbSetIdentityCertificateResponse": {
+      "type": "object"
     },
     "pbShadowSynchronization": {
       "type": "string",

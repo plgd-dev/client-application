@@ -47,11 +47,11 @@ func (c *BasicOAuthClient) Validate() error {
 	return nil
 }
 
-type SigningCSRMode string
+type MediatorMode string
 
 const (
-	SigningCSRMode_None      SigningCSRMode = "none"
-	SigningCSRMode_UserAgent SigningCSRMode = "userAgent"
+	MediatorMode_None      MediatorMode = "none"
+	MediatorMode_UserAgent MediatorMode = "userAgent"
 )
 
 type UserAgentConfig struct {
@@ -72,15 +72,15 @@ func (c *UserAgentConfig) Validate() error {
 // WebConfigurationConfig represents web configuration for user interface exposed via getOAuthConfiguration handler
 type WebConfigurationConfig struct {
 	HTTPGatewayAddress string          `yaml:"-" json:"httpGatewayAddress"`
-	SigningCSRMode     SigningCSRMode  `yaml:"signingCSRMode" json:"signingCSRMode"`
+	MediatorMode       MediatorMode    `yaml:"mediatorMode" json:"mediatorMode"`
 	UserAgentConfig    UserAgentConfig `yaml:"userAgent" json:"userAgent"`
 }
 
 func (c *WebConfigurationConfig) Validate() error {
-	switch c.SigningCSRMode {
-	case SigningCSRMode_None, "":
-		c.SigningCSRMode = SigningCSRMode_None
-	case SigningCSRMode_UserAgent:
+	switch c.MediatorMode {
+	case MediatorMode_None, "":
+		c.MediatorMode = MediatorMode_None
+	case MediatorMode_UserAgent:
 		if err := c.UserAgentConfig.Validate(); err != nil {
 			return fmt.Errorf("userAgent.%w", err)
 		}

@@ -148,11 +148,47 @@ func (c *CoapConfig) Validate() error {
 	return nil
 }
 
+type PreSharedKeyConfig struct {
+	SubjectUUID string    `yaml:"subjectUuid" json:"subjectUuid"`
+	subjectUUID uuid.UUID `yaml:"-"`
+	KeyUUID     string    `yaml:"keyUuid" json:"keyUuid"`
+	keyUUID     uuid.UUID `yaml:"-"`
+}
+
+func (c *PreSharedKeyConfig) Validate() error {
+	var err error
+	if c.keyUUID, err = uuid.Parse(c.KeyUUID); err != nil || c.keyUUID == uuid.Nil {
+		return fmt.Errorf("keyUuid('%v') - %w", c.KeyUUID, err)
+	}
+	if c.subjectUUID, err = uuid.Parse(c.SubjectUUID); err != nil || c.keyUUID == uuid.Nil {
+		return fmt.Errorf("subjectUUID('%v') - %w", c.SubjectUUID, err)
+	}
+	return nil
+}
+
+type Authentication string
+
+const (
+	AuthenticationNone         Authentication = "none"
+	AuthenticationPreSharedKey Authentication = "preSharedKey"
+	AuthenticationX509         Authentication = "x509"
+)
+
 type TLSConfig struct {
-	SubjectUUID      string `yaml:"subjectUuid" json:"subjectUuid"`
-	subjectUUID      uuid.UUID
-	PreSharedKeyUUID string `yaml:"preSharedKeyUuid" json:"preSharedKeyUuid"`
-	preSharedKeyUUID uuid.UUID
+	Authentication Authentication     `yaml:"authentication" json:"authentication"`
+	PreSharedKey   PreSharedKeyConfig `yaml:"preSharedKey" json:"preSharedKey"`
+}
+
+func (c *TLSConfig) Validate() error {
+	switch c.Authentication {
+	case AuthenticationNone, "":
+		c.Authentication = AuthenticationNone
+	case AuthenticationPreSharedKey:
+		if err := c.PreSharedKey.Validate(); err != nil {
+			return fmt.Errorf("preSharedKey.%w", err)
+		}
+	}
+	return nil
 }
 
 type InactivityMonitor struct {
@@ -195,17 +231,6 @@ func (c *BlockwiseTransferConfig) Validate() error {
 		c.szx = blockwise.SZXBERT
 	default:
 		return fmt.Errorf("blockSize('%v')", c.SZX)
-	}
-	return nil
-}
-
-func (c *TLSConfig) Validate() error {
-	var err error
-	if c.preSharedKeyUUID, err = uuid.Parse(c.PreSharedKeyUUID); err != nil {
-		return fmt.Errorf("preSharedKeyUUID('%v') - %w", c.PreSharedKeyUUID, err)
-	}
-	if c.subjectUUID, err = uuid.Parse(c.SubjectUUID); err != nil {
-		return fmt.Errorf("subjectUUID('%v') - %w", c.SubjectUUID, err)
 	}
 	return nil
 }

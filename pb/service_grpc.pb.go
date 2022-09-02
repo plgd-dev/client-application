@@ -41,6 +41,10 @@ type ClientApplicationClient interface {
 	// Deletes all devices from the cache. To fill the cache again, call GetDevices.
 	ClearCache(ctx context.Context, in *ClearCacheRequest, opts ...grpc.CallOption) (*ClearCacheResponse, error)
 	GetInformation(ctx context.Context, in *GetInformationRequest, opts ...grpc.CallOption) (*GetInformationResponse, error)
+	// Get identity CSR from the client application for creating a new identity certificate.
+	GetIdentityCSR(ctx context.Context, in *GetIdentityCSRRequest, opts ...grpc.CallOption) (*GetIdentityCSRResponse, error)
+	// Set identity certificate for the client application.
+	SetIdentityCertificate(ctx context.Context, in *SetIdentityCertificateRequest, opts ...grpc.CallOption) (*SetIdentityCertificateResponse, error)
 }
 
 type clientApplicationClient struct {
@@ -173,6 +177,24 @@ func (c *clientApplicationClient) GetInformation(ctx context.Context, in *GetInf
 	return out, nil
 }
 
+func (c *clientApplicationClient) GetIdentityCSR(ctx context.Context, in *GetIdentityCSRRequest, opts ...grpc.CallOption) (*GetIdentityCSRResponse, error) {
+	out := new(GetIdentityCSRResponse)
+	err := c.cc.Invoke(ctx, "/service.pb.ClientApplication/GetIdentityCSR", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *clientApplicationClient) SetIdentityCertificate(ctx context.Context, in *SetIdentityCertificateRequest, opts ...grpc.CallOption) (*SetIdentityCertificateResponse, error) {
+	out := new(SetIdentityCertificateResponse)
+	err := c.cc.Invoke(ctx, "/service.pb.ClientApplication/SetIdentityCertificate", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ClientApplicationServer is the server API for ClientApplication service.
 // All implementations must embed UnimplementedClientApplicationServer
 // for forward compatibility
@@ -198,6 +220,10 @@ type ClientApplicationServer interface {
 	// Deletes all devices from the cache. To fill the cache again, call GetDevices.
 	ClearCache(context.Context, *ClearCacheRequest) (*ClearCacheResponse, error)
 	GetInformation(context.Context, *GetInformationRequest) (*GetInformationResponse, error)
+	// Get identity CSR from the client application for creating a new identity certificate.
+	GetIdentityCSR(context.Context, *GetIdentityCSRRequest) (*GetIdentityCSRResponse, error)
+	// Set identity certificate for the client application.
+	SetIdentityCertificate(context.Context, *SetIdentityCertificateRequest) (*SetIdentityCertificateResponse, error)
 	mustEmbedUnimplementedClientApplicationServer()
 }
 
@@ -237,6 +263,12 @@ func (UnimplementedClientApplicationServer) ClearCache(context.Context, *ClearCa
 }
 func (UnimplementedClientApplicationServer) GetInformation(context.Context, *GetInformationRequest) (*GetInformationResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetInformation not implemented")
+}
+func (UnimplementedClientApplicationServer) GetIdentityCSR(context.Context, *GetIdentityCSRRequest) (*GetIdentityCSRResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetIdentityCSR not implemented")
+}
+func (UnimplementedClientApplicationServer) SetIdentityCertificate(context.Context, *SetIdentityCertificateRequest) (*SetIdentityCertificateResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SetIdentityCertificate not implemented")
 }
 func (UnimplementedClientApplicationServer) mustEmbedUnimplementedClientApplicationServer() {}
 
@@ -452,6 +484,42 @@ func _ClientApplication_GetInformation_Handler(srv interface{}, ctx context.Cont
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ClientApplication_GetIdentityCSR_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetIdentityCSRRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ClientApplicationServer).GetIdentityCSR(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/service.pb.ClientApplication/GetIdentityCSR",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ClientApplicationServer).GetIdentityCSR(ctx, req.(*GetIdentityCSRRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ClientApplication_SetIdentityCertificate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SetIdentityCertificateRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ClientApplicationServer).SetIdentityCertificate(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/service.pb.ClientApplication/SetIdentityCertificate",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ClientApplicationServer).SetIdentityCertificate(ctx, req.(*SetIdentityCertificateRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // ClientApplication_ServiceDesc is the grpc.ServiceDesc for ClientApplication service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -498,6 +566,14 @@ var ClientApplication_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetInformation",
 			Handler:    _ClientApplication_GetInformation_Handler,
+		},
+		{
+			MethodName: "GetIdentityCSR",
+			Handler:    _ClientApplication_GetIdentityCSR_Handler,
+		},
+		{
+			MethodName: "SetIdentityCertificate",
+			Handler:    _ClientApplication_SetIdentityCertificate_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

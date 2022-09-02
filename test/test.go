@@ -124,8 +124,11 @@ func MakeDeviceConfig() serviceDevice.Config {
 				SZX:     "1024",
 			},
 			TLS: serviceDevice.TLSConfig{
-				SubjectUUID:      "57b3fae9-adf5-4e34-90ea-e77784407103",
-				PreSharedKeyUUID: "46178d21-d480-4e95-9bd3-6c9eefa8d9d8",
+				Authentication: serviceDevice.AuthenticationPreSharedKey,
+				PreSharedKey: serviceDevice.PreSharedKeyConfig{
+					SubjectUUID: "57b3fae9-adf5-4e34-90ea-e77784407103",
+					KeyUUID:     "46178d21-d480-4e95-9bd3-6c9eefa8d9d8",
+				},
 			},
 			OwnershipTransfer: serviceDevice.OwnershipTransferConfig{
 				Methods: []serviceDevice.OwnershipTransferMethod{serviceDevice.OwnershipTransferJustWorks, serviceDevice.OwnershipTransferManufacturerCertificate},
