@@ -1,10 +1,10 @@
 import axios from 'axios'
 
 // Time needed to cancel the request
-const CANCEL_REQUEST_DEADLINE_MS = 30000
+const CANCEL_REQUEST_DEADLINE_MS = 5000
 
 // Added threshold for cancelling the request
-const COMMAND_TIMEOUT_THRESHOLD_MS = 500
+const COMMAND_TIMEOUT_THRESHOLD_MS = 30000
 
 export const errorCodes = {
   COMMAND_EXPIRED: 'CommandExpired',
