@@ -30,11 +30,70 @@ type CORSConfig struct {
 	AllowCredentials bool     `yaml:"allowCredentials"  json:"allowCredentials"`
 }
 
+type BasicOAuthClient struct {
+	Authority string   `yaml:"authority" json:"authority"`
+	ClientID  string   `yaml:"clientID" json:"clientId"`
+	Audience  string   `yaml:"audience" json:"audience"`
+	Scopes    []string `yaml:"scopes" json:"scopes"`
+}
+
+func (c *BasicOAuthClient) Validate() error {
+	if c.Authority == "" {
+		return fmt.Errorf("authority('%v')", c.Authority)
+	}
+	if c.ClientID == "" {
+		return fmt.Errorf("clientID('%v')", c.ClientID)
+	}
+	return nil
+}
+
+type SigningCSRMode string
+
+const (
+	SigningCSRMode_None      SigningCSRMode = "none"
+	SigningCSRMode_UserAgent SigningCSRMode = "userAgent"
+)
+
+type UserAgentConfig struct {
+	CertificateAuthorityAddress string           `yaml:"certificateAuthorityAddress" json:"certificateAuthorityAddress"`
+	WebOAuthClient              BasicOAuthClient `yaml:"webOAuthClient" json:"webOauthClient"`
+}
+
+func (c *UserAgentConfig) Validate() error {
+	if c.CertificateAuthorityAddress == "" {
+		return fmt.Errorf("certificateAuthorityAddress('%v')", c.CertificateAuthorityAddress)
+	}
+	if err := c.WebOAuthClient.Validate(); err != nil {
+		return fmt.Errorf("webOAuthClient.%w", err)
+	}
+	return nil
+}
+
+// WebConfigurationConfig represents web configuration for user interface exposed via getOAuthConfiguration handler
+type WebConfigurationConfig struct {
+	HTTPGatewayAddress string          `yaml:"-" json:"httpGatewayAddress"`
+	SigningCSRMode     SigningCSRMode  `yaml:"signingCSRMode" json:"signingCSRMode"`
+	UserAgentConfig    UserAgentConfig `yaml:"userAgent" json:"userAgent"`
+}
+
+func (c *WebConfigurationConfig) Validate() error {
+	switch c.SigningCSRMode {
+	case SigningCSRMode_None, "":
+		c.SigningCSRMode = SigningCSRMode_None
+	case SigningCSRMode_UserAgent:
+		if err := c.UserAgentConfig.Validate(); err != nil {
+			return fmt.Errorf("userAgent.%w", err)
+		}
+	}
+	return nil
+}
+
 type Config struct {
-	listener.Config `yaml:",inline"`
-	Server          server.Config `yaml:",inline" json:",inline"`
-	CORS            CORSConfig    `yaml:"cors"  json:"cors"`
-	UI              UIConfig      `yaml:"ui" json:"ui"`
+	listener.Config  `yaml:",inline"`
+	Server           server.Config          `yaml:",inline" json:",inline"`
+	CORS             CORSConfig             `yaml:"cors"  json:"cors"`
+	UI               UIConfig               `yaml:"ui" json:"ui"`
+	WebConfiguration WebConfigurationConfig `json:"webConfiguration" yaml:"webConfiguration"`
 }
 
 type UIConfig struct {
@@ -50,5 +109,11 @@ func (c *UIConfig) Validate() error {
 }
 
 func (c *Config) Validate() error {
+	if err := c.UI.Validate(); err != nil {
+		return fmt.Errorf("ui.%w", err)
+	}
+	if err := c.WebConfiguration.Validate(); err != nil {
+		return fmt.Errorf("webConfiguration.%w", err)
+	}
 	return c.Config.Validate()
 }
