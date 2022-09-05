@@ -15,7 +15,6 @@ import {
   DEVICES_RESOURCE_UPDATE_WS_KEY,
   commandTimeoutUnits,
   MINIMAL_TTL_VALUE_MS,
-  RESOURCE_DEFAULT_TTL_RAW,
   devicesProvisionStatuses,
   devicesStatusSeverities,
   RESOURCE_DEFAULT_TTL,
