@@ -1,10 +1,7 @@
 import axios from 'axios'
 
 // Time needed to cancel the request
-const CANCEL_REQUEST_DEADLINE_MS = 5000
-
-// Added threshold for cancelling the request
-const COMMAND_TIMEOUT_THRESHOLD_MS = 30000
+const CANCEL_REQUEST_DEADLINE_MS = 30000
 
 export const errorCodes = {
   COMMAND_EXPIRED: 'CommandExpired',
@@ -33,13 +30,10 @@ export const fetchApi = async (url, options = {}) => {
   const cancelTokenSource = axios.CancelToken.source()
 
   // Time needed to cancel the request
-  const cancelDeadlineMs = timeToLive || CANCEL_REQUEST_DEADLINE_MS
+  const cancelDeadlineMs = timeToLive || 0
 
   // Time needed to cancel the request with added threshold
-  const cancelTimerMs =
-    cancelDeadlineMs <= CANCEL_REQUEST_DEADLINE_MS
-      ? cancelDeadlineMs + COMMAND_TIMEOUT_THRESHOLD_MS
-      : CANCEL_REQUEST_DEADLINE_MS
+  const cancelTimerMs = Math.max(cancelDeadlineMs, CANCEL_REQUEST_DEADLINE_MS)
 
   // Error code thrown with cancel request
   const cancelError =
