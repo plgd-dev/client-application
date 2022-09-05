@@ -20,12 +20,13 @@ import (
 	"context"
 	"sync"
 
+	"github.com/google/uuid"
+	"github.com/jellydator/ttlcache/v3"
 	"github.com/plgd-dev/client-application/pb"
 	serviceDevice "github.com/plgd-dev/client-application/service/device"
 	"github.com/plgd-dev/hub/v2/pkg/log"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"github.com/jellydator/ttlcache/v3"
 )
 
 type ClientApplicationServer struct {
@@ -34,19 +35,28 @@ type ClientApplicationServer struct {
 	logger        log.Logger
 	devices       sync.Map
 	pb.UnimplementedClientApplicationServer
-	csrCache *ttlcache.Cache
+	csrCache *ttlcache.Cache[uuid.UUID, bool]
+	config   Config
 }
 
-func NewClientApplicationServer(serviceDevice *serviceDevice.Service, info *ServiceInformation, logger log.Logger) *ClientApplicationServer {
+func NewClientApplicationServer(config Config, serviceDevice *serviceDevice.Service, info *ServiceInformation, logger log.Logger) *ClientApplicationServer {
+	csrCache := ttlcache.New[uuid.UUID, bool]()
+	csrCache.Start()
 	return &ClientApplicationServer{
 		serviceDevice: serviceDevice,
 		info:          info,
 		logger:        logger,
+		config:        config,
+		csrCache:      csrCache,
 	}
 }
 
 func (s *ClientApplicationServer) Version() string {
 	return s.info.Version
+}
+
+func (s *ClientApplicationServer) Close() {
+	s.csrCache.Stop()
 }
 
 func (s *ClientApplicationServer) getDevice(deviceID string) (*device, error) {

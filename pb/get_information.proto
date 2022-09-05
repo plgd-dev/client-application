@@ -22,6 +22,19 @@ option go_package = "github.com/plgd-dev/client-application/pb;pb";
 
 message GetInformationRequest {}
 
+message UserAgentConfig {
+
+}
+
+message MediatorConfig {
+    enum MODE {
+        MODE_NONE = 0;
+        MODE_USER_AGENT = 1;
+    };
+	MODE Mode = 1;
+    UserAgentConfig UserAgent = 2;
+}
+
 message GetInformationResponse {
     string version = 1;
     string build_date = 2;

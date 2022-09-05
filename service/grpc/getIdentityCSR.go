@@ -19,17 +19,31 @@ package grpc
 import (
 	"context"
 
+	"github.com/google/uuid"
 	"github.com/plgd-dev/client-application/pb"
+	"github.com/plgd-dev/client-application/pkg/net/grpc/server"
+	"github.com/plgd-dev/hub/v2/identity-store/events"
+	"github.com/plgd-dev/hub/v2/pkg/net/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
 func (s *ClientApplicationServer) GetIdentityCSR(ctx context.Context, req *pb.GetIdentityCSRRequest) (*pb.GetIdentityCSRResponse, error) {
-	csr, err := s.serviceDevice.GetCSR()
+	if s.config.Authorization.Mediator.Mode != server.MediatorMode_UserAgent {
+		return nil, status.Errorf(codes.Unimplemented, "not supported")
+	}
+	owner, err := grpc.OwnerFromTokenMD(ctx, s.config.Authorization.OwnerClaim)
+	if err != nil {
+		return nil, s.logger.LogAndReturnError(status.Errorf(codes.Unauthenticated, "cannot get owner from token: %v", err))
+	}
+	csr, err := s.serviceDevice.GetCSR(events.OwnerToUUID(owner))
 	if err != nil {
 		return nil, status.Error(codes.Unimplemented, err.Error())
 	}
+	state := uuid.New()
+	s.csrCache.Set(state, true, s.config.Authorization.Mediator.UserAgentConfig.CSRExpiration)
 	return &pb.GetIdentityCSRResponse{
 		CertificateSigningRequest: csr,
+		State:                     state[:],
 	}, nil
 }

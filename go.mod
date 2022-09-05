@@ -10,6 +10,7 @@ require (
 	github.com/gorilla/handlers v1.5.1
 	github.com/gorilla/mux v1.8.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.11.2
+	github.com/jellydator/ttlcache/v3 v3.0.0
 	github.com/jessevdk/go-flags v1.5.0
 	github.com/pion/dtls/v2 v2.1.5
 	github.com/plgd-dev/device v1.2.2-0.20220825094214-325917de3500

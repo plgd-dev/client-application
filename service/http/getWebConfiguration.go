@@ -17,6 +17,7 @@
 package http
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/plgd-dev/go-coap/v2/message"
@@ -35,14 +36,20 @@ func jsonResponseWriter(w http.ResponseWriter, v interface{}) error {
 	return json.WriteTo(w, v)
 }
 
+// WebConfigurationConfig represents web configuration for user interface exposed via getOAuthConfiguration handler
+type WebConfigurationConfig struct {
+	HTTPGatewayAddress string `yaml:"-" json:"httpGatewayAddress"`
+}
+
 func (requestHandler *RequestHandler) getWebConfiguration(w http.ResponseWriter, r *http.Request) {
-	cfg := requestHandler.config.WebConfiguration
 	scheme := "http"
 	if r.TLS != nil {
 		scheme = "https"
 	}
 
-	cfg.HTTPGatewayAddress = scheme + "://" + r.Host
+	cfg := WebConfigurationConfig{
+		HTTPGatewayAddress: fmt.Sprintf("%s://%s", scheme, r.Host),
+	}
 	if err := jsonResponseWriter(w, cfg); err != nil {
 		log.Errorf("failed to write response: %w", err)
 	}

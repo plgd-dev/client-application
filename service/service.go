@@ -34,15 +34,16 @@ import (
 )
 
 type Service struct {
-	config         Config
-	ctx            context.Context
-	cancel         context.CancelFunc
-	logger         log.Logger
-	httpService    *http.Service
-	grpcService    *grpc.Service
-	deviceService  *device.Service
-	tracerProvider trace.TracerProvider
-	sigs           chan os.Signal
+	config                  Config
+	ctx                     context.Context
+	cancel                  context.CancelFunc
+	logger                  log.Logger
+	httpService             *http.Service
+	grpcService             *grpc.Service
+	deviceService           *device.Service
+	tracerProvider          trace.TracerProvider
+	sigs                    chan os.Signal
+	clientApplicationServer *grpc.ClientApplicationServer
 }
 
 const serviceName = "client-application"
@@ -56,11 +57,12 @@ func New(ctx context.Context, config Config, info *grpc.ServiceInformation, file
 		return nil, fmt.Errorf("cannot create device service: %w", err)
 	}
 
-	clientApplicationServer := grpc.NewClientApplicationServer(deviceService, info, logger)
+	clientApplicationServer := grpc.NewClientApplicationServer(config.APIs.GRPC.Config, deviceService, info, logger)
 
 	if config.APIs.HTTP.Enabled {
 		httpService, err = http.New(ctx, serviceName, config.APIs.HTTP.Config, clientApplicationServer, fileWatcher, logger, tracerProvider)
 		if err != nil {
+			clientApplicationServer.Close()
 			return nil, fmt.Errorf("cannot create http service: %w", err)
 		}
 	}
@@ -68,6 +70,7 @@ func New(ctx context.Context, config Config, info *grpc.ServiceInformation, file
 	if config.APIs.GRPC.Enabled {
 		grpcService, err = grpc.New(ctx, serviceName, config.APIs.GRPC.Config, clientApplicationServer, fileWatcher, logger, tracerProvider)
 		if err != nil {
+			clientApplicationServer.Close()
 			return nil, fmt.Errorf("cannot create grpc service: %w", err)
 		}
 	}
@@ -81,11 +84,12 @@ func New(ctx context.Context, config Config, info *grpc.ServiceInformation, file
 		ctx:    ctx,
 		cancel: cancel,
 
-		logger:         logger,
-		httpService:    httpService,
-		grpcService:    grpcService,
-		deviceService:  deviceService,
-		tracerProvider: tracerProvider,
+		logger:                  logger,
+		httpService:             httpService,
+		grpcService:             grpcService,
+		deviceService:           deviceService,
+		tracerProvider:          tracerProvider,
+		clientApplicationServer: clientApplicationServer,
 	}
 
 	return &s, nil
@@ -169,6 +173,8 @@ func (server *Service) serveWithHandlingSignal() error {
 	}
 	server.deviceService.Close()
 	wg.Wait()
+
+	server.clientApplicationServer.Close()
 
 	var errors []error
 	for {
