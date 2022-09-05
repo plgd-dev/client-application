@@ -18,6 +18,7 @@ import {
   RESOURCE_DEFAULT_TTL_RAW,
   devicesProvisionStatuses,
   devicesStatusSeverities,
+  RESOURCE_DEFAULT_TTL,
 } from './constants'
 import { messages as t } from './Devices.i18n'
 import { updateDevicesResourceApi } from '@/containers/Devices/rest'
@@ -363,7 +364,7 @@ export const updateResourceMethod = async (
     deviceId,
     href,
     currentInterface = '',
-    ttl = RESOURCE_DEFAULT_TTL_RAW,
+    ttl = RESOURCE_DEFAULT_TTL,
   }: { deviceId: string; href: string; currentInterface: string; ttl?: number },
   resourceDataUpdate: any,
   successCallback: () => void,
