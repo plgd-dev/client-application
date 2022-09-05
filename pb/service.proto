@@ -19,6 +19,7 @@ syntax = "proto3";
 package service.pb;
 
 import "google/api/annotations.proto";
+import "google/protobuf/struct.proto";
 import "protoc-gen-openapiv2/options/annotations.proto";
 
 import "pb/clear_cache.proto";
@@ -33,7 +34,9 @@ import "pb/own_device.proto";
 import "pb/disown_device.proto";
 import "pb/get_information.proto";
 import "pb/get_identity_csr.proto";
-import "pb/set_identity_certificate.proto";
+import "pb/update_identity_certificate.proto";
+import "pb/get_json_web_keys.proto";
+import "pb/update_json_web_keys.proto";
 
 import "grpc-gateway/pb/devices.proto";
 import "resource-aggregate/pb/events.proto";
@@ -177,6 +180,24 @@ service ClientApplication {
     };
   }
 
+  rpc UpdateJSONWebKeys(google.protobuf.Struct) returns (UpdateJSONWebKeysResponse) {
+    option (google.api.http) = {
+      post: "/.well-known/jwks.json"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: [ "client-application" ]
+    };
+  }
+
+  rpc GetJSONWebKeys(GetJSONWebKeysRequest) returns (google.protobuf.Struct) {
+    option (google.api.http) = {
+      get: "/.well-known/jwks.json"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: [ "client-application" ]
+    };
+  }
+
   // Get identity CSR from the client application for creating a new identity certificate.
   rpc GetIdentityCSR(GetIdentityCSRRequest) returns (GetIdentityCSRResponse) {
     option (google.api.http) = {
@@ -188,7 +209,7 @@ service ClientApplication {
   }
 
   // Set identity certificate for the client application.
-  rpc SetIdentityCertificate(SetIdentityCertificateRequest) returns (SetIdentityCertificateResponse) {
+  rpc UpdateIdentityCertificate(UpdateIdentityCertificateRequest) returns (UpdateIdentityCertificateResponse) {
     option (google.api.http) = {
       post: "/api/v1/identity/certificate"
     };

@@ -9,6 +9,7 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	structpb "google.golang.org/protobuf/types/known/structpb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -41,10 +42,12 @@ type ClientApplicationClient interface {
 	// Deletes all devices from the cache. To fill the cache again, call GetDevices.
 	ClearCache(ctx context.Context, in *ClearCacheRequest, opts ...grpc.CallOption) (*ClearCacheResponse, error)
 	GetInformation(ctx context.Context, in *GetInformationRequest, opts ...grpc.CallOption) (*GetInformationResponse, error)
+	UpdateJSONWebKeys(ctx context.Context, in *structpb.Struct, opts ...grpc.CallOption) (*UpdateJSONWebKeysResponse, error)
+	GetJSONWebKeys(ctx context.Context, in *GetJSONWebKeysRequest, opts ...grpc.CallOption) (*structpb.Struct, error)
 	// Get identity CSR from the client application for creating a new identity certificate.
 	GetIdentityCSR(ctx context.Context, in *GetIdentityCSRRequest, opts ...grpc.CallOption) (*GetIdentityCSRResponse, error)
 	// Set identity certificate for the client application.
-	SetIdentityCertificate(ctx context.Context, in *SetIdentityCertificateRequest, opts ...grpc.CallOption) (*SetIdentityCertificateResponse, error)
+	UpdateIdentityCertificate(ctx context.Context, in *UpdateIdentityCertificateRequest, opts ...grpc.CallOption) (*UpdateIdentityCertificateResponse, error)
 }
 
 type clientApplicationClient struct {
@@ -177,6 +180,24 @@ func (c *clientApplicationClient) GetInformation(ctx context.Context, in *GetInf
 	return out, nil
 }
 
+func (c *clientApplicationClient) UpdateJSONWebKeys(ctx context.Context, in *structpb.Struct, opts ...grpc.CallOption) (*UpdateJSONWebKeysResponse, error) {
+	out := new(UpdateJSONWebKeysResponse)
+	err := c.cc.Invoke(ctx, "/service.pb.ClientApplication/UpdateJSONWebKeys", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *clientApplicationClient) GetJSONWebKeys(ctx context.Context, in *GetJSONWebKeysRequest, opts ...grpc.CallOption) (*structpb.Struct, error) {
+	out := new(structpb.Struct)
+	err := c.cc.Invoke(ctx, "/service.pb.ClientApplication/GetJSONWebKeys", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *clientApplicationClient) GetIdentityCSR(ctx context.Context, in *GetIdentityCSRRequest, opts ...grpc.CallOption) (*GetIdentityCSRResponse, error) {
 	out := new(GetIdentityCSRResponse)
 	err := c.cc.Invoke(ctx, "/service.pb.ClientApplication/GetIdentityCSR", in, out, opts...)
@@ -186,9 +207,9 @@ func (c *clientApplicationClient) GetIdentityCSR(ctx context.Context, in *GetIde
 	return out, nil
 }
 
-func (c *clientApplicationClient) SetIdentityCertificate(ctx context.Context, in *SetIdentityCertificateRequest, opts ...grpc.CallOption) (*SetIdentityCertificateResponse, error) {
-	out := new(SetIdentityCertificateResponse)
-	err := c.cc.Invoke(ctx, "/service.pb.ClientApplication/SetIdentityCertificate", in, out, opts...)
+func (c *clientApplicationClient) UpdateIdentityCertificate(ctx context.Context, in *UpdateIdentityCertificateRequest, opts ...grpc.CallOption) (*UpdateIdentityCertificateResponse, error) {
+	out := new(UpdateIdentityCertificateResponse)
+	err := c.cc.Invoke(ctx, "/service.pb.ClientApplication/UpdateIdentityCertificate", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -220,10 +241,12 @@ type ClientApplicationServer interface {
 	// Deletes all devices from the cache. To fill the cache again, call GetDevices.
 	ClearCache(context.Context, *ClearCacheRequest) (*ClearCacheResponse, error)
 	GetInformation(context.Context, *GetInformationRequest) (*GetInformationResponse, error)
+	UpdateJSONWebKeys(context.Context, *structpb.Struct) (*UpdateJSONWebKeysResponse, error)
+	GetJSONWebKeys(context.Context, *GetJSONWebKeysRequest) (*structpb.Struct, error)
 	// Get identity CSR from the client application for creating a new identity certificate.
 	GetIdentityCSR(context.Context, *GetIdentityCSRRequest) (*GetIdentityCSRResponse, error)
 	// Set identity certificate for the client application.
-	SetIdentityCertificate(context.Context, *SetIdentityCertificateRequest) (*SetIdentityCertificateResponse, error)
+	UpdateIdentityCertificate(context.Context, *UpdateIdentityCertificateRequest) (*UpdateIdentityCertificateResponse, error)
 	mustEmbedUnimplementedClientApplicationServer()
 }
 
@@ -264,11 +287,17 @@ func (UnimplementedClientApplicationServer) ClearCache(context.Context, *ClearCa
 func (UnimplementedClientApplicationServer) GetInformation(context.Context, *GetInformationRequest) (*GetInformationResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetInformation not implemented")
 }
+func (UnimplementedClientApplicationServer) UpdateJSONWebKeys(context.Context, *structpb.Struct) (*UpdateJSONWebKeysResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateJSONWebKeys not implemented")
+}
+func (UnimplementedClientApplicationServer) GetJSONWebKeys(context.Context, *GetJSONWebKeysRequest) (*structpb.Struct, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetJSONWebKeys not implemented")
+}
 func (UnimplementedClientApplicationServer) GetIdentityCSR(context.Context, *GetIdentityCSRRequest) (*GetIdentityCSRResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetIdentityCSR not implemented")
 }
-func (UnimplementedClientApplicationServer) SetIdentityCertificate(context.Context, *SetIdentityCertificateRequest) (*SetIdentityCertificateResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method SetIdentityCertificate not implemented")
+func (UnimplementedClientApplicationServer) UpdateIdentityCertificate(context.Context, *UpdateIdentityCertificateRequest) (*UpdateIdentityCertificateResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateIdentityCertificate not implemented")
 }
 func (UnimplementedClientApplicationServer) mustEmbedUnimplementedClientApplicationServer() {}
 
@@ -484,6 +513,42 @@ func _ClientApplication_GetInformation_Handler(srv interface{}, ctx context.Cont
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ClientApplication_UpdateJSONWebKeys_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(structpb.Struct)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ClientApplicationServer).UpdateJSONWebKeys(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/service.pb.ClientApplication/UpdateJSONWebKeys",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ClientApplicationServer).UpdateJSONWebKeys(ctx, req.(*structpb.Struct))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ClientApplication_GetJSONWebKeys_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetJSONWebKeysRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ClientApplicationServer).GetJSONWebKeys(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/service.pb.ClientApplication/GetJSONWebKeys",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ClientApplicationServer).GetJSONWebKeys(ctx, req.(*GetJSONWebKeysRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _ClientApplication_GetIdentityCSR_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetIdentityCSRRequest)
 	if err := dec(in); err != nil {
@@ -502,20 +567,20 @@ func _ClientApplication_GetIdentityCSR_Handler(srv interface{}, ctx context.Cont
 	return interceptor(ctx, in, info, handler)
 }
 
-func _ClientApplication_SetIdentityCertificate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(SetIdentityCertificateRequest)
+func _ClientApplication_UpdateIdentityCertificate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateIdentityCertificateRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ClientApplicationServer).SetIdentityCertificate(ctx, in)
+		return srv.(ClientApplicationServer).UpdateIdentityCertificate(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/service.pb.ClientApplication/SetIdentityCertificate",
+		FullMethod: "/service.pb.ClientApplication/UpdateIdentityCertificate",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ClientApplicationServer).SetIdentityCertificate(ctx, req.(*SetIdentityCertificateRequest))
+		return srv.(ClientApplicationServer).UpdateIdentityCertificate(ctx, req.(*UpdateIdentityCertificateRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -568,12 +633,20 @@ var ClientApplication_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _ClientApplication_GetInformation_Handler,
 		},
 		{
+			MethodName: "UpdateJSONWebKeys",
+			Handler:    _ClientApplication_UpdateJSONWebKeys_Handler,
+		},
+		{
+			MethodName: "GetJSONWebKeys",
+			Handler:    _ClientApplication_GetJSONWebKeys_Handler,
+		},
+		{
 			MethodName: "GetIdentityCSR",
 			Handler:    _ClientApplication_GetIdentityCSR_Handler,
 		},
 		{
-			MethodName: "SetIdentityCertificate",
-			Handler:    _ClientApplication_SetIdentityCertificate_Handler,
+			MethodName: "UpdateIdentityCertificate",
+			Handler:    _ClientApplication_UpdateIdentityCertificate_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

@@ -30,6 +30,48 @@
     "application/protojson"
   ],
   "paths": {
+    "/.well-known/jwks.json": {
+      "get": {
+        "operationId": "ClientApplication_GetJSONWebKeys",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "client-application"
+        ]
+      },
+      "post": {
+        "operationId": "ClientApplication_UpdateJSONWebKeys",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbUpdateJSONWebKeysResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "client-application"
+        ]
+      }
+    },
     "/api/v1/devices": {
       "get": {
         "summary": "Discover devices by client application. This operation fills cache of mappings deviceId to endpoints and this cache is used by other calls.",
@@ -439,12 +481,12 @@
     "/api/v1/identity/certificate": {
       "post": {
         "summary": "Set identity certificate for the client application.",
-        "operationId": "ClientApplication_SetIdentityCertificate",
+        "operationId": "ClientApplication_UpdateIdentityCertificate",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/pbSetIdentityCertificateResponse"
+              "$ref": "#/definitions/pbUpdateIdentityCertificateResponse"
             }
           },
           "default": {
@@ -545,6 +587,14 @@
       ],
       "default": "IPV4"
     },
+    "RemoteProvisioningMode": {
+      "type": "string",
+      "enum": [
+        "MODE_NONE",
+        "USER_AGENT"
+      ],
+      "default": "MODE_NONE"
+    },
     "googlerpcStatus": {
       "type": "object",
       "properties": {
@@ -620,6 +670,29 @@
           "type": "string"
         },
         "correlationId": {
+          "type": "string"
+        }
+      }
+    },
+    "pbAuthorization": {
+      "type": "object",
+      "properties": {
+        "clientId": {
+          "type": "string"
+        },
+        "audience": {
+          "type": "string"
+        },
+        "scopes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "ownerClaim": {
+          "type": "string"
+        },
+        "authority": {
           "type": "string"
         }
       }
@@ -767,6 +840,9 @@
         },
         "releaseUrl": {
           "type": "string"
+        },
+        "remoteProvisioning": {
+          "$ref": "#/definitions/pbRemoteProvisioning"
         }
       }
     },
@@ -790,6 +866,20 @@
         "bitFlags": {
           "type": "integer",
           "format": "int32"
+        }
+      }
+    },
+    "pbRemoteProvisioning": {
+      "type": "object",
+      "properties": {
+        "mode": {
+          "$ref": "#/definitions/RemoteProvisioningMode"
+        },
+        "userAgent": {
+          "$ref": "#/definitions/pbUserAgent"
+        },
+        "authorization": {
+          "$ref": "#/definitions/pbAuthorization"
         }
       }
     },
@@ -940,9 +1030,6 @@
         }
       }
     },
-    "pbSetIdentityCertificateResponse": {
-      "type": "object"
-    },
     "pbShadowSynchronization": {
       "type": "string",
       "enum": [
@@ -951,6 +1038,24 @@
         "DISABLED"
       ],
       "default": "UNSET"
+    },
+    "pbUpdateIdentityCertificateResponse": {
+      "type": "object"
+    },
+    "pbUpdateJSONWebKeysResponse": {
+      "type": "object"
+    },
+    "pbUserAgent": {
+      "type": "object",
+      "properties": {
+        "certificateAuthorityAddress": {
+          "type": "string"
+        },
+        "csrChallengeStateExpiration": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
     },
     "protobufAny": {
       "type": "object",
@@ -963,6 +1068,14 @@
           "format": "byte"
         }
       }
+    },
+    "protobufNullValue": {
+      "type": "string",
+      "enum": [
+        "NULL_VALUE"
+      ],
+      "default": "NULL_VALUE",
+      "description": "`NullValue` is a singleton enumeration to represent the null value for the\n`Value` type union.\n\n The JSON representation for `NullValue` is JSON `null`.\n\n - NULL_VALUE: Null value."
     },
     "resourceaggregatepbContent": {
       "type": "object",

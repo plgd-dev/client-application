@@ -23,9 +23,7 @@ import (
 )
 
 func (s *ClientApplicationServer) GetInformation(ctx context.Context, _ *pb.GetInformationRequest) (*pb.GetInformationResponse, error) {
-	return &pb.GetInformationResponse{
-		Version:    s.info.Version,
-		BuildDate:  s.info.BuildDate,
-		CommitHash: s.info.CommitHash,
-	}, nil
+	info := s.info.Clone()
+	info.RemoteProvisioning = s.remoteProvisioningConfig.ToProto()
+	return info, nil
 }

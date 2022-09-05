@@ -20,36 +20,4 @@ package service.pb;
 
 option go_package = "github.com/plgd-dev/client-application/pb;pb";
 
-message GetInformationRequest {}
-
-message UserAgent {
-    string certificate_authority_address = 1;
-	int64 csr_challenge_state_expiration = 2; // in nanoseconds
-}
-
-message Authorization {
-    string client_id = 1;
-    string audience = 2;
-	repeated string scopes = 3;
-    string owner_claim = 4;
-    string authority = 5;
-}
-
-message RemoteProvisioning {
-    enum Mode {
-        MODE_NONE = 0;
-        USER_AGENT = 1;
-    };
-	Mode mode = 1;
-    UserAgent user_agent = 2;
-    Authorization authorization = 3;
-}
-
-message GetInformationResponse {
-    string version = 1;
-    string build_date = 2;
-    string commit_hash = 3;
-    string commit_date = 4;
-    string release_url = 5;
-    RemoteProvisioning remote_provisioning = 6;
-}
+message GetJSONWebKeysRequest{}

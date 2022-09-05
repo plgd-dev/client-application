@@ -25,5 +25,5 @@ message GetIdentityCSRRequest {}
 
 message GetIdentityCSRResponse {
     bytes certificate_signing_request = 1; // in PEM format
-    bytes state = 2; // for pairing GetIdentityCSR and SetIdentityCertificate
+    bytes state = 2; // for pairing GetIdentityCSR and UpdateIdentityCertificate
 }

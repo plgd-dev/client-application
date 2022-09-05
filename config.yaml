@@ -85,3 +85,14 @@ clients:
         preSharedKey:
           subjectUuid: 57b3fae9-adf5-4e34-90ea-e77784407103
           keyUuid: 46178d21-d480-4e95-9bd3-6c9eefa8d9d8
+remoteProvisioning:
+  mode: none
+  userAgent:
+    certificateAuthorityAddress: ""
+    csrChallengeStateExpiration: 1m
+  authorization:
+    authority: ""
+    clientID: ""
+    audience: ""
+    scopes: []
+    ownerClaim: "sub"

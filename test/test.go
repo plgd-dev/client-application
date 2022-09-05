@@ -32,6 +32,7 @@ import (
 	serviceDevice "github.com/plgd-dev/client-application/service/device"
 	serviceGrpc "github.com/plgd-dev/client-application/service/grpc"
 	"github.com/plgd-dev/client-application/service/http"
+	"github.com/plgd-dev/client-application/service/remoteProvisioning"
 	"github.com/plgd-dev/device/schema"
 	"github.com/plgd-dev/device/schema/device"
 	deviceTest "github.com/plgd-dev/device/test"
@@ -181,6 +182,18 @@ func MakeGrpcConfig() service.GRPCConfig {
 	}
 }
 
+func MakeRemoteProvisioningConfig() remoteProvisioning.Config {
+	return remoteProvisioning.Config{
+		Mode: remoteProvisioning.Mode_None,
+		UserAgentConfig: remoteProvisioning.UserAgentConfig{
+			CSRChallengeStateExpiration: time.Minute * 10,
+		},
+		Authorization: remoteProvisioning.AuthorizationConfig{
+			OwnerClaim: "sub",
+		},
+	}
+}
+
 func NewHttpService(ctx context.Context, t *testing.T) (*http.Service, func()) {
 	cfg := MakeConfig(t)
 	cfg.APIs.HTTP.TLS.ClientCertificateRequired = false
@@ -252,8 +265,10 @@ func NewClientApplicationServer(ctx context.Context, opts ...ClientApplicationSe
 		_ = d.Serve()
 	}()
 
-	return serviceGrpc.NewClientApplicationServer(d, NewServiceInformation(), logger), func() {
+	clientApplicationServer := serviceGrpc.NewClientApplicationServer(MakeRemoteProvisioningConfig(), d, NewServiceInformation(), logger)
+	return clientApplicationServer, func() {
 		d.Close()
+		clientApplicationServer.Close()
 		wg.Wait()
 	}, nil
 }

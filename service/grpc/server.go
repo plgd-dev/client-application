@@ -24,30 +24,34 @@ import (
 	"github.com/jellydator/ttlcache/v3"
 	"github.com/plgd-dev/client-application/pb"
 	serviceDevice "github.com/plgd-dev/client-application/service/device"
+	"github.com/plgd-dev/client-application/service/remoteProvisioning"
 	"github.com/plgd-dev/hub/v2/pkg/log"
+	"go.uber.org/atomic"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
 type ClientApplicationServer struct {
-	serviceDevice *serviceDevice.Service
-	info          *ServiceInformation
-	logger        log.Logger
-	devices       sync.Map
 	pb.UnimplementedClientApplicationServer
-	csrCache *ttlcache.Cache[uuid.UUID, bool]
-	config   Config
+
+	serviceDevice            *serviceDevice.Service
+	info                     *ServiceInformation
+	logger                   log.Logger
+	devices                  sync.Map
+	csrCache                 *ttlcache.Cache[uuid.UUID, bool]
+	remoteProvisioningConfig remoteProvisioning.Config
+	jwksCache                atomic.Pointer[JSONWebKeyCache]
 }
 
-func NewClientApplicationServer(config Config, serviceDevice *serviceDevice.Service, info *ServiceInformation, logger log.Logger) *ClientApplicationServer {
+func NewClientApplicationServer(remoteProvisioningConfig remoteProvisioning.Config, serviceDevice *serviceDevice.Service, info *ServiceInformation, logger log.Logger) *ClientApplicationServer {
 	csrCache := ttlcache.New[uuid.UUID, bool]()
-	csrCache.Start()
+	go csrCache.Start()
 	return &ClientApplicationServer{
-		serviceDevice: serviceDevice,
-		info:          info,
-		logger:        logger,
-		config:        config,
-		csrCache:      csrCache,
+		serviceDevice:            serviceDevice,
+		info:                     info,
+		logger:                   logger,
+		csrCache:                 csrCache,
+		remoteProvisioningConfig: remoteProvisioningConfig,
 	}
 }
 

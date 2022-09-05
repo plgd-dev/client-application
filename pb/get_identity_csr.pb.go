@@ -81,7 +81,7 @@ type GetIdentityCSRResponse struct {
 	unknownFields protoimpl.UnknownFields
 
 	CertificateSigningRequest []byte `protobuf:"bytes,1,opt,name=certificate_signing_request,json=certificateSigningRequest,proto3" json:"certificate_signing_request,omitempty"` // in PEM format
-	State                     []byte `protobuf:"bytes,2,opt,name=state,proto3" json:"state,omitempty"`                                                                            // for pairing GetIdentityCSR and SetIdentityCertificate
+	State                     []byte `protobuf:"bytes,2,opt,name=state,proto3" json:"state,omitempty"`                                                                            // for pairing GetIdentityCSR and UpdateIdentityCertificate
 }
 
 func (x *GetIdentityCSRResponse) Reset() {

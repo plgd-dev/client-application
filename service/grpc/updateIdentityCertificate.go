@@ -22,28 +22,53 @@ import (
 	"github.com/google/uuid"
 	"github.com/plgd-dev/client-application/pb"
 	"github.com/plgd-dev/client-application/service/remoteProvisioning"
-	"github.com/plgd-dev/hub/v2/identity-store/events"
+	"github.com/plgd-dev/device/pkg/net/coap"
 	"github.com/plgd-dev/hub/v2/pkg/net/grpc"
+	"github.com/plgd-dev/kit/v2/security"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
-func (s *ClientApplicationServer) GetIdentityCSR(ctx context.Context, req *pb.GetIdentityCSRRequest) (*pb.GetIdentityCSRResponse, error) {
+func (s *ClientApplicationServer) validateState(state []byte) bool {
+	if len(state) != 16 {
+		return false
+	}
+	var u uuid.UUID
+	for i := 0; i < 16; i++ {
+		u[i] = state[i]
+	}
+	item := s.csrCache.Get(u)
+	if item == nil {
+		return false
+	}
+	s.csrCache.Delete(u)
+	return !item.IsExpired()
+}
+
+func (s *ClientApplicationServer) UpdateIdentityCertificate(ctx context.Context, req *pb.UpdateIdentityCertificateRequest) (*pb.UpdateIdentityCertificateResponse, error) {
 	if s.remoteProvisioningConfig.Mode != remoteProvisioning.Mode_UserAgent {
 		return nil, status.Errorf(codes.Unimplemented, "not supported")
+	}
+	if !s.validateState(req.State) {
+		return nil, status.Errorf(codes.InvalidArgument, "invalid state")
 	}
 	owner, err := grpc.OwnerFromTokenMD(ctx, s.remoteProvisioningConfig.Authorization.OwnerClaim)
 	if err != nil {
 		return nil, s.logger.LogAndReturnError(status.Errorf(codes.Unauthenticated, "cannot get owner from token: %v", err))
 	}
-	csr, err := s.serviceDevice.GetCSR(events.OwnerToUUID(owner))
+	certs, err := security.ParseX509FromPEM(req.Certificate)
 	if err != nil {
-		return nil, status.Error(codes.Unimplemented, err.Error())
+		return nil, s.logger.LogAndReturnError(status.Errorf(codes.InvalidArgument, "cannot parse certificate: %v", err))
 	}
-	state := uuid.New()
-	s.csrCache.Set(state, true, s.remoteProvisioningConfig.UserAgentConfig.CSRChallengeStateExpiration)
-	return &pb.GetIdentityCSRResponse{
-		CertificateSigningRequest: csr,
-		State:                     state[:],
-	}, nil
+	ident, err := coap.GetDeviceIDFromIdentityCertificate(certs[0])
+	if err != nil {
+		return nil, s.logger.LogAndReturnError(status.Errorf(codes.InvalidArgument, "cannot get owner id from certificate: %v", err))
+	}
+	if owner != ident {
+		return nil, s.logger.LogAndReturnError(status.Errorf(codes.InvalidArgument, "invalid owner id"))
+	}
+	if err := s.serviceDevice.SetCertificate(req.Certificate); err != nil {
+		return nil, s.logger.LogAndReturnError(status.Errorf(codes.Internal, "cannot set certificate: %v", err))
+	}
+	return &pb.UpdateIdentityCertificateResponse{}, nil
 }
