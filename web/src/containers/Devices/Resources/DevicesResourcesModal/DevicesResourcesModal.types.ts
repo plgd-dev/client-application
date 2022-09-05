@@ -30,7 +30,13 @@ export type Props = {
   isUnregistered: boolean
   loading: boolean
   onClose?: () => void
-  resourceData?: object
+  resourceData?: {
+    types: string[]
+    data: {
+      content: any
+      status: string
+    }
+  }
   retrieving: boolean
   ttlControl?: ReactNode
   type?: DevicesResourcesModalType
