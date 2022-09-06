@@ -26,8 +26,9 @@ const (
 	ApplicationProtoJsonContentType = "application/protojson"
 	ApplicationJsonContentType      = "application/json"
 
-	Api   = "/api"
-	ApiV1 = Api + "/v1"
+	Api       = "/api"
+	ApiV1     = Api + "/v1"
+	WellKnown = "/.well-known"
 
 	Devices             = ApiV1 + "/devices"
 	Device              = Devices + "/{" + DeviceIDKey + "}"
@@ -38,4 +39,5 @@ const (
 	OwnDevice           = Device + "/own"
 	DisownDevice        = Device + "/disown"
 	WebConfiguration    = "/web_configuration.json"
+	WellKnownJWKs       = WellKnown + "/jwks.json"
 )

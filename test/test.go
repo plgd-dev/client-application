@@ -224,10 +224,12 @@ func NewHttpService(ctx context.Context, t *testing.T) (*http.Service, func()) {
 }
 
 func NewServiceInformation() *serviceGrpc.ServiceInformation {
+	remoteProvisioning := MakeRemoteProvisioningConfig()
 	return &serviceGrpc.ServiceInformation{
-		Version:    VERSION,
-		BuildDate:  BUILD_DATE,
-		CommitHash: COMMIT_HASH,
+		Version:            VERSION,
+		BuildDate:          BUILD_DATE,
+		CommitHash:         COMMIT_HASH,
+		RemoteProvisioning: remoteProvisioning.ToProto(),
 	}
 }
 

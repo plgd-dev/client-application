@@ -22,7 +22,6 @@ import (
 
 	"github.com/plgd-dev/client-application/pb"
 	pkgGrpcServer "github.com/plgd-dev/client-application/pkg/net/grpc/server"
-	"github.com/plgd-dev/client-application/service/remoteProvisioning"
 	"github.com/plgd-dev/hub/v2/pkg/fsnotify"
 	"github.com/plgd-dev/hub/v2/pkg/log"
 	kitNetGrpc "github.com/plgd-dev/hub/v2/pkg/net/grpc"
@@ -39,7 +38,7 @@ func New(ctx context.Context, serviceName string, config Config, clientApplicati
 	interceptor := kitNetGrpc.MakeAuthInterceptors(func(ctx context.Context, method string) (context.Context, error) {
 		return ctx, nil
 	})
-	if clientApplicationServer.remoteProvisioningConfig.Mode != remoteProvisioning.Mode_UserAgent {
+	if clientApplicationServer.HasAuthorizationEnabled() {
 		methods := []string{
 			"/" + pb.ClientApplication_ServiceDesc.ServiceName + "/UpdateJSONWebKeys",
 			"/" + pb.ClientApplication_ServiceDesc.ServiceName + "/GetJSONWebKeys",

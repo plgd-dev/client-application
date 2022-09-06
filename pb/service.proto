@@ -182,7 +182,7 @@ service ClientApplication {
 
   rpc UpdateJSONWebKeys(google.protobuf.Struct) returns (UpdateJSONWebKeysResponse) {
     option (google.api.http) = {
-      post: "/.well-known/jwks.json"
+      put: "/.well-known/jwks.json"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       tags: [ "client-application" ]

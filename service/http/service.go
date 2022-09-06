@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"regexp"
 	"strings"
 
 	"github.com/fullstorydev/grpchan/inprocgrpc"
@@ -43,9 +44,9 @@ type Service struct {
 }
 
 type RequestHandler struct {
-	mux     *runtime.ServeMux
-	version string
-	config  Config
+	mux                     *runtime.ServeMux
+	clientApplicationServer *grpc.ClientApplicationServer
+	config                  Config
 }
 
 func splitURIPath(requestURI, prefix string) []string {
@@ -85,6 +86,30 @@ func New(ctx context.Context, serviceName string, config Config, clientApplicati
 	auth := func(ctx context.Context, method, uri string) (context.Context, error) {
 		return ctx, nil
 	}
+	if clientApplicationServer.HasAuthorizationEnabled() {
+		whiteList := []kitNetHttp.RequestMatcher{
+			{
+				Method: http.MethodGet,
+				URI:    regexp.MustCompile(regexp.QuoteMeta(WebConfiguration)),
+			},
+			{
+				Method: http.MethodGet,
+				URI:    regexp.MustCompile(regexp.QuoteMeta(WellKnownJWKs)),
+			},
+			{
+				// token is directly verified by clientApplication
+				Method: http.MethodPost,
+				URI:    regexp.MustCompile(regexp.QuoteMeta(WellKnownJWKs)),
+			},
+		}
+		if config.UI.Enabled {
+			whiteList = append(whiteList, kitNetHttp.RequestMatcher{
+				Method: http.MethodGet,
+				URI:    regexp.MustCompile(`(\/[^a]pi\/.*)|(\/a[^p]i\/.*)|(\/ap[^i]\/.*)||(\/api[^/].*)`),
+			})
+		}
+		auth = kitNetHttp.NewInterceptorWithValidator(clientApplicationServer, authRules, whiteList...)
+	}
 	mux := serverMux.New()
 	r := serverMux.NewRouter(queryCaseInsensitive, auth)
 
@@ -102,12 +127,13 @@ func New(ctx context.Context, serviceName string, config Config, clientApplicati
 		_ = listener.Close()
 		return nil, fmt.Errorf("failed to register grpc-gateway handler: %w", err)
 	}
-	requestHandler := &RequestHandler{mux: mux, version: clientApplicationServer.Version(), config: config}
+	requestHandler := &RequestHandler{mux: mux, clientApplicationServer: clientApplicationServer, config: config}
 	r.PathPrefix(Devices).Methods(http.MethodPut).MatcherFunc(resourceMatcher).HandlerFunc(requestHandler.updateResource)
 	r.PathPrefix(Devices).Methods(http.MethodPost).MatcherFunc(resourceMatcher).HandlerFunc(requestHandler.createResource)
 	r.PathPrefix(ApiV1).Handler(mux)
 	r.HandleFunc(WebConfiguration, requestHandler.getWebConfiguration).Methods(http.MethodGet)
-
+	r.HandleFunc(WellKnownJWKs, requestHandler.getJSONWebKeys).Methods(http.MethodGet)
+	r.HandleFunc(WellKnownJWKs, requestHandler.updateJSONWebKeys).Methods(http.MethodPut)
 	// serve www directory
 	if config.UI.Enabled {
 		fs := http.FileServer(http.Dir(config.UI.Directory))
@@ -173,4 +199,27 @@ var queryCaseInsensitive = map[string]string{
 	strings.ToLower(TimeoutQueryKey):               TimeoutQueryKey,
 	strings.ToLower(OwnershipStatusFilterQueryKey): OwnershipStatusFilterQueryKey,
 	strings.ToLower(TypeFilterQueryKey):            TypeFilterQueryKey,
+}
+
+var authRules = map[string][]kitNetHttp.AuthArgs{
+	http.MethodGet: {
+		{
+			URI: regexp.MustCompile(regexp.QuoteMeta(ApiV1) + `\/.*`),
+		},
+	},
+	http.MethodPost: {
+		{
+			URI: regexp.MustCompile(regexp.QuoteMeta(ApiV1) + `\/.*`),
+		},
+	},
+	http.MethodDelete: {
+		{
+			URI: regexp.MustCompile(regexp.QuoteMeta(ApiV1) + `\/.*`),
+		},
+	},
+	http.MethodPut: {
+		{
+			URI: regexp.MustCompile(regexp.QuoteMeta(ApiV1) + `\/.*`),
+		},
+	},
 }

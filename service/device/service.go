@@ -39,7 +39,7 @@ import (
 	"go.opentelemetry.io/otel/trace"
 )
 
-type authenticationClient interface {
+type AuthenticationClient interface {
 	DialDTLS(ctx context.Context, addr string, dtlsCfg *dtls.Config, opts ...coap.DialOptionFunc) (*coap.ClientCloseHandler, error)
 	DialTLS(ctx context.Context, addr string, tlsCfg *tls.Config, opts ...coap.DialOptionFunc) (*coap.ClientCloseHandler, error)
 	GetOwnerID() (string, error)
@@ -60,7 +60,7 @@ type Service struct {
 	udp4Listener         *coapNet.UDPConn
 	udp6Listener         *coapNet.UDPConn
 	done                 chan struct{}
-	authenticationClient authenticationClient
+	authenticationClient AuthenticationClient
 }
 
 var closeHandlerKey = "close-handler"
@@ -68,10 +68,8 @@ var closeHandlerKey = "close-handler"
 // New creates new GRPC service
 func New(ctx context.Context, serviceName string, config Config, logger log.Logger, tracerProvider trace.TracerProvider) (*Service, error) {
 	var err error
-	var authenticationClient authenticationClient
+	var authenticationClient AuthenticationClient
 	switch config.COAP.TLS.Authentication {
-	case AuthenticationNone:
-		authenticationClient = newAuthenticationNone()
 	case AuthenticationPreSharedKey:
 		authenticationClient = newAuthenticationPreSharedKey(config)
 	case AuthenticationX509:

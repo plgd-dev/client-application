@@ -48,19 +48,19 @@ const (
 
 type AuthorizationConfig struct {
 	Authority  string   `yaml:"authority" json:"authority"`
-	ClientID   string   `yaml:"clientID" json:"clientId"`
+	ClientID   string   `yaml:"clientId" json:"clientId"`
 	Audience   string   `yaml:"audience" json:"audience"`
 	Scopes     []string `yaml:"scopes" json:"scopes"`
 	OwnerClaim string   `yaml:"ownerClaim" json:"ownerClaim"`
 }
 
-func (m AuthorizationConfig) ToProto() *pb.Authorization {
+func (c AuthorizationConfig) ToProto() *pb.Authorization {
 	return &pb.Authorization{
-		Authority:  m.Authority,
-		OwnerClaim: m.OwnerClaim,
-		ClientId:   m.ClientID,
-		Audience:   m.Audience,
-		Scopes:     m.Scopes,
+		Authority:  c.Authority,
+		OwnerClaim: c.OwnerClaim,
+		ClientId:   c.ClientID,
+		Audience:   c.Audience,
+		Scopes:     c.Scopes,
 	}
 }
 

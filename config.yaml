@@ -92,7 +92,7 @@ remoteProvisioning:
     csrChallengeStateExpiration: 1m
   authorization:
     authority: ""
-    clientID: ""
+    clientId: ""
     audience: ""
     scopes: []
     ownerClaim: "sub"

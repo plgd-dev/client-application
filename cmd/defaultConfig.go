@@ -28,6 +28,7 @@ import (
 	service "github.com/plgd-dev/client-application/service"
 	"github.com/plgd-dev/client-application/service/device"
 	"github.com/plgd-dev/client-application/service/http"
+	"github.com/plgd-dev/client-application/service/remoteProvisioning"
 	"github.com/plgd-dev/hub/v2/pkg/log"
 	grpcServer "github.com/plgd-dev/hub/v2/pkg/net/grpc/server"
 	httpServer "github.com/plgd-dev/hub/v2/pkg/net/http/server"
@@ -101,6 +102,9 @@ func createDefaultConfig(uiDirectory string) service.Config {
 					},
 				},
 			},
+		},
+		RemoteProvisioning: remoteProvisioning.Config{
+			Mode: remoteProvisioning.Mode_None,
 		},
 	}
 }

@@ -118,6 +118,24 @@ func encodePrivateKeyToPem(k *ecdsa.PrivateKey) ([]byte, error) {
 	return pem.EncodeToMemory(&pem.Block{Type: "EC PRIVATE KEY", Bytes: b}), nil
 }
 
+func (s *authenticationX509) updateCertificate(crt tls.Certificate) error {
+	for {
+		oldCrt := s.certificate.Load()
+		if oldCrt == nil {
+			if s.certificate.CompareAndSwap(oldCrt, &crt) {
+				return nil
+			}
+		} else {
+			if crt.Leaf.Subject.CommonName != oldCrt.Leaf.Subject.CommonName {
+				return fmt.Errorf("common name of certificate(%v) is not equal with previous one(%v)", crt.Leaf.Subject.CommonName, oldCrt.Leaf.Subject.CommonName)
+			}
+			if s.certificate.CompareAndSwap(oldCrt, &crt) {
+				return nil
+			}
+		}
+	}
+}
+
 func (s *authenticationX509) SetCertificate(chainPem []byte) error {
 	keyPem, err := encodePrivateKeyToPem(s.privateKey)
 	if err != nil {
@@ -131,7 +149,9 @@ func (s *authenticationX509) SetCertificate(chainPem []byte) error {
 	if _, err := getRootCAFromChain(crt.Certificate); err != nil {
 		return fmt.Errorf("invalid root certificate: %w", err)
 	}
-	s.certificate.Store(&crt)
+	if err := s.updateCertificate(crt); err != nil {
+		return fmt.Errorf("cannot update certificate: %w", err)
+	}
 	return nil
 }
 

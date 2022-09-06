@@ -51,7 +51,7 @@
           "client-application"
         ]
       },
-      "post": {
+      "put": {
         "operationId": "ClientApplication_UpdateJSONWebKeys",
         "responses": {
           "200": {

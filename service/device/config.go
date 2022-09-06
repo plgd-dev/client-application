@@ -169,7 +169,6 @@ func (c *PreSharedKeyConfig) Validate() error {
 type Authentication string
 
 const (
-	AuthenticationNone         Authentication = "none"
 	AuthenticationPreSharedKey Authentication = "preSharedKey"
 	AuthenticationX509         Authentication = "x509"
 )
@@ -181,12 +180,13 @@ type TLSConfig struct {
 
 func (c *TLSConfig) Validate() error {
 	switch c.Authentication {
-	case AuthenticationNone, "":
-		c.Authentication = AuthenticationNone
+	case "":
+		return fmt.Errorf("authentication('%v')", c.Authentication)
 	case AuthenticationPreSharedKey:
 		if err := c.PreSharedKey.Validate(); err != nil {
 			return fmt.Errorf("preSharedKey.%w", err)
 		}
+	case AuthenticationX509:
 	}
 	return nil
 }

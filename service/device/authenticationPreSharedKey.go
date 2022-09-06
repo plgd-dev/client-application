@@ -23,9 +23,9 @@ func newAuthenticationPreSharedKey(config Config) *authenticationPreSharedKey {
 	}
 }
 
-func (s *authenticationPreSharedKey) DialDTLS(ctx context.Context, addr string, dtlsCfg *dtls.Config, opts ...coap.DialOptionFunc) (*coap.ClientCloseHandler, error) {
+func (s *authenticationPreSharedKey) DialDTLS(ctx context.Context, addr string, _ *dtls.Config, opts ...coap.DialOptionFunc) (*coap.ClientCloseHandler, error) {
 	idBin, _ := s.config.COAP.TLS.PreSharedKey.subjectUUID.MarshalBinary()
-	dtlsCfg = &dtls.Config{
+	dtlsCfg := &dtls.Config{
 		PSKIdentityHint: idBin,
 		PSK: func(b []byte) ([]byte, error) {
 			// iotivity-lite supports only 16-byte PSK
