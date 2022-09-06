@@ -17,6 +17,8 @@ builds:
       - arm
       - arm64
       - "386"
+      - ppc64
+      - ppc64le
     goarm:
       - "7"
     main: ./cmd

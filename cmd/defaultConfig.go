@@ -30,6 +30,7 @@ import (
 	"github.com/plgd-dev/client-application/service/http"
 	"github.com/plgd-dev/hub/v2/pkg/log"
 	grpcServer "github.com/plgd-dev/hub/v2/pkg/net/grpc/server"
+	httpServer "github.com/plgd-dev/hub/v2/pkg/net/http/server"
 )
 
 func createDefaultConfig(uiDirectory string) service.Config {
@@ -54,6 +55,12 @@ func createDefaultConfig(uiDirectory string) service.Config {
 					UI: http.UIConfig{
 						Enabled:   true,
 						Directory: uiDirectory,
+					},
+					Server: httpServer.Config{
+						ReadTimeout:       time.Second * 8,
+						ReadHeaderTimeout: time.Second * 4,
+						WriteTimeout:      time.Second * 16,
+						IdleTimeout:       time.Second * 30,
 					},
 				},
 			},
