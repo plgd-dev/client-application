@@ -48,15 +48,15 @@ func (s *authenticationPreSharedKey) GetOwnOptions() []core.OwnOption {
 	return []core.OwnOption{core.WithPresharedKey(s.config.COAP.TLS.PreSharedKey.keyUUID[:16])}
 }
 
-func (s *authenticationPreSharedKey) GetCSR(id string) ([]byte, error) {
+func (s *authenticationPreSharedKey) GetIdentityCSR(id string) ([]byte, error) {
 	return nil, errPreSharedKeyAuthentication
 }
 
-func (s *authenticationPreSharedKey) SetCertificate(chainPem []byte) error {
+func (s *authenticationPreSharedKey) SetIdentityCertificate(chainPem []byte) error {
 	return errPreSharedKeyAuthentication
 }
 
-func (s *authenticationPreSharedKey) GetCertificate() (tls.Certificate, error) {
+func (s *authenticationPreSharedKey) GetIdentityCertificate() (tls.Certificate, error) {
 	// we need to set empty certificate otherwise own device will failed
 	return tls.Certificate{}, nil
 }

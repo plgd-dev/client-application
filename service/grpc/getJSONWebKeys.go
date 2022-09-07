@@ -18,6 +18,7 @@ package grpc
 
 import (
 	"context"
+	"encoding/json"
 
 	"github.com/lestrrat-go/jwx/jwk"
 	"github.com/plgd-dev/client-application/pb"
@@ -42,9 +43,18 @@ func (s *ClientApplicationServer) GetJSONWebKeys(ctx context.Context, req *pb.Ge
 			keys = append(keys, k)
 		}
 	}
-	resp, err := structpb.NewStruct(map[string]interface{}{
+	marshaledJwk, err := json.Marshal(map[string]interface{}{
 		"keys": keys,
 	})
+	if jwksCache == nil {
+		return nil, status.Errorf(codes.Internal, "cannot marshal keys to json: %v", err)
+	}
+	var jwkMap map[string]interface{}
+	err = json.Unmarshal(marshaledJwk, &jwkMap)
+	if jwksCache == nil {
+		return nil, status.Errorf(codes.Internal, "cannot unmarshal json to jwkMap: %v", err)
+	}
+	resp, err := structpb.NewStruct(jwkMap)
 	if err != nil {
 		return nil, status.Errorf(codes.Internal, "cannot convert to struct: %v", err)
 	}

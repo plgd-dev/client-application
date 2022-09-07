@@ -21,7 +21,6 @@ import (
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/proto"
-	"google.golang.org/protobuf/types/known/structpb"
 )
 
 // Suppress "imported and not used" errors
@@ -696,18 +695,15 @@ func local_request_ClientApplication_GetInformation_0(ctx context.Context, marsh
 
 }
 
-var (
-	filter_ClientApplication_UpdateJSONWebKeys_0 = &utilities.DoubleArray{Encoding: map[string]int{}, Base: []int(nil), Check: []int(nil)}
-)
-
 func request_ClientApplication_UpdateJSONWebKeys_0(ctx context.Context, marshaler runtime.Marshaler, client ClientApplicationClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq structpb.Struct
+	var protoReq UpdateJSONWebKeysRequest
 	var metadata runtime.ServerMetadata
 
-	if err := req.ParseForm(); err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	newReader, berr := utilities.IOReaderFactory(req.Body)
+	if berr != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
 	}
-	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_ClientApplication_UpdateJSONWebKeys_0); err != nil {
+	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq.Jwks); err != nil && err != io.EOF {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -717,13 +713,14 @@ func request_ClientApplication_UpdateJSONWebKeys_0(ctx context.Context, marshale
 }
 
 func local_request_ClientApplication_UpdateJSONWebKeys_0(ctx context.Context, marshaler runtime.Marshaler, server ClientApplicationServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
-	var protoReq structpb.Struct
+	var protoReq UpdateJSONWebKeysRequest
 	var metadata runtime.ServerMetadata
 
-	if err := req.ParseForm(); err != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
+	newReader, berr := utilities.IOReaderFactory(req.Body)
+	if berr != nil {
+		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
 	}
-	if err := runtime.PopulateQueryParameters(&protoReq, req.Form, filter_ClientApplication_UpdateJSONWebKeys_0); err != nil {
+	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq.Jwks); err != nil && err != io.EOF {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -800,6 +797,24 @@ func local_request_ClientApplication_UpdateIdentityCertificate_0(ctx context.Con
 	}
 
 	msg, err := server.UpdateIdentityCertificate(ctx, &protoReq)
+	return msg, metadata, err
+
+}
+
+func request_ClientApplication_GetIdentityCertificate_0(ctx context.Context, marshaler runtime.Marshaler, client ClientApplicationClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq GetIdentityCertificateRequest
+	var metadata runtime.ServerMetadata
+
+	msg, err := client.GetIdentityCertificate(ctx, &protoReq, grpc.Header(&metadata.HeaderMD), grpc.Trailer(&metadata.TrailerMD))
+	return msg, metadata, err
+
+}
+
+func local_request_ClientApplication_GetIdentityCertificate_0(ctx context.Context, marshaler runtime.Marshaler, server ClientApplicationServer, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
+	var protoReq GetIdentityCertificateRequest
+	var metadata runtime.ServerMetadata
+
+	msg, err := server.GetIdentityCertificate(ctx, &protoReq)
 	return msg, metadata, err
 
 }
@@ -1136,6 +1151,29 @@ func RegisterClientApplicationHandlerServer(ctx context.Context, mux *runtime.Se
 		}
 
 		forward_ClientApplication_UpdateIdentityCertificate_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
+	mux.Handle("GET", pattern_ClientApplication_GetIdentityCertificate_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		var stream runtime.ServerTransportStream
+		ctx = grpc.NewContextWithServerTransportStream(ctx, &stream)
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateIncomingContext(ctx, mux, req, "/service.pb.ClientApplication/GetIdentityCertificate", runtime.WithHTTPPathPattern("/api/v1/identity/certificate"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := local_request_ClientApplication_GetIdentityCertificate_0(rctx, inboundMarshaler, server, req, pathParams)
+		md.HeaderMD, md.TrailerMD = metadata.Join(md.HeaderMD, stream.Header()), metadata.Join(md.TrailerMD, stream.Trailer())
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_ClientApplication_GetIdentityCertificate_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
 
 	})
 
@@ -1480,6 +1518,26 @@ func RegisterClientApplicationHandlerClient(ctx context.Context, mux *runtime.Se
 
 	})
 
+	mux.Handle("GET", pattern_ClientApplication_GetIdentityCertificate_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
+		ctx, cancel := context.WithCancel(req.Context())
+		defer cancel()
+		inboundMarshaler, outboundMarshaler := runtime.MarshalerForRequest(mux, req)
+		rctx, err := runtime.AnnotateContext(ctx, mux, req, "/service.pb.ClientApplication/GetIdentityCertificate", runtime.WithHTTPPathPattern("/api/v1/identity/certificate"))
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+		resp, md, err := request_ClientApplication_GetIdentityCertificate_0(rctx, inboundMarshaler, client, req, pathParams)
+		ctx = runtime.NewServerMetadataContext(ctx, md)
+		if err != nil {
+			runtime.HTTPError(ctx, mux, outboundMarshaler, w, req, err)
+			return
+		}
+
+		forward_ClientApplication_GetIdentityCertificate_0(ctx, mux, outboundMarshaler, w, req, resp, mux.GetForwardResponseOptions()...)
+
+	})
+
 	return nil
 }
 
@@ -1513,6 +1571,8 @@ var (
 	pattern_ClientApplication_GetIdentityCSR_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"api", "v1", "identity", "csr"}, ""))
 
 	pattern_ClientApplication_UpdateIdentityCertificate_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"api", "v1", "identity", "certificate"}, ""))
+
+	pattern_ClientApplication_GetIdentityCertificate_0 = runtime.MustPattern(runtime.NewPattern(1, []int{2, 0, 2, 1, 2, 2, 2, 3}, []string{"api", "v1", "identity", "certificate"}, ""))
 )
 
 var (
@@ -1545,4 +1605,6 @@ var (
 	forward_ClientApplication_GetIdentityCSR_0 = runtime.ForwardResponseMessage
 
 	forward_ClientApplication_UpdateIdentityCertificate_0 = runtime.ForwardResponseMessage
+
+	forward_ClientApplication_GetIdentityCertificate_0 = runtime.ForwardResponseMessage
 )

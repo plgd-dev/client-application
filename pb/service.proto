@@ -35,6 +35,7 @@ import "pb/disown_device.proto";
 import "pb/get_information.proto";
 import "pb/get_identity_csr.proto";
 import "pb/update_identity_certificate.proto";
+import "pb/get_identity_certificate.proto";
 import "pb/get_json_web_keys.proto";
 import "pb/update_json_web_keys.proto";
 
@@ -180,9 +181,10 @@ service ClientApplication {
     };
   }
 
-  rpc UpdateJSONWebKeys(google.protobuf.Struct) returns (UpdateJSONWebKeysResponse) {
+  rpc UpdateJSONWebKeys(UpdateJSONWebKeysRequest) returns (UpdateJSONWebKeysResponse) {
     option (google.api.http) = {
       put: "/.well-known/jwks.json"
+      body: "jwks"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       tags: [ "client-application" ]
@@ -208,10 +210,20 @@ service ClientApplication {
     };
   }
 
-  // Set identity certificate for the client application.
+  // Set or update identity certificate for the client application.
   rpc UpdateIdentityCertificate(UpdateIdentityCertificateRequest) returns (UpdateIdentityCertificateResponse) {
     option (google.api.http) = {
       post: "/api/v1/identity/certificate"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: [ "client-application" ]
+    };
+  }
+
+  // Set or update identity certificate for the client application.
+  rpc GetIdentityCertificate(GetIdentityCertificateRequest) returns (GetIdentityCertificateResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/identity/certificate"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       tags: [ "client-application" ]

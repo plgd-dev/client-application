@@ -36,7 +36,7 @@ func (s *ClientApplicationServer) GetIdentityCSR(ctx context.Context, req *pb.Ge
 	if err != nil {
 		return nil, s.logger.LogAndReturnError(status.Errorf(codes.Unauthenticated, "cannot get owner from token: %v", err))
 	}
-	csr, err := s.serviceDevice.GetCSR(events.OwnerToUUID(owner))
+	csr, err := s.serviceDevice.GetIdentityCSR(events.OwnerToUUID(owner))
 	if err != nil {
 		return nil, status.Error(codes.Unimplemented, err.Error())
 	}

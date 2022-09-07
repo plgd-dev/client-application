@@ -18,12 +18,12 @@ package http
 
 import (
 	"bytes"
+	"encoding/json"
 	"io"
 	"net/http"
 
 	"github.com/plgd-dev/hub/v2/http-gateway/serverMux"
 	kitNetGrpc "github.com/plgd-dev/hub/v2/pkg/net/grpc"
-	"github.com/plgd-dev/kit/v2/codec/json"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/types/known/structpb"
@@ -35,7 +35,7 @@ func (requestHandler *RequestHandler) updateJSONWebKeys(w http.ResponseWriter, r
 		return
 	}
 	var data map[string]interface{}
-	err := json.ReadFrom(r.Body, &data)
+	err := json.NewDecoder(r.Body).Decode(&data)
 	if err != nil {
 		serverMux.WriteError(w, kitNetGrpc.ForwardErrorf(codes.InvalidArgument, "cannot read body: %v", err))
 		return

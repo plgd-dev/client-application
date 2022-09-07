@@ -80,6 +80,7 @@ func MakeConfig(t require.TestingT) service.Config {
 	cfg.APIs.HTTP = MakeHttpConfig()
 	cfg.APIs.GRPC = MakeGrpcConfig()
 	cfg.Clients.Device = MakeDeviceConfig()
+	cfg.RemoteProvisioning = MakeRemoteProvisioningConfig()
 
 	require.NoError(t, cfg.Validate())
 

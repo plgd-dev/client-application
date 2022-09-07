@@ -25,6 +25,7 @@ package pb
 import (
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
+	structpb "google.golang.org/protobuf/types/known/structpb"
 	reflect "reflect"
 	sync "sync"
 )
@@ -36,6 +37,53 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
+type UpdateJSONWebKeysRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Jwks *structpb.Struct `protobuf:"bytes,1,opt,name=jwks,proto3" json:"jwks,omitempty"`
+}
+
+func (x *UpdateJSONWebKeysRequest) Reset() {
+	*x = UpdateJSONWebKeysRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_github_com_plgd_dev_client_application_pb_update_json_web_keys_proto_msgTypes[0]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *UpdateJSONWebKeysRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*UpdateJSONWebKeysRequest) ProtoMessage() {}
+
+func (x *UpdateJSONWebKeysRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_github_com_plgd_dev_client_application_pb_update_json_web_keys_proto_msgTypes[0]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use UpdateJSONWebKeysRequest.ProtoReflect.Descriptor instead.
+func (*UpdateJSONWebKeysRequest) Descriptor() ([]byte, []int) {
+	return file_github_com_plgd_dev_client_application_pb_update_json_web_keys_proto_rawDescGZIP(), []int{0}
+}
+
+func (x *UpdateJSONWebKeysRequest) GetJwks() *structpb.Struct {
+	if x != nil {
+		return x.Jwks
+	}
+	return nil
+}
+
 type UpdateJSONWebKeysResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
@@ -45,7 +93,7 @@ type UpdateJSONWebKeysResponse struct {
 func (x *UpdateJSONWebKeysResponse) Reset() {
 	*x = UpdateJSONWebKeysResponse{}
 	if protoimpl.UnsafeEnabled {
-		mi := &file_github_com_plgd_dev_client_application_pb_update_json_web_keys_proto_msgTypes[0]
+		mi := &file_github_com_plgd_dev_client_application_pb_update_json_web_keys_proto_msgTypes[1]
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		ms.StoreMessageInfo(mi)
 	}
@@ -58,7 +106,7 @@ func (x *UpdateJSONWebKeysResponse) String() string {
 func (*UpdateJSONWebKeysResponse) ProtoMessage() {}
 
 func (x *UpdateJSONWebKeysResponse) ProtoReflect() protoreflect.Message {
-	mi := &file_github_com_plgd_dev_client_application_pb_update_json_web_keys_proto_msgTypes[0]
+	mi := &file_github_com_plgd_dev_client_application_pb_update_json_web_keys_proto_msgTypes[1]
 	if protoimpl.UnsafeEnabled && x != nil {
 		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
 		if ms.LoadMessageInfo() == nil {
@@ -71,7 +119,7 @@ func (x *UpdateJSONWebKeysResponse) ProtoReflect() protoreflect.Message {
 
 // Deprecated: Use UpdateJSONWebKeysResponse.ProtoReflect.Descriptor instead.
 func (*UpdateJSONWebKeysResponse) Descriptor() ([]byte, []int) {
-	return file_github_com_plgd_dev_client_application_pb_update_json_web_keys_proto_rawDescGZIP(), []int{0}
+	return file_github_com_plgd_dev_client_application_pb_update_json_web_keys_proto_rawDescGZIP(), []int{1}
 }
 
 var File_github_com_plgd_dev_client_application_pb_update_json_web_keys_proto protoreflect.FileDescriptor
@@ -82,12 +130,18 @@ var file_github_com_plgd_dev_client_application_pb_update_json_web_keys_proto_ra
 	0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x2f, 0x70, 0x62, 0x2f, 0x75, 0x70, 0x64, 0x61,
 	0x74, 0x65, 0x5f, 0x6a, 0x73, 0x6f, 0x6e, 0x5f, 0x77, 0x65, 0x62, 0x5f, 0x6b, 0x65, 0x79, 0x73,
 	0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12, 0x0a, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x2e,
-	0x70, 0x62, 0x22, 0x1b, 0x0a, 0x19, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x4a, 0x53, 0x4f, 0x4e,
-	0x57, 0x65, 0x62, 0x4b, 0x65, 0x79, 0x73, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x42,
-	0x2e, 0x5a, 0x2c, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x70, 0x6c,
-	0x67, 0x64, 0x2d, 0x64, 0x65, 0x76, 0x2f, 0x63, 0x6c, 0x69, 0x65, 0x6e, 0x74, 0x2d, 0x61, 0x70,
-	0x70, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x2f, 0x70, 0x62, 0x3b, 0x70, 0x62, 0x62,
-	0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x70, 0x62, 0x1a, 0x1c, 0x67, 0x6f, 0x6f, 0x67, 0x6c, 0x65, 0x2f, 0x70, 0x72, 0x6f, 0x74, 0x6f,
+	0x62, 0x75, 0x66, 0x2f, 0x73, 0x74, 0x72, 0x75, 0x63, 0x74, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f,
+	0x22, 0x47, 0x0a, 0x18, 0x55, 0x70, 0x64, 0x61, 0x74, 0x65, 0x4a, 0x53, 0x4f, 0x4e, 0x57, 0x65,
+	0x62, 0x4b, 0x65, 0x79, 0x73, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x2b, 0x0a, 0x04,
+	0x6a, 0x77, 0x6b, 0x73, 0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x17, 0x2e, 0x67, 0x6f, 0x6f,
+	0x67, 0x6c, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x62, 0x75, 0x66, 0x2e, 0x53, 0x74, 0x72,
+	0x75, 0x63, 0x74, 0x52, 0x04, 0x6a, 0x77, 0x6b, 0x73, 0x22, 0x1b, 0x0a, 0x19, 0x55, 0x70, 0x64,
+	0x61, 0x74, 0x65, 0x4a, 0x53, 0x4f, 0x4e, 0x57, 0x65, 0x62, 0x4b, 0x65, 0x79, 0x73, 0x52, 0x65,
+	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x42, 0x2e, 0x5a, 0x2c, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62,
+	0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x70, 0x6c, 0x67, 0x64, 0x2d, 0x64, 0x65, 0x76, 0x2f, 0x63, 0x6c,
+	0x69, 0x65, 0x6e, 0x74, 0x2d, 0x61, 0x70, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e,
+	0x2f, 0x70, 0x62, 0x3b, 0x70, 0x62, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -102,16 +156,19 @@ func file_github_com_plgd_dev_client_application_pb_update_json_web_keys_proto_r
 	return file_github_com_plgd_dev_client_application_pb_update_json_web_keys_proto_rawDescData
 }
 
-var file_github_com_plgd_dev_client_application_pb_update_json_web_keys_proto_msgTypes = make([]protoimpl.MessageInfo, 1)
+var file_github_com_plgd_dev_client_application_pb_update_json_web_keys_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
 var file_github_com_plgd_dev_client_application_pb_update_json_web_keys_proto_goTypes = []interface{}{
-	(*UpdateJSONWebKeysResponse)(nil), // 0: service.pb.UpdateJSONWebKeysResponse
+	(*UpdateJSONWebKeysRequest)(nil),  // 0: service.pb.UpdateJSONWebKeysRequest
+	(*UpdateJSONWebKeysResponse)(nil), // 1: service.pb.UpdateJSONWebKeysResponse
+	(*structpb.Struct)(nil),           // 2: google.protobuf.Struct
 }
 var file_github_com_plgd_dev_client_application_pb_update_json_web_keys_proto_depIdxs = []int32{
-	0, // [0:0] is the sub-list for method output_type
-	0, // [0:0] is the sub-list for method input_type
-	0, // [0:0] is the sub-list for extension type_name
-	0, // [0:0] is the sub-list for extension extendee
-	0, // [0:0] is the sub-list for field type_name
+	2, // 0: service.pb.UpdateJSONWebKeysRequest.jwks:type_name -> google.protobuf.Struct
+	1, // [1:1] is the sub-list for method output_type
+	1, // [1:1] is the sub-list for method input_type
+	1, // [1:1] is the sub-list for extension type_name
+	1, // [1:1] is the sub-list for extension extendee
+	0, // [0:1] is the sub-list for field type_name
 }
 
 func init() { file_github_com_plgd_dev_client_application_pb_update_json_web_keys_proto_init() }
@@ -121,6 +178,18 @@ func file_github_com_plgd_dev_client_application_pb_update_json_web_keys_proto_i
 	}
 	if !protoimpl.UnsafeEnabled {
 		file_github_com_plgd_dev_client_application_pb_update_json_web_keys_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*UpdateJSONWebKeysRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_github_com_plgd_dev_client_application_pb_update_json_web_keys_proto_msgTypes[1].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*UpdateJSONWebKeysResponse); i {
 			case 0:
 				return &v.state
@@ -139,7 +208,7 @@ func file_github_com_plgd_dev_client_application_pb_update_json_web_keys_proto_i
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_github_com_plgd_dev_client_application_pb_update_json_web_keys_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   1,
+			NumMessages:   2,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

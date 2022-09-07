@@ -98,14 +98,14 @@ func New(ctx context.Context, serviceName string, config Config, clientApplicati
 			},
 			{
 				// token is directly verified by clientApplication
-				Method: http.MethodPost,
+				Method: http.MethodPut,
 				URI:    regexp.MustCompile(regexp.QuoteMeta(WellKnownJWKs)),
 			},
 		}
 		if config.UI.Enabled {
 			whiteList = append(whiteList, kitNetHttp.RequestMatcher{
 				Method: http.MethodGet,
-				URI:    regexp.MustCompile(`(\/[^a]pi\/.*)|(\/a[^p]i\/.*)|(\/ap[^i]\/.*)||(\/api[^/].*)`),
+				URI:    regexp.MustCompile(`^\/(a$|[^a].*|ap$|a[^p].*|ap[^i].*|api[^/])`),
 			})
 		}
 		auth = kitNetHttp.NewInterceptorWithValidator(clientApplicationServer, authRules, whiteList...)

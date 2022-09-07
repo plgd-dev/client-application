@@ -67,6 +67,16 @@
             }
           }
         },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object"
+            }
+          }
+        ],
         "tags": [
           "client-application"
         ]
@@ -479,8 +489,29 @@
       }
     },
     "/api/v1/identity/certificate": {
+      "get": {
+        "summary": "Set or update identity certificate for the client application.",
+        "operationId": "ClientApplication_GetIdentityCertificate",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbGetIdentityCertificateResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "client-application"
+        ]
+      },
       "post": {
-        "summary": "Set identity certificate for the client application.",
+        "summary": "Set or update identity certificate for the client application.",
         "operationId": "ClientApplication_UpdateIdentityCertificate",
         "responses": {
           "200": {
@@ -818,6 +849,15 @@
           "format": "byte"
         },
         "state": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "pbGetIdentityCertificateResponse": {
+      "type": "object",
+      "properties": {
+        "certificate": {
           "type": "string",
           "format": "byte"
         }

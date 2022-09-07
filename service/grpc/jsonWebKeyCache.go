@@ -63,7 +63,7 @@ func (s *ClientApplicationServer) ParseWithClaims(token string, claims jwt.Claim
 
 	_, err := jwt.ParseWithClaims(token, claims, c.GetKey)
 	if err != nil {
-		return fmt.Errorf("could not parse token: %w", err)
+		return status.Errorf(codes.Unauthenticated, "could not parse token: %v", err)
 	}
 	return nil
 }

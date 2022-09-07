@@ -23,7 +23,6 @@ import (
 	"github.com/plgd-dev/hub/v2/http-gateway/serverMux"
 	"github.com/plgd-dev/hub/v2/pkg/log"
 	kitNetGrpc "github.com/plgd-dev/hub/v2/pkg/net/grpc"
-	"github.com/plgd-dev/kit/v2/codec/json"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/types/known/structpb"
@@ -52,12 +51,7 @@ func (requestHandler *RequestHandler) getJSONWebKeys(w http.ResponseWriter, r *h
 		serverMux.WriteError(w, kitNetGrpc.ForwardErrorf(codes.Internal, "cannot unmarshal response to structpb.Struct: %v", err))
 		return
 	}
-	data, err := json.Encode(resp.AsMap())
-	if err != nil {
-		serverMux.WriteError(w, kitNetGrpc.ForwardErrorf(codes.Internal, "cannot marshal structpb.Struct to json-map: %v", err))
-		return
-	}
-	if err := jsonResponseWriter(w, data); err != nil {
+	if err := jsonResponseWriter(w, resp.AsMap()); err != nil {
 		log.Errorf("failed to write response: %w", err)
 	}
 }

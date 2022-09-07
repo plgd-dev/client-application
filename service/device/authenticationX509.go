@@ -106,7 +106,7 @@ func (s *authenticationX509) GetOwnOptions() []core.OwnOption {
 	return nil
 }
 
-func (s *authenticationX509) GetCSR(id string) ([]byte, error) {
+func (s *authenticationX509) GetIdentityCSR(id string) ([]byte, error) {
 	return generateCertificate.GenerateIdentityCSR(generateCertificate.Configuration{}, id, s.privateKey)
 }
 
@@ -136,7 +136,7 @@ func (s *authenticationX509) updateCertificate(crt tls.Certificate) error {
 	}
 }
 
-func (s *authenticationX509) SetCertificate(chainPem []byte) error {
+func (s *authenticationX509) SetIdentityCertificate(chainPem []byte) error {
 	keyPem, err := encodePrivateKeyToPem(s.privateKey)
 	if err != nil {
 		return fmt.Errorf("cannot marshal private key: %w", err)
@@ -155,7 +155,7 @@ func (s *authenticationX509) SetCertificate(chainPem []byte) error {
 	return nil
 }
 
-func (s *authenticationX509) GetCertificate() (tls.Certificate, error) {
+func (s *authenticationX509) GetIdentityCertificate() (tls.Certificate, error) {
 	crt, err := s.getTLSCertificate()
 	if err != nil {
 		return tls.Certificate{}, err

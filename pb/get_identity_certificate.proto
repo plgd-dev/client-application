@@ -18,12 +18,12 @@ syntax = "proto3";
 
 package service.pb;
 
-import "google/protobuf/struct.proto";
-
 option go_package = "github.com/plgd-dev/client-application/pb;pb";
 
-message UpdateJSONWebKeysRequest{
-    google.protobuf.Struct jwks = 1;
+
+message GetIdentityCertificateRequest {
 }
 
-message UpdateJSONWebKeysResponse{}
+message GetIdentityCertificateResponse {
+    bytes certificate = 1; // PEM format
+}

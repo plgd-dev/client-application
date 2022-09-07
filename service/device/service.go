@@ -45,9 +45,9 @@ type AuthenticationClient interface {
 	GetOwnerID() (string, error)
 	GetOwnOptions() []core.OwnOption
 
-	GetCSR(id string) ([]byte, error)
-	SetCertificate(chainPem []byte) error
-	GetCertificate() (tls.Certificate, error)
+	GetIdentityCSR(id string) ([]byte, error)
+	SetIdentityCertificate(chainPem []byte) error
+	GetIdentityCertificate() (tls.Certificate, error)
 	GetCertificateAuthorities() ([]*x509.Certificate, error)
 }
 
@@ -225,7 +225,7 @@ func (s *Service) GetDeviceConfiguration() core.DeviceConfiguration {
 		DialTLS:  s.DialTLS,
 		ErrFunc:  s.ErrFunc,
 		TLSConfig: &core.TLSConfig{
-			GetCertificate:            s.authenticationClient.GetCertificate,
+			GetCertificate:            s.authenticationClient.GetIdentityCertificate,
 			GetCertificateAuthorities: s.authenticationClient.GetCertificateAuthorities,
 		},
 		GetOwnerID: s.authenticationClient.GetOwnerID,
@@ -322,10 +322,14 @@ func (s *Service) Close() {
 	close(s.done)
 }
 
-func (s *Service) GetCSR(id string) ([]byte, error) {
-	return s.authenticationClient.GetCSR(id)
+func (s *Service) GetIdentityCSR(id string) ([]byte, error) {
+	return s.authenticationClient.GetIdentityCSR(id)
 }
 
-func (s *Service) SetCertificate(chainPem []byte) error {
-	return s.authenticationClient.SetCertificate(chainPem)
+func (s *Service) SetIdentityCertificate(chainPem []byte) error {
+	return s.authenticationClient.SetIdentityCertificate(chainPem)
+}
+
+func (s *Service) GetIdentityCertificate() (tls.Certificate, error) {
+	return s.authenticationClient.GetIdentityCertificate()
 }

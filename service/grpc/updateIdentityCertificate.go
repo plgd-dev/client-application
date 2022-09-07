@@ -67,7 +67,7 @@ func (s *ClientApplicationServer) UpdateIdentityCertificate(ctx context.Context,
 	if owner != ident {
 		return nil, s.logger.LogAndReturnError(status.Errorf(codes.InvalidArgument, "invalid owner id"))
 	}
-	if err := s.serviceDevice.SetCertificate(req.Certificate); err != nil {
+	if err := s.serviceDevice.SetIdentityCertificate(req.Certificate); err != nil {
 		return nil, s.logger.LogAndReturnError(status.Errorf(codes.Internal, "cannot set certificate: %v", err))
 	}
 	return &pb.UpdateIdentityCertificateResponse{}, nil

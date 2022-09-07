@@ -21,6 +21,10 @@ MFG_CLIENT_APPLICATION_CRT = $(MFG_CERT_PATH)/mfgclientapplicationcrt.pem
 MFG_CLIENT_APPLICATION_KEY = $(MFG_CERT_PATH)/mfgclientapplicationkey.pem
 UI_SEPARATOR ?= "--------UI--------"
 
+OAUTH_SERVER_PATH = $(shell pwd)/.tmp/oauth-server
+OAUTH_SERVER_ID_TOKEN_PRIVATE_KEY = $(OAUTH_SERVER_PATH)/idTokenKey.pem
+OAUTH_SERVER_ACCESS_TOKEN_PRIVATE_KEY = $(OAUTH_SERVER_PATH)/accessTokenKey.pem
+
 certificates:
 	mkdir -p $(CERT_PATH)
 	docker pull $(CERT_TOOL_IMAGE)
@@ -32,7 +36,13 @@ certificates:
 	docker run --rm --user $(USER_ID):$(GROUP_ID) -v $(MFG_CERT_PATH):/out $(CERT_TOOL_IMAGE) --signerCert=/out/cloudca.pem --signerKey=/out/cloudcakey.pem --outCert=/out/mfgclientapplicationcrt.pem --outKey=/out/mfgclientapplicationkey.pem --cert.subject.cn="mfg-client-application-cert" --cmd.generateCertificate
 .PHONY: certificates
 
-env: clean certificates
+privateKeys:
+	mkdir -p $(OAUTH_SERVER_PATH)
+	openssl genrsa -out $(OAUTH_SERVER_ID_TOKEN_PRIVATE_KEY) 4096
+	openssl ecparam -name prime256v1 -genkey -noout -out $(OAUTH_SERVER_ACCESS_TOKEN_PRIVATE_KEY)
+.PHONY: privateKeys
+
+env: clean certificates privateKeys
 	mkdir -p $(DEVSIM_PATH)
 	docker pull $(DEVSIM_IMAGE)
 	docker run -d \
@@ -77,6 +87,8 @@ test: env
 	export MFG_ROOT_CA_CRT=$(MFG_ROOT_CA_CRT); \
 	export MFG_CLIENT_APPLICATION_CRT=$(MFG_CLIENT_APPLICATION_CRT); \
 	export MFG_CLIENT_APPLICATION_KEY=$(MFG_CLIENT_APPLICATION_KEY); \
+	export TEST_OAUTH_SERVER_ID_TOKEN_PRIVATE_KEY=$(OAUTH_SERVER_ID_TOKEN_PRIVATE_KEY); \
+	export TEST_OAUTH_SERVER_ACCESS_TOKEN_PRIVATE_KEY=$(OAUTH_SERVER_ACCESS_TOKEN_PRIVATE_KEY); \
 	if [ -n "$${JSON_REPORT}" ]; then \
 		go test -v --race -p 1 -covermode=atomic -coverpkg=./... -coverprofile=$${COVERAGE_FILE} -json ./... > "$${JSON_REPORT_FILE}" ; \
 	else \
@@ -107,6 +119,7 @@ proto/generate:
 	protoc -I=. -I=$(GOPATH)/src -I=$(PLGDHUB_MODULE_PATH) --go_out=$(GOPATH)/src $(WORKING_DIRECTORY)/pb/get_information.proto
 	protoc -I=. -I=$(GOPATH)/src -I=$(PLGDHUB_MODULE_PATH) --go_out=$(GOPATH)/src $(WORKING_DIRECTORY)/pb/get_identity_csr.proto
 	protoc -I=. -I=$(GOPATH)/src -I=$(PLGDHUB_MODULE_PATH) --go_out=$(GOPATH)/src $(WORKING_DIRECTORY)/pb/update_identity_certificate.proto
+	protoc -I=. -I=$(GOPATH)/src -I=$(PLGDHUB_MODULE_PATH) --go_out=$(GOPATH)/src $(WORKING_DIRECTORY)/pb/get_identity_certificate.proto
 	protoc -I=. -I=$(GOPATH)/src -I=$(PLGDHUB_MODULE_PATH) --go_out=$(GOPATH)/src $(WORKING_DIRECTORY)/pb/get_json_web_keys.proto
 	protoc -I=. -I=$(GOPATH)/src -I=$(PLGDHUB_MODULE_PATH) --go_out=$(GOPATH)/src $(WORKING_DIRECTORY)/pb/update_json_web_keys.proto
 

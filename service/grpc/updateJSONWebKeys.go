@@ -28,7 +28,6 @@ import (
 	plgdJwt "github.com/plgd-dev/hub/v2/pkg/security/jwt"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	"google.golang.org/protobuf/types/known/structpb"
 )
 
 func (s *ClientApplicationServer) updateJwkCache(newCache *JSONWebKeyCache) error {
@@ -43,25 +42,43 @@ func (s *ClientApplicationServer) updateJwkCache(newCache *JSONWebKeyCache) erro
 	}
 }
 
-func (s *ClientApplicationServer) UpdateJSONWebKeys(ctx context.Context, req *structpb.Struct) (*pb.UpdateJSONWebKeysResponse, error) {
+func (s *ClientApplicationServer) getOwnerForUpdateJSONWebKeys(ctx context.Context) (string, error) {
+	token, err := grpc.TokenFromMD(ctx)
+	if err != nil {
+		return "", status.Errorf(codes.Unauthenticated, "cannot get token: %v", err)
+	}
+	owner := ""
+	if s.jwksCache.Load() != nil {
+		scopedClaims := plgdJwt.NewScopeClaims()
+		err = s.ParseWithClaims(token, scopedClaims)
+		if err != nil {
+			return "", status.Errorf(codes.Unauthenticated, "cannot parse token: %v", err)
+		}
+		claims := plgdJwt.Claims(*scopedClaims)
+		owner = claims.Owner(s.remoteProvisioningConfig.Authorization.OwnerClaim)
+		if owner == "" {
+			return "", status.Errorf(codes.Unauthenticated, "cannot get owner from token: claim %v is not set", s.remoteProvisioningConfig.Authorization.OwnerClaim)
+		}
+	} else {
+		owner, err = grpc.OwnerFromTokenMD(ctx, s.remoteProvisioningConfig.Authorization.OwnerClaim)
+		if err != nil {
+			return "", status.Errorf(codes.Unauthenticated, "cannot get owner from token: %v", err)
+		}
+	}
+	return owner, nil
+}
+
+func (s *ClientApplicationServer) UpdateJSONWebKeys(ctx context.Context, req *pb.UpdateJSONWebKeysRequest) (*pb.UpdateJSONWebKeysResponse, error) {
 	if s.remoteProvisioningConfig.Mode != remoteProvisioning.Mode_UserAgent {
 		return nil, status.Errorf(codes.Unimplemented, "not supported")
 	}
-	token, err := grpc.TokenFromMD(ctx)
+
+	owner, err := s.getOwnerForUpdateJSONWebKeys(ctx)
 	if err != nil {
-		return nil, status.Errorf(codes.Unauthenticated, "cannot get token: %v", err)
+		return nil, err
 	}
-	scopedClaims := plgdJwt.NewScopeClaims()
-	err = s.ParseWithClaims(token, scopedClaims)
-	if err != nil {
-		return nil, status.Errorf(codes.Unauthenticated, "cannot parse token: %v", err)
-	}
-	claims := plgdJwt.Claims(*scopedClaims)
-	owner := claims.Owner(s.remoteProvisioningConfig.Authorization.OwnerClaim)
-	if err == nil {
-		return nil, status.Errorf(codes.Unauthenticated, "cannot get owner from token: %v", err)
-	}
-	keys, err := req.MarshalJSON()
+
+	keys, err := req.GetJwks().MarshalJSON()
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "cannot marshal keys: %v", err)
 	}

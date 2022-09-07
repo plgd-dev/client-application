@@ -12,6 +12,8 @@
         "MFG_ROOT_CA_CRT": "${workspaceFolder}/.tmp/devsim/pki_certs/cloudca.pem",
         "MFG_CLIENT_APPLICATION_CRT": "${workspaceFolder}/.tmp/devsim/pki_certs/mfgclientapplicationcrt.pem",
         "MFG_CLIENT_APPLICATION_KEY": "${workspaceFolder}/.tmp/devsim/pki_certs/mfgclientapplicationkey.pem",
+        "TEST_OAUTH_SERVER_ID_TOKEN_PRIVATE_KEY": "${workspaceFolder}/.tmp/oauth-server/idTokenKey.pem",
+	    "TEST_OAUTH_SERVER_ACCESS_TOKEN_PRIVATE_KEY": "${workspaceFolder}/.tmp/oauth-server/accessTokenKey.pem",
         // "GOMAXPROCS": 1,
         // "GOFLAGS":"-mod=vendor",
         // "GRPC_VERBOSITY":"DEBUG",
