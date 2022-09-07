@@ -20,13 +20,17 @@ import (
 	"net/http"
 	"net/http/httptest"
 
+	"github.com/plgd-dev/go-coap/v2/message"
 	"github.com/plgd-dev/hub/v2/http-gateway/serverMux"
 	"github.com/plgd-dev/hub/v2/pkg/log"
 	kitNetGrpc "github.com/plgd-dev/hub/v2/pkg/net/grpc"
+	"github.com/plgd-dev/kit/v2/codec/json"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/types/known/structpb"
 )
+
+const contentTypeHeaderKey = "Content-Type"
 
 func writeError(w http.ResponseWriter, rec *httptest.ResponseRecorder) {
 	// copy everything from response recorder
@@ -36,6 +40,15 @@ func writeError(w http.ResponseWriter, rec *httptest.ResponseRecorder) {
 	}
 	w.WriteHeader(rec.Code)
 	_, _ = w.Write(rec.Body.Bytes())
+}
+
+func jsonResponseWriter(w http.ResponseWriter, v interface{}) error {
+	if v == nil {
+		w.WriteHeader(http.StatusNoContent)
+		return nil
+	}
+	w.Header().Set(contentTypeHeaderKey, message.AppJSON.String())
+	return json.WriteTo(w, v)
 }
 
 func (requestHandler *RequestHandler) getJSONWebKeys(w http.ResponseWriter, r *http.Request) {

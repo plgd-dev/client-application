@@ -90,10 +90,6 @@ func New(ctx context.Context, serviceName string, config Config, clientApplicati
 		whiteList := []kitNetHttp.RequestMatcher{
 			{
 				Method: http.MethodGet,
-				URI:    regexp.MustCompile(regexp.QuoteMeta(WebConfiguration)),
-			},
-			{
-				Method: http.MethodGet,
 				URI:    regexp.MustCompile(regexp.QuoteMeta(WellKnownJWKs)),
 			},
 			{
@@ -134,7 +130,6 @@ func New(ctx context.Context, serviceName string, config Config, clientApplicati
 	requestHandler := &RequestHandler{mux: mux, clientApplicationServer: clientApplicationServer, config: config}
 	r.PathPrefix(Devices).Methods(http.MethodPut).MatcherFunc(resourceMatcher).HandlerFunc(requestHandler.updateResource)
 	r.PathPrefix(Devices).Methods(http.MethodPost).MatcherFunc(resourceMatcher).HandlerFunc(requestHandler.createResource)
-	r.HandleFunc(WebConfiguration, requestHandler.getWebConfiguration).Methods(http.MethodGet)
 	r.HandleFunc(WellKnownJWKs, requestHandler.getJSONWebKeys).Methods(http.MethodGet)
 	r.HandleFunc(WellKnownJWKs, requestHandler.updateJSONWebKeys).Methods(http.MethodPut)
 	r.PathPrefix(ApiV1).Handler(mux)

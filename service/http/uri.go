@@ -43,7 +43,6 @@ const (
 	IdentityCsr         = Identity + "/csr"
 	IdentityCertificate = Identity + "/certificate"
 
-	WebConfiguration       = "/web_configuration.json"
 	WellKnownJWKs          = WellKnown + "/jwks.json"
 	WellKnownConfiguration = WellKnown + "/configuration"
 )
