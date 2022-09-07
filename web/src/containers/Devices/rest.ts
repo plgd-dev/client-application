@@ -64,22 +64,18 @@ export const updateDevicesResourceApi = (
     deviceId,
     href,
     currentInterface = '',
-    ttl,
   }: {
     deviceId: string
     href: string
     currentInterface?: string
-    ttl: string | number
   },
   data: any
 ) =>
   fetchApi(
     `${getConfig().httpGatewayAddress}${
       devicesApiEndpoints.DEVICES
-    }/${deviceId}/resources${href}?timeToLive=${ttl}&${interfaceGetParam(
-      currentInterface
-    )}`,
-    { method: 'PUT', body: data, timeToLive: ttl }
+    }/${deviceId}/resources${href}${interfaceGetParam(currentInterface)}`,
+    { method: 'PUT', body: data }
   )
 
 /**
@@ -90,22 +86,18 @@ export const createDevicesResourceApi = (
     deviceId,
     href,
     currentInterface = '',
-    ttl,
   }: {
     deviceId: string
     href: string
     currentInterface?: string
-    ttl: string | number
   },
   data: any
 ) =>
   fetchApi(
     `${getConfig().httpGatewayAddress}${
       devicesApiEndpoints.DEVICES
-    }/${deviceId}/resource-links${href}?timeToLive=${ttl}&${interfaceGetParam(
-      currentInterface
-    )}`,
-    { method: 'POST', body: data, timeToLive: ttl }
+    }/${deviceId}/resource-links${href}?${interfaceGetParam(currentInterface)}`,
+    { method: 'POST', body: data }
   )
 
 /**

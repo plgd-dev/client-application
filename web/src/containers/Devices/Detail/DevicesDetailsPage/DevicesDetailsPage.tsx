@@ -21,7 +21,6 @@ import {
   resourceModalTypes,
   NO_DEVICE_NAME,
   devicesOwnerships,
-  RESOURCE_DEFAULT_TTL,
 } from '../../constants'
 import {
   handleCreateResourceErrors,
@@ -64,7 +63,6 @@ const DevicesDetailsPage = () => {
   const [savingResource, setSavingResource] = useState(false)
   const [showDpsModal, setShowDpsModal] = useState(false)
   const [deleteResourceHref, setDeleteResourceHref] = useState<string>('')
-  const [ttl] = useState(RESOURCE_DEFAULT_TTL)
   const [ttlHasError] = useState(false)
   const isMounted = useIsMounted()
   const { data, updateData, loading, error: deviceError } = useDeviceDetails(id)
@@ -261,7 +259,7 @@ const DevicesDetailsPage = () => {
 
     try {
       await createDevicesResourceApi(
-        { deviceId: id, href, currentInterface, ttl },
+        { deviceId: id, href, currentInterface },
         resourceDataCreate
       )
 
@@ -337,7 +335,7 @@ const DevicesDetailsPage = () => {
 
   const handleOwnChange = async () => {
     try {
-      ;(await isOwned) ? disownDeviceApi(id) : ownDeviceApi(id)
+      isOwned ? await disownDeviceApi(id) : await ownDeviceApi(id)
       const newOwnState = !isOwned
 
       if (isMounted.current) {
@@ -399,7 +397,6 @@ const DevicesDetailsPage = () => {
         deviceName={deviceName}
         deviceId={id}
         resources={resources}
-        ttl={ttl}
       />
       <DevicesDetails
         data={data}

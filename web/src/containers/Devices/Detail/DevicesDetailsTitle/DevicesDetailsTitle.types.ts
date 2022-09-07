@@ -7,11 +7,9 @@ export type Props = {
   isOwned: boolean
   loading: boolean
   resources: ResourcesType[]
-  ttl: number
   updateDeviceName: (title: string) => void
 }
 
 export const defaultProps = {
   resources: [],
-  ttl: 0,
 }
