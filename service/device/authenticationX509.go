@@ -40,10 +40,10 @@ func (s *authenticationX509) getTLSCertificate() (*tls.Certificate, error) {
 	if crt == nil || crt.Leaf == nil {
 		return nil, fmt.Errorf("certificate hasn't been set")
 	}
-	if crt.Leaf.NotAfter.After(time.Now()) {
+	if crt.Leaf.NotAfter.Before(time.Now()) {
 		return nil, fmt.Errorf("certificate is not valid after %v", crt.Leaf.NotAfter)
 	}
-	if crt.Leaf.NotBefore.Before(time.Now()) {
+	if crt.Leaf.NotBefore.After(time.Now()) {
 		return nil, fmt.Errorf("certificate is not valid before %v", crt.Leaf.NotBefore)
 	}
 	return crt, nil
@@ -119,6 +119,13 @@ func encodePrivateKeyToPem(k *ecdsa.PrivateKey) ([]byte, error) {
 }
 
 func (s *authenticationX509) updateCertificate(crt tls.Certificate) error {
+	if len(crt.Certificate) > 0 && crt.Leaf == nil {
+		var err error
+		crt.Leaf, err = x509.ParseCertificate(crt.Certificate[0])
+		if err != nil {
+			return fmt.Errorf("cannot parse leaf certificate: %w", err)
+		}
+	}
 	for {
 		oldCrt := s.certificate.Load()
 		if oldCrt == nil {

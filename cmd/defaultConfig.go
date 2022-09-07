@@ -105,6 +105,12 @@ func createDefaultConfig(uiDirectory string) service.Config {
 		},
 		RemoteProvisioning: remoteProvisioning.Config{
 			Mode: remoteProvisioning.Mode_None,
+			UserAgentConfig: remoteProvisioning.UserAgentConfig{
+				CSRChallengeStateExpiration: time.Minute * 1,
+			},
+			Authorization: remoteProvisioning.AuthorizationConfig{
+				OwnerClaim: "sub",
+			},
 		},
 	}
 }

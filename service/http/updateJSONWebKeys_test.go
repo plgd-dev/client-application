@@ -91,8 +91,7 @@ func TestClientApplicationServerUpdateJSONWebKeys(t *testing.T) {
 	request = httpgwTest.NewRequest(http.MethodGet, serviceHttp.Devices, nil).
 		Host(test.CLIENT_APPLICATION_HTTP_HOST).Build()
 	resp = httpgwTest.HTTPDo(t, request)
-	// TODO fix to unauthorized
-	require.Equal(t, http.StatusInternalServerError, resp.StatusCode)
+	require.Equal(t, http.StatusUnauthorized, resp.StatusCode)
 
 	// get devices with token
 	request = httpgwTest.NewRequest(http.MethodGet, serviceHttp.Devices, nil).

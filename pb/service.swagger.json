@@ -30,6 +30,28 @@
     "application/protojson"
   ],
   "paths": {
+    "/.well-known/configuration": {
+      "get": {
+        "operationId": "ClientApplication_GetConfiguration",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbGetConfigurationResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "client-application"
+        ]
+      }
+    },
     "/.well-known/jwks.json": {
       "get": {
         "operationId": "ClientApplication_GetJSONWebKeys",
@@ -510,7 +532,7 @@
           "client-application"
         ]
       },
-      "post": {
+      "put": {
         "summary": "Set or update identity certificate for the client application.",
         "operationId": "ClientApplication_UpdateIdentityCertificate",
         "responses": {
@@ -527,6 +549,16 @@
             }
           }
         },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbUpdateIdentityCertificateRequest"
+            }
+          }
+        ],
         "tags": [
           "client-application"
         ]
@@ -541,28 +573,6 @@
             "description": "A successful response.",
             "schema": {
               "$ref": "#/definitions/pbGetIdentityCSRResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/googlerpcStatus"
-            }
-          }
-        },
-        "tags": [
-          "client-application"
-        ]
-      }
-    },
-    "/api/v1/information": {
-      "get": {
-        "operationId": "ClientApplication_GetInformation",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/pbGetInformationResponse"
             }
           },
           "default": {
@@ -841,29 +851,7 @@
         }
       }
     },
-    "pbGetIdentityCSRResponse": {
-      "type": "object",
-      "properties": {
-        "certificateSigningRequest": {
-          "type": "string",
-          "format": "byte"
-        },
-        "state": {
-          "type": "string",
-          "format": "byte"
-        }
-      }
-    },
-    "pbGetIdentityCertificateResponse": {
-      "type": "object",
-      "properties": {
-        "certificate": {
-          "type": "string",
-          "format": "byte"
-        }
-      }
-    },
-    "pbGetInformationResponse": {
+    "pbGetConfigurationResponse": {
       "type": "object",
       "properties": {
         "version": {
@@ -883,6 +871,25 @@
         },
         "remoteProvisioning": {
           "$ref": "#/definitions/pbRemoteProvisioning"
+        }
+      }
+    },
+    "pbGetIdentityCSRResponse": {
+      "type": "object",
+      "properties": {
+        "certificateSigningRequest": {
+          "type": "string"
+        },
+        "state": {
+          "type": "string"
+        }
+      }
+    },
+    "pbGetIdentityCertificateResponse": {
+      "type": "object",
+      "properties": {
+        "certificate": {
+          "type": "string"
         }
       }
     },
@@ -1078,6 +1085,18 @@
         "DISABLED"
       ],
       "default": "UNSET"
+    },
+    "pbUpdateIdentityCertificateRequest": {
+      "type": "object",
+      "properties": {
+        "certificate": {
+          "type": "string"
+        },
+        "state": {
+          "type": "string"
+        }
+      },
+      "description": "JWT token must be used for extraction owner id."
     },
     "pbUpdateIdentityCertificateResponse": {
       "type": "object"

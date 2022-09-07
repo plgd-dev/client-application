@@ -29,6 +29,7 @@ const (
 	Api       = "/api"
 	ApiV1     = Api + "/v1"
 	WellKnown = "/.well-known"
+	Identity  = ApiV1 + "/identity"
 
 	Devices             = ApiV1 + "/devices"
 	Device              = Devices + "/{" + DeviceIDKey + "}"
@@ -38,6 +39,11 @@ const (
 	DeviceResource      = DeviceResources + "/{" + ResourceHrefKey + "}"
 	OwnDevice           = Device + "/own"
 	DisownDevice        = Device + "/disown"
-	WebConfiguration    = "/web_configuration.json"
-	WellKnownJWKs       = WellKnown + "/jwks.json"
+
+	IdentityCsr         = Identity + "/csr"
+	IdentityCertificate = Identity + "/certificate"
+
+	WebConfiguration       = "/web_configuration.json"
+	WellKnownJWKs          = WellKnown + "/jwks.json"
+	WellKnownConfiguration = WellKnown + "/configuration"
 )

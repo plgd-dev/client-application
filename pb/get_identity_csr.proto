@@ -24,6 +24,6 @@ option go_package = "github.com/plgd-dev/client-application/pb;pb";
 message GetIdentityCSRRequest {}
 
 message GetIdentityCSRResponse {
-    bytes certificate_signing_request = 1; // in PEM format
-    bytes state = 2; // for pairing GetIdentityCSR and UpdateIdentityCertificate
+    string certificate_signing_request = 1; // in PEM format
+    string state = 2; // for pairing GetIdentityCSR and UpdateIdentityCertificate
 }

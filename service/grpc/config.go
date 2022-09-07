@@ -23,4 +23,4 @@ import (
 
 type Config = server.Config
 
-type ServiceInformation = pb.GetInformationResponse
+type ServiceInformation = pb.GetConfigurationResponse

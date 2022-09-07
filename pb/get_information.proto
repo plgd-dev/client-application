@@ -20,7 +20,7 @@ package service.pb;
 
 option go_package = "github.com/plgd-dev/client-application/pb;pb";
 
-message GetInformationRequest {}
+message GetConfigurationRequest {}
 
 message UserAgent {
     string certificate_authority_address = 1;
@@ -45,7 +45,7 @@ message RemoteProvisioning {
     Authorization authorization = 3;
 }
 
-message GetInformationResponse {
+message GetConfigurationResponse {
     string version = 1;
     string build_date = 2;
     string commit_hash = 3;

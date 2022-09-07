@@ -22,8 +22,8 @@ option go_package = "github.com/plgd-dev/client-application/pb;pb";
 
 // JWT token must be used for extraction owner id.
 message UpdateIdentityCertificateRequest {
-    bytes certificate = 1; // PEM format
-    bytes state = 2; // use value GetIdentityCSRResponse.state for pairing
+    string certificate = 1; // PEM format
+    string state = 2; // use value GetIdentityCSRResponse.state for pairing
 }
 
 message UpdateIdentityCertificateResponse {

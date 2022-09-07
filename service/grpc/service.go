@@ -42,7 +42,7 @@ func New(ctx context.Context, serviceName string, config Config, clientApplicati
 		methods := []string{
 			"/" + pb.ClientApplication_ServiceDesc.ServiceName + "/UpdateJSONWebKeys",
 			"/" + pb.ClientApplication_ServiceDesc.ServiceName + "/GetJSONWebKeys",
-			"/" + pb.ClientApplication_ServiceDesc.ServiceName + "/GetInformation",
+			"/" + pb.ClientApplication_ServiceDesc.ServiceName + "/GetConfiguration",
 		}
 		interceptor = server.NewAuth(clientApplicationServer, server.WithWhiteListedMethods(methods...))
 	}

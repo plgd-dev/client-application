@@ -97,6 +97,10 @@ func New(ctx context.Context, serviceName string, config Config, clientApplicati
 				URI:    regexp.MustCompile(regexp.QuoteMeta(WellKnownJWKs)),
 			},
 			{
+				Method: http.MethodGet,
+				URI:    regexp.MustCompile(regexp.QuoteMeta(WellKnownConfiguration)),
+			},
+			{
 				// token is directly verified by clientApplication
 				Method: http.MethodPut,
 				URI:    regexp.MustCompile(regexp.QuoteMeta(WellKnownJWKs)),
@@ -130,10 +134,11 @@ func New(ctx context.Context, serviceName string, config Config, clientApplicati
 	requestHandler := &RequestHandler{mux: mux, clientApplicationServer: clientApplicationServer, config: config}
 	r.PathPrefix(Devices).Methods(http.MethodPut).MatcherFunc(resourceMatcher).HandlerFunc(requestHandler.updateResource)
 	r.PathPrefix(Devices).Methods(http.MethodPost).MatcherFunc(resourceMatcher).HandlerFunc(requestHandler.createResource)
-	r.PathPrefix(ApiV1).Handler(mux)
 	r.HandleFunc(WebConfiguration, requestHandler.getWebConfiguration).Methods(http.MethodGet)
 	r.HandleFunc(WellKnownJWKs, requestHandler.getJSONWebKeys).Methods(http.MethodGet)
 	r.HandleFunc(WellKnownJWKs, requestHandler.updateJSONWebKeys).Methods(http.MethodPut)
+	r.PathPrefix(ApiV1).Handler(mux)
+	r.PathPrefix(WellKnown).Handler(mux)
 	// serve www directory
 	if config.UI.Enabled {
 		fs := http.FileServer(http.Dir(config.UI.Directory))

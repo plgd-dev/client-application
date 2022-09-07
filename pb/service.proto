@@ -172,9 +172,9 @@ service ClientApplication {
     };
   }
 
-  rpc GetInformation(GetInformationRequest) returns (GetInformationResponse) {
+  rpc GetConfiguration(GetConfigurationRequest) returns (GetConfigurationResponse) {
     option (google.api.http) = {
-      get: "/api/v1/information"
+      get: "/.well-known/configuration"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       tags: [ "client-application" ]
@@ -213,7 +213,8 @@ service ClientApplication {
   // Set or update identity certificate for the client application.
   rpc UpdateIdentityCertificate(UpdateIdentityCertificateRequest) returns (UpdateIdentityCertificateResponse) {
     option (google.api.http) = {
-      post: "/api/v1/identity/certificate"
+      put: "/api/v1/identity/certificate"
+      body: "*"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       tags: [ "client-application" ]

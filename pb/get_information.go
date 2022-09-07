@@ -51,11 +51,11 @@ func (r *RemoteProvisioning) Clone() *RemoteProvisioning {
 	}
 }
 
-func (r *GetInformationResponse) Clone() *GetInformationResponse {
+func (r *GetConfigurationResponse) Clone() *GetConfigurationResponse {
 	if r == nil {
 		return nil
 	}
-	return &GetInformationResponse{
+	return &GetConfigurationResponse{
 		Version:            r.Version,
 		BuildDate:          r.BuildDate,
 		CommitHash:         r.CommitHash,

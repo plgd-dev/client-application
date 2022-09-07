@@ -24,6 +24,7 @@ UI_SEPARATOR ?= "--------UI--------"
 OAUTH_SERVER_PATH = $(shell pwd)/.tmp/oauth-server
 OAUTH_SERVER_ID_TOKEN_PRIVATE_KEY = $(OAUTH_SERVER_PATH)/idTokenKey.pem
 OAUTH_SERVER_ACCESS_TOKEN_PRIVATE_KEY = $(OAUTH_SERVER_PATH)/accessTokenKey.pem
+CLOUD_SID = adebc667-1f2b-41e3-bf5c-6d6eabc68cc6
 
 certificates:
 	mkdir -p $(CERT_PATH)
@@ -89,6 +90,9 @@ test: env
 	export MFG_CLIENT_APPLICATION_KEY=$(MFG_CLIENT_APPLICATION_KEY); \
 	export TEST_OAUTH_SERVER_ID_TOKEN_PRIVATE_KEY=$(OAUTH_SERVER_ID_TOKEN_PRIVATE_KEY); \
 	export TEST_OAUTH_SERVER_ACCESS_TOKEN_PRIVATE_KEY=$(OAUTH_SERVER_ACCESS_TOKEN_PRIVATE_KEY); \
+	export TEST_ROOT_CA_KEY=$(WORKING_DIRECTORY)/.tmp/certs/rootcakey.pem; \
+	export TEST_ROOT_CA_CERT=$(WORKING_DIRECTORY)/.tmp/certs/rootcacrt.pem; \
+	export TEST_CLOUD_SID=$(CLOUD_SID); \
 	if [ -n "$${JSON_REPORT}" ]; then \
 		go test -v --race -p 1 -covermode=atomic -coverpkg=./... -coverprofile=$${COVERAGE_FILE} -json ./... > "$${JSON_REPORT_FILE}" ; \
 	else \

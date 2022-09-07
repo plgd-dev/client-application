@@ -41,7 +41,7 @@ type ClientApplicationClient interface {
 	DisownDevice(ctx context.Context, in *DisownDeviceRequest, opts ...grpc.CallOption) (*DisownDeviceResponse, error)
 	// Deletes all devices from the cache. To fill the cache again, call GetDevices.
 	ClearCache(ctx context.Context, in *ClearCacheRequest, opts ...grpc.CallOption) (*ClearCacheResponse, error)
-	GetInformation(ctx context.Context, in *GetInformationRequest, opts ...grpc.CallOption) (*GetInformationResponse, error)
+	GetConfiguration(ctx context.Context, in *GetConfigurationRequest, opts ...grpc.CallOption) (*GetConfigurationResponse, error)
 	UpdateJSONWebKeys(ctx context.Context, in *UpdateJSONWebKeysRequest, opts ...grpc.CallOption) (*UpdateJSONWebKeysResponse, error)
 	GetJSONWebKeys(ctx context.Context, in *GetJSONWebKeysRequest, opts ...grpc.CallOption) (*structpb.Struct, error)
 	// Get identity CSR from the client application for creating a new identity certificate.
@@ -173,9 +173,9 @@ func (c *clientApplicationClient) ClearCache(ctx context.Context, in *ClearCache
 	return out, nil
 }
 
-func (c *clientApplicationClient) GetInformation(ctx context.Context, in *GetInformationRequest, opts ...grpc.CallOption) (*GetInformationResponse, error) {
-	out := new(GetInformationResponse)
-	err := c.cc.Invoke(ctx, "/service.pb.ClientApplication/GetInformation", in, out, opts...)
+func (c *clientApplicationClient) GetConfiguration(ctx context.Context, in *GetConfigurationRequest, opts ...grpc.CallOption) (*GetConfigurationResponse, error) {
+	out := new(GetConfigurationResponse)
+	err := c.cc.Invoke(ctx, "/service.pb.ClientApplication/GetConfiguration", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -251,7 +251,7 @@ type ClientApplicationServer interface {
 	DisownDevice(context.Context, *DisownDeviceRequest) (*DisownDeviceResponse, error)
 	// Deletes all devices from the cache. To fill the cache again, call GetDevices.
 	ClearCache(context.Context, *ClearCacheRequest) (*ClearCacheResponse, error)
-	GetInformation(context.Context, *GetInformationRequest) (*GetInformationResponse, error)
+	GetConfiguration(context.Context, *GetConfigurationRequest) (*GetConfigurationResponse, error)
 	UpdateJSONWebKeys(context.Context, *UpdateJSONWebKeysRequest) (*UpdateJSONWebKeysResponse, error)
 	GetJSONWebKeys(context.Context, *GetJSONWebKeysRequest) (*structpb.Struct, error)
 	// Get identity CSR from the client application for creating a new identity certificate.
@@ -297,8 +297,8 @@ func (UnimplementedClientApplicationServer) DisownDevice(context.Context, *Disow
 func (UnimplementedClientApplicationServer) ClearCache(context.Context, *ClearCacheRequest) (*ClearCacheResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ClearCache not implemented")
 }
-func (UnimplementedClientApplicationServer) GetInformation(context.Context, *GetInformationRequest) (*GetInformationResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetInformation not implemented")
+func (UnimplementedClientApplicationServer) GetConfiguration(context.Context, *GetConfigurationRequest) (*GetConfigurationResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetConfiguration not implemented")
 }
 func (UnimplementedClientApplicationServer) UpdateJSONWebKeys(context.Context, *UpdateJSONWebKeysRequest) (*UpdateJSONWebKeysResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method UpdateJSONWebKeys not implemented")
@@ -511,20 +511,20 @@ func _ClientApplication_ClearCache_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
-func _ClientApplication_GetInformation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetInformationRequest)
+func _ClientApplication_GetConfiguration_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetConfigurationRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ClientApplicationServer).GetInformation(ctx, in)
+		return srv.(ClientApplicationServer).GetConfiguration(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/service.pb.ClientApplication/GetInformation",
+		FullMethod: "/service.pb.ClientApplication/GetConfiguration",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ClientApplicationServer).GetInformation(ctx, req.(*GetInformationRequest))
+		return srv.(ClientApplicationServer).GetConfiguration(ctx, req.(*GetConfigurationRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -663,8 +663,8 @@ var ClientApplication_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _ClientApplication_ClearCache_Handler,
 		},
 		{
-			MethodName: "GetInformation",
-			Handler:    _ClientApplication_GetInformation_Handler,
+			MethodName: "GetConfiguration",
+			Handler:    _ClientApplication_GetConfiguration_Handler,
 		},
 		{
 			MethodName: "UpdateJSONWebKeys",

@@ -43,7 +43,7 @@ func (s *ClientApplicationServer) GetIdentityCSR(ctx context.Context, req *pb.Ge
 	state := uuid.New()
 	s.csrCache.Set(state, true, s.remoteProvisioningConfig.UserAgentConfig.CSRChallengeStateExpiration)
 	return &pb.GetIdentityCSRResponse{
-		CertificateSigningRequest: csr,
-		State:                     state[:],
+		CertificateSigningRequest: string(csr),
+		State:                     state.String(),
 	}, nil
 }

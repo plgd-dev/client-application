@@ -25,5 +25,5 @@ message GetIdentityCertificateRequest {
 }
 
 message GetIdentityCertificateResponse {
-    bytes certificate = 1; // PEM format
+    string certificate = 1; // PEM format
 }
