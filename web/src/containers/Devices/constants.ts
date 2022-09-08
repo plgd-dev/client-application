@@ -101,10 +101,6 @@ export const MINIMAL_TTL_VALUE_MS = 100
 
 export const NO_DEVICE_NAME = '<no-name>'
 
-// Maximum amount of deviceIds filled into one delete request.
-// (if ther is more deviceIds then the provided number, it creates more chunks of a maximum of this number)
-export const DEVICE_DELETE_CHUNK_SIZE = 50
-
 // Websocket keys
 export const DEVICES_WS_KEY = 'devices'
 export const STATUS_WS_KEY = 'status'
@@ -117,16 +113,8 @@ export const DEVICES_RESOURCE_UPDATE_WS_KEY = `${DEVICES_WS_KEY}.${RESOURCE_WS_K
 export const DEVICES_REGISTERED_UNREGISTERED_COUNT_EVENT_KEY =
   'devices-registered-unregistered-count'
 
-// Constant used in the DEVICES_REGISTERED_UNREGISTERED_COUNT_EVENT_KEY when reseting the counter
-export const RESET_COUNTER = 'reset-counter'
-
 export const DISCOVERY_DEFAULT_TIMEOUT_RAW = 2000
 export const TIMEOUT_UNIT_PRECISION = 1000000
 
 export const DISCOVERY_DEFAULT_TIMEOUT =
   DISCOVERY_DEFAULT_TIMEOUT_RAW * TIMEOUT_UNIT_PRECISION
-
-export const RESOURCE_DEFAULT_TTL_RAW = 30000
-
-export const RESOURCE_DEFAULT_TTL =
-  RESOURCE_DEFAULT_TTL_RAW * TIMEOUT_UNIT_PRECISION
