@@ -72,21 +72,11 @@ func resourceMatcher(r *http.Request, rm *router.RouteMatch) bool {
 	return false
 }
 
-// New creates new HTTP service
-func New(ctx context.Context, serviceName string, config Config, clientApplicationServer *grpc.ClientApplicationServer, fileWatcher *fsnotify.Watcher, logger log.Logger, tracerProvider trace.TracerProvider) (*Service, error) {
-	listener, err := listener.New(config.Config, fileWatcher, logger)
-	if err != nil {
-		return nil, fmt.Errorf("cannot create grpc server: %w", err)
-	}
-
-	ch := new(inprocgrpc.Channel)
-	pb.RegisterClientApplicationServer(ch, clientApplicationServer)
-	grpcClient := pb.NewClientApplicationClient(ch)
-
+func createAuthFunc(config Config, clientApplicationServer *grpc.ClientApplicationServer) func(ctx context.Context, method, uri string) (context.Context, error) {
 	auth := func(ctx context.Context, method, uri string) (context.Context, error) {
 		return ctx, nil
 	}
-	if clientApplicationServer.HasAuthorizationEnabled() {
+	if clientApplicationServer.HasJWTAuthorizationEnabled() {
 		whiteList := []kitNetHttp.RequestMatcher{
 			{
 				Method: http.MethodGet,
@@ -98,7 +88,7 @@ func New(ctx context.Context, serviceName string, config Config, clientApplicati
 			},
 			{
 				// token is directly verified by clientApplication
-				Method: http.MethodPut,
+				Method: http.MethodPost,
 				URI:    regexp.MustCompile(regexp.QuoteMeta(WellKnownJWKs)),
 			},
 		}
@@ -110,6 +100,21 @@ func New(ctx context.Context, serviceName string, config Config, clientApplicati
 		}
 		auth = kitNetHttp.NewInterceptorWithValidator(clientApplicationServer, authRules, whiteList...)
 	}
+	return auth
+}
+
+// New creates new HTTP service
+func New(ctx context.Context, serviceName string, config Config, clientApplicationServer *grpc.ClientApplicationServer, fileWatcher *fsnotify.Watcher, logger log.Logger, tracerProvider trace.TracerProvider) (*Service, error) {
+	listener, err := listener.New(config.Config, fileWatcher, logger)
+	if err != nil {
+		return nil, fmt.Errorf("cannot create grpc server: %w", err)
+	}
+
+	ch := new(inprocgrpc.Channel)
+	pb.RegisterClientApplicationServer(ch, clientApplicationServer)
+	grpcClient := pb.NewClientApplicationClient(ch)
+
+	auth := createAuthFunc(config, clientApplicationServer)
 	mux := serverMux.New()
 	r := serverMux.NewRouter(queryCaseInsensitive, auth)
 

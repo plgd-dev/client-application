@@ -32,17 +32,11 @@ func (c *UserAgentConfig) Validate() error {
 type Mode string
 
 func (m Mode) ToProto() pb.RemoteProvisioning_Mode {
-	switch m {
-	case Mode_None:
-		return pb.RemoteProvisioning_MODE_NONE
-	case Mode_UserAgent:
-		return pb.RemoteProvisioning_USER_AGENT
-	}
-	return pb.RemoteProvisioning_MODE_NONE
+	return pb.RemoteProvisioning_USER_AGENT
 }
 
 const (
-	Mode_None      Mode = "none"
+	Mode_None      Mode = ""
 	Mode_UserAgent Mode = "userAgent"
 )
 
@@ -89,8 +83,7 @@ type Config struct {
 
 func (c *Config) Validate() error {
 	switch c.Mode {
-	case Mode_None, "":
-		c.Mode = Mode_None
+	case Mode_None:
 	case Mode_UserAgent:
 		if err := c.UserAgentConfig.Validate(); err != nil {
 			return fmt.Errorf("userAgent.%w", err)

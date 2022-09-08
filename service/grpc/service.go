@@ -38,7 +38,7 @@ func New(ctx context.Context, serviceName string, config Config, clientApplicati
 	interceptor := kitNetGrpc.MakeAuthInterceptors(func(ctx context.Context, method string) (context.Context, error) {
 		return ctx, nil
 	})
-	if clientApplicationServer.HasAuthorizationEnabled() {
+	if clientApplicationServer.HasJWTAuthorizationEnabled() {
 		methods := []string{
 			"/" + pb.ClientApplication_ServiceDesc.ServiceName + "/UpdateJSONWebKeys",
 			"/" + pb.ClientApplication_ServiceDesc.ServiceName + "/GetJSONWebKeys",

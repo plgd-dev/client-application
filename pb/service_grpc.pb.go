@@ -48,8 +48,11 @@ type ClientApplicationClient interface {
 	GetIdentityCSR(ctx context.Context, in *GetIdentityCSRRequest, opts ...grpc.CallOption) (*GetIdentityCSRResponse, error)
 	// Set or update identity certificate for the client application.
 	UpdateIdentityCertificate(ctx context.Context, in *UpdateIdentityCertificateRequest, opts ...grpc.CallOption) (*UpdateIdentityCertificateResponse, error)
-	// Set or update identity certificate for the client application.
+	// Get identity certificate of the client application.
 	GetIdentityCertificate(ctx context.Context, in *GetIdentityCertificateRequest, opts ...grpc.CallOption) (*GetIdentityCertificateResponse, error)
+	// Initialize application when GetConfiguration.is_nitialized is set to false.
+	// Look to initialize.plantuml for flows.
+	Initialize(ctx context.Context, in *InitializeRequest, opts ...grpc.CallOption) (*InitializeResponse, error)
 }
 
 type clientApplicationClient struct {
@@ -227,6 +230,15 @@ func (c *clientApplicationClient) GetIdentityCertificate(ctx context.Context, in
 	return out, nil
 }
 
+func (c *clientApplicationClient) Initialize(ctx context.Context, in *InitializeRequest, opts ...grpc.CallOption) (*InitializeResponse, error) {
+	out := new(InitializeResponse)
+	err := c.cc.Invoke(ctx, "/service.pb.ClientApplication/Initialize", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ClientApplicationServer is the server API for ClientApplication service.
 // All implementations must embed UnimplementedClientApplicationServer
 // for forward compatibility
@@ -258,8 +270,11 @@ type ClientApplicationServer interface {
 	GetIdentityCSR(context.Context, *GetIdentityCSRRequest) (*GetIdentityCSRResponse, error)
 	// Set or update identity certificate for the client application.
 	UpdateIdentityCertificate(context.Context, *UpdateIdentityCertificateRequest) (*UpdateIdentityCertificateResponse, error)
-	// Set or update identity certificate for the client application.
+	// Get identity certificate of the client application.
 	GetIdentityCertificate(context.Context, *GetIdentityCertificateRequest) (*GetIdentityCertificateResponse, error)
+	// Initialize application when GetConfiguration.is_nitialized is set to false.
+	// Look to initialize.plantuml for flows.
+	Initialize(context.Context, *InitializeRequest) (*InitializeResponse, error)
 	mustEmbedUnimplementedClientApplicationServer()
 }
 
@@ -314,6 +329,9 @@ func (UnimplementedClientApplicationServer) UpdateIdentityCertificate(context.Co
 }
 func (UnimplementedClientApplicationServer) GetIdentityCertificate(context.Context, *GetIdentityCertificateRequest) (*GetIdentityCertificateResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetIdentityCertificate not implemented")
+}
+func (UnimplementedClientApplicationServer) Initialize(context.Context, *InitializeRequest) (*InitializeResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Initialize not implemented")
 }
 func (UnimplementedClientApplicationServer) mustEmbedUnimplementedClientApplicationServer() {}
 
@@ -619,6 +637,24 @@ func _ClientApplication_GetIdentityCertificate_Handler(srv interface{}, ctx cont
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ClientApplication_Initialize_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(InitializeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ClientApplicationServer).Initialize(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/service.pb.ClientApplication/Initialize",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ClientApplicationServer).Initialize(ctx, req.(*InitializeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // ClientApplication_ServiceDesc is the grpc.ServiceDesc for ClientApplication service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -685,6 +721,10 @@ var ClientApplication_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetIdentityCertificate",
 			Handler:    _ClientApplication_GetIdentityCertificate_Handler,
+		},
+		{
+			MethodName: "Initialize",
+			Handler:    _ClientApplication_Initialize_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

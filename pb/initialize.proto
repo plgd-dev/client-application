@@ -1,0 +1,49 @@
+// ************************************************************************
+// Copyright (C) 2022 plgd.dev, s.r.o.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// 	http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// ************************************************************************
+
+syntax = "proto3";
+
+package service.pb;
+
+import "pb/update_identity_certificate.proto";
+
+option go_package = "github.com/plgd-dev/client-application/pb;pb";
+
+message InitializePreSharedKey {
+    // ID of the client application that is used to identify the client application by the device.
+	string subject_uuid = 1;
+    // Associated secret to the client application ID.
+    string key_uuid = 2;
+}
+
+message InitializeX509 {
+     // Certificate chain in PEM format
+     string certificate = 1;
+}
+
+
+// The client application must be initialized when GetConfigurationResponse.is_initialized is set to false.
+// The initialization depends on the GetConfigurationResponse.device_authentication_mode.
+// For:
+//  - PRE_SHARED_KEY - pre_shared_key values need to be set.
+//  - X509 - this values need to be set only if GetConfigurationResponse.remote_provisioning.mode is set to USER_AGENT, for SELF just use empty values
+message InitializeRequest {
+    InitializePreSharedKey pre_shared_key = 1;
+    UpdateIdentityCertificateRequest x509 = 2;
+}
+
+message InitializeResponse {
+}

@@ -42,8 +42,10 @@ type UpdateIdentityCertificateRequest struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	Certificate string `protobuf:"bytes,1,opt,name=certificate,proto3" json:"certificate,omitempty"` // PEM format
-	State       string `protobuf:"bytes,2,opt,name=state,proto3" json:"state,omitempty"`             // use value GetIdentityCSRResponse.state for pairing
+	// Certificate chain in PEM format
+	Certificate string `protobuf:"bytes,1,opt,name=certificate,proto3" json:"certificate,omitempty"`
+	// Use value GetIdentityCSRResponse.state for pairing otherwise update will be refused.
+	State string `protobuf:"bytes,2,opt,name=state,proto3" json:"state,omitempty"`
 }
 
 func (x *UpdateIdentityCertificateRequest) Reset() {

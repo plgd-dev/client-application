@@ -26,6 +26,7 @@ import (
 	"time"
 
 	"github.com/pion/dtls/v2"
+	"github.com/plgd-dev/client-application/pb"
 	"github.com/plgd-dev/device/client/core"
 	"github.com/plgd-dev/device/client/core/otm"
 	justworks "github.com/plgd-dev/device/client/core/otm/just-works"
@@ -49,6 +50,7 @@ type AuthenticationClient interface {
 	SetIdentityCertificate(chainPem []byte) error
 	GetIdentityCertificate() (tls.Certificate, error)
 	GetCertificateAuthorities() ([]*x509.Certificate, error)
+	IsInitialized() bool
 }
 
 type Service struct {
@@ -332,4 +334,18 @@ func (s *Service) SetIdentityCertificate(chainPem []byte) error {
 
 func (s *Service) GetIdentityCertificate() (tls.Certificate, error) {
 	return s.authenticationClient.GetIdentityCertificate()
+}
+
+func (s *Service) GetDeviceAuthenticationMode() pb.GetConfigurationResponse_DeviceAuthenticationMode {
+	switch s.config.COAP.TLS.Authentication {
+	case AuthenticationX509:
+		return pb.GetConfigurationResponse_X509
+	case AuthenticationPreSharedKey:
+		return pb.GetConfigurationResponse_PRE_SHARED_KEY
+	}
+	return pb.GetConfigurationResponse_PRE_SHARED_KEY
+}
+
+func (s *Service) IsInitialized() bool {
+	return s.authenticationClient.IsInitialized()
 }

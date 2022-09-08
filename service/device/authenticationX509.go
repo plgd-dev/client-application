@@ -118,6 +118,23 @@ func encodePrivateKeyToPem(k *ecdsa.PrivateKey) ([]byte, error) {
 	return pem.EncodeToMemory(&pem.Block{Type: "EC PRIVATE KEY", Bytes: b}), nil
 }
 
+func (s *authenticationX509) setCertificate(crt tls.Certificate) (bool, error) {
+	oldCrt := s.certificate.Load()
+	if oldCrt == nil {
+		if s.certificate.CompareAndSwap(oldCrt, &crt) {
+			return true, nil
+		}
+		return false, nil
+	}
+	if crt.Leaf.Subject.CommonName != oldCrt.Leaf.Subject.CommonName {
+		return false, fmt.Errorf("common name of certificate(%v) is not equal with previous one(%v)", crt.Leaf.Subject.CommonName, oldCrt.Leaf.Subject.CommonName)
+	}
+	if s.certificate.CompareAndSwap(oldCrt, &crt) {
+		return true, nil
+	}
+	return false, nil
+}
+
 func (s *authenticationX509) updateCertificate(crt tls.Certificate) error {
 	if len(crt.Certificate) > 0 && crt.Leaf == nil {
 		var err error
@@ -127,18 +144,12 @@ func (s *authenticationX509) updateCertificate(crt tls.Certificate) error {
 		}
 	}
 	for {
-		oldCrt := s.certificate.Load()
-		if oldCrt == nil {
-			if s.certificate.CompareAndSwap(oldCrt, &crt) {
-				return nil
-			}
-		} else {
-			if crt.Leaf.Subject.CommonName != oldCrt.Leaf.Subject.CommonName {
-				return fmt.Errorf("common name of certificate(%v) is not equal with previous one(%v)", crt.Leaf.Subject.CommonName, oldCrt.Leaf.Subject.CommonName)
-			}
-			if s.certificate.CompareAndSwap(oldCrt, &crt) {
-				return nil
-			}
+		ok, err := s.setCertificate(crt)
+		if err != nil {
+			return err
+		}
+		if ok {
+			return nil
 		}
 	}
 }
@@ -180,4 +191,8 @@ func (s *authenticationX509) GetCertificateAuthorities() ([]*x509.Certificate, e
 		return nil, err
 	}
 	return []*x509.Certificate{rootCA}, nil
+}
+
+func (s *authenticationX509) IsInitialized() bool {
+	return s.certificate.Load() != nil
 }

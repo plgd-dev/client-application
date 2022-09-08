@@ -6,7 +6,7 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/google/uuid"
 	"github.com/lestrrat-go/jwx/jwk"
-	"github.com/plgd-dev/client-application/service/remoteProvisioning"
+	"github.com/plgd-dev/client-application/pb"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -50,9 +50,6 @@ func (c *JSONWebKeyCache) LookupKey(token *jwt.Token) (jwk.Key, error) {
 }
 
 func (s *ClientApplicationServer) ParseWithClaims(token string, claims jwt.Claims) error {
-	if !s.HasAuthorizationEnabled() {
-		return nil
-	}
 	c := s.jwksCache.Load()
 	if c == nil {
 		return status.Errorf(codes.Unauthenticated, "cannot validate token: missing JWK cache")
@@ -68,6 +65,6 @@ func (s *ClientApplicationServer) ParseWithClaims(token string, claims jwt.Claim
 	return nil
 }
 
-func (s *ClientApplicationServer) HasAuthorizationEnabled() bool {
-	return s.remoteProvisioningConfig.Mode != remoteProvisioning.Mode_None
+func (s *ClientApplicationServer) HasJWTAuthorizationEnabled() bool {
+	return s.serviceDevice.GetDeviceAuthenticationMode() == pb.GetConfigurationResponse_X509
 }

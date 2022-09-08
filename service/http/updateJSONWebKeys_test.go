@@ -24,6 +24,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/plgd-dev/client-application/service/device"
 	serviceHttp "github.com/plgd-dev/client-application/service/http"
 	"github.com/plgd-dev/client-application/service/remoteProvisioning"
 	"github.com/plgd-dev/client-application/test"
@@ -39,6 +40,7 @@ func TestClientApplicationServerUpdateJSONWebKeys(t *testing.T) {
 	cfg.APIs.HTTP.TLS.ClientCertificateRequired = false
 	cfg.APIs.HTTP.UI.Enabled = true
 	cfg.RemoteProvisioning.Mode = remoteProvisioning.Mode_UserAgent
+	cfg.Clients.Device.COAP.TLS.Authentication = device.AuthenticationX509
 
 	shutDown := test.New(t, cfg)
 	defer shutDown()
@@ -55,26 +57,26 @@ func TestClientApplicationServerUpdateJSONWebKeys(t *testing.T) {
 	require.NoError(t, err)
 
 	// update without token
-	request = httpgwTest.NewRequest(http.MethodPut, serviceHttp.WellKnownJWKs, bytes.NewReader(jwks)).
+	request = httpgwTest.NewRequest(http.MethodPost, serviceHttp.WellKnownJWKs, bytes.NewReader(jwks)).
 		Host(test.CLIENT_APPLICATION_HTTP_HOST).Build()
 	resp = httpgwTest.HTTPDo(t, request)
 	require.Equal(t, http.StatusUnauthorized, resp.StatusCode)
 
 	// update with invalid token
-	request = httpgwTest.NewRequest(http.MethodPut, serviceHttp.WellKnownJWKs, bytes.NewReader(jwks)).
+	request = httpgwTest.NewRequest(http.MethodPost, serviceHttp.WellKnownJWKs, bytes.NewReader(jwks)).
 		Host(test.CLIENT_APPLICATION_HTTP_HOST).AuthToken("invalidToken").Build()
 	resp = httpgwTest.HTTPDo(t, request)
 	require.Equal(t, http.StatusUnauthorized, resp.StatusCode)
 
 	// update with token
 	token := hubTestOAuthServer.GetDefaultAccessToken(t)
-	request = httpgwTest.NewRequest(http.MethodPut, serviceHttp.WellKnownJWKs, bytes.NewReader(jwks)).
+	request = httpgwTest.NewRequest(http.MethodPost, serviceHttp.WellKnownJWKs, bytes.NewReader(jwks)).
 		Host(test.CLIENT_APPLICATION_HTTP_HOST).AuthToken(token).Build()
 	resp = httpgwTest.HTTPDo(t, request)
 	require.Equal(t, http.StatusOK, resp.StatusCode)
 
 	// refresh jwks with token
-	request = httpgwTest.NewRequest(http.MethodPut, serviceHttp.WellKnownJWKs, bytes.NewReader(jwks)).
+	request = httpgwTest.NewRequest(http.MethodPost, serviceHttp.WellKnownJWKs, bytes.NewReader(jwks)).
 		Host(test.CLIENT_APPLICATION_HTTP_HOST).AuthToken(token).Build()
 	resp = httpgwTest.HTTPDo(t, request)
 	require.Equal(t, http.StatusOK, resp.StatusCode)

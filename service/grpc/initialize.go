@@ -14,27 +14,26 @@
 // limitations under the License.
 // ************************************************************************
 
-package grpc_test
+package grpc
 
 import (
 	"context"
-	"testing"
-	"time"
 
 	"github.com/plgd-dev/client-application/pb"
-	"github.com/plgd-dev/client-application/test"
-	"github.com/stretchr/testify/require"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
-func TestClientApplicationServerGetConfiguration(t *testing.T) {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*120)
-	defer cancel()
-
-	s, teardown, err := test.NewClientApplicationServer(ctx)
-	require.NoError(t, err)
-	defer teardown()
-
-	d1, err := s.GetConfiguration(ctx, &pb.GetConfigurationRequest{})
-	require.NoError(t, err)
-	require.Equal(t, test.NewServiceInformation(), d1)
+func (s *ClientApplicationServer) Initialize(ctx context.Context, req *pb.InitializeRequest) (*pb.InitializeResponse, error) {
+	if s.serviceDevice.IsInitialized() {
+		return nil, status.Errorf(codes.AlreadyExists, "already initialized")
+	}
+	if !s.updateIdentityCertificateIsEnabled() {
+		return nil, status.Errorf(codes.InvalidArgument, "initialize with certificate is disabled")
+	}
+	_, err := s.UpdateIdentityCertificate(ctx, req.GetX509())
+	if err != nil {
+		return nil, err
+	}
+	return &pb.InitializeResponse{}, nil
 }

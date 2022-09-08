@@ -1,0 +1,5 @@
+package pb
+
+func file_pb_update_identity_certificate_proto_init() {
+	file_github_com_plgd_dev_client_application_pb_update_identity_certificate_proto_init()
+}

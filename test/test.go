@@ -115,7 +115,7 @@ func New(t *testing.T, cfg service.Config) func() {
 }
 
 func MakeDeviceConfig() serviceDevice.Config {
-	return serviceDevice.Config{
+	cfg := serviceDevice.Config{
 		COAP: serviceDevice.CoapConfig{
 			MaxMessageSize: 256 * 1024,
 			InactivityMonitor: serviceDevice.InactivityMonitor{
@@ -144,6 +144,11 @@ func MakeDeviceConfig() serviceDevice.Config {
 			},
 		},
 	}
+	err := cfg.Validate()
+	if err != nil {
+		panic(err)
+	}
+	return cfg
 }
 
 func MakeHttpConfig() service.HTTPConfig {
@@ -225,12 +230,12 @@ func NewHttpService(ctx context.Context, t *testing.T) (*http.Service, func()) {
 }
 
 func NewServiceInformation() *serviceGrpc.ServiceInformation {
-	remoteProvisioning := MakeRemoteProvisioningConfig()
 	return &serviceGrpc.ServiceInformation{
-		Version:            VERSION,
-		BuildDate:          BUILD_DATE,
-		CommitHash:         COMMIT_HASH,
-		RemoteProvisioning: remoteProvisioning.ToProto(),
+		Version:                  VERSION,
+		BuildDate:                BUILD_DATE,
+		CommitHash:               COMMIT_HASH,
+		IsInitialized:            true,
+		DeviceAuthenticationMode: pb.GetConfigurationResponse_PRE_SHARED_KEY,
 	}
 }
 

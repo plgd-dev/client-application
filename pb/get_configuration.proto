@@ -45,11 +45,19 @@ message RemoteProvisioning {
     Authorization authorization = 3;
 }
 
+
 message GetConfigurationResponse {
+    enum DeviceAuthenticationMode {
+        PRE_SHARED_KEY = 0;
+        X509 = 1;
+    };
     string version = 1;
     string build_date = 2;
     string commit_hash = 3;
     string commit_date = 4;
     string release_url = 5;
-    RemoteProvisioning remote_provisioning = 6;
+    // user don't need to call initialize endpoint
+    bool is_initialized = 6;
+    DeviceAuthenticationMode device_authentication_mode = 7;
+    RemoteProvisioning remote_provisioning = 8;
 }

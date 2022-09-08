@@ -40,9 +40,9 @@ const (
 	OwnDevice           = Device + "/own"
 	DisownDevice        = Device + "/disown"
 
-	IdentityCsr         = Identity + "/csr"
-	IdentityCertificate = Identity + "/certificate"
-
+	Initialize             = ApiV1 + "/initialize"
+	IdentityCsr            = Identity + "/csr"
+	IdentityCertificate    = Identity + "/certificate"
 	WellKnownJWKs          = WellKnown + "/jwks.json"
 	WellKnownConfiguration = WellKnown + "/configuration"
 )

@@ -21,7 +21,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/plgd-dev/client-application/pb"
-	"github.com/plgd-dev/client-application/service/remoteProvisioning"
 	"github.com/plgd-dev/hub/v2/identity-store/events"
 	"github.com/plgd-dev/hub/v2/pkg/net/grpc"
 	"google.golang.org/grpc/codes"
@@ -29,7 +28,7 @@ import (
 )
 
 func (s *ClientApplicationServer) GetIdentityCSR(ctx context.Context, req *pb.GetIdentityCSRRequest) (*pb.GetIdentityCSRResponse, error) {
-	if s.remoteProvisioningConfig.Mode != remoteProvisioning.Mode_UserAgent {
+	if !s.updateIdentityCertificateIsEnabled() {
 		return nil, status.Errorf(codes.Unimplemented, "not supported")
 	}
 	owner, err := grpc.OwnerFromTokenMD(ctx, s.remoteProvisioningConfig.Authorization.OwnerClaim)

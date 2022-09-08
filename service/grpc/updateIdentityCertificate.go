@@ -39,11 +39,15 @@ func (s *ClientApplicationServer) validateState(state uuid.UUID) bool {
 	return !item.IsExpired()
 }
 
+func (s *ClientApplicationServer) updateIdentityCertificateIsEnabled() bool {
+	return s.remoteProvisioningConfig.Mode == remoteProvisioning.Mode_UserAgent && s.serviceDevice.GetDeviceAuthenticationMode() == pb.GetConfigurationResponse_X509
+}
+
 func (s *ClientApplicationServer) UpdateIdentityCertificate(ctx context.Context, req *pb.UpdateIdentityCertificateRequest) (*pb.UpdateIdentityCertificateResponse, error) {
-	if s.remoteProvisioningConfig.Mode != remoteProvisioning.Mode_UserAgent {
+	if !s.updateIdentityCertificateIsEnabled() {
 		return nil, status.Errorf(codes.Unimplemented, "not supported")
 	}
-	state, err := uuid.Parse(req.State)
+	state, err := uuid.Parse(req.GetState())
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "cannot parse state: %v", err)
 	}
@@ -55,7 +59,7 @@ func (s *ClientApplicationServer) UpdateIdentityCertificate(ctx context.Context,
 		return nil, s.logger.LogAndReturnError(status.Errorf(codes.Unauthenticated, "cannot get owner from token: %v", err))
 	}
 	owner = events.OwnerToUUID(owner)
-	certs, err := security.ParseX509FromPEM([]byte(req.Certificate))
+	certs, err := security.ParseX509FromPEM([]byte(req.GetCertificate()))
 	if err != nil {
 		return nil, s.logger.LogAndReturnError(status.Errorf(codes.InvalidArgument, "cannot parse certificate: %v", err))
 	}
@@ -66,7 +70,7 @@ func (s *ClientApplicationServer) UpdateIdentityCertificate(ctx context.Context,
 	if owner != ident {
 		return nil, s.logger.LogAndReturnError(status.Errorf(codes.InvalidArgument, "invalid owner id"))
 	}
-	if err := s.serviceDevice.SetIdentityCertificate([]byte(req.Certificate)); err != nil {
+	if err := s.serviceDevice.SetIdentityCertificate([]byte(req.GetCertificate())); err != nil {
 		return nil, s.logger.LogAndReturnError(status.Errorf(codes.Internal, "cannot set certificate: %v", err))
 	}
 	return &pb.UpdateIdentityCertificateResponse{}, nil

@@ -4,32 +4,35 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
-	"fmt"
 
+	"github.com/google/uuid"
 	"github.com/pion/dtls/v2"
 	"github.com/plgd-dev/device/client/core"
 	"github.com/plgd-dev/device/pkg/net/coap"
+	"go.uber.org/atomic"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type authenticationPreSharedKey struct {
-	config Config
+	config *atomic.Pointer[Config]
 }
 
-var errPreSharedKeyAuthentication = fmt.Errorf("authentication method is set to %v", AuthenticationPreSharedKey)
+var errPreSharedKeyAuthentication = status.Errorf(codes.Unimplemented, "authentication method is set to %v: not supported", AuthenticationPreSharedKey)
 
 func newAuthenticationPreSharedKey(config Config) *authenticationPreSharedKey {
 	return &authenticationPreSharedKey{
-		config: config,
+		config: atomic.NewPointer(&config),
 	}
 }
 
 func (s *authenticationPreSharedKey) DialDTLS(ctx context.Context, addr string, _ *dtls.Config, opts ...coap.DialOptionFunc) (*coap.ClientCloseHandler, error) {
-	idBin, _ := s.config.COAP.TLS.PreSharedKey.subjectUUID.MarshalBinary()
+	idBin, _ := s.config.Load().COAP.TLS.PreSharedKey.subjectUUID.MarshalBinary()
 	dtlsCfg := &dtls.Config{
 		PSKIdentityHint: idBin,
 		PSK: func(b []byte) ([]byte, error) {
 			// iotivity-lite supports only 16-byte PSK
-			return s.config.COAP.TLS.PreSharedKey.keyUUID[:16], nil
+			return s.config.Load().COAP.TLS.PreSharedKey.keyUUID[:16], nil
 		},
 		CipherSuites: []dtls.CipherSuiteID{dtls.TLS_ECDHE_PSK_WITH_AES_128_CBC_SHA256},
 	}
@@ -41,11 +44,11 @@ func (s *authenticationPreSharedKey) DialTLS(ctx context.Context, addr string, t
 }
 
 func (s *authenticationPreSharedKey) GetOwnerID() (string, error) {
-	return s.config.COAP.TLS.PreSharedKey.SubjectUUID, nil
+	return s.config.Load().COAP.TLS.PreSharedKey.SubjectUUID, nil
 }
 
 func (s *authenticationPreSharedKey) GetOwnOptions() []core.OwnOption {
-	return []core.OwnOption{core.WithPresharedKey(s.config.COAP.TLS.PreSharedKey.keyUUID[:16])}
+	return []core.OwnOption{core.WithPresharedKey(s.config.Load().COAP.TLS.PreSharedKey.keyUUID[:16])}
 }
 
 func (s *authenticationPreSharedKey) GetIdentityCSR(id string) ([]byte, error) {
@@ -64,4 +67,9 @@ func (s *authenticationPreSharedKey) GetIdentityCertificate() (tls.Certificate, 
 func (s *authenticationPreSharedKey) GetCertificateAuthorities() ([]*x509.Certificate, error) {
 	// we need to set empty certificates authorities otherwise own device will failed
 	return nil, nil
+}
+
+func (s *authenticationPreSharedKey) IsInitialized() bool {
+	cfg := s.config.Load()
+	return cfg.COAP.TLS.PreSharedKey.keyUUID != uuid.Nil && cfg.COAP.TLS.PreSharedKey.subjectUUID != uuid.Nil
 }

@@ -765,6 +765,8 @@ github.com/plgd-dev/hub/v2 v2.4.7 h1:8S7oRYP8MqxQKxxscUUBdKTHt/4wk3kq6mCvZiZGcWw
 github.com/plgd-dev/hub/v2 v2.4.7/go.mod h1:yAE0vyC76DUlmWFnPj7Bd8AuL8WZhHAF1h2yCurqt6k=
 github.com/plgd-dev/hub/v2 v2.4.8-0.20220907082154-eea9e2b926a9 h1:u+IS4ojdi63MudahmQDB+BG0QoRE/ehgMDtrDbBota4=
 github.com/plgd-dev/hub/v2 v2.4.8-0.20220907082154-eea9e2b926a9/go.mod h1:yAE0vyC76DUlmWFnPj7Bd8AuL8WZhHAF1h2yCurqt6k=
+github.com/plgd-dev/hub/v2 v2.4.9-0.20220908094646-b028bdc80171 h1:KAwFImSjYxCzCtisWq157OCbxsF/inFDR0aXIrwae58=
+github.com/plgd-dev/hub/v2 v2.4.9-0.20220908094646-b028bdc80171/go.mod h1:yAE0vyC76DUlmWFnPj7Bd8AuL8WZhHAF1h2yCurqt6k=
 github.com/plgd-dev/kit v0.0.0-20200819113605-d5fcf3e94f63/go.mod h1:Yl9zisyXfPdtP9hTWlJqjJYXmgU/jtSDKttz9/CeD90=
 github.com/plgd-dev/kit/v2 v2.0.0-20211006190727-057b33161b90 h1:TC1HJ/UbyflJFPvaOdGmNZ5TeFGex1/dyr9urNGLy7M=
 github.com/plgd-dev/kit/v2 v2.0.0-20211006190727-057b33161b90/go.mod h1:Z7oKFLSGQjdi8eInxwFCs0tSApuEM1o0qNck+sJYp4M=

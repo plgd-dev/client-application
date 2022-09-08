@@ -73,7 +73,7 @@
           "client-application"
         ]
       },
-      "put": {
+      "post": {
         "operationId": "ClientApplication_UpdateJSONWebKeys",
         "responses": {
           "200": {
@@ -512,7 +512,7 @@
     },
     "/api/v1/identity/certificate": {
       "get": {
-        "summary": "Set or update identity certificate for the client application.",
+        "summary": "Get identity certificate of the client application.",
         "operationId": "ClientApplication_GetIdentityCertificate",
         "responses": {
           "200": {
@@ -532,7 +532,7 @@
           "client-application"
         ]
       },
-      "put": {
+      "post": {
         "summary": "Set or update identity certificate for the client application.",
         "operationId": "ClientApplication_UpdateIdentityCertificate",
         "responses": {
@@ -586,6 +586,39 @@
           "client-application"
         ]
       }
+    },
+    "/api/v1/initialize": {
+      "post": {
+        "summary": "Initialize application when GetConfiguration.is_nitialized is set to false.\nLook to initialize.plantuml for flows.",
+        "operationId": "ClientApplication_Initialize",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbInitializeResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbInitializeRequest"
+            }
+          }
+        ],
+        "tags": [
+          "client-application"
+        ]
+      }
     }
   },
   "definitions": {
@@ -610,6 +643,14 @@
       ],
       "default": "UNKNOWN",
       "title": "- UNKNOWN: cannot determine ownership status\n - UNOWNED: device is ready to be owned the user\n - OWNED: device is owned by the user. to determine who own the device you need to get ownership resource /oic/sec/doxm\n - UNSUPPORTED: set when device is not secured. (iotivity-lite was built without security)"
+    },
+    "GetConfigurationResponseDeviceAuthenticationMode": {
+      "type": "string",
+      "enum": [
+        "PRE_SHARED_KEY",
+        "X509"
+      ],
+      "default": "PRE_SHARED_KEY"
     },
     "GetDevicesRequestOwnershipStatusFilter": {
       "type": "string",
@@ -869,6 +910,13 @@
         "releaseUrl": {
           "type": "string"
         },
+        "isInitialized": {
+          "type": "boolean",
+          "title": "user don't need to call initialize endpoint"
+        },
+        "deviceAuthenticationMode": {
+          "$ref": "#/definitions/GetConfigurationResponseDeviceAuthenticationMode"
+        },
         "remoteProvisioning": {
           "$ref": "#/definitions/pbRemoteProvisioning"
         }
@@ -892,6 +940,34 @@
           "type": "string"
         }
       }
+    },
+    "pbInitializePreSharedKey": {
+      "type": "object",
+      "properties": {
+        "subjectUuid": {
+          "type": "string",
+          "description": "ID of the client application that is used to identify the client application by the device."
+        },
+        "keyUuid": {
+          "type": "string",
+          "description": "Associated secret to the client application ID."
+        }
+      }
+    },
+    "pbInitializeRequest": {
+      "type": "object",
+      "properties": {
+        "preSharedKey": {
+          "$ref": "#/definitions/pbInitializePreSharedKey"
+        },
+        "x509": {
+          "$ref": "#/definitions/pbUpdateIdentityCertificateRequest"
+        }
+      },
+      "title": "The client application must be initialized when GetConfigurationResponse.is_initialized is set to false.\nThe initialization depends on the GetConfigurationResponse.device_authentication_mode.\nFor:\n - PRE_SHARED_KEY - pre_shared_key values need to be set.\n - X509 - this values need to be set only if GetConfigurationResponse.remote_provisioning.mode is set to USER_AGENT, for SELF just use empty values"
+    },
+    "pbInitializeResponse": {
+      "type": "object"
     },
     "pbLocalizedString": {
       "type": "object",
@@ -1090,10 +1166,12 @@
       "type": "object",
       "properties": {
         "certificate": {
-          "type": "string"
+          "type": "string",
+          "title": "Certificate chain in PEM format"
         },
         "state": {
-          "type": "string"
+          "type": "string",
+          "description": "Use value GetIdentityCSRResponse.state for pairing otherwise update will be refused."
         }
       },
       "description": "JWT token must be used for extraction owner id."

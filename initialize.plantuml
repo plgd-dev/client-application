@@ -1,0 +1,55 @@
+@startuml Sequence
+skinparam backgroundColor transparent
+hide footbox
+
+participant C as "client"
+participant S as "client application"
+participant O as "oauth server"
+participant CA as "certificate authority"
+
+C -> S: GetConfiguration
+return
+alt #GetConfiguration.device_authentication_mode == PRE_SHARED_KEY
+  alt #GetConfiguration.is_initialized == true
+      note over S #aqua
+      Client application is initialized.
+      end note
+  else Pink false
+      C -> S: Initialize with preshared key
+      return
+      note over S #aqua
+      Client application is initialized.
+      end note
+  end
+else X509
+    C -> O: Authenticate user
+    return JWT token 
+    alt #GetConfiguration.is_initialized == true
+      note over S #aqua
+      Client application is initialized.
+    end note
+    else false
+        alt #GetConfiguration.remote_provisioning.mode == SELF
+          C -> S: Initialize with empty body and token
+          return
+          note over S #aqua
+          Client application is initialized.
+          end note
+        else USER_AGENT
+          C -> O: Get JWKS
+          return jwks
+          C -> S: Update JWKS with token and jwks from oauth server
+          return
+          C -> S: Get CSR with token
+          return CSR and state
+          C-> CA: Sign CSR with token
+          return Certificate
+          C -> S: Initialize with token, state, and certificate
+          return
+          note over S #aqua
+          Client application is initialized.
+          end note
+        end
+    end
+end
+@enduml

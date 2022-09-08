@@ -58,7 +58,7 @@ func TestClientApplicationServerGetJSONWebKeys(t *testing.T) {
 	require.NoError(t, err)
 
 	token := hubTestOAuthServer.GetDefaultAccessToken(t)
-	request = httpgwTest.NewRequest(http.MethodPut, serviceHttp.WellKnownJWKs, bytes.NewReader(jwks)).
+	request = httpgwTest.NewRequest(http.MethodPost, serviceHttp.WellKnownJWKs, bytes.NewReader(jwks)).
 		Host(test.CLIENT_APPLICATION_HTTP_HOST).AuthToken(token).Build()
 	resp = httpgwTest.HTTPDo(t, request)
 	require.Equal(t, http.StatusOK, resp.StatusCode)

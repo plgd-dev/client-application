@@ -32,12 +32,13 @@ import "pb/update_resource.proto";
 import "pb/get_device_resource_links.proto";
 import "pb/own_device.proto";
 import "pb/disown_device.proto";
-import "pb/get_information.proto";
+import "pb/get_configuration.proto";
 import "pb/get_identity_csr.proto";
 import "pb/update_identity_certificate.proto";
 import "pb/get_identity_certificate.proto";
 import "pb/get_json_web_keys.proto";
 import "pb/update_json_web_keys.proto";
+import "pb/initialize.proto";
 
 import "grpc-gateway/pb/devices.proto";
 import "resource-aggregate/pb/events.proto";
@@ -183,7 +184,7 @@ service ClientApplication {
 
   rpc UpdateJSONWebKeys(UpdateJSONWebKeysRequest) returns (UpdateJSONWebKeysResponse) {
     option (google.api.http) = {
-      put: "/.well-known/jwks.json"
+      post: "/.well-known/jwks.json"
       body: "jwks"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
@@ -213,7 +214,7 @@ service ClientApplication {
   // Set or update identity certificate for the client application.
   rpc UpdateIdentityCertificate(UpdateIdentityCertificateRequest) returns (UpdateIdentityCertificateResponse) {
     option (google.api.http) = {
-      put: "/api/v1/identity/certificate"
+      post: "/api/v1/identity/certificate"
       body: "*"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
@@ -221,10 +222,22 @@ service ClientApplication {
     };
   }
 
-  // Set or update identity certificate for the client application.
+  // Get identity certificate of the client application.
   rpc GetIdentityCertificate(GetIdentityCertificateRequest) returns (GetIdentityCertificateResponse) {
     option (google.api.http) = {
       get: "/api/v1/identity/certificate"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: [ "client-application" ]
+    };
+  }
+
+   // Initialize application when GetConfiguration.is_nitialized is set to false.
+   // Look to initialize.plantuml for flows.
+   rpc Initialize(InitializeRequest) returns (InitializeResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/initialize"
+      body: "*"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       tags: [ "client-application" ]

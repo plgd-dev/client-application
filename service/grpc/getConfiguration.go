@@ -24,6 +24,11 @@ import (
 
 func (s *ClientApplicationServer) GetConfiguration(ctx context.Context, _ *pb.GetConfigurationRequest) (*pb.GetConfigurationResponse, error) {
 	info := s.info.Clone()
-	info.RemoteProvisioning = s.remoteProvisioningConfig.ToProto()
+	info.DeviceAuthenticationMode = s.serviceDevice.GetDeviceAuthenticationMode()
+	info.IsInitialized = s.serviceDevice.IsInitialized()
+	if info.DeviceAuthenticationMode == pb.GetConfigurationResponse_X509 {
+		info.RemoteProvisioning = s.remoteProvisioningConfig.ToProto()
+	}
+
 	return info, nil
 }
