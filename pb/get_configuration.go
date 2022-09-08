@@ -29,8 +29,11 @@ func (r *Authorization) Clone() *Authorization {
 	if r == nil {
 		return nil
 	}
-	scopes := make([]string, len(r.Scopes))
-	copy(scopes, r.Scopes)
+	var scopes []string
+	if len(r.Scopes) > 0 {
+		scopes = make([]string, len(r.Scopes))
+		copy(scopes, r.Scopes)
+	}
 	return &Authorization{
 		ClientId:   r.ClientId,
 		Audience:   r.Audience,

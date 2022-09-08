@@ -29,13 +29,13 @@ import (
 	httpgwTest "github.com/plgd-dev/hub/v2/http-gateway/test"
 	"github.com/plgd-dev/hub/v2/test/config"
 	hubTestOAuthServer "github.com/plgd-dev/hub/v2/test/oauth-server/test"
+	"github.com/plgd-dev/kit/v2/codec/json"
 	"github.com/stretchr/testify/require"
 )
 
 func TestClientApplicationServerGetJSONWebKeys(t *testing.T) {
 	cfg := test.MakeConfig(t)
 	cfg.APIs.HTTP.TLS.ClientCertificateRequired = false
-	cfg.APIs.HTTP.UI.Enabled = true
 	cfg.RemoteProvisioning.Mode = remoteProvisioning.Mode_UserAgent
 
 	shutDown := test.New(t, cfg)
@@ -54,19 +54,24 @@ func TestClientApplicationServerGetJSONWebKeys(t *testing.T) {
 	resp = httpgwTest.HTTPDo(t, request)
 	require.Equal(t, http.StatusOK, resp.StatusCode)
 
-	jwks, err := io.ReadAll(resp.Body)
+	jwksBody, err := io.ReadAll(resp.Body)
 	require.NoError(t, err)
 
 	token := hubTestOAuthServer.GetDefaultAccessToken(t)
-	request = httpgwTest.NewRequest(http.MethodPost, serviceHttp.WellKnownJWKs, bytes.NewReader(jwks)).
+	request = httpgwTest.NewRequest(http.MethodPost, serviceHttp.WellKnownJWKs, bytes.NewReader(jwksBody)).
 		Host(test.CLIENT_APPLICATION_HTTP_HOST).AuthToken(token).Build()
 	resp = httpgwTest.HTTPDo(t, request)
 	require.Equal(t, http.StatusOK, resp.StatusCode)
 
 	request = httpgwTest.NewRequest(http.MethodGet, serviceHttp.WellKnownJWKs, nil).Host(test.CLIENT_APPLICATION_HTTP_HOST).Build()
 	resp = httpgwTest.HTTPDo(t, request)
-	jwksClientApp, err := io.ReadAll(resp.Body)
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+	var jwksClientApp map[string]interface{}
+	err = json.ReadFrom(resp.Body, &jwksClientApp)
 	require.NoError(t, err)
 	require.Equal(t, http.StatusOK, resp.StatusCode)
+	var jwks map[string]interface{}
+	err = json.Decode(jwksBody, &jwks)
+	require.NoError(t, err)
 	require.Equal(t, jwks, jwksClientApp)
 }

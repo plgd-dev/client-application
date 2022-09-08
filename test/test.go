@@ -95,6 +95,7 @@ func SetUp(t *testing.T) (tearDown func()) {
 func New(t *testing.T, cfg service.Config) func() {
 	ctx := context.Background()
 	logger := log.NewLogger(cfg.Log)
+	require.NoError(t, cfg.Validate())
 
 	fileWatcher, err := fsnotify.NewWatcher()
 	require.NoError(t, err)
@@ -144,10 +145,6 @@ func MakeDeviceConfig() serviceDevice.Config {
 			},
 		},
 	}
-	err := cfg.Validate()
-	if err != nil {
-		panic(err)
-	}
 	return cfg
 }
 
@@ -193,9 +190,12 @@ func MakeRemoteProvisioningConfig() remoteProvisioning.Config {
 		Mode: remoteProvisioning.Mode_None,
 		UserAgentConfig: remoteProvisioning.UserAgentConfig{
 			CSRChallengeStateExpiration: time.Minute * 10,
+			CertificateAuthorityAddress: config.CERTIFICATE_AUTHORITY_HOST,
 		},
 		Authorization: remoteProvisioning.AuthorizationConfig{
-			OwnerClaim: "sub",
+			OwnerClaim: config.OWNER_CLAIM,
+			Authority:  config.OAUTH_SERVER_HOST,
+			ClientID:   config.OAUTH_MANAGER_CLIENT_ID,
 		},
 	}
 }
@@ -240,7 +240,8 @@ func NewServiceInformation() *serviceGrpc.ServiceInformation {
 }
 
 type ClientApplicationServerCfg struct {
-	Cfg serviceDevice.Config
+	Cfg                   serviceDevice.Config
+	RemoteProvisioningCfg remoteProvisioning.Config
 }
 
 type ClientApplicationServerOpt = func(c *ClientApplicationServerCfg)
@@ -251,18 +252,26 @@ func WithDeviceConfig(cfg serviceDevice.Config) ClientApplicationServerOpt {
 	}
 }
 
+func WithRemoteProvisioningConfig(cfg remoteProvisioning.Config) ClientApplicationServerOpt {
+	return func(c *ClientApplicationServerCfg) {
+		c.RemoteProvisioningCfg = cfg
+	}
+}
+
 func NewClientApplicationServer(ctx context.Context, opts ...ClientApplicationServerOpt) (*serviceGrpc.ClientApplicationServer, func(), error) {
 	logger := log.NewLogger(log.MakeDefaultConfig())
 	cfg := ClientApplicationServerCfg{
-		Cfg: MakeDeviceConfig(),
+		Cfg:                   MakeDeviceConfig(),
+		RemoteProvisioningCfg: MakeRemoteProvisioningConfig(),
 	}
 	for _, o := range opts {
 		o(&cfg)
 	}
-	if err := cfg.Cfg.Validate(); err != nil {
+	deviceCfg := cfg.Cfg
+	if err := deviceCfg.Validate(); err != nil {
 		return nil, nil, err
 	}
-	d, err := serviceDevice.New(ctx, "client-application-device", cfg.Cfg, logger, trace.NewNoopTracerProvider())
+	d, err := serviceDevice.New(ctx, "client-application-device", deviceCfg, logger, trace.NewNoopTracerProvider())
 	if err != nil {
 		return nil, nil, err
 	}
@@ -272,8 +281,12 @@ func NewClientApplicationServer(ctx context.Context, opts ...ClientApplicationSe
 		defer wg.Done()
 		_ = d.Serve()
 	}()
+	remoteProvisioningCfg := cfg.RemoteProvisioningCfg
+	if err := remoteProvisioningCfg.Validate(); err != nil {
+		return nil, nil, err
+	}
 
-	clientApplicationServer := serviceGrpc.NewClientApplicationServer(MakeRemoteProvisioningConfig(), d, NewServiceInformation(), logger)
+	clientApplicationServer := serviceGrpc.NewClientApplicationServer(remoteProvisioningCfg, d, NewServiceInformation(), logger)
 	return clientApplicationServer, func() {
 		d.Close()
 		clientApplicationServer.Close()

@@ -135,8 +135,6 @@ func New(ctx context.Context, serviceName string, config Config, clientApplicati
 	requestHandler := &RequestHandler{mux: mux, clientApplicationServer: clientApplicationServer, config: config}
 	r.PathPrefix(Devices).Methods(http.MethodPut).MatcherFunc(resourceMatcher).HandlerFunc(requestHandler.updateResource)
 	r.PathPrefix(Devices).Methods(http.MethodPost).MatcherFunc(resourceMatcher).HandlerFunc(requestHandler.createResource)
-	r.HandleFunc(WellKnownJWKs, requestHandler.getJSONWebKeys).Methods(http.MethodGet)
-	r.HandleFunc(WellKnownJWKs, requestHandler.updateJSONWebKeys).Methods(http.MethodPut)
 	r.PathPrefix(ApiV1).Handler(mux)
 	r.PathPrefix(WellKnown).Handler(mux)
 	// serve www directory

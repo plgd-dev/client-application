@@ -22,6 +22,8 @@ import (
 	"time"
 
 	"github.com/plgd-dev/client-application/pb"
+	"github.com/plgd-dev/client-application/service/device"
+	"github.com/plgd-dev/client-application/service/remoteProvisioning"
 	"github.com/plgd-dev/client-application/test"
 	"github.com/stretchr/testify/require"
 )
@@ -37,4 +39,24 @@ func TestClientApplicationServerGetConfiguration(t *testing.T) {
 	d1, err := s.GetConfiguration(ctx, &pb.GetConfigurationRequest{})
 	require.NoError(t, err)
 	require.Equal(t, test.NewServiceInformation(), d1)
+}
+
+func TestClientApplicationServerGetConfigurationX509UserAgent(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*120)
+	defer cancel()
+	cfg := test.MakeDeviceConfig()
+	cfg.COAP.TLS.Authentication = device.AuthenticationX509
+	remoteProvisioningConfig := test.MakeRemoteProvisioningConfig()
+	remoteProvisioningConfig.Mode = remoteProvisioning.Mode_UserAgent
+	s, teardown, err := test.NewClientApplicationServer(ctx, test.WithDeviceConfig(cfg), test.WithRemoteProvisioningConfig(remoteProvisioningConfig))
+	require.NoError(t, err)
+	defer teardown()
+
+	d1, err := s.GetConfiguration(ctx, &pb.GetConfigurationRequest{})
+	require.NoError(t, err)
+	exp := test.NewServiceInformation()
+	exp.IsInitialized = false
+	exp.DeviceAuthenticationMode = pb.GetConfigurationResponse_X509
+	exp.RemoteProvisioning = remoteProvisioningConfig.ToProto().Clone()
+	require.Equal(t, exp, d1)
 }

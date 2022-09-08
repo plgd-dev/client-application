@@ -47,7 +47,6 @@ func TestClientApplicationServerUpdateIdentityCertificate(t *testing.T) {
 	cfg := test.MakeConfig(t)
 	cfg.APIs.HTTP.TLS.ClientCertificateRequired = false
 	cfg.Clients.Device.COAP.TLS.Authentication = device.AuthenticationX509
-	// /cfg.APIs.HTTP.UI.Enabled = true
 	cfg.RemoteProvisioning.Mode = remoteProvisioning.Mode_UserAgent
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*8)
 	defer cancel()
