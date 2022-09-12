@@ -20,16 +20,13 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/google/uuid"
 	"github.com/plgd-dev/client-application/pb"
 )
 
 func (s *ClientApplicationServer) ClearCache(ctx context.Context, _ *pb.ClearCacheRequest) (*pb.ClearCacheResponse, error) {
 	var errors []error
-	s.devices.Range(func(key, value interface{}) bool {
-		dev, ok := value.(*device)
-		if !ok {
-			return true
-		}
+	s.devices.Range(func(key uuid.UUID, dev *device) bool {
 		s.devices.Delete(key)
 		err := dev.Close(ctx)
 		if err != nil {

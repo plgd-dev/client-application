@@ -28,7 +28,11 @@ import (
 )
 
 func (s *ClientApplicationServer) DisownDevice(ctx context.Context, req *pb.DisownDeviceRequest) (*pb.DisownDeviceResponse, error) {
-	dev, err := s.getDevice(req.GetDeviceId())
+	devID, err := strDeviceID2UUID(req.GetDeviceId())
+	if err != nil {
+		return nil, err
+	}
+	dev, err := s.getDevice(devID)
 	if err != nil {
 		return nil, err
 	}
@@ -44,7 +48,7 @@ func (s *ClientApplicationServer) DisownDevice(ctx context.Context, req *pb.Diso
 	if err != nil {
 		return nil, convErrToGrpcStatus(codes.Unavailable, fmt.Errorf("cannot disown device %v: %w", dev.ID, err)).Err()
 	}
-	err = s.deleteDevice(ctx, dev.ID)
+	err = s.deleteDevice(ctx, devID)
 	if err != nil {
 		log.Errorf("cannot remove device %v from cache: %v", dev.ID, err)
 	}

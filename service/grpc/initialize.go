@@ -28,7 +28,7 @@ func (s *ClientApplicationServer) Initialize(ctx context.Context, req *pb.Initia
 	if s.serviceDevice.IsInitialized() {
 		return nil, status.Errorf(codes.AlreadyExists, "already initialized")
 	}
-	if !s.updateIdentityCertificateIsEnabled() {
+	if !s.signIdentityCertificateRemotely() {
 		return nil, status.Errorf(codes.InvalidArgument, "initialize with certificate is disabled")
 	}
 	_, err := s.UpdateIdentityCertificate(ctx, req.GetX509())

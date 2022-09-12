@@ -22,6 +22,7 @@ import (
 	"sort"
 	"sync"
 
+	"github.com/google/uuid"
 	serviceDevice "github.com/plgd-dev/client-application/service/device"
 	"github.com/plgd-dev/device/client/core"
 	"github.com/plgd-dev/device/schema"
@@ -39,12 +40,12 @@ type devices []*device
 
 func (d devices) Sort() {
 	sort.Slice(d, func(i, j int) bool {
-		return d[i].ID < d[j].ID
+		return d[i].ID.String() < d[j].ID.String()
 	})
 }
 
 type device struct {
-	ID     string
+	ID     uuid.UUID
 	logger log.Logger
 
 	private struct {
@@ -58,14 +59,14 @@ type device struct {
 	*core.Device
 }
 
-func newDevice(deviceID string, serviceDevice *serviceDevice.Service, logger log.Logger) *device {
+func newDevice(deviceID uuid.UUID, serviceDevice *serviceDevice.Service, logger log.Logger) *device {
 	d := device{
 		ID:     deviceID,
 		logger: logger.With(log.DeviceIDKey, deviceID),
 	}
 	coreDeviceCfg := serviceDevice.GetDeviceConfiguration()
 	coreDeviceCfg.ErrFunc = d.ErrorFunc
-	d.Device = core.NewDevice(coreDeviceCfg, d.ID, []string{}, d.GetEndpoints)
+	d.Device = core.NewDevice(coreDeviceCfg, deviceID.String(), []string{}, d.GetEndpoints)
 	return &d
 }
 
@@ -83,7 +84,7 @@ func (d *device) ToProto() *grpcgwPb.Device {
 	}
 
 	return &grpcgwPb.Device{
-		Id:    d.ID,
+		Id:    d.ID.String(),
 		Types: d.private.ResourceTypes,
 		Data: &events.ResourceChanged{
 			Content: &commands.Content{

@@ -28,7 +28,7 @@ import (
 )
 
 func (s *ClientApplicationServer) GetIdentityCSR(ctx context.Context, req *pb.GetIdentityCSRRequest) (*pb.GetIdentityCSRResponse, error) {
-	if !s.updateIdentityCertificateIsEnabled() {
+	if !s.signIdentityCertificateRemotely() {
 		return nil, status.Errorf(codes.Unimplemented, "not supported")
 	}
 	owner, err := grpc.OwnerFromTokenMD(ctx, s.remoteProvisioningConfig.Authorization.OwnerClaim)

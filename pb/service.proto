@@ -147,6 +147,7 @@ service ClientApplication {
   rpc OwnDevice(OwnDeviceRequest) returns (OwnDeviceResponse) {
     option (google.api.http) = {
       post: "/api/v1/devices/{device_id}/own"
+      body: "*"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       tags: [ "Device" ]

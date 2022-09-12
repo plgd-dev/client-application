@@ -167,10 +167,10 @@
           },
           {
             "name": "timeout",
-            "description": "How long to wait for the devices responses for responses in milliseconds. Default: 0 - means 2sec.",
+            "description": "How long to wait for the devices responses for responses in nanoseconds. Default: 0 - means 2sec.",
             "in": "query",
             "required": false,
-            "type": "integer",
+            "type": "string",
             "format": "int64"
           },
           {
@@ -312,6 +312,24 @@
             "in": "path",
             "required": true,
             "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "getIdentityCsr": {
+                  "$ref": "#/definitions/OwnDeviceRequestGetIdentityCsr",
+                  "description": "If is set, the own process will be paused and OwnDeviceResponse.get_identity_csr will be set.\nThe next call to OwnDevice must contain set_identity_certificate with filled state."
+                },
+                "setIdentityCertificate": {
+                  "$ref": "#/definitions/pbUpdateIdentityCertificateRequest",
+                  "description": "Next call after OwnDevice with filled get_identity_csr."
+                }
+              }
+            }
           }
         ],
         "tags": [
@@ -669,6 +687,16 @@
       ],
       "default": "IPV4"
     },
+    "OwnDeviceRequestGetIdentityCsr": {
+      "type": "object",
+      "properties": {
+        "timeout": {
+          "type": "string",
+          "format": "int64",
+          "description": "Defines how long own process will wait for the OwnDeviceRequest with set_identity_certificate in nanoseconds."
+        }
+      }
+    },
     "RemoteProvisioningMode": {
       "type": "string",
       "enum": [
@@ -981,7 +1009,13 @@
       }
     },
     "pbOwnDeviceResponse": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "getIdentityCsr": {
+          "$ref": "#/definitions/pbGetIdentityCSRResponse",
+          "title": "Filled when OwnDeviceRequest.get_identity_csr is true"
+        }
+      }
     },
     "pbPolicy": {
       "type": "object",

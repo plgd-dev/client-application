@@ -30,7 +30,11 @@ import (
 )
 
 func (s *ClientApplicationServer) DeleteResource(ctx context.Context, req *pb.DeleteResourceRequest) (*grpcgwPb.DeleteResourceResponse, error) {
-	dev, err := s.getDevice(req.GetResourceId().GetDeviceId())
+	devID, err := strDeviceID2UUID(req.GetResourceId().GetDeviceId())
+	if err != nil {
+		return nil, err
+	}
+	dev, err := s.getDevice(devID)
 	if err != nil {
 		return nil, err
 	}

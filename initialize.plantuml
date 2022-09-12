@@ -40,11 +40,11 @@ else X509
           return jwks
           C -> S: Update JWKS with token and jwks from oauth server
           return
-          C -> S: Get CSR with token
+          C -> S: Get identity CSR with token
           return CSR and state
-          C-> CA: Sign CSR with token
+          C-> CA: Sign identity CSR with token
           return Certificate
-          C -> S: Initialize with token, state, and certificate
+          C -> S: Initialize with token, state, and identity certificate
           return
           note over S #aqua
           Client application is initialized.

@@ -46,11 +46,15 @@ func convContentToOcfCbor(content *grpcgwPb.Content) ([]byte, error) {
 }
 
 func (s *ClientApplicationServer) UpdateResource(ctx context.Context, req *pb.UpdateResourceRequest) (*grpcgwPb.UpdateResourceResponse, error) {
+	devID, err := strDeviceID2UUID(req.GetResourceId().GetDeviceId())
+	if err != nil {
+		return nil, err
+	}
 	updateData, err := convContentToOcfCbor(req.GetContent())
 	if err != nil {
 		return nil, err
 	}
-	dev, err := s.getDevice(req.GetResourceId().GetDeviceId())
+	dev, err := s.getDevice(devID)
 	if err != nil {
 		return nil, err
 	}

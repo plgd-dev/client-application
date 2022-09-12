@@ -25,6 +25,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/google/uuid"
 	"github.com/plgd-dev/client-application/pb"
 	serviceDevice "github.com/plgd-dev/client-application/service/device"
 	"github.com/plgd-dev/device/client/core"
@@ -35,6 +36,7 @@ import (
 	"github.com/plgd-dev/device/schema/resources"
 	"github.com/plgd-dev/go-coap/v2/message"
 	coapCodes "github.com/plgd-dev/go-coap/v2/message/codes"
+	coapSync "github.com/plgd-dev/go-coap/v2/pkg/sync"
 	"github.com/plgd-dev/go-coap/v2/udp"
 	"github.com/plgd-dev/go-coap/v2/udp/client"
 	"github.com/plgd-dev/go-coap/v2/udp/message/pool"
@@ -51,7 +53,7 @@ import (
 )
 
 const (
-	DefaultTimeout = 2000
+	DefaultTimeout = 2 * time.Second
 	MulticastPort  = 5683
 )
 
@@ -159,7 +161,11 @@ func processDiscoveryResourceResponse(serviceDevice *serviceDevice.Service, logg
 			resourceTypes = l.ResourceTypes
 		}
 	}
-	device := newDevice(deviceID, serviceDevice, logger)
+	devID, err := uuid.Parse(deviceID)
+	if err != nil {
+		return nil, fmt.Errorf("cannot parse device ID('%v'): %w", devID, err)
+	}
+	device := newDevice(devID, serviceDevice, logger)
 	device.private.ResourceTypes = resourceTypes
 	device.updateEndpointsLocked(endpoints)
 	device.private.OwnershipStatus = ownershipStatus
@@ -167,18 +173,16 @@ func processDiscoveryResourceResponse(serviceDevice *serviceDevice.Service, logg
 	return device, nil
 }
 
-func onDiscoveryResourceResponse(serviceDevice *serviceDevice.Service, logger log.Logger, remoteAddr net.Addr, resp *pool.Message, devices *sync.Map) error {
+func onDiscoveryResourceResponse(serviceDevice *serviceDevice.Service, logger log.Logger, remoteAddr net.Addr, resp *pool.Message, devices *coapSync.Map[uuid.UUID, *device]) error {
 	dev, err := processDiscoveryResourceResponse(serviceDevice, logger, remoteAddr, resp)
 	if err != nil {
 		return err
 	}
-	v, loaded := devices.LoadOrStore(dev.ID, dev)
+	d, loaded := devices.LoadOrStore(dev.ID, dev)
 	if !loaded {
 		return nil
 	}
-	if d, ok := v.(*device); ok {
-		d.updateDeviceMetadata(dev.private.ResourceTypes, dev.private.Endpoints, dev.private.OwnershipStatus)
-	}
+	d.updateDeviceMetadata(dev.private.ResourceTypes, dev.private.Endpoints, dev.private.OwnershipStatus)
 
 	return nil
 }
@@ -226,7 +230,11 @@ func processDeviceResourceResponse(serviceDevice *serviceDevice.Service, logger 
 	if d.ID == "" {
 		return nil, fmt.Errorf("device ID is empty")
 	}
-	device := newDevice(d.ID, serviceDevice, logger)
+	devID, err := uuid.Parse(d.ID)
+	if err != nil {
+		return nil, fmt.Errorf("cannot parse device ID('%v'): %w", d.ID, err)
+	}
+	device := newDevice(devID, serviceDevice, logger)
 	contentFormat, err := resp.ContentFormat()
 	if err != nil {
 		contentFormat = message.AppOcfCbor
@@ -240,18 +248,16 @@ func processDeviceResourceResponse(serviceDevice *serviceDevice.Service, logger 
 	return device, nil
 }
 
-func onDeviceResourceResponse(serviceDevice *serviceDevice.Service, logger log.Logger, resp *pool.Message, devices *sync.Map) error {
+func onDeviceResourceResponse(serviceDevice *serviceDevice.Service, logger log.Logger, resp *pool.Message, devices *coapSync.Map[uuid.UUID, *device]) error {
 	dev, err := processDeviceResourceResponse(serviceDevice, logger, resp)
 	if err != nil {
 		return err
 	}
-	v, loaded := devices.LoadOrStore(dev.ID, dev)
+	d, loaded := devices.LoadOrStore(dev.ID, dev)
 	if !loaded {
 		return nil
 	}
-	if d, ok := v.(*device); ok {
-		d.updateDeviceResourceBody(dev.private.DeviceResourceBody)
-	}
+	d.updateDeviceResourceBody(dev.private.DeviceResourceBody)
 
 	return nil
 }
@@ -317,7 +323,7 @@ func normalizeEndpoint(endpoint string) (pkgNet.Addr, error) {
 	return addr, nil
 }
 
-func getDeviceByMulticastAddress(ctx context.Context, serviceDevice *serviceDevice.Service, logger log.Logger, addr pkgNet.Addr, devices *sync.Map) error {
+func getDeviceByMulticastAddress(ctx context.Context, serviceDevice *serviceDevice.Service, logger log.Logger, addr pkgNet.Addr, devices *coapSync.Map[uuid.UUID, *device]) error {
 	hostname := addr.GetHostname()
 	if strings.Contains(hostname, ":") {
 		hostname = "[" + hostname + "]"
@@ -358,7 +364,7 @@ func getDeviceByMulticastAddress(ctx context.Context, serviceDevice *serviceDevi
 	return nil
 }
 
-func getDeviceByAddress(ctx context.Context, serviceDevice *serviceDevice.Service, logger log.Logger, addr pkgNet.Addr, devices *sync.Map) error {
+func getDeviceByAddress(ctx context.Context, serviceDevice *serviceDevice.Service, logger log.Logger, addr pkgNet.Addr, devices *coapSync.Map[uuid.UUID, *device]) error {
 	if addr.GetPort() == MulticastPort {
 		return getDeviceByMulticastAddress(ctx, serviceDevice, logger, addr, devices)
 	}
@@ -393,17 +399,15 @@ func getDeviceByAddress(ctx context.Context, serviceDevice *serviceDevice.Servic
 	if err != nil {
 		return err
 	}
-	v, loaded := devices.LoadOrStore(deviceRes.ID, deviceRes)
-	if d, ok := v.(*device); ok {
-		if loaded {
-			d.updateDeviceResourceBody(deviceRes.private.DeviceResourceBody)
-		}
-		d.updateDeviceMetadata(discoveryRes.private.ResourceTypes, discoveryRes.private.Endpoints, discoveryRes.private.OwnershipStatus)
+	d, loaded := devices.LoadOrStore(deviceRes.ID, deviceRes)
+	if loaded {
+		d.updateDeviceResourceBody(deviceRes.private.DeviceResourceBody)
 	}
+	d.updateDeviceMetadata(discoveryRes.private.ResourceTypes, discoveryRes.private.Endpoints, discoveryRes.private.OwnershipStatus)
 	return nil
 }
 
-func getDevicesByEndpoints(ctx context.Context, serviceDevice *serviceDevice.Service, logger log.Logger, endpoints []string, devices *sync.Map) {
+func getDevicesByEndpoints(ctx context.Context, serviceDevice *serviceDevice.Service, logger log.Logger, endpoints []string, devices *coapSync.Map[uuid.UUID, *device]) {
 	addresses := make([]pkgNet.Addr, 0, len(endpoints))
 	for _, endpoint := range endpoints {
 		addr, err := normalizeEndpoint(endpoint)
@@ -494,13 +498,9 @@ func tryToSetDefaultRequest(req *pb.GetDevicesRequest) *pb.GetDevicesRequest {
 	return req
 }
 
-func (s *ClientApplicationServer) processDiscoverdDevices(discoveredDevices, cachedDevices *sync.Map) devices {
+func (s *ClientApplicationServer) processDiscoverdDevices(discoveredDevices, cachedDevices *coapSync.Map[uuid.UUID, *device]) devices {
 	devs := make(devices, 0, 128)
-	discoveredDevices.Range(func(key, value any) bool {
-		d, ok := value.(*device)
-		if !ok {
-			return true
-		}
+	discoveredDevices.Range(func(key uuid.UUID, d *device) bool {
 		if len(d.GetEndpoints()) == 0 {
 			// we don't want to return devices with no endpoints
 			return true
@@ -508,11 +508,7 @@ func (s *ClientApplicationServer) processDiscoverdDevices(discoveredDevices, cac
 
 		updDevice, loaded := s.devices.LoadOrStore(key, d)
 		if loaded {
-			toUpdDevice, ok := updDevice.(*device)
-			if !ok {
-				return true
-			}
-			toUpdDevice.update(d)
+			updDevice.update(d)
 		}
 		devs = append(devs, d)
 		cachedDevices.Delete(key)
@@ -546,15 +542,16 @@ func (s *ClientApplicationServer) GetDevices(req *pb.GetDevicesRequest, srv pb.C
 	req = tryToSetDefaultRequest(req)
 	ctx := srv.Context()
 	var toCall []func()
-	var discoveredDevices sync.Map
-	var cachedDevices sync.Map
-	if req.GetTimeout() == 0 {
-		req.Timeout = DefaultTimeout
+	discoveredDevices := coapSync.NewMap[uuid.UUID, *device]()
+	cachedDevices := coapSync.NewMap[uuid.UUID, *device]()
+	timeout := DefaultTimeout
+	if req.GetTimeout() > 0 {
+		timeout = time.Duration(req.GetTimeout()) * time.Nanosecond
 	}
-	discoveryCtx, cancel := context.WithTimeout(ctx, time.Duration(req.Timeout)*time.Millisecond)
+	discoveryCtx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
 	if req.UseCache {
-		s.devices.Range(func(key, value interface{}) bool {
+		s.devices.Range(func(key uuid.UUID, value *device) bool {
 			cachedDevices.Store(key, value)
 			return true
 		})
@@ -563,17 +560,17 @@ func (s *ClientApplicationServer) GetDevices(req *pb.GetDevicesRequest, srv pb.C
 		toCall = append(toCall, func() {
 			getDevicesByMulticast(discoveryCtx, toDiscoveryConfiguration(toUseMulticastFilter(req.GetUseMulticast())), func(conn *client.ClientConn, resp *pool.Message) {
 				_ = conn.Close()
-				_ = onDeviceResourceResponse(s.serviceDevice, s.logger, resp, &discoveredDevices)
+				_ = onDeviceResourceResponse(s.serviceDevice, s.logger, resp, discoveredDevices)
 			}, func(conn *client.ClientConn, resp *pool.Message) {
 				_ = conn.Close()
-				_ = onDiscoveryResourceResponse(s.serviceDevice, s.logger, conn.RemoteAddr(), resp, &discoveredDevices)
+				_ = onDiscoveryResourceResponse(s.serviceDevice, s.logger, conn.RemoteAddr(), resp, discoveredDevices)
 			})
 		},
 		)
 	}
 	if len(req.GetUseEndpoints()) > 0 {
 		toCall = append(toCall, func() {
-			getDevicesByEndpoints(discoveryCtx, s.serviceDevice, s.logger, req.GetUseEndpoints(), &discoveredDevices)
+			getDevicesByEndpoints(discoveryCtx, s.serviceDevice, s.logger, req.GetUseEndpoints(), discoveredDevices)
 		})
 	}
 
@@ -587,11 +584,9 @@ func (s *ClientApplicationServer) GetDevices(req *pb.GetDevicesRequest, srv pb.C
 	}
 	wg.Wait()
 
-	devs := s.processDiscoverdDevices(&discoveredDevices, &cachedDevices)
-	cachedDevices.Range(func(key, value any) bool {
-		if d, ok := value.(*device); ok {
-			devs = append(devs, d)
-		}
+	devs := s.processDiscoverdDevices(discoveredDevices, cachedDevices)
+	cachedDevices.Range(func(key uuid.UUID, d *device) bool {
+		devs = append(devs, d)
 		return true
 	})
 	return sendDevices(req, devs, srv.Send)

@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/google/uuid"
 	"github.com/plgd-dev/client-application/pb"
 	"github.com/plgd-dev/client-application/pkg/rawcodec"
 	"github.com/plgd-dev/device/pkg/net/coap"
@@ -29,14 +30,27 @@ import (
 	"github.com/plgd-dev/hub/v2/resource-aggregate/commands"
 	"github.com/plgd-dev/hub/v2/resource-aggregate/events"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
+
+func strDeviceID2UUID(deviceID string) (uuid.UUID, error) {
+	d, err := uuid.Parse(deviceID)
+	if err != nil {
+		return uuid.Nil, status.Errorf(codes.InvalidArgument, "cannot parse deviceID: %v", err)
+	}
+	return d, err
+}
 
 func (s *ClientApplicationServer) CreateResource(ctx context.Context, req *pb.CreateResourceRequest) (*grpcgwPb.CreateResourceResponse, error) {
 	createData, err := convContentToOcfCbor(req.GetContent())
 	if err != nil {
 		return nil, err
 	}
-	dev, err := s.getDevice(req.GetResourceId().GetDeviceId())
+	devID, err := strDeviceID2UUID(req.GetResourceId().GetDeviceId())
+	if err != nil {
+		return nil, err
+	}
+	dev, err := s.getDevice(devID)
 	if err != nil {
 		return nil, err
 	}

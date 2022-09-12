@@ -39,12 +39,12 @@ func (s *ClientApplicationServer) validateState(state uuid.UUID) bool {
 	return !item.IsExpired()
 }
 
-func (s *ClientApplicationServer) updateIdentityCertificateIsEnabled() bool {
+func (s *ClientApplicationServer) signIdentityCertificateRemotely() bool {
 	return s.remoteProvisioningConfig.Mode == remoteProvisioning.Mode_UserAgent && s.serviceDevice.GetDeviceAuthenticationMode() == pb.GetConfigurationResponse_X509
 }
 
 func (s *ClientApplicationServer) UpdateIdentityCertificate(ctx context.Context, req *pb.UpdateIdentityCertificateRequest) (*pb.UpdateIdentityCertificateResponse, error) {
-	if !s.updateIdentityCertificateIsEnabled() {
+	if !s.signIdentityCertificateRemotely() {
 		return nil, status.Errorf(codes.Unimplemented, "not supported")
 	}
 	state, err := uuid.Parse(req.GetState())

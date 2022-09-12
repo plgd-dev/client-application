@@ -18,13 +18,13 @@ package grpc
 
 import (
 	"context"
-	"sync"
 
 	"github.com/google/uuid"
 	"github.com/jellydator/ttlcache/v3"
 	"github.com/plgd-dev/client-application/pb"
 	serviceDevice "github.com/plgd-dev/client-application/service/device"
 	"github.com/plgd-dev/client-application/service/remoteProvisioning"
+	"github.com/plgd-dev/go-coap/v2/pkg/sync"
 	"github.com/plgd-dev/hub/v2/pkg/log"
 	"go.uber.org/atomic"
 	"google.golang.org/grpc/codes"
@@ -37,21 +37,26 @@ type ClientApplicationServer struct {
 	serviceDevice            *serviceDevice.Service
 	info                     *ServiceInformation
 	logger                   log.Logger
-	devices                  sync.Map
+	devices                  *sync.Map[uuid.UUID, *device]
 	csrCache                 *ttlcache.Cache[uuid.UUID, bool]
 	remoteProvisioningConfig remoteProvisioning.Config
 	jwksCache                atomic.Pointer[JSONWebKeyCache]
+	remoteOwnSignCache       *sync.Map[uuid.UUID, *remoteSign]
 }
 
 func NewClientApplicationServer(remoteProvisioningConfig remoteProvisioning.Config, serviceDevice *serviceDevice.Service, info *ServiceInformation, logger log.Logger) *ClientApplicationServer {
 	csrCache := ttlcache.New[uuid.UUID, bool]()
+	remoteOwnSignCache := ttlcache.New[uuid.UUID, *remoteSign]()
 	go csrCache.Start()
+	go remoteOwnSignCache.Start()
 	return &ClientApplicationServer{
 		serviceDevice:            serviceDevice,
 		info:                     info,
 		logger:                   logger,
 		csrCache:                 csrCache,
 		remoteProvisioningConfig: remoteProvisioningConfig,
+		remoteOwnSignCache:       sync.NewMap[uuid.UUID, *remoteSign](),
+		devices:                  sync.NewMap[uuid.UUID, *device](),
 	}
 }
 
@@ -63,24 +68,19 @@ func (s *ClientApplicationServer) Close() {
 	s.csrCache.Stop()
 }
 
-func (s *ClientApplicationServer) getDevice(deviceID string) (*device, error) {
-	d, ok := s.devices.Load(deviceID)
+func (s *ClientApplicationServer) getDevice(deviceID uuid.UUID) (*device, error) {
+	dev, ok := s.devices.Load(deviceID)
 	if !ok {
 		return nil, status.Errorf(codes.NotFound, "device %v not found", deviceID)
-	}
-	dev, ok := d.(*device)
-	if !ok {
-		return nil, status.Error(codes.Internal, "cast error")
 	}
 	return dev, nil
 }
 
-func (s *ClientApplicationServer) deleteDevice(ctx context.Context, deviceID string) error {
-	d, ok := s.devices.LoadAndDelete(deviceID)
+func (s *ClientApplicationServer) deleteDevice(ctx context.Context, deviceID uuid.UUID) error {
+	dev, ok := s.devices.PullOut(deviceID)
 	if !ok {
 		return nil
 	}
-	dev, ok := d.(*device)
 	if !ok {
 		return status.Error(codes.Internal, "cast error")
 	}

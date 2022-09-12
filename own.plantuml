@@ -1,0 +1,20 @@
+@startuml Sequence
+skinparam backgroundColor transparent
+hide footbox
+
+participant C as "client"
+participant S as "client application"
+participant CA as "certificate authority"
+
+alt #LightBlue GetConfiguration.device_authentication_mode == X509 && remote_provisioning.mode == USER_AGENT
+  C -> S: Own device (get_identity_certificate.timeout is optional)
+  return Identity CSR and state
+  C-> CA: Sign identity CSR with token
+  return Identity Certificate
+  C -> S: Own device with set_identity_certificate.{certificate,state}
+  return
+else #Cyan
+  C -> S: Own device
+  return
+end
+@enduml

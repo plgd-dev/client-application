@@ -26,7 +26,11 @@ import (
 )
 
 func (s *ClientApplicationServer) GetDeviceResourceLinks(ctx context.Context, req *pb.GetDeviceResourceLinksRequest) (*events.ResourceLinksPublished, error) {
-	dev, err := s.getDevice(req.GetDeviceId())
+	devID, err := strDeviceID2UUID(req.GetDeviceId())
+	if err != nil {
+		return nil, err
+	}
+	dev, err := s.getDevice(devID)
 	if err != nil {
 		return nil, err
 	}
