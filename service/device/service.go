@@ -51,6 +51,7 @@ type AuthenticationClient interface {
 	GetIdentityCertificate() (tls.Certificate, error)
 	GetCertificateAuthorities() ([]*x509.Certificate, error)
 	IsInitialized() bool
+	Reset()
 }
 
 type Service struct {
@@ -69,16 +70,12 @@ var closeHandlerKey = "close-handler"
 
 // New creates new GRPC service
 func New(ctx context.Context, serviceName string, config Config, logger log.Logger, tracerProvider trace.TracerProvider) (*Service, error) {
-	var err error
 	var authenticationClient AuthenticationClient
 	switch config.COAP.TLS.Authentication {
 	case AuthenticationPreSharedKey:
 		authenticationClient = newAuthenticationPreSharedKey(config)
 	case AuthenticationX509:
-		authenticationClient, err = newAuthenticationX509(config)
-		if err != nil {
-			return nil, fmt.Errorf("cannot create authentication client: %w", err)
-		}
+		authenticationClient = newAuthenticationX509(config)
 	}
 
 	opts := []udp.ServerOption{
@@ -321,6 +318,7 @@ func (s *Service) serveWithHandlingSignal() error {
 
 // Close turn off server.
 func (s *Service) Close() {
+	s.authenticationClient.Reset()
 	close(s.done)
 }
 
@@ -348,4 +346,8 @@ func (s *Service) GetDeviceAuthenticationMode() pb.GetConfigurationResponse_Devi
 
 func (s *Service) IsInitialized() bool {
 	return s.authenticationClient.IsInitialized()
+}
+
+func (s *Service) Reset() {
+	s.authenticationClient.Reset()
 }

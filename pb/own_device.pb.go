@@ -155,7 +155,7 @@ type OwnDeviceRequest_GetIdentityCsr struct {
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
 
-	// Defines how long own process will wait for the OwnDeviceRequest with set_identity_certificate in nanoseconds.
+	// Defines how long own process will wait for the OwnDeviceRequest with set_identity_certificate in nanoseconds. Default value is 15secs.
 	Timeout int64 `protobuf:"varint,1,opt,name=timeout,proto3" json:"timeout,omitempty"`
 }
 

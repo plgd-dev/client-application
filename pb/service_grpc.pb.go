@@ -35,24 +35,45 @@ type ClientApplicationClient interface {
 	CreateResource(ctx context.Context, in *CreateResourceRequest, opts ...grpc.CallOption) (*pb.CreateResourceResponse, error)
 	// Delete a resource at the device. Device needs to be stored in cache otherwise it returns not found.
 	DeleteResource(ctx context.Context, in *DeleteResourceRequest, opts ...grpc.CallOption) (*pb.DeleteResourceResponse, error)
-	// Own the device. Device needs to be stored in cache otherwise it returns not found.
+	// Own the device. When GetConfigurationResponse.device_authentication_mode == X509 and
+	// GetConfigurationResponse.remote_provisioning.mode == USER_AGENT the own need to called twice:
+	//  - in first call own returns identity CSR of the device which need to be signed by certificate authority
+	//  - in second call own user provides signed identity certificate to the device.option
+	// Look to own.plantuml for flows.
+	//
+	// NOTE: Device needs to be stored in cache otherwise it returns not found.
 	OwnDevice(ctx context.Context, in *OwnDeviceRequest, opts ...grpc.CallOption) (*OwnDeviceResponse, error)
 	// Disown the device. Device needs to be stored in cache otherwise it returns not found.
 	DisownDevice(ctx context.Context, in *DisownDeviceRequest, opts ...grpc.CallOption) (*DisownDeviceResponse, error)
 	// Deletes all devices from the cache. To fill the cache again, call GetDevices.
 	ClearCache(ctx context.Context, in *ClearCacheRequest, opts ...grpc.CallOption) (*ClearCacheResponse, error)
+	// Provides configuration for clients of client application.
 	GetConfiguration(ctx context.Context, in *GetConfigurationRequest, opts ...grpc.CallOption) (*GetConfigurationResponse, error)
-	UpdateJSONWebKeys(ctx context.Context, in *UpdateJSONWebKeysRequest, opts ...grpc.CallOption) (*UpdateJSONWebKeysResponse, error)
+	// Get jwks.json.
+	// Available only when GetConfigurationResponse.device_authentication_mode == X509 and
+	// GetConfigurationResponse.remote_provisioning.mode == USER_AGENT.
 	GetJSONWebKeys(ctx context.Context, in *GetJSONWebKeysRequest, opts ...grpc.CallOption) (*structpb.Struct, error)
+	// Update jwks.json.
+	// Available only when GetConfigurationResponse.device_authentication_mode == X509 and
+	// GetConfigurationResponse.remote_provisioning.mode == USER_AGENT.
+	UpdateJSONWebKeys(ctx context.Context, in *UpdateJSONWebKeysRequest, opts ...grpc.CallOption) (*UpdateJSONWebKeysResponse, error)
 	// Get identity CSR from the client application for creating a new identity certificate.
+	// Available only when GetConfigurationResponse.device_authentication_mode == X509 and
+	// GetConfigurationResponse.remote_provisioning.mode == USER_AGENT.
 	GetIdentityCSR(ctx context.Context, in *GetIdentityCSRRequest, opts ...grpc.CallOption) (*GetIdentityCSRResponse, error)
 	// Set or update identity certificate for the client application.
+	// It is available only when GetConfigurationResponse.device_authentication_mode == X509 and
+	// GetConfigurationResponse.remote_provisioning.mode == USER_AGENT.
 	UpdateIdentityCertificate(ctx context.Context, in *UpdateIdentityCertificateRequest, opts ...grpc.CallOption) (*UpdateIdentityCertificateResponse, error)
 	// Get identity certificate of the client application.
+	// It is available only when GetConfigurationResponse.device_authentication_mode == X509 and
+	// GetConfigurationResponse.remote_provisioning.mode == USER_AGENT.
 	GetIdentityCertificate(ctx context.Context, in *GetIdentityCertificateRequest, opts ...grpc.CallOption) (*GetIdentityCertificateResponse, error)
 	// Initialize application when GetConfiguration.is_nitialized is set to false.
 	// Look to initialize.plantuml for flows.
 	Initialize(ctx context.Context, in *InitializeRequest, opts ...grpc.CallOption) (*InitializeResponse, error)
+	// Flushes identity certificate, private key, device cache and jwks.json.
+	Reset(ctx context.Context, in *ResetRequest, opts ...grpc.CallOption) (*ResetResponse, error)
 }
 
 type clientApplicationClient struct {
@@ -185,18 +206,18 @@ func (c *clientApplicationClient) GetConfiguration(ctx context.Context, in *GetC
 	return out, nil
 }
 
-func (c *clientApplicationClient) UpdateJSONWebKeys(ctx context.Context, in *UpdateJSONWebKeysRequest, opts ...grpc.CallOption) (*UpdateJSONWebKeysResponse, error) {
-	out := new(UpdateJSONWebKeysResponse)
-	err := c.cc.Invoke(ctx, "/service.pb.ClientApplication/UpdateJSONWebKeys", in, out, opts...)
+func (c *clientApplicationClient) GetJSONWebKeys(ctx context.Context, in *GetJSONWebKeysRequest, opts ...grpc.CallOption) (*structpb.Struct, error) {
+	out := new(structpb.Struct)
+	err := c.cc.Invoke(ctx, "/service.pb.ClientApplication/GetJSONWebKeys", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *clientApplicationClient) GetJSONWebKeys(ctx context.Context, in *GetJSONWebKeysRequest, opts ...grpc.CallOption) (*structpb.Struct, error) {
-	out := new(structpb.Struct)
-	err := c.cc.Invoke(ctx, "/service.pb.ClientApplication/GetJSONWebKeys", in, out, opts...)
+func (c *clientApplicationClient) UpdateJSONWebKeys(ctx context.Context, in *UpdateJSONWebKeysRequest, opts ...grpc.CallOption) (*UpdateJSONWebKeysResponse, error) {
+	out := new(UpdateJSONWebKeysResponse)
+	err := c.cc.Invoke(ctx, "/service.pb.ClientApplication/UpdateJSONWebKeys", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -239,6 +260,15 @@ func (c *clientApplicationClient) Initialize(ctx context.Context, in *Initialize
 	return out, nil
 }
 
+func (c *clientApplicationClient) Reset(ctx context.Context, in *ResetRequest, opts ...grpc.CallOption) (*ResetResponse, error) {
+	out := new(ResetResponse)
+	err := c.cc.Invoke(ctx, "/service.pb.ClientApplication/Reset", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ClientApplicationServer is the server API for ClientApplication service.
 // All implementations must embed UnimplementedClientApplicationServer
 // for forward compatibility
@@ -257,24 +287,45 @@ type ClientApplicationServer interface {
 	CreateResource(context.Context, *CreateResourceRequest) (*pb.CreateResourceResponse, error)
 	// Delete a resource at the device. Device needs to be stored in cache otherwise it returns not found.
 	DeleteResource(context.Context, *DeleteResourceRequest) (*pb.DeleteResourceResponse, error)
-	// Own the device. Device needs to be stored in cache otherwise it returns not found.
+	// Own the device. When GetConfigurationResponse.device_authentication_mode == X509 and
+	// GetConfigurationResponse.remote_provisioning.mode == USER_AGENT the own need to called twice:
+	//  - in first call own returns identity CSR of the device which need to be signed by certificate authority
+	//  - in second call own user provides signed identity certificate to the device.option
+	// Look to own.plantuml for flows.
+	//
+	// NOTE: Device needs to be stored in cache otherwise it returns not found.
 	OwnDevice(context.Context, *OwnDeviceRequest) (*OwnDeviceResponse, error)
 	// Disown the device. Device needs to be stored in cache otherwise it returns not found.
 	DisownDevice(context.Context, *DisownDeviceRequest) (*DisownDeviceResponse, error)
 	// Deletes all devices from the cache. To fill the cache again, call GetDevices.
 	ClearCache(context.Context, *ClearCacheRequest) (*ClearCacheResponse, error)
+	// Provides configuration for clients of client application.
 	GetConfiguration(context.Context, *GetConfigurationRequest) (*GetConfigurationResponse, error)
-	UpdateJSONWebKeys(context.Context, *UpdateJSONWebKeysRequest) (*UpdateJSONWebKeysResponse, error)
+	// Get jwks.json.
+	// Available only when GetConfigurationResponse.device_authentication_mode == X509 and
+	// GetConfigurationResponse.remote_provisioning.mode == USER_AGENT.
 	GetJSONWebKeys(context.Context, *GetJSONWebKeysRequest) (*structpb.Struct, error)
+	// Update jwks.json.
+	// Available only when GetConfigurationResponse.device_authentication_mode == X509 and
+	// GetConfigurationResponse.remote_provisioning.mode == USER_AGENT.
+	UpdateJSONWebKeys(context.Context, *UpdateJSONWebKeysRequest) (*UpdateJSONWebKeysResponse, error)
 	// Get identity CSR from the client application for creating a new identity certificate.
+	// Available only when GetConfigurationResponse.device_authentication_mode == X509 and
+	// GetConfigurationResponse.remote_provisioning.mode == USER_AGENT.
 	GetIdentityCSR(context.Context, *GetIdentityCSRRequest) (*GetIdentityCSRResponse, error)
 	// Set or update identity certificate for the client application.
+	// It is available only when GetConfigurationResponse.device_authentication_mode == X509 and
+	// GetConfigurationResponse.remote_provisioning.mode == USER_AGENT.
 	UpdateIdentityCertificate(context.Context, *UpdateIdentityCertificateRequest) (*UpdateIdentityCertificateResponse, error)
 	// Get identity certificate of the client application.
+	// It is available only when GetConfigurationResponse.device_authentication_mode == X509 and
+	// GetConfigurationResponse.remote_provisioning.mode == USER_AGENT.
 	GetIdentityCertificate(context.Context, *GetIdentityCertificateRequest) (*GetIdentityCertificateResponse, error)
 	// Initialize application when GetConfiguration.is_nitialized is set to false.
 	// Look to initialize.plantuml for flows.
 	Initialize(context.Context, *InitializeRequest) (*InitializeResponse, error)
+	// Flushes identity certificate, private key, device cache and jwks.json.
+	Reset(context.Context, *ResetRequest) (*ResetResponse, error)
 	mustEmbedUnimplementedClientApplicationServer()
 }
 
@@ -315,11 +366,11 @@ func (UnimplementedClientApplicationServer) ClearCache(context.Context, *ClearCa
 func (UnimplementedClientApplicationServer) GetConfiguration(context.Context, *GetConfigurationRequest) (*GetConfigurationResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetConfiguration not implemented")
 }
-func (UnimplementedClientApplicationServer) UpdateJSONWebKeys(context.Context, *UpdateJSONWebKeysRequest) (*UpdateJSONWebKeysResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UpdateJSONWebKeys not implemented")
-}
 func (UnimplementedClientApplicationServer) GetJSONWebKeys(context.Context, *GetJSONWebKeysRequest) (*structpb.Struct, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetJSONWebKeys not implemented")
+}
+func (UnimplementedClientApplicationServer) UpdateJSONWebKeys(context.Context, *UpdateJSONWebKeysRequest) (*UpdateJSONWebKeysResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method UpdateJSONWebKeys not implemented")
 }
 func (UnimplementedClientApplicationServer) GetIdentityCSR(context.Context, *GetIdentityCSRRequest) (*GetIdentityCSRResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetIdentityCSR not implemented")
@@ -332,6 +383,9 @@ func (UnimplementedClientApplicationServer) GetIdentityCertificate(context.Conte
 }
 func (UnimplementedClientApplicationServer) Initialize(context.Context, *InitializeRequest) (*InitializeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Initialize not implemented")
+}
+func (UnimplementedClientApplicationServer) Reset(context.Context, *ResetRequest) (*ResetResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Reset not implemented")
 }
 func (UnimplementedClientApplicationServer) mustEmbedUnimplementedClientApplicationServer() {}
 
@@ -547,24 +601,6 @@ func _ClientApplication_GetConfiguration_Handler(srv interface{}, ctx context.Co
 	return interceptor(ctx, in, info, handler)
 }
 
-func _ClientApplication_UpdateJSONWebKeys_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UpdateJSONWebKeysRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(ClientApplicationServer).UpdateJSONWebKeys(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/service.pb.ClientApplication/UpdateJSONWebKeys",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ClientApplicationServer).UpdateJSONWebKeys(ctx, req.(*UpdateJSONWebKeysRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _ClientApplication_GetJSONWebKeys_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetJSONWebKeysRequest)
 	if err := dec(in); err != nil {
@@ -579,6 +615,24 @@ func _ClientApplication_GetJSONWebKeys_Handler(srv interface{}, ctx context.Cont
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(ClientApplicationServer).GetJSONWebKeys(ctx, req.(*GetJSONWebKeysRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ClientApplication_UpdateJSONWebKeys_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UpdateJSONWebKeysRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ClientApplicationServer).UpdateJSONWebKeys(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/service.pb.ClientApplication/UpdateJSONWebKeys",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ClientApplicationServer).UpdateJSONWebKeys(ctx, req.(*UpdateJSONWebKeysRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -655,6 +709,24 @@ func _ClientApplication_Initialize_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ClientApplication_Reset_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ResetRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ClientApplicationServer).Reset(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/service.pb.ClientApplication/Reset",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ClientApplicationServer).Reset(ctx, req.(*ResetRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // ClientApplication_ServiceDesc is the grpc.ServiceDesc for ClientApplication service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -703,12 +775,12 @@ var ClientApplication_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _ClientApplication_GetConfiguration_Handler,
 		},
 		{
-			MethodName: "UpdateJSONWebKeys",
-			Handler:    _ClientApplication_UpdateJSONWebKeys_Handler,
-		},
-		{
 			MethodName: "GetJSONWebKeys",
 			Handler:    _ClientApplication_GetJSONWebKeys_Handler,
+		},
+		{
+			MethodName: "UpdateJSONWebKeys",
+			Handler:    _ClientApplication_UpdateJSONWebKeys_Handler,
 		},
 		{
 			MethodName: "GetIdentityCSR",
@@ -725,6 +797,10 @@ var ClientApplication_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Initialize",
 			Handler:    _ClientApplication_Initialize_Handler,
+		},
+		{
+			MethodName: "Reset",
+			Handler:    _ClientApplication_Reset_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

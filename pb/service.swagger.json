@@ -32,6 +32,7 @@
   "paths": {
     "/.well-known/configuration": {
       "get": {
+        "summary": "Provides configuration for clients of client application.",
         "operationId": "ClientApplication_GetConfiguration",
         "responses": {
           "200": {
@@ -54,6 +55,7 @@
     },
     "/.well-known/jwks.json": {
       "get": {
+        "summary": "Get jwks.json.\nAvailable only when GetConfigurationResponse.device_authentication_mode == X509 and\nGetConfigurationResponse.remote_provisioning.mode == USER_AGENT.",
         "operationId": "ClientApplication_GetJSONWebKeys",
         "responses": {
           "200": {
@@ -74,6 +76,7 @@
         ]
       },
       "post": {
+        "summary": "Update jwks.json.\nAvailable only when GetConfigurationResponse.device_authentication_mode == X509 and\nGetConfigurationResponse.remote_provisioning.mode == USER_AGENT.",
         "operationId": "ClientApplication_UpdateJSONWebKeys",
         "responses": {
           "200": {
@@ -290,7 +293,8 @@
     },
     "/api/v1/devices/{deviceId}/own": {
       "post": {
-        "summary": "Own the device. Device needs to be stored in cache otherwise it returns not found.",
+        "summary": "Own the device. When GetConfigurationResponse.device_authentication_mode == X509 and\nGetConfigurationResponse.remote_provisioning.mode == USER_AGENT the own need to called twice:\n - in first call own returns identity CSR of the device which need to be signed by certificate authority\n - in second call own user provides signed identity certificate to the device.option\nLook to own.plantuml for flows.",
+        "description": "NOTE: Device needs to be stored in cache otherwise it returns not found.",
         "operationId": "ClientApplication_OwnDevice",
         "responses": {
           "200": {
@@ -530,7 +534,7 @@
     },
     "/api/v1/identity/certificate": {
       "get": {
-        "summary": "Get identity certificate of the client application.",
+        "summary": "Get identity certificate of the client application.\nIt is available only when GetConfigurationResponse.device_authentication_mode == X509 and\nGetConfigurationResponse.remote_provisioning.mode == USER_AGENT.",
         "operationId": "ClientApplication_GetIdentityCertificate",
         "responses": {
           "200": {
@@ -551,7 +555,7 @@
         ]
       },
       "post": {
-        "summary": "Set or update identity certificate for the client application.",
+        "summary": "Set or update identity certificate for the client application.\nIt is available only when GetConfigurationResponse.device_authentication_mode == X509 and\nGetConfigurationResponse.remote_provisioning.mode == USER_AGENT.",
         "operationId": "ClientApplication_UpdateIdentityCertificate",
         "responses": {
           "200": {
@@ -584,7 +588,7 @@
     },
     "/api/v1/identity/csr": {
       "get": {
-        "summary": "Get identity CSR from the client application for creating a new identity certificate.",
+        "summary": "Get identity CSR from the client application for creating a new identity certificate.\nAvailable only when GetConfigurationResponse.device_authentication_mode == X509 and\nGetConfigurationResponse.remote_provisioning.mode == USER_AGENT.",
         "operationId": "ClientApplication_GetIdentityCSR",
         "responses": {
           "200": {
@@ -630,6 +634,39 @@
             "required": true,
             "schema": {
               "$ref": "#/definitions/pbInitializeRequest"
+            }
+          }
+        ],
+        "tags": [
+          "client-application"
+        ]
+      }
+    },
+    "/api/v1/reset": {
+      "post": {
+        "summary": "Flushes identity certificate, private key, device cache and jwks.json.",
+        "operationId": "ClientApplication_Reset",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbResetResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbResetRequest"
             }
           }
         ],
@@ -693,7 +730,7 @@
         "timeout": {
           "type": "string",
           "format": "int64",
-          "description": "Defines how long own process will wait for the OwnDeviceRequest with set_identity_certificate in nanoseconds."
+          "description": "Defines how long own process will wait for the OwnDeviceRequest with set_identity_certificate in nanoseconds. Default value is 15secs."
         }
       }
     },
@@ -1039,6 +1076,12 @@
           "$ref": "#/definitions/pbAuthorization"
         }
       }
+    },
+    "pbResetRequest": {
+      "type": "object"
+    },
+    "pbResetResponse": {
+      "type": "object"
     },
     "pbResourceChanged": {
       "type": "object",

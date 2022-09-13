@@ -58,16 +58,7 @@ func encodeToBody(t *testing.T, v protoreflect.ProtoMessage) io.Reader {
 	return io.NopCloser(bytes.NewReader(body))
 }
 
-func setupRemoteProvisioning(ctx context.Context, t *testing.T) func() {
-	cfg := test.MakeConfig(t)
-	cfg.Log.Level = zapcore.DebugLevel
-	cfg.APIs.HTTP.TLS.ClientCertificateRequired = false
-	cfg.Clients.Device.COAP.TLS.Authentication = device.AuthenticationX509
-	cfg.RemoteProvisioning.Mode = remoteProvisioning.Mode_UserAgent
-	shutDown := test.New(t, cfg)
-	oauthServerTearDown := hubTestOAuthServer.SetUp(t)
-	caShutdown := caService.SetUp(t)
-
+func initializeRemoteProvisioning(ctx context.Context, t *testing.T) {
 	request := httpgwTest.NewRequest(http.MethodGet, serviceHttp.WellKnownConfiguration, nil).Host(test.CLIENT_APPLICATION_HTTP_HOST).Build()
 	resp := httpgwTest.HTTPDo(t, request)
 	require.Equal(t, http.StatusOK, resp.StatusCode)
@@ -121,6 +112,20 @@ func setupRemoteProvisioning(ctx context.Context, t *testing.T) func() {
 	request = httpgwTest.NewRequest(http.MethodPost, serviceHttp.Initialize, encodeToBody(t, &initializeReq)).Host(test.CLIENT_APPLICATION_HTTP_HOST).AuthToken(token).Build()
 	resp = httpgwTest.HTTPDo(t, request)
 	require.Equal(t, http.StatusOK, resp.StatusCode)
+}
+
+func setupRemoteProvisioning(ctx context.Context, t *testing.T) func() {
+	cfg := test.MakeConfig(t)
+	cfg.Log.Level = zapcore.DebugLevel
+	cfg.APIs.HTTP.TLS.ClientCertificateRequired = false
+	cfg.Clients.Device.COAP.TLS.Authentication = device.AuthenticationX509
+	cfg.RemoteProvisioning.Mode = remoteProvisioning.Mode_UserAgent
+	shutDown := test.New(t, cfg)
+	oauthServerTearDown := hubTestOAuthServer.SetUp(t)
+	caShutdown := caService.SetUp(t)
+
+	initializeRemoteProvisioning(ctx, t)
+
 	return func() {
 		shutDown()
 		oauthServerTearDown()

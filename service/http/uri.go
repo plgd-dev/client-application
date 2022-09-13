@@ -41,6 +41,7 @@ const (
 	DisownDevice        = Device + "/disown"
 
 	Initialize             = ApiV1 + "/initialize"
+	Reset                  = ApiV1 + "/reset"
 	IdentityCsr            = Identity + "/csr"
 	IdentityCertificate    = Identity + "/certificate"
 	WellKnownJWKs          = WellKnown + "/jwks.json"

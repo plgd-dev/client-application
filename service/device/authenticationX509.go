@@ -20,19 +20,14 @@ import (
 
 type authenticationX509 struct {
 	config      Config
-	privateKey  *ecdsa.PrivateKey
+	privateKey  atomic.Pointer[ecdsa.PrivateKey]
 	certificate atomic.Pointer[tls.Certificate]
 }
 
-func newAuthenticationX509(config Config) (*authenticationX509, error) {
-	privateKey, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
-	if err != nil {
-		return nil, fmt.Errorf("cannot generate private key: %w", err)
-	}
+func newAuthenticationX509(config Config) *authenticationX509 {
 	return &authenticationX509{
-		config:     config,
-		privateKey: privateKey,
-	}, nil
+		config: config,
+	}
 }
 
 func (s *authenticationX509) getTLSCertificate() (*tls.Certificate, error) {
@@ -107,7 +102,22 @@ func (s *authenticationX509) GetOwnOptions() []core.OwnOption {
 }
 
 func (s *authenticationX509) GetIdentityCSR(id string) ([]byte, error) {
-	return generateCertificate.GenerateIdentityCSR(generateCertificate.Configuration{}, id, s.privateKey)
+	var privateKey *ecdsa.PrivateKey
+	for {
+		privateKey = s.privateKey.Load()
+		if privateKey != nil {
+			break
+		}
+		var err error
+		privateKey, err = ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+		if err != nil {
+			return nil, fmt.Errorf("cannot generate private key: %w", err)
+		}
+		if s.privateKey.CompareAndSwap(nil, privateKey) {
+			break
+		}
+	}
+	return generateCertificate.GenerateIdentityCSR(generateCertificate.Configuration{}, id, privateKey)
 }
 
 func encodePrivateKeyToPem(k *ecdsa.PrivateKey) ([]byte, error) {
@@ -155,7 +165,11 @@ func (s *authenticationX509) updateCertificate(crt tls.Certificate) error {
 }
 
 func (s *authenticationX509) SetIdentityCertificate(chainPem []byte) error {
-	keyPem, err := encodePrivateKeyToPem(s.privateKey)
+	privateKey := s.privateKey.Load()
+	if privateKey == nil {
+		return fmt.Errorf("private key is not set")
+	}
+	keyPem, err := encodePrivateKeyToPem(privateKey)
 	if err != nil {
 		return fmt.Errorf("cannot marshal private key: %w", err)
 	}
@@ -195,4 +209,9 @@ func (s *authenticationX509) GetCertificateAuthorities() ([]*x509.Certificate, e
 
 func (s *authenticationX509) IsInitialized() bool {
 	return s.certificate.Load() != nil
+}
+
+func (s *authenticationX509) Reset() {
+	s.certificate.Store((*tls.Certificate)(nil))
+	s.privateKey.Store((*ecdsa.PrivateKey)(nil))
 }

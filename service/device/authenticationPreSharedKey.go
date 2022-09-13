@@ -73,3 +73,7 @@ func (s *authenticationPreSharedKey) IsInitialized() bool {
 	cfg := s.config.Load()
 	return cfg.COAP.TLS.PreSharedKey.keyUUID != uuid.Nil && cfg.COAP.TLS.PreSharedKey.subjectUUID != uuid.Nil
 }
+
+func (s *authenticationPreSharedKey) Reset() {
+	// nothing to do
+}

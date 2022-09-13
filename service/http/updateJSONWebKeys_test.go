@@ -24,6 +24,7 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/plgd-dev/client-application/pb"
 	"github.com/plgd-dev/client-application/service/device"
 	serviceHttp "github.com/plgd-dev/client-application/service/http"
 	"github.com/plgd-dev/client-application/service/remoteProvisioning"
@@ -37,6 +38,9 @@ import (
 )
 
 func TestClientApplicationServerUpdateJSONWebKeys(t *testing.T) {
+	// need to wait for the device
+	_ = test.MustFindDeviceByName(test.DevsimName, []pb.GetDevicesRequest_UseMulticast{pb.GetDevicesRequest_IPV4})
+
 	cfg := test.MakeConfig(t)
 	cfg.APIs.HTTP.TLS.ClientCertificateRequired = false
 	cfg.RemoteProvisioning.Mode = remoteProvisioning.Mode_UserAgent
