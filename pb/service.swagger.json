@@ -288,7 +288,7 @@
     "/api/v1/devices/{deviceId}/own": {
       "post": {
         "summary": "Own the device.",
-        "description": "When GetConfigurationResponse.device_authentication_mode == X509 and GetConfigurationResponse.remote_provisioning.mode == USER_AGENT the own need to be called twice:\n - in first call own returns identity CSR of the device which need to be signed by certificate authority\n - in second call own user provides signed identity certificate to the device.option\nLook to own.plantuml for flows.",
+        "description": "When GetConfigurationResponse.device_authentication_mode == X509 and GetConfigurationResponse.remote_provisioning.mode == USER_AGENT the finish own need to be called:\n - own returns identity CSR of the device which need to be signed by certificate authority\n - in own/{state} call provides signed identity certificate to the device.option\nLook to https://raw.githubusercontent.com/plgd-dev/client-application/main/ownDevice.plantuml for flows.",
         "operationId": "ClientApplication_OwnDevice",
         "responses": {
           "200": {
@@ -340,7 +340,7 @@
     "/api/v1/devices/{deviceId}/own/{state}": {
       "post": {
         "summary": "Finishing own the device for remote provisioning via USER_AGENT.",
-        "description": "When GetConfigurationResponse.device_authentication_mode == X509 and GetConfigurationResponse.remote_provisioning.mode == USER_AGENT the own need to be called twice:\n - in first call own returns identity CSR of the device which need to be signed by certificate authority\n - in second call own user provides signed identity certificate to the device.option\nLook to own.plantuml for flows.",
+        "description": "Available only when GetConfigurationResponse.device_authentication_mode == X509 and GetConfigurationResponse.remote_provisioning.mode == USER_AGENT.",
         "operationId": "ClientApplication_FinishOwnDevice",
         "responses": {
           "200": {
@@ -653,7 +653,7 @@
     "/api/v1/initialize": {
       "post": {
         "summary": "Initialize application when GetConfiguration.is_initialized is set to false.",
-        "description": "Look to initialize.plantuml for flows.",
+        "description": "Look to https://raw.githubusercontent.com/plgd-dev/client-application/main/initialize.plantuml for flows.",
         "operationId": "ClientApplication_Initialize",
         "responses": {
           "200": {
@@ -687,7 +687,7 @@
     "/api/v1/initialize/{state}": {
       "post": {
         "summary": "Finishing initialization for remote provisioning via USER_AGENT.",
-        "description": "Available only when GetConfigurationResponse.device_authentication_mode == X509 and GetConfigurationResponse.remote_provisioning.mode == USER_AGENT.\nLook to initialize.plantuml for flows.",
+        "description": "Available only when GetConfigurationResponse.device_authentication_mode == X509 and GetConfigurationResponse.remote_provisioning.mode == USER_AGENT.",
         "operationId": "ClientApplication_FinishInitialize",
         "responses": {
           "200": {
