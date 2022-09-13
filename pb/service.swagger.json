@@ -681,6 +681,11 @@
         ],
         "tags": [
           "client-application"
+        ],
+        "security": [
+          {
+            "OAuth2": []
+          }
         ]
       }
     },
@@ -1455,6 +1460,13 @@
         "CANCELED"
       ],
       "default": "UNKNOWN"
+    }
+  },
+  "securityDefinitions": {
+    "OAuth2": {
+      "type": "oauth2",
+      "description": "OAuth2 authorization is used when GetConfigurationResponse.device_authentication_mode == X509",
+      "flow": "accessCode"
     }
   }
 }

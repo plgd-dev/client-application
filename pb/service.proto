@@ -60,6 +60,16 @@ option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_swagger) = {
   schemes: [ HTTPS ];
   consumes: [ "application/json", "application/protojson" ];
   produces: [ "application/json", "application/protojson" ];
+  security_definitions: {
+    security: {
+      key: "OAuth2";
+      value: {
+        type: TYPE_OAUTH2;
+        flow: FLOW_ACCESS_CODE;
+        description: "OAuth2 authorization is used when GetConfigurationResponse.device_authentication_mode == X509";
+      }
+    }
+  }
 };
 
 option go_package = "github.com/plgd-dev/client-application/pb;pb";
@@ -292,6 +302,11 @@ service ClientApplication {
       tags: [ "client-application" ]
       summary: "Initialize application when GetConfiguration.is_initialized is set to false."
       description: "Look to https://raw.githubusercontent.com/plgd-dev/client-application/main/initialize.plantuml for flows."
+      security: {
+        security_requirement: {
+          key: "OAuth2";
+        }
+      }
     };
   }
   
