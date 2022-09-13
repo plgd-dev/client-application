@@ -75,43 +75,6 @@
         "tags": [
           "client-application"
         ]
-      },
-      "post": {
-        "summary": "Update jwks.json.",
-        "description": "Available only when GetConfigurationResponse.device_authentication_mode == X509 and GetConfigurationResponse.remote_provisioning.mode == USER_AGENT.",
-        "operationId": "ClientApplication_UpdateJSONWebKeys",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/pbUpdateJSONWebKeysResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/googlerpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "jwks",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "type": "object"
-            }
-          }
-        ],
-        "tags": [
-          "client-application"
-        ],
-        "security": [
-          {
-            "OAuth2": []
-          }
-        ]
       }
     },
     "/api/v1/devices": {
@@ -355,13 +318,69 @@
             "schema": {
               "type": "object",
               "properties": {
-                "getIdentityCsr": {
-                  "$ref": "#/definitions/OwnDeviceRequestGetIdentityCsr",
-                  "description": "If is set, the own process will be paused and OwnDeviceResponse.get_identity_csr will be set.\nThe next call to OwnDevice must contain set_identity_certificate with filled state."
-                },
-                "setIdentityCertificate": {
-                  "$ref": "#/definitions/pbUpdateIdentityCertificateRequest",
-                  "description": "Next call after OwnDevice with filled get_identity_csr."
+                "timeout": {
+                  "type": "string",
+                  "format": "int64",
+                  "description": "Defines how long own process will wait for the OwnDeviceRequest with set_identity_certificate in nanoseconds. Default value is 15secs."
+                }
+              }
+            }
+          }
+        ],
+        "tags": [
+          "Device"
+        ],
+        "security": [
+          {
+            "OAuth2": []
+          }
+        ]
+      }
+    },
+    "/api/v1/devices/{deviceId}/own/{state}": {
+      "post": {
+        "summary": "Finishing own the device for remote provisioning via USER_AGENT.",
+        "description": "When GetConfigurationResponse.device_authentication_mode == X509 and GetConfigurationResponse.remote_provisioning.mode == USER_AGENT the own need to be called twice:\n - in first call own returns identity CSR of the device which need to be signed by certificate authority\n - in second call own user provides signed identity certificate to the device.option\nLook to own.plantuml for flows.",
+        "operationId": "ClientApplication_FinishOwnDevice",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbFinishOwnDeviceResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "deviceId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "state",
+            "description": "Use value form OwnDeviceResponse.get_identity_csr.state",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "certificate": {
+                  "type": "string",
+                  "format": "byte",
+                  "title": "Certificate chain in PEM format"
                 }
               }
             }
@@ -629,77 +648,11 @@
             "OAuth2": []
           }
         ]
-      },
-      "post": {
-        "summary": "Set or update identity certificate for the client application.",
-        "description": "Available only when GetConfigurationResponse.device_authentication_mode == X509 and GetConfigurationResponse.remote_provisioning.mode == USER_AGENT.",
-        "operationId": "ClientApplication_UpdateIdentityCertificate",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/pbUpdateIdentityCertificateResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/googlerpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "body",
-            "in": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/pbUpdateIdentityCertificateRequest"
-            }
-          }
-        ],
-        "tags": [
-          "client-application"
-        ],
-        "security": [
-          {
-            "OAuth2": []
-          }
-        ]
-      }
-    },
-    "/api/v1/identity/csr": {
-      "get": {
-        "summary": "Get identity CSR from the client application for creating a new identity certificate.",
-        "description": "Available only when GetConfigurationResponse.device_authentication_mode == X509 and GetConfigurationResponse.remote_provisioning.mode == USER_AGENT.",
-        "operationId": "ClientApplication_GetIdentityCSR",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/pbGetIdentityCSRResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/googlerpcStatus"
-            }
-          }
-        },
-        "tags": [
-          "client-application"
-        ],
-        "security": [
-          {
-            "OAuth2": []
-          }
-        ]
       }
     },
     "/api/v1/initialize": {
       "post": {
-        "summary": "Initialize application when GetConfiguration.is_nitialized is set to false.",
+        "summary": "Initialize application when GetConfiguration.is_initialized is set to false.",
         "description": "Look to initialize.plantuml for flows.",
         "operationId": "ClientApplication_Initialize",
         "responses": {
@@ -723,6 +676,54 @@
             "required": true,
             "schema": {
               "$ref": "#/definitions/pbInitializeRequest"
+            }
+          }
+        ],
+        "tags": [
+          "client-application"
+        ]
+      }
+    },
+    "/api/v1/initialize/{state}": {
+      "post": {
+        "summary": "Finishing initialization for remote provisioning via USER_AGENT.",
+        "description": "Available only when GetConfigurationResponse.device_authentication_mode == X509 and GetConfigurationResponse.remote_provisioning.mode == USER_AGENT.\nLook to initialize.plantuml for flows.",
+        "operationId": "ClientApplication_FinishInitialize",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbFinishInitializeResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "state",
+            "description": "Use value for pairing otherwise finish will be refused.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "certificate": {
+                  "type": "string",
+                  "format": "byte",
+                  "title": "Certificate chain in PEM format"
+                }
+              }
             }
           }
         ],
@@ -822,16 +823,6 @@
         "IPV6"
       ],
       "default": "IPV4"
-    },
-    "OwnDeviceRequestGetIdentityCsr": {
-      "type": "object",
-      "properties": {
-        "timeout": {
-          "type": "string",
-          "format": "int64",
-          "description": "Defines how long own process will wait for the OwnDeviceRequest with set_identity_certificate in nanoseconds. Default value is 15secs."
-        }
-      }
     },
     "RemoteProvisioningMode": {
       "type": "string",
@@ -1056,6 +1047,12 @@
         }
       }
     },
+    "pbFinishInitializeResponse": {
+      "type": "object"
+    },
+    "pbFinishOwnDeviceResponse": {
+      "type": "object"
+    },
     "pbGetConfigurationResponse": {
       "type": "object",
       "properties": {
@@ -1086,21 +1083,23 @@
         }
       }
     },
-    "pbGetIdentityCSRResponse": {
-      "type": "object",
-      "properties": {
-        "certificateSigningRequest": {
-          "type": "string"
-        },
-        "state": {
-          "type": "string"
-        }
-      }
-    },
     "pbGetIdentityCertificateResponse": {
       "type": "object",
       "properties": {
         "certificate": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "pbIdentityCertificateChallenge": {
+      "type": "object",
+      "properties": {
+        "certificateSigningRequest": {
+          "type": "string",
+          "format": "byte"
+        },
+        "state": {
           "type": "string"
         }
       }
@@ -1124,14 +1123,20 @@
         "preSharedKey": {
           "$ref": "#/definitions/pbInitializePreSharedKey"
         },
-        "x509": {
-          "$ref": "#/definitions/pbUpdateIdentityCertificateRequest"
+        "jwks": {
+          "type": "object"
         }
       },
       "title": "The client application must be initialized when GetConfigurationResponse.is_initialized is set to false.\nThe initialization depends on the GetConfigurationResponse.device_authentication_mode.\nFor:\n - PRE_SHARED_KEY - pre_shared_key values need to be set.\n - X509 - this values need to be set only if GetConfigurationResponse.remote_provisioning.mode is set to USER_AGENT, for SELF just use empty values"
     },
     "pbInitializeResponse": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "identityCertificateChallenge": {
+          "$ref": "#/definitions/pbIdentityCertificateChallenge",
+          "description": "If is set, the initialization process will be paused.\nFor the next call FinishInitialize, request must contain provided identity_certificate_challenge.state."
+        }
+      }
     },
     "pbLocalizedString": {
       "type": "object",
@@ -1147,8 +1152,8 @@
     "pbOwnDeviceResponse": {
       "type": "object",
       "properties": {
-        "getIdentityCsr": {
-          "$ref": "#/definitions/pbGetIdentityCSRResponse",
+        "identityCertificateChallenge": {
+          "$ref": "#/definitions/pbIdentityCertificateChallenge",
           "title": "Filled when OwnDeviceRequest.get_identity_csr is true"
         }
       }
@@ -1337,25 +1342,6 @@
         "DISABLED"
       ],
       "default": "UNSET"
-    },
-    "pbUpdateIdentityCertificateRequest": {
-      "type": "object",
-      "properties": {
-        "certificate": {
-          "type": "string",
-          "title": "Certificate chain in PEM format"
-        },
-        "state": {
-          "type": "string",
-          "description": "Use value GetIdentityCSRResponse.state for pairing otherwise update will be refused."
-        }
-      }
-    },
-    "pbUpdateIdentityCertificateResponse": {
-      "type": "object"
-    },
-    "pbUpdateJSONWebKeysResponse": {
-      "type": "object"
     },
     "pbUserAgent": {
       "type": "object",

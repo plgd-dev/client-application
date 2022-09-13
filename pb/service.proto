@@ -33,11 +33,8 @@ import "pb/get_device_resource_links.proto";
 import "pb/own_device.proto";
 import "pb/disown_device.proto";
 import "pb/get_configuration.proto";
-import "pb/get_identity_csr.proto";
-import "pb/update_identity_certificate.proto";
 import "pb/get_identity_certificate.proto";
 import "pb/get_json_web_keys.proto";
-import "pb/update_json_web_keys.proto";
 import "pb/initialize.proto";
 import "pb/reset.proto";
 
@@ -200,6 +197,23 @@ service ClientApplication {
     };
   }
 
+  rpc FinishOwnDevice(FinishOwnDeviceRequest) returns (FinishOwnDeviceResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/devices/{device_id}/own/{state}"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: [ "Device" ]
+      summary: "Finishing own the device for remote provisioning via USER_AGENT."
+      description: "When GetConfigurationResponse.device_authentication_mode == X509 and GetConfigurationResponse.remote_provisioning.mode == USER_AGENT the own need to be called twice:\n - in first call own returns identity CSR of the device which need to be signed by certificate authority\n - in second call own user provides signed identity certificate to the device.option\nLook to own.plantuml for flows."
+      security: {
+        security_requirement: {
+          key: "OAuth2";
+        }
+      }
+    };
+  }
+
   rpc DisownDevice(DisownDeviceRequest) returns (DisownDeviceResponse) {
     option (google.api.http) = {
       post: "/api/v1/devices/{device_id}/disown"
@@ -253,56 +267,6 @@ service ClientApplication {
     };
   }
 
-  rpc UpdateJSONWebKeys(UpdateJSONWebKeysRequest) returns (UpdateJSONWebKeysResponse) {
-    option (google.api.http) = {
-      post: "/.well-known/jwks.json"
-      body: "jwks"
-    };
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      tags: [ "client-application" ]
-      summary: "Update jwks.json."
-      description: "Available only when GetConfigurationResponse.device_authentication_mode == X509 and GetConfigurationResponse.remote_provisioning.mode == USER_AGENT."
-      security: {
-        security_requirement: {
-          key: "OAuth2";
-        }
-      }
-    };
-  }
-
-  rpc GetIdentityCSR(GetIdentityCSRRequest) returns (GetIdentityCSRResponse) {
-    option (google.api.http) = {
-      get: "/api/v1/identity/csr"
-    };
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      tags: [ "client-application" ]
-      summary: "Get identity CSR from the client application for creating a new identity certificate."
-      description: "Available only when GetConfigurationResponse.device_authentication_mode == X509 and GetConfigurationResponse.remote_provisioning.mode == USER_AGENT."
-      security: {
-        security_requirement: {
-          key: "OAuth2";
-        }
-      }
-    };
-  }
-
-  rpc UpdateIdentityCertificate(UpdateIdentityCertificateRequest) returns (UpdateIdentityCertificateResponse) {
-    option (google.api.http) = {
-      post: "/api/v1/identity/certificate"
-      body: "*"
-    };
-    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
-      tags: [ "client-application" ]
-      summary: "Set or update identity certificate for the client application."
-      description: "Available only when GetConfigurationResponse.device_authentication_mode == X509 and GetConfigurationResponse.remote_provisioning.mode == USER_AGENT."
-      security: {
-        security_requirement: {
-          key: "OAuth2";
-        }
-      }
-    };
-  }
-
   rpc GetIdentityCertificate(GetIdentityCertificateRequest) returns (GetIdentityCertificateResponse) {
     option (google.api.http) = {
       get: "/api/v1/identity/certificate"
@@ -326,8 +290,20 @@ service ClientApplication {
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       tags: [ "client-application" ]
-      summary: "Initialize application when GetConfiguration.is_nitialized is set to false."
+      summary: "Initialize application when GetConfiguration.is_initialized is set to false."
       description: "Look to initialize.plantuml for flows."
+    };
+  }
+  
+  rpc FinishInitialize(FinishInitializeRequest) returns (FinishInitializeResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/initialize/{state}"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: [ "client-application" ]
+      summary: "Finishing initialization for remote provisioning via USER_AGENT."
+      description: "Available only when GetConfigurationResponse.device_authentication_mode == X509 and GetConfigurationResponse.remote_provisioning.mode == USER_AGENT.\nLook to initialize.plantuml for flows."
       security: {
         security_requirement: {
           key: "OAuth2";

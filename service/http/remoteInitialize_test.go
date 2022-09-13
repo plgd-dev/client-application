@@ -20,6 +20,7 @@ import (
 	"bytes"
 	"context"
 	"crypto/tls"
+	"encoding/json"
 	"io"
 	"net/http"
 	"testing"
@@ -43,6 +44,7 @@ import (
 	"google.golang.org/grpc/credentials"
 	"google.golang.org/protobuf/encoding/protojson"
 	"google.golang.org/protobuf/reflect/protoreflect"
+	"google.golang.org/protobuf/types/known/structpb"
 )
 
 func decodeBody(t *testing.T, r io.Reader, v protoreflect.ProtoMessage) {
@@ -75,46 +77,39 @@ func initializeRemoteProvisioning(ctx context.Context, t *testing.T) {
 	resp = httpgwTest.HTTPDo(t, request)
 	require.Equal(t, http.StatusOK, resp.StatusCode)
 
-	jwks, err := io.ReadAll(resp.Body)
+	var jwks map[string]interface{}
+	err = json.NewDecoder(resp.Body).Decode(&jwks)
+	require.NoError(t, err)
+
+	pbJwks, err := structpb.NewStruct(jwks)
 	require.NoError(t, err)
 
 	token := hubTestOAuthServer.GetDefaultAccessToken(t)
-	request = httpgwTest.NewRequest(http.MethodPost, serviceHttp.WellKnownJWKs, bytes.NewReader(jwks)).
-		Host(test.CLIENT_APPLICATION_HTTP_HOST).AuthToken(token).Build()
+	request = httpgwTest.NewRequest(http.MethodPost, serviceHttp.Initialize, encodeToBody(t, &pb.InitializeRequest{
+		Jwks: pbJwks,
+	})).Host(test.CLIENT_APPLICATION_HTTP_HOST).AuthToken(token).Build()
 	resp = httpgwTest.HTTPDo(t, request)
 	require.Equal(t, http.StatusOK, resp.StatusCode)
 
-	request = httpgwTest.NewRequest(http.MethodGet, serviceHttp.IdentityCsr, nil).Host(test.CLIENT_APPLICATION_HTTP_HOST).AuthToken(token).Build()
-	resp = httpgwTest.HTTPDo(t, request)
-	require.Equal(t, http.StatusOK, resp.StatusCode)
+	var challengeResp pb.InitializeResponse
+	decodeBody(t, resp.Body, &challengeResp)
 
-	var csr pb.GetIdentityCSRResponse
-	decodeBody(t, resp.Body, &csr)
-
+	require.NotEmpty(t, challengeResp.GetIdentityCertificateChallenge().GetCertificateSigningRequest())
+	require.NotEmpty(t, challengeResp.GetIdentityCertificateChallenge().GetState())
 	ctx = kitNetGrpc.CtxWithToken(ctx, token)
-	conn, err := grpc.Dial(config.CERTIFICATE_AUTHORITY_HOST, grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{
-		RootCAs:    hubTest.GetRootCertificatePool(t),
-		MinVersion: tls.VersionTLS12,
-	})))
-	require.NoError(t, err)
-	caClient := hubCAPb.NewCertificateAuthorityClient(conn)
-	signResp, err := caClient.SignCertificate(ctx, &hubCAPb.SignCertificateRequest{
-		CertificateSigningRequest: []byte(csr.CertificateSigningRequest),
-	})
-	require.NoError(t, err)
-	initializeReq := pb.InitializeRequest{
-		X509: &pb.UpdateIdentityCertificateRequest{
-			Certificate: string(signResp.Certificate),
-			State:       csr.State,
-		},
-	}
+	certificate := signCSR(ctx, t, challengeResp.GetIdentityCertificateChallenge().GetCertificateSigningRequest())
+	request = httpgwTest.NewRequest(http.MethodPost, serviceHttp.FinishInitialize(challengeResp.GetIdentityCertificateChallenge().GetState()), encodeToBody(t, &pb.FinishInitializeRequest{
+		Certificate: certificate,
+	})).Host(test.CLIENT_APPLICATION_HTTP_HOST).AuthToken(token).Build()
+	resp = httpgwTest.HTTPDo(t, request)
+	require.Equal(t, http.StatusOK, resp.StatusCode)
 
-	request = httpgwTest.NewRequest(http.MethodPost, serviceHttp.Initialize, encodeToBody(t, &initializeReq)).Host(test.CLIENT_APPLICATION_HTTP_HOST).AuthToken(token).Build()
+	request = httpgwTest.NewRequest(http.MethodGet, serviceHttp.IdentityCertificate, nil).Host(test.CLIENT_APPLICATION_HTTP_HOST).AuthToken(token).Build()
 	resp = httpgwTest.HTTPDo(t, request)
 	require.Equal(t, http.StatusOK, resp.StatusCode)
 }
 
-func setupRemoteProvisioning(ctx context.Context, t *testing.T) func() {
+func setupRemoteProvisioning(t *testing.T) func() {
 	cfg := test.MakeConfig(t)
 	cfg.Log.Level = zapcore.DebugLevel
 	cfg.APIs.HTTP.TLS.ClientCertificateRequired = false
@@ -124,8 +119,6 @@ func setupRemoteProvisioning(ctx context.Context, t *testing.T) func() {
 	oauthServerTearDown := hubTestOAuthServer.SetUp(t)
 	caShutdown := caService.SetUp(t)
 
-	initializeRemoteProvisioning(ctx, t)
-
 	return func() {
 		shutDown()
 		oauthServerTearDown()
@@ -133,7 +126,7 @@ func setupRemoteProvisioning(ctx context.Context, t *testing.T) func() {
 	}
 }
 
-func signCSR(ctx context.Context, t *testing.T, csr string) string {
+func signCSR(ctx context.Context, t *testing.T, csr []byte) []byte {
 	conn, err := grpc.Dial(config.CERTIFICATE_AUTHORITY_HOST, grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{
 		RootCAs:    hubTest.GetRootCertificatePool(t),
 		MinVersion: tls.VersionTLS12,
@@ -145,10 +138,10 @@ func signCSR(ctx context.Context, t *testing.T, csr string) string {
 	}()
 	caClient := hubCAPb.NewCertificateAuthorityClient(conn)
 	signResp, err := caClient.SignCertificate(ctx, &hubCAPb.SignCertificateRequest{
-		CertificateSigningRequest: []byte(csr),
+		CertificateSigningRequest: csr,
 	})
 	require.NoError(t, err)
-	return string(signResp.Certificate)
+	return signResp.Certificate
 }
 
 func TestClientApplicationServerUpdateIdentityCertificate(t *testing.T) {
@@ -183,39 +176,32 @@ func TestClientApplicationServerUpdateIdentityCertificate(t *testing.T) {
 	resp = httpgwTest.HTTPDo(t, request)
 	require.Equal(t, http.StatusOK, resp.StatusCode)
 
-	jwks, err := io.ReadAll(resp.Body)
+	var jwks map[string]interface{}
+	err = json.NewDecoder(resp.Body).Decode(&jwks)
+	require.NoError(t, err)
+
+	pbJwks, err := structpb.NewStruct(jwks)
 	require.NoError(t, err)
 
 	token := hubTestOAuthServer.GetDefaultAccessToken(t)
-	request = httpgwTest.NewRequest(http.MethodPost, serviceHttp.WellKnownJWKs, bytes.NewReader(jwks)).
-		Host(test.CLIENT_APPLICATION_HTTP_HOST).AuthToken(token).Build()
+	request = httpgwTest.NewRequest(http.MethodPost, serviceHttp.Initialize, encodeToBody(t, &pb.InitializeRequest{
+		Jwks: pbJwks,
+	})).Host(test.CLIENT_APPLICATION_HTTP_HOST).AuthToken(token).Build()
 	resp = httpgwTest.HTTPDo(t, request)
 	require.Equal(t, http.StatusOK, resp.StatusCode)
 
-	request = httpgwTest.NewRequest(http.MethodGet, serviceHttp.IdentityCsr, nil).Host(test.CLIENT_APPLICATION_HTTP_HOST).AuthToken(token).Build()
-	resp = httpgwTest.HTTPDo(t, request)
-	require.Equal(t, http.StatusOK, resp.StatusCode)
+	var challengeResp pb.InitializeResponse
+	decodeBody(t, resp.Body, &challengeResp)
 
-	var csr pb.GetIdentityCSRResponse
-	decodeBody(t, resp.Body, &csr)
-
+	require.NotEmpty(t, challengeResp.GetIdentityCertificateChallenge().GetCertificateSigningRequest())
+	require.NotEmpty(t, challengeResp.GetIdentityCertificateChallenge().GetState())
 	ctx = kitNetGrpc.CtxWithToken(ctx, token)
-	certificate := signCSR(ctx, t, csr.CertificateSigningRequest)
-
-	initializeReq := pb.InitializeRequest{
-		X509: &pb.UpdateIdentityCertificateRequest{
-			Certificate: certificate,
-			State:       csr.State,
-		},
-	}
-
-	request = httpgwTest.NewRequest(http.MethodPost, serviceHttp.Initialize, encodeToBody(t, &initializeReq)).Host(test.CLIENT_APPLICATION_HTTP_HOST).AuthToken(token).Build()
+	certificate := signCSR(ctx, t, challengeResp.GetIdentityCertificateChallenge().GetCertificateSigningRequest())
+	request = httpgwTest.NewRequest(http.MethodPost, serviceHttp.FinishInitialize(challengeResp.GetIdentityCertificateChallenge().GetState()), encodeToBody(t, &pb.FinishInitializeRequest{
+		Certificate: certificate,
+	})).Host(test.CLIENT_APPLICATION_HTTP_HOST).AuthToken(token).Build()
 	resp = httpgwTest.HTTPDo(t, request)
 	require.Equal(t, http.StatusOK, resp.StatusCode)
-
-	request = httpgwTest.NewRequest(http.MethodPost, serviceHttp.IdentityCertificate, encodeToBody(t, initializeReq.GetX509())).Host(test.CLIENT_APPLICATION_HTTP_HOST).AuthToken(token).Build()
-	resp = httpgwTest.HTTPDo(t, request)
-	require.Equal(t, http.StatusBadRequest, resp.StatusCode)
 
 	request = httpgwTest.NewRequest(http.MethodGet, serviceHttp.IdentityCertificate, nil).Host(test.CLIENT_APPLICATION_HTTP_HOST).AuthToken(token).Build()
 	resp = httpgwTest.HTTPDo(t, request)

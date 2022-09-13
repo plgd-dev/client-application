@@ -18,25 +18,28 @@ syntax = "proto3";
 
 package service.pb;
 
-import "pb/get_identity_csr.proto";
-import "pb/update_identity_certificate.proto";
+import "pb/initialize.proto";
 
 option go_package = "github.com/plgd-dev/client-application/pb;pb";
 
 message OwnDeviceRequest {
-  message GetIdentityCsr {
-    // Defines how long own process will wait for the OwnDeviceRequest with set_identity_certificate in nanoseconds. Default value is 15secs.
-    int64 timeout = 1;
-  }
   string device_id = 1;
-  // If is set, the own process will be paused and OwnDeviceResponse.get_identity_csr will be set.
-  // The next call to OwnDevice must contain set_identity_certificate with filled state.
-  GetIdentityCsr get_identity_csr = 2;
-  // Next call after OwnDevice with filled get_identity_csr.
-  UpdateIdentityCertificateRequest set_identity_certificate = 3;
+  // Defines how long own process will wait for the OwnDeviceRequest with set_identity_certificate in nanoseconds. Default value is 15secs.
+  int64 timeout = 2;
 }
 
 message OwnDeviceResponse {
   // Filled when OwnDeviceRequest.get_identity_csr is true
-  GetIdentityCSRResponse get_identity_csr = 1; 
+  IdentityCertificateChallenge identity_certificate_challenge = 1; 
+}
+
+message FinishOwnDeviceRequest {
+    string device_id = 1;
+    // Use value form OwnDeviceResponse.get_identity_csr.state
+    string state = 2;
+    // Certificate chain in PEM format
+    bytes certificate = 3;
+}
+
+message FinishOwnDeviceResponse {
 }

@@ -17,14 +17,14 @@ return
 alt #GetConfiguration.device_authentication_mode == PRE_SHARED_KEY
   alt #GetConfiguration.is_initialized == true
       note over S #aqua
-      Client application is initialized.
+       D2D Client - service is initialized.
       end note
   else Pink false
       C -> S ++: Initialize with preshared key
       activate C
       return
       note over S #aqua
-      Client application is initialized.
+      D2D Client - service is initialized.
       end note
       deactivate C
   end
@@ -33,31 +33,29 @@ else X509
     return JWT token 
     alt #GetConfiguration.is_initialized == true
       note over S #aqua
-      Client application is initialized.
-    end note
+      D2D Client - service is initialized.
+      end note
     else false
         alt #GetConfiguration.remote_provisioning.mode == SELF
           C -> S ++: Initialize with empty body and token
           activate C
           return
           note over S #aqua
-          Client application is initialized.
+          D2D Client - service is initialized.
           end note
           deactivate C
         else USER_AGENT
           C -> O ++: Get JWKS
           activate C
           return jwks
-          C -> S ++: Update JWKS with token and jwks from oauth server
-          return
-          C -> S ++: Get identity CSR with token
-          return CSR and state
-          C-> CA ++: Sign identity CSR with token
+          C -> S ++: Initialize with jwks
+          return Identity certificate challenge with identity CSR and state
+          C-> CA ++: Sign identity CSR
           return Certificate
-          C -> S ++: Initialize with token, state, and identity certificate
+          C -> S ++: Finish initialize with state, and identity certificate
           return
           note over S #aqua
-          Client application is initialized.
+          D2D Client - service is initialized.
           end note
           deactivate C
         end

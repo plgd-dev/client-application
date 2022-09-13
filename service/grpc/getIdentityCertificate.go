@@ -38,6 +38,6 @@ func (s *ClientApplicationServer) GetIdentityCertificate(ctx context.Context, re
 		certificate = append(certificate, pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE", Bytes: c})...)
 	}
 	return &pb.GetIdentityCertificateResponse{
-		Certificate: string(certificate),
+		Certificate: certificate,
 	}, nil
 }

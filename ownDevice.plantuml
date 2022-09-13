@@ -12,13 +12,12 @@ participant CA as "Certificate Authority"
 end box
 
 alt GetConfiguration.device_authentication_mode == X509 && remote_provisioning.mode == USER_AGENT
-  
-  C -> S++: Own device (get_identity_certificate.timeout is optional)
+  C -> S++: Own device
   activate C
-  S -> C: Identity CSR and state
-  C -> CA ++: Sign identity CSR with token
+  S -> C: Identity certificate challenge with identity CSR and state
+  C -> CA ++: Sign identity CSR
   return Identity Certificate
-  C -> S: Own device with set_identity_certificate.{certificate,state}
+  C -> S: Finish own device with state and identity certificate
   return
   deactivate S
   deactivate C

@@ -42,8 +42,11 @@ const (
 
 	Initialize             = ApiV1 + "/initialize"
 	Reset                  = ApiV1 + "/reset"
-	IdentityCsr            = Identity + "/csr"
 	IdentityCertificate    = Identity + "/certificate"
 	WellKnownJWKs          = WellKnown + "/jwks.json"
 	WellKnownConfiguration = WellKnown + "/configuration"
 )
+
+func FinishInitialize(state string) string {
+	return Initialize + "/" + state
+}

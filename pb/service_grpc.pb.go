@@ -29,15 +29,14 @@ type ClientApplicationClient interface {
 	CreateResource(ctx context.Context, in *CreateResourceRequest, opts ...grpc.CallOption) (*pb.CreateResourceResponse, error)
 	DeleteResource(ctx context.Context, in *DeleteResourceRequest, opts ...grpc.CallOption) (*pb.DeleteResourceResponse, error)
 	OwnDevice(ctx context.Context, in *OwnDeviceRequest, opts ...grpc.CallOption) (*OwnDeviceResponse, error)
+	FinishOwnDevice(ctx context.Context, in *FinishOwnDeviceRequest, opts ...grpc.CallOption) (*FinishOwnDeviceResponse, error)
 	DisownDevice(ctx context.Context, in *DisownDeviceRequest, opts ...grpc.CallOption) (*DisownDeviceResponse, error)
 	ClearCache(ctx context.Context, in *ClearCacheRequest, opts ...grpc.CallOption) (*ClearCacheResponse, error)
 	GetConfiguration(ctx context.Context, in *GetConfigurationRequest, opts ...grpc.CallOption) (*GetConfigurationResponse, error)
 	GetJSONWebKeys(ctx context.Context, in *GetJSONWebKeysRequest, opts ...grpc.CallOption) (*structpb.Struct, error)
-	UpdateJSONWebKeys(ctx context.Context, in *UpdateJSONWebKeysRequest, opts ...grpc.CallOption) (*UpdateJSONWebKeysResponse, error)
-	GetIdentityCSR(ctx context.Context, in *GetIdentityCSRRequest, opts ...grpc.CallOption) (*GetIdentityCSRResponse, error)
-	UpdateIdentityCertificate(ctx context.Context, in *UpdateIdentityCertificateRequest, opts ...grpc.CallOption) (*UpdateIdentityCertificateResponse, error)
 	GetIdentityCertificate(ctx context.Context, in *GetIdentityCertificateRequest, opts ...grpc.CallOption) (*GetIdentityCertificateResponse, error)
 	Initialize(ctx context.Context, in *InitializeRequest, opts ...grpc.CallOption) (*InitializeResponse, error)
+	FinishInitialize(ctx context.Context, in *FinishInitializeRequest, opts ...grpc.CallOption) (*FinishInitializeResponse, error)
 	Reset(ctx context.Context, in *ResetRequest, opts ...grpc.CallOption) (*ResetResponse, error)
 }
 
@@ -144,6 +143,15 @@ func (c *clientApplicationClient) OwnDevice(ctx context.Context, in *OwnDeviceRe
 	return out, nil
 }
 
+func (c *clientApplicationClient) FinishOwnDevice(ctx context.Context, in *FinishOwnDeviceRequest, opts ...grpc.CallOption) (*FinishOwnDeviceResponse, error) {
+	out := new(FinishOwnDeviceResponse)
+	err := c.cc.Invoke(ctx, "/service.pb.ClientApplication/FinishOwnDevice", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *clientApplicationClient) DisownDevice(ctx context.Context, in *DisownDeviceRequest, opts ...grpc.CallOption) (*DisownDeviceResponse, error) {
 	out := new(DisownDeviceResponse)
 	err := c.cc.Invoke(ctx, "/service.pb.ClientApplication/DisownDevice", in, out, opts...)
@@ -180,33 +188,6 @@ func (c *clientApplicationClient) GetJSONWebKeys(ctx context.Context, in *GetJSO
 	return out, nil
 }
 
-func (c *clientApplicationClient) UpdateJSONWebKeys(ctx context.Context, in *UpdateJSONWebKeysRequest, opts ...grpc.CallOption) (*UpdateJSONWebKeysResponse, error) {
-	out := new(UpdateJSONWebKeysResponse)
-	err := c.cc.Invoke(ctx, "/service.pb.ClientApplication/UpdateJSONWebKeys", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *clientApplicationClient) GetIdentityCSR(ctx context.Context, in *GetIdentityCSRRequest, opts ...grpc.CallOption) (*GetIdentityCSRResponse, error) {
-	out := new(GetIdentityCSRResponse)
-	err := c.cc.Invoke(ctx, "/service.pb.ClientApplication/GetIdentityCSR", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *clientApplicationClient) UpdateIdentityCertificate(ctx context.Context, in *UpdateIdentityCertificateRequest, opts ...grpc.CallOption) (*UpdateIdentityCertificateResponse, error) {
-	out := new(UpdateIdentityCertificateResponse)
-	err := c.cc.Invoke(ctx, "/service.pb.ClientApplication/UpdateIdentityCertificate", in, out, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
 func (c *clientApplicationClient) GetIdentityCertificate(ctx context.Context, in *GetIdentityCertificateRequest, opts ...grpc.CallOption) (*GetIdentityCertificateResponse, error) {
 	out := new(GetIdentityCertificateResponse)
 	err := c.cc.Invoke(ctx, "/service.pb.ClientApplication/GetIdentityCertificate", in, out, opts...)
@@ -219,6 +200,15 @@ func (c *clientApplicationClient) GetIdentityCertificate(ctx context.Context, in
 func (c *clientApplicationClient) Initialize(ctx context.Context, in *InitializeRequest, opts ...grpc.CallOption) (*InitializeResponse, error) {
 	out := new(InitializeResponse)
 	err := c.cc.Invoke(ctx, "/service.pb.ClientApplication/Initialize", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *clientApplicationClient) FinishInitialize(ctx context.Context, in *FinishInitializeRequest, opts ...grpc.CallOption) (*FinishInitializeResponse, error) {
+	out := new(FinishInitializeResponse)
+	err := c.cc.Invoke(ctx, "/service.pb.ClientApplication/FinishInitialize", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -246,15 +236,14 @@ type ClientApplicationServer interface {
 	CreateResource(context.Context, *CreateResourceRequest) (*pb.CreateResourceResponse, error)
 	DeleteResource(context.Context, *DeleteResourceRequest) (*pb.DeleteResourceResponse, error)
 	OwnDevice(context.Context, *OwnDeviceRequest) (*OwnDeviceResponse, error)
+	FinishOwnDevice(context.Context, *FinishOwnDeviceRequest) (*FinishOwnDeviceResponse, error)
 	DisownDevice(context.Context, *DisownDeviceRequest) (*DisownDeviceResponse, error)
 	ClearCache(context.Context, *ClearCacheRequest) (*ClearCacheResponse, error)
 	GetConfiguration(context.Context, *GetConfigurationRequest) (*GetConfigurationResponse, error)
 	GetJSONWebKeys(context.Context, *GetJSONWebKeysRequest) (*structpb.Struct, error)
-	UpdateJSONWebKeys(context.Context, *UpdateJSONWebKeysRequest) (*UpdateJSONWebKeysResponse, error)
-	GetIdentityCSR(context.Context, *GetIdentityCSRRequest) (*GetIdentityCSRResponse, error)
-	UpdateIdentityCertificate(context.Context, *UpdateIdentityCertificateRequest) (*UpdateIdentityCertificateResponse, error)
 	GetIdentityCertificate(context.Context, *GetIdentityCertificateRequest) (*GetIdentityCertificateResponse, error)
 	Initialize(context.Context, *InitializeRequest) (*InitializeResponse, error)
+	FinishInitialize(context.Context, *FinishInitializeRequest) (*FinishInitializeResponse, error)
 	Reset(context.Context, *ResetRequest) (*ResetResponse, error)
 	mustEmbedUnimplementedClientApplicationServer()
 }
@@ -287,6 +276,9 @@ func (UnimplementedClientApplicationServer) DeleteResource(context.Context, *Del
 func (UnimplementedClientApplicationServer) OwnDevice(context.Context, *OwnDeviceRequest) (*OwnDeviceResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method OwnDevice not implemented")
 }
+func (UnimplementedClientApplicationServer) FinishOwnDevice(context.Context, *FinishOwnDeviceRequest) (*FinishOwnDeviceResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FinishOwnDevice not implemented")
+}
 func (UnimplementedClientApplicationServer) DisownDevice(context.Context, *DisownDeviceRequest) (*DisownDeviceResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DisownDevice not implemented")
 }
@@ -299,20 +291,14 @@ func (UnimplementedClientApplicationServer) GetConfiguration(context.Context, *G
 func (UnimplementedClientApplicationServer) GetJSONWebKeys(context.Context, *GetJSONWebKeysRequest) (*structpb.Struct, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetJSONWebKeys not implemented")
 }
-func (UnimplementedClientApplicationServer) UpdateJSONWebKeys(context.Context, *UpdateJSONWebKeysRequest) (*UpdateJSONWebKeysResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UpdateJSONWebKeys not implemented")
-}
-func (UnimplementedClientApplicationServer) GetIdentityCSR(context.Context, *GetIdentityCSRRequest) (*GetIdentityCSRResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetIdentityCSR not implemented")
-}
-func (UnimplementedClientApplicationServer) UpdateIdentityCertificate(context.Context, *UpdateIdentityCertificateRequest) (*UpdateIdentityCertificateResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method UpdateIdentityCertificate not implemented")
-}
 func (UnimplementedClientApplicationServer) GetIdentityCertificate(context.Context, *GetIdentityCertificateRequest) (*GetIdentityCertificateResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method GetIdentityCertificate not implemented")
 }
 func (UnimplementedClientApplicationServer) Initialize(context.Context, *InitializeRequest) (*InitializeResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Initialize not implemented")
+}
+func (UnimplementedClientApplicationServer) FinishInitialize(context.Context, *FinishInitializeRequest) (*FinishInitializeResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FinishInitialize not implemented")
 }
 func (UnimplementedClientApplicationServer) Reset(context.Context, *ResetRequest) (*ResetResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Reset not implemented")
@@ -477,6 +463,24 @@ func _ClientApplication_OwnDevice_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ClientApplication_FinishOwnDevice_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FinishOwnDeviceRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ClientApplicationServer).FinishOwnDevice(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/service.pb.ClientApplication/FinishOwnDevice",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ClientApplicationServer).FinishOwnDevice(ctx, req.(*FinishOwnDeviceRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _ClientApplication_DisownDevice_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(DisownDeviceRequest)
 	if err := dec(in); err != nil {
@@ -549,60 +553,6 @@ func _ClientApplication_GetJSONWebKeys_Handler(srv interface{}, ctx context.Cont
 	return interceptor(ctx, in, info, handler)
 }
 
-func _ClientApplication_UpdateJSONWebKeys_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UpdateJSONWebKeysRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(ClientApplicationServer).UpdateJSONWebKeys(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/service.pb.ClientApplication/UpdateJSONWebKeys",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ClientApplicationServer).UpdateJSONWebKeys(ctx, req.(*UpdateJSONWebKeysRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _ClientApplication_GetIdentityCSR_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetIdentityCSRRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(ClientApplicationServer).GetIdentityCSR(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/service.pb.ClientApplication/GetIdentityCSR",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ClientApplicationServer).GetIdentityCSR(ctx, req.(*GetIdentityCSRRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _ClientApplication_UpdateIdentityCertificate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(UpdateIdentityCertificateRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(ClientApplicationServer).UpdateIdentityCertificate(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/service.pb.ClientApplication/UpdateIdentityCertificate",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ClientApplicationServer).UpdateIdentityCertificate(ctx, req.(*UpdateIdentityCertificateRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
 func _ClientApplication_GetIdentityCertificate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(GetIdentityCertificateRequest)
 	if err := dec(in); err != nil {
@@ -635,6 +585,24 @@ func _ClientApplication_Initialize_Handler(srv interface{}, ctx context.Context,
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(ClientApplicationServer).Initialize(ctx, req.(*InitializeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ClientApplication_FinishInitialize_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FinishInitializeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ClientApplicationServer).FinishInitialize(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/service.pb.ClientApplication/FinishInitialize",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ClientApplicationServer).FinishInitialize(ctx, req.(*FinishInitializeRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -693,6 +661,10 @@ var ClientApplication_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _ClientApplication_OwnDevice_Handler,
 		},
 		{
+			MethodName: "FinishOwnDevice",
+			Handler:    _ClientApplication_FinishOwnDevice_Handler,
+		},
+		{
 			MethodName: "DisownDevice",
 			Handler:    _ClientApplication_DisownDevice_Handler,
 		},
@@ -709,24 +681,16 @@ var ClientApplication_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _ClientApplication_GetJSONWebKeys_Handler,
 		},
 		{
-			MethodName: "UpdateJSONWebKeys",
-			Handler:    _ClientApplication_UpdateJSONWebKeys_Handler,
-		},
-		{
-			MethodName: "GetIdentityCSR",
-			Handler:    _ClientApplication_GetIdentityCSR_Handler,
-		},
-		{
-			MethodName: "UpdateIdentityCertificate",
-			Handler:    _ClientApplication_UpdateIdentityCertificate_Handler,
-		},
-		{
 			MethodName: "GetIdentityCertificate",
 			Handler:    _ClientApplication_GetIdentityCertificate_Handler,
 		},
 		{
 			MethodName: "Initialize",
 			Handler:    _ClientApplication_Initialize_Handler,
+		},
+		{
+			MethodName: "FinishInitialize",
+			Handler:    _ClientApplication_FinishInitialize_Handler,
 		},
 		{
 			MethodName: "Reset",

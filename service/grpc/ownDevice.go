@@ -36,8 +36,8 @@ type remoteSign struct {
 	state               uuid.UUID
 	closed              atomic.Bool
 	errChan             chan error
-	getCSRChan          chan *pb.GetIdentityCSRResponse
-	certificateSignChan chan *pb.UpdateIdentityCertificateRequest
+	getCSRChan          chan []byte
+	certificateSignChan chan []byte
 	cancel              context.CancelFunc
 	ctx                 context.Context
 }
@@ -59,16 +59,13 @@ func (s *remoteSign) Sign(ctx context.Context, csr []byte) ([]byte, error) {
 	select {
 	case <-s.ctx.Done():
 		return nil, fmt.Errorf("cannot send request with CSR: %w", s.ctx.Err())
-	case s.getCSRChan <- &pb.GetIdentityCSRResponse{
-		CertificateSigningRequest: string(csr),
-		State:                     s.state.String(),
-	}:
+	case s.getCSRChan <- csr:
 	}
 	select {
 	case <-s.ctx.Done():
 		return nil, fmt.Errorf("cannot wait for certificate: %w", s.ctx.Err())
 	case cert := <-s.certificateSignChan:
-		return []byte(cert.GetCertificate()), nil
+		return cert, nil
 	}
 }
 
@@ -79,7 +76,7 @@ func (s *remoteSign) SendErr(err error) {
 	}
 }
 
-func (s *remoteSign) SendCertificate(ctx context.Context, req *pb.UpdateIdentityCertificateRequest) error {
+func (s *remoteSign) SendCertificate(ctx context.Context, certificate []byte) error {
 	select {
 	case err := <-s.errChan:
 		return err
@@ -87,7 +84,7 @@ func (s *remoteSign) SendCertificate(ctx context.Context, req *pb.UpdateIdentity
 		return fmt.Errorf("cannot send certificate: %w", ctx.Err())
 	case <-s.ctx.Done():
 		return fmt.Errorf("cannot send certificate: %w", ctx.Err())
-	case s.certificateSignChan <- req:
+	case s.certificateSignChan <- certificate:
 		return nil
 	}
 }
@@ -103,7 +100,7 @@ func (s *remoteSign) ReadError(ctx context.Context) error {
 	}
 }
 
-func (s *remoteSign) ReadCSR(ctx context.Context) (*pb.GetIdentityCSRResponse, error) {
+func (s *remoteSign) ReadCSR(ctx context.Context) ([]byte, error) {
 	select {
 	case err := <-s.errChan:
 		return nil, err
@@ -125,17 +122,17 @@ func newRemoteSign(timeout time.Duration) *remoteSign {
 	return &remoteSign{
 		state:               uuid.New(),
 		errChan:             make(chan error, 1),
-		getCSRChan:          make(chan *pb.GetIdentityCSRResponse),
-		certificateSignChan: make(chan *pb.UpdateIdentityCertificateRequest),
+		getCSRChan:          make(chan []byte),
+		certificateSignChan: make(chan []byte),
 		cancel:              cancel,
 		ctx:                 ctx,
 	}
 }
 
-func (s *ClientApplicationServer) ownDeviceGetCSR(ctx context.Context, req *pb.OwnDeviceRequest_GetIdentityCsr, dev *device, links schema.ResourceLinks) (*pb.OwnDeviceResponse, error) {
+func (s *ClientApplicationServer) ownDeviceGetCSR(ctx context.Context, timeoutValue int64, dev *device, links schema.ResourceLinks) (*pb.OwnDeviceResponse, error) {
 	timeout := time.Second * 15
-	if req.GetTimeout() > 0 {
-		timeout = time.Duration(req.GetTimeout()) * time.Nanosecond
+	if timeoutValue > 0 {
+		timeout = time.Duration(timeoutValue) * time.Nanosecond
 	}
 	remoteSign := newRemoteSign(timeout)
 	_, loaded := s.remoteOwnSignCache.LoadOrStore(deviceStateID(dev.ID, remoteSign.state), remoteSign)
@@ -155,36 +152,36 @@ func (s *ClientApplicationServer) ownDeviceGetCSR(ctx context.Context, req *pb.O
 		return nil, err
 	}
 	return &pb.OwnDeviceResponse{
-		GetIdentityCsr: csr,
+		IdentityCertificateChallenge: &pb.IdentityCertificateChallenge{
+			CertificateSigningRequest: csr,
+			State:                     remoteSign.state.String(),
+		},
 	}, nil
 }
 
-func (s *ClientApplicationServer) ownDeviceSetCertificate(ctx context.Context, devID uuid.UUID, req *pb.UpdateIdentityCertificateRequest) (*pb.OwnDeviceResponse, error) {
+func (s *ClientApplicationServer) ownDeviceSetCertificate(ctx context.Context, devID uuid.UUID, req *pb.FinishOwnDeviceRequest) error {
 	state, err := uuid.Parse(req.GetState())
 	if err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "cannot parse state: %v", err)
+		return status.Errorf(codes.InvalidArgument, "cannot parse state: %v", err)
 	}
 
 	remoteSign, ok := s.remoteOwnSignCache.Load(deviceStateID(devID, state))
 	if !ok {
-		return nil, status.Errorf(codes.NotFound, "cannot find remote sign for state: %v", req.GetState())
+		return status.Errorf(codes.NotFound, "cannot find remote sign for state: %v", req.GetState())
 	}
-	if err = remoteSign.SendCertificate(ctx, req); err != nil {
-		return nil, err
+	if err = remoteSign.SendCertificate(ctx, req.GetCertificate()); err != nil {
+		return err
 	}
 	if err = remoteSign.ReadError(ctx); err != nil {
-		return nil, err
+		return err
 	}
-	return &pb.OwnDeviceResponse{}, nil
+	return nil
 }
 
 func (s *ClientApplicationServer) OwnDevice(ctx context.Context, req *pb.OwnDeviceRequest) (*pb.OwnDeviceResponse, error) {
 	devID, err := strDeviceID2UUID(req.GetDeviceId())
 	if err != nil {
 		return nil, err
-	}
-	if s.signIdentityCertificateRemotely() && req.GetSetIdentityCertificate() != nil {
-		return s.ownDeviceSetCertificate(ctx, devID, req.GetSetIdentityCertificate())
 	}
 	dev, err := s.getDevice(devID)
 	if err != nil {
@@ -195,7 +192,7 @@ func (s *ClientApplicationServer) OwnDevice(ctx context.Context, req *pb.OwnDevi
 		return nil, err
 	}
 	if s.signIdentityCertificateRemotely() {
-		resp, err2 := s.ownDeviceGetCSR(ctx, req.GetGetIdentityCsr(), dev, links)
+		resp, err2 := s.ownDeviceGetCSR(ctx, req.GetTimeout(), dev, links)
 		if err2 != nil {
 			return nil, grpc.ForwardErrorf(codes.InvalidArgument, "cannot own device mediated by user agent: %v", err2)
 		}
@@ -209,4 +206,18 @@ func (s *ClientApplicationServer) OwnDevice(ctx context.Context, req *pb.OwnDevi
 	dev.updateOwnershipStatus(grpcgwPb.Device_OWNED)
 
 	return &pb.OwnDeviceResponse{}, nil
+}
+
+func (s *ClientApplicationServer) FinishOwnDevice(ctx context.Context, req *pb.FinishOwnDeviceRequest) (*pb.FinishOwnDeviceResponse, error) {
+	if !s.signIdentityCertificateRemotely() {
+		return nil, status.Errorf(codes.InvalidArgument, "initialize with certificate is disabled")
+	}
+	devID, err := strDeviceID2UUID(req.GetDeviceId())
+	if err != nil {
+		return nil, err
+	}
+	if err := s.ownDeviceSetCertificate(ctx, devID, req); err != nil {
+		return nil, err
+	}
+	return &pb.FinishOwnDeviceResponse{}, nil
 }

@@ -89,7 +89,7 @@ func createAuthFunc(config Config, clientApplicationServer *grpc.ClientApplicati
 			{
 				// token is directly verified by clientApplication
 				Method: http.MethodPost,
-				URI:    regexp.MustCompile(regexp.QuoteMeta(WellKnownJWKs)),
+				URI:    regexp.MustCompile(regexp.QuoteMeta(Initialize)),
 			},
 		}
 		if config.UI.Enabled {

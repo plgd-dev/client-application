@@ -32,8 +32,11 @@ import (
 func TestClientApplicationServerReset(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*3600)
 	defer cancel()
-	tearDown := setupRemoteProvisioning(ctx, t)
+
+	tearDown := setupRemoteProvisioning(t)
 	defer tearDown()
+
+	initializeRemoteProvisioning(ctx, t)
 
 	token := hubTestOAuthServer.GetDefaultAccessToken(t)
 

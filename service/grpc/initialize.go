@@ -31,9 +31,26 @@ func (s *ClientApplicationServer) Initialize(ctx context.Context, req *pb.Initia
 	if !s.signIdentityCertificateRemotely() {
 		return nil, status.Errorf(codes.InvalidArgument, "initialize with certificate is disabled")
 	}
-	_, err := s.UpdateIdentityCertificate(ctx, req.GetX509())
+	err := s.UpdateJSONWebKeys(ctx, req.GetJwks())
 	if err != nil {
 		return nil, err
 	}
-	return &pb.InitializeResponse{}, nil
+	respCsr, err := s.getIdentityCSR(ctx)
+	if err != nil {
+		s.reset(ctx)
+		return nil, err
+	}
+	return &pb.InitializeResponse{
+		IdentityCertificateChallenge: respCsr,
+	}, nil
+}
+
+func (s *ClientApplicationServer) FinishInitialize(ctx context.Context, req *pb.FinishInitializeRequest) (*pb.FinishInitializeResponse, error) {
+	if s.serviceDevice.IsInitialized() {
+		return nil, status.Errorf(codes.AlreadyExists, "already initialized")
+	}
+	if err := s.updateIdentityCertificate(ctx, req); err != nil {
+		return nil, err
+	}
+	return &pb.FinishInitializeResponse{}, nil
 }

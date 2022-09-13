@@ -21,13 +21,13 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/lestrrat-go/jwx/jwk"
-	"github.com/plgd-dev/client-application/pb"
 	"github.com/plgd-dev/client-application/service/remoteProvisioning"
 	"github.com/plgd-dev/hub/v2/identity-store/events"
 	"github.com/plgd-dev/hub/v2/pkg/net/grpc"
 	plgdJwt "github.com/plgd-dev/hub/v2/pkg/security/jwt"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
+	"google.golang.org/protobuf/types/known/structpb"
 )
 
 func (s *ClientApplicationServer) updateJwkCache(newCache *JSONWebKeyCache) error {
@@ -68,31 +68,31 @@ func (s *ClientApplicationServer) getOwnerForUpdateJSONWebKeys(ctx context.Conte
 	return owner, nil
 }
 
-func (s *ClientApplicationServer) UpdateJSONWebKeys(ctx context.Context, req *pb.UpdateJSONWebKeysRequest) (*pb.UpdateJSONWebKeysResponse, error) {
+func (s *ClientApplicationServer) UpdateJSONWebKeys(ctx context.Context, jwksReq *structpb.Struct) error {
 	if s.remoteProvisioningConfig.Mode != remoteProvisioning.Mode_UserAgent {
-		return nil, status.Errorf(codes.Unimplemented, "not supported")
+		return status.Errorf(codes.Unimplemented, "not supported")
 	}
 
 	owner, err := s.getOwnerForUpdateJSONWebKeys(ctx)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
-	keys, err := req.GetJwks().MarshalJSON()
+	keys, err := jwksReq.MarshalJSON()
 	if err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "cannot marshal keys: %v", err)
+		return status.Errorf(codes.InvalidArgument, "cannot marshal keys: %v", err)
 	}
 
 	jwks, err := jwk.Parse(keys)
 	if err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "cannot marshal keys: %v", err)
+		return status.Errorf(codes.InvalidArgument, "cannot marshal keys: %v", err)
 	}
 	ownerUuid, err := uuid.Parse(events.OwnerToUUID(owner))
 	if err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "cannot parse owner: %v", err)
+		return status.Errorf(codes.InvalidArgument, "cannot parse owner: %v", err)
 	}
 	if err := s.updateJwkCache(NewJSONWebKeyCache(ownerUuid, jwks)); err != nil {
-		return nil, err
+		return err
 	}
-	return &pb.UpdateJSONWebKeysResponse{}, nil
+	return nil
 }

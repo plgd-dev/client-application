@@ -27,7 +27,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (s *ClientApplicationServer) GetIdentityCSR(ctx context.Context, req *pb.GetIdentityCSRRequest) (*pb.GetIdentityCSRResponse, error) {
+func (s *ClientApplicationServer) getIdentityCSR(ctx context.Context) (*pb.IdentityCertificateChallenge, error) {
 	if !s.signIdentityCertificateRemotely() {
 		return nil, status.Errorf(codes.Unimplemented, "not supported")
 	}
@@ -41,8 +41,8 @@ func (s *ClientApplicationServer) GetIdentityCSR(ctx context.Context, req *pb.Ge
 	}
 	state := uuid.New()
 	s.csrCache.Set(state, true, s.remoteProvisioningConfig.UserAgentConfig.CSRChallengeStateExpiration)
-	return &pb.GetIdentityCSRResponse{
-		CertificateSigningRequest: string(csr),
+	return &pb.IdentityCertificateChallenge{
+		CertificateSigningRequest: csr,
 		State:                     state.String(),
 	}, nil
 }

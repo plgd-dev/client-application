@@ -18,7 +18,7 @@ syntax = "proto3";
 
 package service.pb;
 
-import "pb/update_identity_certificate.proto";
+import "google/protobuf/struct.proto";
 
 option go_package = "github.com/plgd-dev/client-application/pb;pb";
 
@@ -42,8 +42,26 @@ message InitializeX509 {
 //  - X509 - this values need to be set only if GetConfigurationResponse.remote_provisioning.mode is set to USER_AGENT, for SELF just use empty values
 message InitializeRequest {
     InitializePreSharedKey pre_shared_key = 1;
-    UpdateIdentityCertificateRequest x509 = 2;
+    google.protobuf.Struct jwks = 2;
+}
+
+message IdentityCertificateChallenge {
+    bytes certificate_signing_request = 1; // in PEM format
+    string state = 2; // for pairing calls
 }
 
 message InitializeResponse {
+    // If is set, the initialization process will be paused.
+    // For the next call FinishInitialize, request must contain provided identity_certificate_challenge.state.
+    IdentityCertificateChallenge identity_certificate_challenge = 2;
+}
+
+message FinishInitializeRequest {
+    // Certificate chain in PEM format
+    bytes certificate = 1;
+    // Use value for pairing otherwise finish will be refused.
+    string state = 2;
+}
+
+message FinishInitializeResponse {
 }

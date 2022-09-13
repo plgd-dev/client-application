@@ -43,35 +43,35 @@ func (s *ClientApplicationServer) signIdentityCertificateRemotely() bool {
 	return s.remoteProvisioningConfig.Mode == remoteProvisioning.Mode_UserAgent && s.serviceDevice.GetDeviceAuthenticationMode() == pb.GetConfigurationResponse_X509
 }
 
-func (s *ClientApplicationServer) UpdateIdentityCertificate(ctx context.Context, req *pb.UpdateIdentityCertificateRequest) (*pb.UpdateIdentityCertificateResponse, error) {
+func (s *ClientApplicationServer) updateIdentityCertificate(ctx context.Context, req *pb.FinishInitializeRequest) error {
 	if !s.signIdentityCertificateRemotely() {
-		return nil, status.Errorf(codes.Unimplemented, "not supported")
+		return status.Errorf(codes.Unimplemented, "not supported")
 	}
 	state, err := uuid.Parse(req.GetState())
 	if err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "cannot parse state: %v", err)
+		return status.Errorf(codes.InvalidArgument, "cannot parse state: %v", err)
 	}
 	if !s.validateState(state) {
-		return nil, status.Errorf(codes.InvalidArgument, "invalid state")
+		return status.Errorf(codes.InvalidArgument, "invalid state")
 	}
 	owner, err := grpc.OwnerFromTokenMD(ctx, s.remoteProvisioningConfig.Authorization.OwnerClaim)
 	if err != nil {
-		return nil, s.logger.LogAndReturnError(status.Errorf(codes.Unauthenticated, "cannot get owner from token: %v", err))
+		return status.Errorf(codes.Unauthenticated, "cannot get owner from token: %v", err)
 	}
 	owner = events.OwnerToUUID(owner)
-	certs, err := security.ParseX509FromPEM([]byte(req.GetCertificate()))
+	certs, err := security.ParseX509FromPEM(req.GetCertificate())
 	if err != nil {
-		return nil, s.logger.LogAndReturnError(status.Errorf(codes.InvalidArgument, "cannot parse certificate: %v", err))
+		return status.Errorf(codes.InvalidArgument, "cannot parse certificate: %v", err)
 	}
 	ident, err := coap.GetDeviceIDFromIdentityCertificate(certs[0])
 	if err != nil {
-		return nil, s.logger.LogAndReturnError(status.Errorf(codes.InvalidArgument, "cannot get owner id from certificate: %v", err))
+		return status.Errorf(codes.InvalidArgument, "cannot get owner id from certificate: %v", err)
 	}
 	if owner != ident {
-		return nil, s.logger.LogAndReturnError(status.Errorf(codes.InvalidArgument, "invalid owner id"))
+		return status.Errorf(codes.InvalidArgument, "invalid owner id")
 	}
-	if err := s.serviceDevice.SetIdentityCertificate([]byte(req.GetCertificate())); err != nil {
-		return nil, s.logger.LogAndReturnError(status.Errorf(codes.Internal, "cannot set certificate: %v", err))
+	if err := s.serviceDevice.SetIdentityCertificate(req.GetCertificate()); err != nil {
+		return status.Errorf(codes.Internal, "cannot set certificate: %v", err)
 	}
-	return &pb.UpdateIdentityCertificateResponse{}, nil
+	return nil
 }
