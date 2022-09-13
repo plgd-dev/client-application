@@ -5,6 +5,7 @@ go 1.18
 require (
 	cloud.google.com/go v0.103.0
 	github.com/fullstorydev/grpchan v1.1.1
+	github.com/golang-jwt/jwt/v4 v4.4.2
 	github.com/google/uuid v1.3.0
 	github.com/goreleaser/goreleaser v1.9.2
 	github.com/gorilla/handlers v1.5.1
@@ -12,14 +13,16 @@ require (
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.11.2
 	github.com/jellydator/ttlcache/v3 v3.0.0
 	github.com/jessevdk/go-flags v1.5.0
+	github.com/lestrrat-go/jwx v1.2.25
 	github.com/pion/dtls/v2 v2.1.5
 	github.com/plgd-dev/device v1.2.2-0.20220825094214-325917de3500
 	github.com/plgd-dev/go-coap/v2 v2.6.1-0.20220802124654-948a0bcf18a6
-	github.com/plgd-dev/hub/v2 v2.4.9-0.20220908094646-b028bdc80171
+	github.com/plgd-dev/hub/v2 v2.4.9-0.20220912165057-65f34a0aa72c
 	github.com/plgd-dev/kit/v2 v2.0.0-20211006190727-057b33161b90
 	github.com/stretchr/testify v1.8.0
 	go.opentelemetry.io/otel/trace v1.9.0
 	go.uber.org/atomic v1.10.0
+	go.uber.org/zap v1.22.0
 	google.golang.org/api v0.93.0
 	google.golang.org/grpc v1.48.0
 	google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.2.0
@@ -98,7 +101,6 @@ require (
 	github.com/go-telegram-bot-api/telegram-bot-api v4.6.4+incompatible // indirect
 	github.com/gobwas/glob v0.2.3 // indirect
 	github.com/goccy/go-json v0.9.11 // indirect
-	github.com/golang-jwt/jwt/v4 v4.4.2 // indirect
 	github.com/golang/glog v1.0.0 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
@@ -138,7 +140,6 @@ require (
 	github.com/lestrrat-go/blackmagic v1.0.1 // indirect
 	github.com/lestrrat-go/httpcc v1.0.1 // indirect
 	github.com/lestrrat-go/iter v1.0.2 // indirect
-	github.com/lestrrat-go/jwx v1.2.25 // indirect
 	github.com/lestrrat-go/option v1.0.0 // indirect
 	github.com/mattn/go-colorable v0.1.9 // indirect
 	github.com/mattn/go-ieproxy v0.0.1 // indirect
@@ -193,7 +194,6 @@ require (
 	go.opentelemetry.io/otel/sdk v1.9.0 // indirect
 	go.opentelemetry.io/proto/otlp v0.19.0 // indirect
 	go.uber.org/multierr v1.8.0 // indirect
-	go.uber.org/zap v1.22.0 // indirect
 	gocloud.dev v0.24.0 // indirect
 	golang.org/x/crypto v0.0.0-20220817201139-bc19a97f63c8 // indirect
 	golang.org/x/exp v0.0.0-20220722155223-a9213eeb770e // indirect

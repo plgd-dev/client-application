@@ -69,49 +69,70 @@ option go_package = "github.com/plgd-dev/client-application/pb;pb";
 // https://github.com/googleapis/googleapis/blob/master/google/api/http.proto
 
 service ClientApplication {
-  // Discover devices by client application. This operation fills cache of mappings deviceId to endpoints and this cache is used by other calls.
   rpc GetDevices (GetDevicesRequest) returns (stream grpcgateway.pb.Device) {
     option (google.api.http) = {
       get: "/api/v1/devices"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       tags: [ "Devices" ]
+      summary: "Discover devices by client application."
+      description: "This operation fills cache of mappings deviceId to endpoints and this cache is used by other calls."
+      security: {
+        security_requirement: {
+          key: "OAuth2";
+        }
+      }
     };
   }
 
-  // Get device information from the device. Device needs to be stored in cache otherwise it returns not found.
   rpc GetDevice (GetDeviceRequest) returns (grpcgateway.pb.Device) {
     option (google.api.http) = {
       get: "/api/v1/devices/{device_id}"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       tags: [ "Device" ]
+      summary: "Get device information from the device."
+      description: "Device needs to be stored in cache otherwise it returns not found."
+      security: {
+        security_requirement: {
+          key: "OAuth2";
+        }
+      }
     };
   }
 
-  
-  // Get resource links of devices. Device needs to be stored in cache otherwise it returns not found.
   rpc GetDeviceResourceLinks(GetDeviceResourceLinksRequest) returns (resourceaggregate.pb.ResourceLinksPublished) {
     option (google.api.http) = {
       get: "/api/v1/devices/{device_id}/resource-links"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       tags: [ "Device" ]
+      summary: "Get resource links of the device."
+      description: "Device needs to be stored in cache otherwise it returns not found."
+      security: {
+        security_requirement: {
+          key: "OAuth2";
+        }
+      }
     };
   }
   
-
-  // Get a resource from the device. Device needs to be stored in cache otherwise it returns not found.
   rpc GetResource(GetResourceRequest) returns (grpcgateway.pb.Resource) {
     option (google.api.http) = {
       get: "/api/v1/devices/{resource_id.device_id}/resources/{resource_id.href=**}"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       tags: [ "Resource" ]
+      summary: "Get a resource from the device."
+      description: "Device needs to be stored in cache otherwise it returns not found."
+      security: {
+        security_requirement: {
+          key: "OAuth2";
+        }
+      }
     };
   }
 
-  // Update a resource at the device. Device needs to be stored in cache otherwise it returns not found.
   rpc UpdateResource(UpdateResourceRequest) returns (grpcgateway.pb.UpdateResourceResponse) {
     option (google.api.http) = {
       put: "/api/v1/devices/{resource_id.device_id}/resources/{resource_id.href=**}"
@@ -119,10 +140,16 @@ service ClientApplication {
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       tags: [ "Resource" ]
+      summary: "Update a resource at the device."
+      description: "Device needs to be stored in cache otherwise it returns not found."
+      security: {
+        security_requirement: {
+          key: "OAuth2";
+        }
+      }
     };
   }
 
-  // Create a resource at the device. Device needs to be stored in cache otherwise it returns not found.
   rpc CreateResource(CreateResourceRequest) returns (grpcgateway.pb.CreateResourceResponse) {
     option (google.api.http) = {
       post: "/api/v1/devices/{resource_id.device_id}/resource-links/{resource_id.href=**}"
@@ -130,26 +157,32 @@ service ClientApplication {
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       tags: [ "Resource" ]
+      summary: "Create a resource at the device."
+      description: "Device needs to be stored in cache otherwise it returns not found."
+      security: {
+        security_requirement: {
+          key: "OAuth2";
+        }
+      }
     };
   }
 
-  // Delete a resource at the device. Device needs to be stored in cache otherwise it returns not found.
   rpc DeleteResource(DeleteResourceRequest) returns (grpcgateway.pb.DeleteResourceResponse) {
     option (google.api.http) = {
       delete: "/api/v1/devices/{resource_id.device_id}/resource-links/{resource_id.href=**}"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       tags: [ "Resource" ]
+      summary: "Delete a resource at the device."
+      description: "Device needs to be stored in cache otherwise it returns not found."
+      security: {
+        security_requirement: {
+          key: "OAuth2";
+        }
+      }
     };
   }
 
-  // Own the device. When GetConfigurationResponse.device_authentication_mode == X509 and
-  // GetConfigurationResponse.remote_provisioning.mode == USER_AGENT the own need to called twice:
-  //  - in first call own returns identity CSR of the device which need to be signed by certificate authority
-  //  - in second call own user provides signed identity certificate to the device.option
-  // Look to own.plantuml for flows.
-  //
-  // NOTE: Device needs to be stored in cache otherwise it returns not found.
   rpc OwnDevice(OwnDeviceRequest) returns (OwnDeviceResponse) {
     option (google.api.http) = {
       post: "/api/v1/devices/{device_id}/own"
@@ -157,54 +190,69 @@ service ClientApplication {
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       tags: [ "Device" ]
+      summary: "Own the device."
+      description: "When GetConfigurationResponse.device_authentication_mode == X509 and GetConfigurationResponse.remote_provisioning.mode == USER_AGENT the own need to be called twice:\n - in first call own returns identity CSR of the device which need to be signed by certificate authority\n - in second call own user provides signed identity certificate to the device.option\nLook to own.plantuml for flows."
+      security: {
+        security_requirement: {
+          key: "OAuth2";
+        }
+      }
     };
   }
 
-  // Disown the device. Device needs to be stored in cache otherwise it returns not found.
   rpc DisownDevice(DisownDeviceRequest) returns (DisownDeviceResponse) {
     option (google.api.http) = {
       post: "/api/v1/devices/{device_id}/disown"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       tags: [ "Device" ]
+      summary: "Disown the device."
+      description: "Device needs to be stored in cache otherwise it returns not found."
+      security: {
+        security_requirement: {
+          key: "OAuth2";
+        }
+      }
     };
   }
 
-  // Deletes all devices from the cache. To fill the cache again, call GetDevices.
   rpc ClearCache(ClearCacheRequest) returns (ClearCacheResponse) {
     option (google.api.http) = {
       delete: "/api/v1/devices"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       tags: [ "Devices" ]
+      summary: "Deletes all devices from the cache."
+      description: "To fill the cache again, call GetDevices."
+      security: {
+        security_requirement: {
+          key: "OAuth2";
+        }
+      }
     };
   }
 
-  // Provides configuration for clients of client application.
   rpc GetConfiguration(GetConfigurationRequest) returns (GetConfigurationResponse) {
     option (google.api.http) = {
       get: "/.well-known/configuration"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       tags: [ "client-application" ]
+      summary: "Provides configuration for clients of client application."
     };
   }
 
-  // Get jwks.json.
-  // Available only when GetConfigurationResponse.device_authentication_mode == X509 and
-  // GetConfigurationResponse.remote_provisioning.mode == USER_AGENT.
   rpc GetJSONWebKeys(GetJSONWebKeysRequest) returns (google.protobuf.Struct) {
     option (google.api.http) = {
       get: "/.well-known/jwks.json"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       tags: [ "client-application" ]
+      summary: "Get jwks.json."
+      description: "Available only when GetConfigurationResponse.device_authentication_mode == X509 and GetConfigurationResponse.remote_provisioning.mode == USER_AGENT."
     };
   }
 
-  // Update jwks.json.
-  // Available only when GetConfigurationResponse.device_authentication_mode == X509 and
-  // GetConfigurationResponse.remote_provisioning.mode == USER_AGENT.
   rpc UpdateJSONWebKeys(UpdateJSONWebKeysRequest) returns (UpdateJSONWebKeysResponse) {
     option (google.api.http) = {
       post: "/.well-known/jwks.json"
@@ -212,25 +260,32 @@ service ClientApplication {
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       tags: [ "client-application" ]
+      summary: "Update jwks.json."
+      description: "Available only when GetConfigurationResponse.device_authentication_mode == X509 and GetConfigurationResponse.remote_provisioning.mode == USER_AGENT."
+      security: {
+        security_requirement: {
+          key: "OAuth2";
+        }
+      }
     };
   }
 
-
-  // Get identity CSR from the client application for creating a new identity certificate.
-  // Available only when GetConfigurationResponse.device_authentication_mode == X509 and
-  // GetConfigurationResponse.remote_provisioning.mode == USER_AGENT.
   rpc GetIdentityCSR(GetIdentityCSRRequest) returns (GetIdentityCSRResponse) {
     option (google.api.http) = {
       get: "/api/v1/identity/csr"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       tags: [ "client-application" ]
+      summary: "Get identity CSR from the client application for creating a new identity certificate."
+      description: "Available only when GetConfigurationResponse.device_authentication_mode == X509 and GetConfigurationResponse.remote_provisioning.mode == USER_AGENT."
+      security: {
+        security_requirement: {
+          key: "OAuth2";
+        }
+      }
     };
   }
 
-  // Set or update identity certificate for the client application.
-  // It is available only when GetConfigurationResponse.device_authentication_mode == X509 and
-  // GetConfigurationResponse.remote_provisioning.mode == USER_AGENT.
   rpc UpdateIdentityCertificate(UpdateIdentityCertificateRequest) returns (UpdateIdentityCertificateResponse) {
     option (google.api.http) = {
       post: "/api/v1/identity/certificate"
@@ -238,34 +293,49 @@ service ClientApplication {
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       tags: [ "client-application" ]
+      summary: "Set or update identity certificate for the client application."
+      description: "Available only when GetConfigurationResponse.device_authentication_mode == X509 and GetConfigurationResponse.remote_provisioning.mode == USER_AGENT."
+      security: {
+        security_requirement: {
+          key: "OAuth2";
+        }
+      }
     };
   }
 
-  // Get identity certificate of the client application.
-  // It is available only when GetConfigurationResponse.device_authentication_mode == X509 and
-  // GetConfigurationResponse.remote_provisioning.mode == USER_AGENT.
   rpc GetIdentityCertificate(GetIdentityCertificateRequest) returns (GetIdentityCertificateResponse) {
     option (google.api.http) = {
       get: "/api/v1/identity/certificate"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       tags: [ "client-application" ]
+      summary: "Get identity certificate of the client application."
+      description: "Available only when GetConfigurationResponse.device_authentication_mode == X509 and GetConfigurationResponse.remote_provisioning.mode == USER_AGENT."
+      security: {
+        security_requirement: {
+          key: "OAuth2";
+        }
+      }
     };
   }
 
-   // Initialize application when GetConfiguration.is_nitialized is set to false.
-   // Look to initialize.plantuml for flows.
-   rpc Initialize(InitializeRequest) returns (InitializeResponse) {
+  rpc Initialize(InitializeRequest) returns (InitializeResponse) {
     option (google.api.http) = {
       post: "/api/v1/initialize"
       body: "*"
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       tags: [ "client-application" ]
+      summary: "Initialize application when GetConfiguration.is_nitialized is set to false."
+      description: "Look to initialize.plantuml for flows."
+      security: {
+        security_requirement: {
+          key: "OAuth2";
+        }
+      }
     };
   }
 
-  // Flushes identity certificate, private key, device cache and jwks.json.
   rpc Reset(ResetRequest) returns (ResetResponse) {
     option (google.api.http) = {
       post: "/api/v1/reset"
@@ -273,6 +343,12 @@ service ClientApplication {
     };
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       tags: [ "client-application" ]
+      summary: "Flushes identity certificate, private key, device cache and jwks.json."
+      security: {
+        security_requirement: {
+          key: "OAuth2";
+        }
+      }
     };
   }
 

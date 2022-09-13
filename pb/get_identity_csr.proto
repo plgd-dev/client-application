@@ -20,7 +20,6 @@ package service.pb;
 
 option go_package = "github.com/plgd-dev/client-application/pb;pb";
 
-// JWT token must be used for extraction owner id.
 message GetIdentityCSRRequest {}
 
 message GetIdentityCSRResponse {

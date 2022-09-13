@@ -2,19 +2,28 @@
 skinparam backgroundColor transparent
 hide footbox
 
-participant C as "client"
-participant S as "client application"
-participant CA as "certificate authority"
+box "D2D Client"
+participant C as "Web App"
+participant S as "Service"
+end box
 
-alt #LightBlue GetConfiguration.device_authentication_mode == X509 && remote_provisioning.mode == USER_AGENT
-  C -> S: Own device (get_identity_certificate.timeout is optional)
-  return Identity CSR and state
-  C-> CA: Sign identity CSR with token
+box "plgd hub"
+participant CA as "Certificate Authority"
+end box
+
+alt GetConfiguration.device_authentication_mode == X509 && remote_provisioning.mode == USER_AGENT
+  
+  C -> S++: Own device (get_identity_certificate.timeout is optional)
+  activate C
+  S -> C: Identity CSR and state
+  C -> CA ++: Sign identity CSR with token
   return Identity Certificate
   C -> S: Own device with set_identity_certificate.{certificate,state}
   return
-else #Cyan
-  C -> S: Own device
+  deactivate S
+  deactivate C
+else
+  C -> S ++: Own device
   return
 end
 @enduml

@@ -21,58 +21,23 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ClientApplicationClient interface {
-	// Discover devices by client application. This operation fills cache of mappings deviceId to endpoints and this cache is used by other calls.
 	GetDevices(ctx context.Context, in *GetDevicesRequest, opts ...grpc.CallOption) (ClientApplication_GetDevicesClient, error)
-	// Get device information from the device. Device needs to be stored in cache otherwise it returns not found.
 	GetDevice(ctx context.Context, in *GetDeviceRequest, opts ...grpc.CallOption) (*pb.Device, error)
-	// Get resource links of devices. Device needs to be stored in cache otherwise it returns not found.
 	GetDeviceResourceLinks(ctx context.Context, in *GetDeviceResourceLinksRequest, opts ...grpc.CallOption) (*events.ResourceLinksPublished, error)
-	// Get a resource from the device. Device needs to be stored in cache otherwise it returns not found.
 	GetResource(ctx context.Context, in *GetResourceRequest, opts ...grpc.CallOption) (*pb.Resource, error)
-	// Update a resource at the device. Device needs to be stored in cache otherwise it returns not found.
 	UpdateResource(ctx context.Context, in *UpdateResourceRequest, opts ...grpc.CallOption) (*pb.UpdateResourceResponse, error)
-	// Create a resource at the device. Device needs to be stored in cache otherwise it returns not found.
 	CreateResource(ctx context.Context, in *CreateResourceRequest, opts ...grpc.CallOption) (*pb.CreateResourceResponse, error)
-	// Delete a resource at the device. Device needs to be stored in cache otherwise it returns not found.
 	DeleteResource(ctx context.Context, in *DeleteResourceRequest, opts ...grpc.CallOption) (*pb.DeleteResourceResponse, error)
-	// Own the device. When GetConfigurationResponse.device_authentication_mode == X509 and
-	// GetConfigurationResponse.remote_provisioning.mode == USER_AGENT the own need to called twice:
-	//  - in first call own returns identity CSR of the device which need to be signed by certificate authority
-	//  - in second call own user provides signed identity certificate to the device.option
-	// Look to own.plantuml for flows.
-	//
-	// NOTE: Device needs to be stored in cache otherwise it returns not found.
 	OwnDevice(ctx context.Context, in *OwnDeviceRequest, opts ...grpc.CallOption) (*OwnDeviceResponse, error)
-	// Disown the device. Device needs to be stored in cache otherwise it returns not found.
 	DisownDevice(ctx context.Context, in *DisownDeviceRequest, opts ...grpc.CallOption) (*DisownDeviceResponse, error)
-	// Deletes all devices from the cache. To fill the cache again, call GetDevices.
 	ClearCache(ctx context.Context, in *ClearCacheRequest, opts ...grpc.CallOption) (*ClearCacheResponse, error)
-	// Provides configuration for clients of client application.
 	GetConfiguration(ctx context.Context, in *GetConfigurationRequest, opts ...grpc.CallOption) (*GetConfigurationResponse, error)
-	// Get jwks.json.
-	// Available only when GetConfigurationResponse.device_authentication_mode == X509 and
-	// GetConfigurationResponse.remote_provisioning.mode == USER_AGENT.
 	GetJSONWebKeys(ctx context.Context, in *GetJSONWebKeysRequest, opts ...grpc.CallOption) (*structpb.Struct, error)
-	// Update jwks.json.
-	// Available only when GetConfigurationResponse.device_authentication_mode == X509 and
-	// GetConfigurationResponse.remote_provisioning.mode == USER_AGENT.
 	UpdateJSONWebKeys(ctx context.Context, in *UpdateJSONWebKeysRequest, opts ...grpc.CallOption) (*UpdateJSONWebKeysResponse, error)
-	// Get identity CSR from the client application for creating a new identity certificate.
-	// Available only when GetConfigurationResponse.device_authentication_mode == X509 and
-	// GetConfigurationResponse.remote_provisioning.mode == USER_AGENT.
 	GetIdentityCSR(ctx context.Context, in *GetIdentityCSRRequest, opts ...grpc.CallOption) (*GetIdentityCSRResponse, error)
-	// Set or update identity certificate for the client application.
-	// It is available only when GetConfigurationResponse.device_authentication_mode == X509 and
-	// GetConfigurationResponse.remote_provisioning.mode == USER_AGENT.
 	UpdateIdentityCertificate(ctx context.Context, in *UpdateIdentityCertificateRequest, opts ...grpc.CallOption) (*UpdateIdentityCertificateResponse, error)
-	// Get identity certificate of the client application.
-	// It is available only when GetConfigurationResponse.device_authentication_mode == X509 and
-	// GetConfigurationResponse.remote_provisioning.mode == USER_AGENT.
 	GetIdentityCertificate(ctx context.Context, in *GetIdentityCertificateRequest, opts ...grpc.CallOption) (*GetIdentityCertificateResponse, error)
-	// Initialize application when GetConfiguration.is_nitialized is set to false.
-	// Look to initialize.plantuml for flows.
 	Initialize(ctx context.Context, in *InitializeRequest, opts ...grpc.CallOption) (*InitializeResponse, error)
-	// Flushes identity certificate, private key, device cache and jwks.json.
 	Reset(ctx context.Context, in *ResetRequest, opts ...grpc.CallOption) (*ResetResponse, error)
 }
 
@@ -273,58 +238,23 @@ func (c *clientApplicationClient) Reset(ctx context.Context, in *ResetRequest, o
 // All implementations must embed UnimplementedClientApplicationServer
 // for forward compatibility
 type ClientApplicationServer interface {
-	// Discover devices by client application. This operation fills cache of mappings deviceId to endpoints and this cache is used by other calls.
 	GetDevices(*GetDevicesRequest, ClientApplication_GetDevicesServer) error
-	// Get device information from the device. Device needs to be stored in cache otherwise it returns not found.
 	GetDevice(context.Context, *GetDeviceRequest) (*pb.Device, error)
-	// Get resource links of devices. Device needs to be stored in cache otherwise it returns not found.
 	GetDeviceResourceLinks(context.Context, *GetDeviceResourceLinksRequest) (*events.ResourceLinksPublished, error)
-	// Get a resource from the device. Device needs to be stored in cache otherwise it returns not found.
 	GetResource(context.Context, *GetResourceRequest) (*pb.Resource, error)
-	// Update a resource at the device. Device needs to be stored in cache otherwise it returns not found.
 	UpdateResource(context.Context, *UpdateResourceRequest) (*pb.UpdateResourceResponse, error)
-	// Create a resource at the device. Device needs to be stored in cache otherwise it returns not found.
 	CreateResource(context.Context, *CreateResourceRequest) (*pb.CreateResourceResponse, error)
-	// Delete a resource at the device. Device needs to be stored in cache otherwise it returns not found.
 	DeleteResource(context.Context, *DeleteResourceRequest) (*pb.DeleteResourceResponse, error)
-	// Own the device. When GetConfigurationResponse.device_authentication_mode == X509 and
-	// GetConfigurationResponse.remote_provisioning.mode == USER_AGENT the own need to called twice:
-	//  - in first call own returns identity CSR of the device which need to be signed by certificate authority
-	//  - in second call own user provides signed identity certificate to the device.option
-	// Look to own.plantuml for flows.
-	//
-	// NOTE: Device needs to be stored in cache otherwise it returns not found.
 	OwnDevice(context.Context, *OwnDeviceRequest) (*OwnDeviceResponse, error)
-	// Disown the device. Device needs to be stored in cache otherwise it returns not found.
 	DisownDevice(context.Context, *DisownDeviceRequest) (*DisownDeviceResponse, error)
-	// Deletes all devices from the cache. To fill the cache again, call GetDevices.
 	ClearCache(context.Context, *ClearCacheRequest) (*ClearCacheResponse, error)
-	// Provides configuration for clients of client application.
 	GetConfiguration(context.Context, *GetConfigurationRequest) (*GetConfigurationResponse, error)
-	// Get jwks.json.
-	// Available only when GetConfigurationResponse.device_authentication_mode == X509 and
-	// GetConfigurationResponse.remote_provisioning.mode == USER_AGENT.
 	GetJSONWebKeys(context.Context, *GetJSONWebKeysRequest) (*structpb.Struct, error)
-	// Update jwks.json.
-	// Available only when GetConfigurationResponse.device_authentication_mode == X509 and
-	// GetConfigurationResponse.remote_provisioning.mode == USER_AGENT.
 	UpdateJSONWebKeys(context.Context, *UpdateJSONWebKeysRequest) (*UpdateJSONWebKeysResponse, error)
-	// Get identity CSR from the client application for creating a new identity certificate.
-	// Available only when GetConfigurationResponse.device_authentication_mode == X509 and
-	// GetConfigurationResponse.remote_provisioning.mode == USER_AGENT.
 	GetIdentityCSR(context.Context, *GetIdentityCSRRequest) (*GetIdentityCSRResponse, error)
-	// Set or update identity certificate for the client application.
-	// It is available only when GetConfigurationResponse.device_authentication_mode == X509 and
-	// GetConfigurationResponse.remote_provisioning.mode == USER_AGENT.
 	UpdateIdentityCertificate(context.Context, *UpdateIdentityCertificateRequest) (*UpdateIdentityCertificateResponse, error)
-	// Get identity certificate of the client application.
-	// It is available only when GetConfigurationResponse.device_authentication_mode == X509 and
-	// GetConfigurationResponse.remote_provisioning.mode == USER_AGENT.
 	GetIdentityCertificate(context.Context, *GetIdentityCertificateRequest) (*GetIdentityCertificateResponse, error)
-	// Initialize application when GetConfiguration.is_nitialized is set to false.
-	// Look to initialize.plantuml for flows.
 	Initialize(context.Context, *InitializeRequest) (*InitializeResponse, error)
-	// Flushes identity certificate, private key, device cache and jwks.json.
 	Reset(context.Context, *ResetRequest) (*ResetResponse, error)
 	mustEmbedUnimplementedClientApplicationServer()
 }

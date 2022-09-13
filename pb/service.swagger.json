@@ -55,7 +55,8 @@
     },
     "/.well-known/jwks.json": {
       "get": {
-        "summary": "Get jwks.json.\nAvailable only when GetConfigurationResponse.device_authentication_mode == X509 and\nGetConfigurationResponse.remote_provisioning.mode == USER_AGENT.",
+        "summary": "Get jwks.json.",
+        "description": "Available only when GetConfigurationResponse.device_authentication_mode == X509 and GetConfigurationResponse.remote_provisioning.mode == USER_AGENT.",
         "operationId": "ClientApplication_GetJSONWebKeys",
         "responses": {
           "200": {
@@ -76,7 +77,8 @@
         ]
       },
       "post": {
-        "summary": "Update jwks.json.\nAvailable only when GetConfigurationResponse.device_authentication_mode == X509 and\nGetConfigurationResponse.remote_provisioning.mode == USER_AGENT.",
+        "summary": "Update jwks.json.",
+        "description": "Available only when GetConfigurationResponse.device_authentication_mode == X509 and GetConfigurationResponse.remote_provisioning.mode == USER_AGENT.",
         "operationId": "ClientApplication_UpdateJSONWebKeys",
         "responses": {
           "200": {
@@ -94,7 +96,7 @@
         },
         "parameters": [
           {
-            "name": "body",
+            "name": "jwks",
             "in": "body",
             "required": true,
             "schema": {
@@ -104,12 +106,18 @@
         ],
         "tags": [
           "client-application"
+        ],
+        "security": [
+          {
+            "OAuth2": []
+          }
         ]
       }
     },
     "/api/v1/devices": {
       "get": {
-        "summary": "Discover devices by client application. This operation fills cache of mappings deviceId to endpoints and this cache is used by other calls.",
+        "summary": "Discover devices by client application.",
+        "description": "This operation fills cache of mappings deviceId to endpoints and this cache is used by other calls.",
         "operationId": "ClientApplication_GetDevices",
         "responses": {
           "200": {
@@ -159,7 +167,7 @@
           },
           {
             "name": "useEndpoints",
-            "description": "Returns devices via endpoints. Default: [] - filter is disabled. New devices will be added to cache. Not reachable devices will be not in response.\nEndpoint can be in format:\n- \u003chost\u003e:\u003cport\u003e is interpreted as coap://\u003chost\u003e:\u003cport\u003e\n- \u003chost\u003e is interpreted as coap://\u003chost\u003e:5683.",
+            "description": "Returns devices via endpoints. Default: [] - filter is disabled. New devices will be added to cache. Not reachable devices will be not in response.\nEndpoint can be in format:\n- \u003chost\u003e:\u003cport\u003e is interpreted as coap://\u003chost\u003e:\u003cport\u003e\n- \u003chost\u003e is interpreted as coap://\u003chost\u003e:5683",
             "in": "query",
             "required": false,
             "type": "array",
@@ -205,10 +213,16 @@
         ],
         "tags": [
           "Devices"
+        ],
+        "security": [
+          {
+            "OAuth2": []
+          }
         ]
       },
       "delete": {
-        "summary": "Deletes all devices from the cache. To fill the cache again, call GetDevices.",
+        "summary": "Deletes all devices from the cache.",
+        "description": "To fill the cache again, call GetDevices.",
         "operationId": "ClientApplication_ClearCache",
         "responses": {
           "200": {
@@ -226,12 +240,18 @@
         },
         "tags": [
           "Devices"
+        ],
+        "security": [
+          {
+            "OAuth2": []
+          }
         ]
       }
     },
     "/api/v1/devices/{deviceId}": {
       "get": {
-        "summary": "Get device information from the device. Device needs to be stored in cache otherwise it returns not found.",
+        "summary": "Get device information from the device.",
+        "description": "Device needs to be stored in cache otherwise it returns not found.",
         "operationId": "ClientApplication_GetDevice",
         "responses": {
           "200": {
@@ -257,12 +277,18 @@
         ],
         "tags": [
           "Device"
+        ],
+        "security": [
+          {
+            "OAuth2": []
+          }
         ]
       }
     },
     "/api/v1/devices/{deviceId}/disown": {
       "post": {
-        "summary": "Disown the device. Device needs to be stored in cache otherwise it returns not found.",
+        "summary": "Disown the device.",
+        "description": "Device needs to be stored in cache otherwise it returns not found.",
         "operationId": "ClientApplication_DisownDevice",
         "responses": {
           "200": {
@@ -288,13 +314,18 @@
         ],
         "tags": [
           "Device"
+        ],
+        "security": [
+          {
+            "OAuth2": []
+          }
         ]
       }
     },
     "/api/v1/devices/{deviceId}/own": {
       "post": {
-        "summary": "Own the device. When GetConfigurationResponse.device_authentication_mode == X509 and\nGetConfigurationResponse.remote_provisioning.mode == USER_AGENT the own need to called twice:\n - in first call own returns identity CSR of the device which need to be signed by certificate authority\n - in second call own user provides signed identity certificate to the device.option\nLook to own.plantuml for flows.",
-        "description": "NOTE: Device needs to be stored in cache otherwise it returns not found.",
+        "summary": "Own the device.",
+        "description": "When GetConfigurationResponse.device_authentication_mode == X509 and GetConfigurationResponse.remote_provisioning.mode == USER_AGENT the own need to be called twice:\n - in first call own returns identity CSR of the device which need to be signed by certificate authority\n - in second call own user provides signed identity certificate to the device.option\nLook to own.plantuml for flows.",
         "operationId": "ClientApplication_OwnDevice",
         "responses": {
           "200": {
@@ -338,12 +369,18 @@
         ],
         "tags": [
           "Device"
+        ],
+        "security": [
+          {
+            "OAuth2": []
+          }
         ]
       }
     },
     "/api/v1/devices/{deviceId}/resource-links": {
       "get": {
-        "summary": "Get resource links of devices. Device needs to be stored in cache otherwise it returns not found.",
+        "summary": "Get resource links of the device.",
+        "description": "Device needs to be stored in cache otherwise it returns not found.",
         "operationId": "ClientApplication_GetDeviceResourceLinks",
         "responses": {
           "200": {
@@ -369,12 +406,18 @@
         ],
         "tags": [
           "Device"
+        ],
+        "security": [
+          {
+            "OAuth2": []
+          }
         ]
       }
     },
     "/api/v1/devices/{resourceId.deviceId}/resource-links/{resourceId.href}": {
       "delete": {
-        "summary": "Delete a resource at the device. Device needs to be stored in cache otherwise it returns not found.",
+        "summary": "Delete a resource at the device.",
+        "description": "Device needs to be stored in cache otherwise it returns not found.",
         "operationId": "ClientApplication_DeleteResource",
         "responses": {
           "200": {
@@ -401,15 +444,22 @@
             "name": "resourceId.href",
             "in": "path",
             "required": true,
-            "type": "string"
+            "type": "string",
+            "pattern": ".+"
           }
         ],
         "tags": [
           "Resource"
+        ],
+        "security": [
+          {
+            "OAuth2": []
+          }
         ]
       },
       "post": {
-        "summary": "Create a resource at the device. Device needs to be stored in cache otherwise it returns not found.",
+        "summary": "Create a resource at the device.",
+        "description": "Device needs to be stored in cache otherwise it returns not found.",
         "operationId": "ClientApplication_CreateResource",
         "responses": {
           "200": {
@@ -436,10 +486,11 @@
             "name": "resourceId.href",
             "in": "path",
             "required": true,
-            "type": "string"
+            "type": "string",
+            "pattern": ".+"
           },
           {
-            "name": "body",
+            "name": "content",
             "in": "body",
             "required": true,
             "schema": {
@@ -449,12 +500,18 @@
         ],
         "tags": [
           "Resource"
+        ],
+        "security": [
+          {
+            "OAuth2": []
+          }
         ]
       }
     },
     "/api/v1/devices/{resourceId.deviceId}/resources/{resourceId.href}": {
       "get": {
-        "summary": "Get a resource from the device. Device needs to be stored in cache otherwise it returns not found.",
+        "summary": "Get a resource from the device.",
+        "description": "Device needs to be stored in cache otherwise it returns not found.",
         "operationId": "ClientApplication_GetResource",
         "responses": {
           "200": {
@@ -481,15 +538,22 @@
             "name": "resourceId.href",
             "in": "path",
             "required": true,
-            "type": "string"
+            "type": "string",
+            "pattern": ".+"
           }
         ],
         "tags": [
           "Resource"
+        ],
+        "security": [
+          {
+            "OAuth2": []
+          }
         ]
       },
       "put": {
-        "summary": "Update a resource at the device. Device needs to be stored in cache otherwise it returns not found.",
+        "summary": "Update a resource at the device.",
+        "description": "Device needs to be stored in cache otherwise it returns not found.",
         "operationId": "ClientApplication_UpdateResource",
         "responses": {
           "200": {
@@ -516,10 +580,11 @@
             "name": "resourceId.href",
             "in": "path",
             "required": true,
-            "type": "string"
+            "type": "string",
+            "pattern": ".+"
           },
           {
-            "name": "body",
+            "name": "content",
             "in": "body",
             "required": true,
             "schema": {
@@ -529,12 +594,18 @@
         ],
         "tags": [
           "Resource"
+        ],
+        "security": [
+          {
+            "OAuth2": []
+          }
         ]
       }
     },
     "/api/v1/identity/certificate": {
       "get": {
-        "summary": "Get identity certificate of the client application.\nIt is available only when GetConfigurationResponse.device_authentication_mode == X509 and\nGetConfigurationResponse.remote_provisioning.mode == USER_AGENT.",
+        "summary": "Get identity certificate of the client application.",
+        "description": "Available only when GetConfigurationResponse.device_authentication_mode == X509 and GetConfigurationResponse.remote_provisioning.mode == USER_AGENT.",
         "operationId": "ClientApplication_GetIdentityCertificate",
         "responses": {
           "200": {
@@ -552,10 +623,16 @@
         },
         "tags": [
           "client-application"
+        ],
+        "security": [
+          {
+            "OAuth2": []
+          }
         ]
       },
       "post": {
-        "summary": "Set or update identity certificate for the client application.\nIt is available only when GetConfigurationResponse.device_authentication_mode == X509 and\nGetConfigurationResponse.remote_provisioning.mode == USER_AGENT.",
+        "summary": "Set or update identity certificate for the client application.",
+        "description": "Available only when GetConfigurationResponse.device_authentication_mode == X509 and GetConfigurationResponse.remote_provisioning.mode == USER_AGENT.",
         "operationId": "ClientApplication_UpdateIdentityCertificate",
         "responses": {
           "200": {
@@ -583,12 +660,18 @@
         ],
         "tags": [
           "client-application"
+        ],
+        "security": [
+          {
+            "OAuth2": []
+          }
         ]
       }
     },
     "/api/v1/identity/csr": {
       "get": {
-        "summary": "Get identity CSR from the client application for creating a new identity certificate.\nAvailable only when GetConfigurationResponse.device_authentication_mode == X509 and\nGetConfigurationResponse.remote_provisioning.mode == USER_AGENT.",
+        "summary": "Get identity CSR from the client application for creating a new identity certificate.",
+        "description": "Available only when GetConfigurationResponse.device_authentication_mode == X509 and GetConfigurationResponse.remote_provisioning.mode == USER_AGENT.",
         "operationId": "ClientApplication_GetIdentityCSR",
         "responses": {
           "200": {
@@ -606,12 +689,18 @@
         },
         "tags": [
           "client-application"
+        ],
+        "security": [
+          {
+            "OAuth2": []
+          }
         ]
       }
     },
     "/api/v1/initialize": {
       "post": {
-        "summary": "Initialize application when GetConfiguration.is_nitialized is set to false.\nLook to initialize.plantuml for flows.",
+        "summary": "Initialize application when GetConfiguration.is_nitialized is set to false.",
+        "description": "Look to initialize.plantuml for flows.",
         "operationId": "ClientApplication_Initialize",
         "responses": {
           "200": {
@@ -639,6 +728,11 @@
         ],
         "tags": [
           "client-application"
+        ],
+        "security": [
+          {
+            "OAuth2": []
+          }
         ]
       }
     },
@@ -672,6 +766,11 @@
         ],
         "tags": [
           "client-application"
+        ],
+        "security": [
+          {
+            "OAuth2": []
+          }
         ]
       }
     }
@@ -1250,8 +1349,7 @@
           "type": "string",
           "description": "Use value GetIdentityCSRResponse.state for pairing otherwise update will be refused."
         }
-      },
-      "description": "JWT token must be used for extraction owner id."
+      }
     },
     "pbUpdateIdentityCertificateResponse": {
       "type": "object"
@@ -1274,14 +1372,11 @@
     "protobufAny": {
       "type": "object",
       "properties": {
-        "typeUrl": {
+        "@type": {
           "type": "string"
-        },
-        "value": {
-          "type": "string",
-          "format": "byte"
         }
-      }
+      },
+      "additionalProperties": {}
     },
     "protobufNullValue": {
       "type": "string",

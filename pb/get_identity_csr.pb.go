@@ -36,7 +36,6 @@ const (
 	_ = protoimpl.EnforceVersion(protoimpl.MaxVersion - 20)
 )
 
-// JWT token must be used for extraction owner id.
 type GetIdentityCSRRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache

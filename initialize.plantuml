@@ -2,10 +2,15 @@
 skinparam backgroundColor transparent
 hide footbox
 
-participant C as "client"
-participant S as "client application"
-participant O as "oauth server"
-participant CA as "certificate authority"
+box "D2D Client"
+participant C as "Web App"
+participant S as "Service"
+end box
+
+box "plgd hub"
+participant O as "OAuth 2.0 Server"
+participant CA as "Certificate Authority"
+end box
 
 C -> S: GetConfiguration
 return
@@ -15,14 +20,16 @@ alt #GetConfiguration.device_authentication_mode == PRE_SHARED_KEY
       Client application is initialized.
       end note
   else Pink false
-      C -> S: Initialize with preshared key
+      C -> S ++: Initialize with preshared key
+      activate C
       return
       note over S #aqua
       Client application is initialized.
       end note
+      deactivate C
   end
 else X509
-    C -> O: Authenticate user
+    C -> O ++: Authenticate user
     return JWT token 
     alt #GetConfiguration.is_initialized == true
       note over S #aqua
@@ -30,25 +37,29 @@ else X509
     end note
     else false
         alt #GetConfiguration.remote_provisioning.mode == SELF
-          C -> S: Initialize with empty body and token
+          C -> S ++: Initialize with empty body and token
+          activate C
           return
           note over S #aqua
           Client application is initialized.
           end note
+          deactivate C
         else USER_AGENT
-          C -> O: Get JWKS
+          C -> O ++: Get JWKS
+          activate C
           return jwks
-          C -> S: Update JWKS with token and jwks from oauth server
+          C -> S ++: Update JWKS with token and jwks from oauth server
           return
-          C -> S: Get identity CSR with token
+          C -> S ++: Get identity CSR with token
           return CSR and state
-          C-> CA: Sign identity CSR with token
+          C-> CA ++: Sign identity CSR with token
           return Certificate
-          C -> S: Initialize with token, state, and identity certificate
+          C -> S ++: Initialize with token, state, and identity certificate
           return
           note over S #aqua
           Client application is initialized.
           end note
+          deactivate C
         end
     end
 end
