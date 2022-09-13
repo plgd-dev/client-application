@@ -121,7 +121,7 @@ func newRemoteSign(timeout time.Duration) *remoteSign {
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	return &remoteSign{
 		state:               uuid.New(),
-		errChan:             make(chan error, 1),
+		errChan:             make(chan error, 10),
 		getCSRChan:          make(chan []byte),
 		certificateSignChan: make(chan []byte),
 		cancel:              cancel,
@@ -210,7 +210,7 @@ func (s *ClientApplicationServer) OwnDevice(ctx context.Context, req *pb.OwnDevi
 
 func (s *ClientApplicationServer) FinishOwnDevice(ctx context.Context, req *pb.FinishOwnDeviceRequest) (*pb.FinishOwnDeviceResponse, error) {
 	if !s.signIdentityCertificateRemotely() {
-		return nil, status.Errorf(codes.InvalidArgument, "initialize with certificate is disabled")
+		return nil, status.Errorf(codes.Unimplemented, "initialize with certificate is disabled")
 	}
 	devID, err := strDeviceID2UUID(req.GetDeviceId())
 	if err != nil {

@@ -23,15 +23,19 @@ import (
 	"github.com/plgd-dev/client-application/pb"
 	"github.com/plgd-dev/hub/v2/pkg/net/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 func (s *ClientApplicationServer) GetIdentityCertificate(ctx context.Context, req *pb.GetIdentityCertificateRequest) (*pb.GetIdentityCertificateResponse, error) {
+	if !s.signIdentityCertificateRemotely() {
+		return nil, status.Errorf(codes.Unimplemented, "initialize with certificate is disabled")
+	}
 	tls, err := s.serviceDevice.GetIdentityCertificate()
 	if err != nil {
-		return nil, grpc.ForwardErrorf(codes.Unimplemented, "cannot get identity certificate %v", err)
+		return nil, grpc.ForwardErrorf(codes.Unavailable, "cannot get identity certificate %v", err)
 	}
 	if len(tls.Certificate) == 0 {
-		return nil, grpc.ForwardErrorf(codes.Unimplemented, "cannot get identity certificate: certificate is not set")
+		return nil, grpc.ForwardErrorf(codes.Unavailable, "cannot get identity certificate: certificate is not set")
 	}
 	certificate := make([]byte, 0, len(tls.Certificate[0])*len(tls.Certificate))
 	for _, c := range tls.Certificate {

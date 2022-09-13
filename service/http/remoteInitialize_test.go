@@ -189,12 +189,15 @@ func TestClientApplicationServerUpdateIdentityCertificate(t *testing.T) {
 	})).Host(test.CLIENT_APPLICATION_HTTP_HOST).AuthToken(token).Build()
 	resp = httpgwTest.HTTPDo(t, request)
 	require.Equal(t, http.StatusOK, resp.StatusCode)
-
 	var challengeResp pb.InitializeResponse
 	decodeBody(t, resp.Body, &challengeResp)
-
 	require.NotEmpty(t, challengeResp.GetIdentityCertificateChallenge().GetCertificateSigningRequest())
 	require.NotEmpty(t, challengeResp.GetIdentityCertificateChallenge().GetState())
+
+	request = httpgwTest.NewRequest(http.MethodGet, serviceHttp.IdentityCertificate, nil).Host(test.CLIENT_APPLICATION_HTTP_HOST).AuthToken(token).Build()
+	resp = httpgwTest.HTTPDo(t, request)
+	require.Equal(t, http.StatusServiceUnavailable, resp.StatusCode)
+
 	ctx = kitNetGrpc.CtxWithToken(ctx, token)
 	certificate := signCSR(ctx, t, challengeResp.GetIdentityCertificateChallenge().GetCertificateSigningRequest())
 	request = httpgwTest.NewRequest(http.MethodPost, serviceHttp.FinishInitialize(challengeResp.GetIdentityCertificateChallenge().GetState()), encodeToBody(t, &pb.FinishInitializeRequest{
