@@ -68,8 +68,9 @@ func (s *Service) Serve() error {
 }
 
 // Shutdown ends serving
-func (s *Service) Stop() {
+func (s *Service) Close() error {
 	s.grpcServer.Stop()
+	return nil
 }
 
 func (s *Service) Address() string {

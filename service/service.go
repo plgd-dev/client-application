@@ -20,79 +20,89 @@ import (
 	"context"
 	"fmt"
 	"net"
-	"os"
-	"os/signal"
-	"sync"
-	"syscall"
 
 	"github.com/plgd-dev/client-application/service/device"
 	"github.com/plgd-dev/client-application/service/grpc"
 	"github.com/plgd-dev/client-application/service/http"
+	"github.com/plgd-dev/hub/v2/pkg/fn"
 	"github.com/plgd-dev/hub/v2/pkg/fsnotify"
 	"github.com/plgd-dev/hub/v2/pkg/log"
+	"github.com/plgd-dev/hub/v2/pkg/service"
 	"go.opentelemetry.io/otel/trace"
 )
 
-type Service struct {
-	config                  Config
-	ctx                     context.Context
-	cancel                  context.CancelFunc
-	logger                  log.Logger
-	httpService             *http.Service
-	grpcService             *grpc.Service
-	deviceService           *device.Service
-	tracerProvider          trace.TracerProvider
-	sigs                    chan os.Signal
-	clientApplicationServer *grpc.ClientApplicationServer
-}
-
 const serviceName = "client-application"
 
+func newHttpService(ctx context.Context, config Config, clientApplicationServer *grpc.ClientApplicationServer, fileWatcher *fsnotify.Watcher, logger log.Logger, tracerProvider trace.TracerProvider) (*http.Service, error) {
+	httpService, err := http.New(ctx, serviceName, config.APIs.HTTP.Config, clientApplicationServer, fileWatcher, logger, tracerProvider)
+	if err != nil {
+		return nil, fmt.Errorf("cannot create http service: %w", err)
+	}
+	scheme := "https"
+	addr := getAddress(httpService.Address())
+	log.Infof("HTTP API available on %v://%s%v", scheme, addr, http.ApiV1)
+	if config.APIs.HTTP.UI.Enabled {
+		log.Infof("HTTP UI available on %v://%s", scheme, addr)
+	}
+	return httpService, err
+}
+
+func newGrpcService(ctx context.Context, config Config, clientApplicationServer *grpc.ClientApplicationServer, fileWatcher *fsnotify.Watcher, logger log.Logger, tracerProvider trace.TracerProvider) (*grpc.Service, error) {
+	grpcService, err := grpc.New(ctx, serviceName, config.APIs.GRPC.Config, clientApplicationServer, fileWatcher, logger, tracerProvider)
+	if err != nil {
+		return nil, err
+	}
+	addr := getAddress(grpcService.Address())
+	insecure := ""
+	if !config.APIs.GRPC.Config.TLS.Enabled {
+		insecure = " (insecure)"
+	}
+	log.Infof("gRPC API available on %s%v", addr, insecure)
+	return grpcService, nil
+}
+
+func closeHttpOnError(err error, services []service.APIService) error {
+	if len(services) > 0 {
+		err = fmt.Errorf("cannot create grpc service: %w", err)
+		err2 := services[0].Close()
+		if err2 != nil {
+			err = fmt.Errorf(`[%w,"cannot close http service: %v"]`, err, err2)
+		}
+	}
+	return err
+}
+
 // New creates server.
-func New(ctx context.Context, config Config, info *grpc.ServiceInformation, fileWatcher *fsnotify.Watcher, logger log.Logger) (*Service, error) {
+func New(ctx context.Context, config Config, info *grpc.ServiceInformation, fileWatcher *fsnotify.Watcher, logger log.Logger) (*service.Service, error) {
 	tracerProvider := trace.NewNoopTracerProvider()
-	var httpService *http.Service
+	var closerFunc fn.FuncList
 	deviceService, err := device.New(ctx, serviceName, config.Clients.Device, logger, tracerProvider)
 	if err != nil {
 		return nil, fmt.Errorf("cannot create device service: %w", err)
 	}
-
+	closerFunc.AddFunc(deviceService.Close)
 	clientApplicationServer := grpc.NewClientApplicationServer(config.RemoteProvisioning, deviceService, info, logger)
-
+	closerFunc.AddFunc(clientApplicationServer.Close)
+	services := make([]service.APIService, 0, 2)
 	if config.APIs.HTTP.Enabled {
-		httpService, err = http.New(ctx, serviceName, config.APIs.HTTP.Config, clientApplicationServer, fileWatcher, logger, tracerProvider)
+		httpService, err := newHttpService(ctx, config, clientApplicationServer, fileWatcher, logger, tracerProvider)
 		if err != nil {
-			clientApplicationServer.Close()
+			closerFunc.Execute()
 			return nil, fmt.Errorf("cannot create http service: %w", err)
 		}
+		services = append(services, httpService)
 	}
-	var grpcService *grpc.Service
 	if config.APIs.GRPC.Enabled {
-		grpcService, err = grpc.New(ctx, serviceName, config.APIs.GRPC.Config, clientApplicationServer, fileWatcher, logger, tracerProvider)
+		grpcService, err := newGrpcService(ctx, config, clientApplicationServer, fileWatcher, logger, tracerProvider)
 		if err != nil {
-			clientApplicationServer.Close()
-			return nil, fmt.Errorf("cannot create grpc service: %w", err)
+			closerFunc.Execute()
+			return nil, closeHttpOnError(err, services)
 		}
+		services = append(services, grpcService)
 	}
-
-	ctx, cancel := context.WithCancel(ctx)
-	s := Service{
-		config: config,
-
-		sigs: make(chan os.Signal, 1),
-
-		ctx:    ctx,
-		cancel: cancel,
-
-		logger:                  logger,
-		httpService:             httpService,
-		grpcService:             grpcService,
-		deviceService:           deviceService,
-		tracerProvider:          tracerProvider,
-		clientApplicationServer: clientApplicationServer,
-	}
-
-	return &s, nil
+	s := service.New(services...)
+	s.AddCloseFunc(closerFunc.Execute)
+	return s, nil
 }
 
 func getAddress(addr string) string {
@@ -111,96 +121,4 @@ func getAddress(addr string) string {
 		return "127.0.0.1:" + port
 	}
 	return addr
-}
-
-// Serve starts a device provisioning service on the configured address in *Service.
-func (server *Service) Serve() error {
-	if server.httpService != nil {
-		scheme := "http"
-		if server.config.APIs.HTTP.Config.TLS.Enabled {
-			scheme = "https"
-		}
-		addr := getAddress(server.httpService.Address())
-		log.Infof("HTTP API available on %v://%s%v", scheme, addr, http.ApiV1)
-		if server.config.APIs.HTTP.UI.Enabled {
-			log.Infof("HTTP UI available on %v://%s", scheme, addr)
-		}
-	}
-	if server.grpcService != nil {
-		addr := getAddress(server.grpcService.Address())
-		insecure := ""
-		if !server.config.APIs.GRPC.Config.TLS.Enabled {
-			insecure = " (insecure)"
-		}
-		log.Infof("gRPC API available on %s%v", addr, insecure)
-	}
-
-	return server.serveWithHandlingSignal()
-}
-
-func (server *Service) serveWithHandlingSignal() error {
-	var wg sync.WaitGroup
-	errCh := make(chan error, 4)
-	services := make([]func() error, 0, 3)
-	services = append(services, server.deviceService.Serve)
-	if server.httpService != nil {
-		services = append(services, server.httpService.Serve)
-	}
-	if server.grpcService != nil {
-		services = append(services, server.grpcService.Serve)
-	}
-	wg.Add(len(services))
-	for _, serve := range services {
-		go func(serve func() error) {
-			defer wg.Done()
-			err := serve()
-			errCh <- err
-		}(serve)
-	}
-
-	signal.Notify(server.sigs,
-		syscall.SIGHUP,
-		syscall.SIGINT,
-		syscall.SIGTERM,
-		syscall.SIGQUIT)
-	<-server.sigs
-	if server.httpService != nil {
-		err := server.httpService.Shutdown()
-		errCh <- err
-	}
-	if server.grpcService != nil {
-		server.grpcService.Stop()
-	}
-	server.deviceService.Close()
-	wg.Wait()
-
-	server.clientApplicationServer.Close()
-
-	var errors []error
-	for {
-		select {
-		case err := <-errCh:
-			if err != nil {
-				errors = append(errors, err)
-			}
-		default:
-			switch len(errors) {
-			case 0:
-				return nil
-			case 1:
-				return errors[0]
-			default:
-				return fmt.Errorf("%v", errors)
-			}
-		}
-	}
-}
-
-// Shutdown turn off server.
-func (server *Service) Close() error {
-	select {
-	case server.sigs <- syscall.SIGTERM:
-	default:
-	}
-	return nil
 }

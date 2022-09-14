@@ -220,7 +220,7 @@ func NewHttpService(ctx context.Context, t *testing.T) (*http.Service, func()) {
 	}()
 
 	cleanUp := func() {
-		err = s.Shutdown()
+		err = s.Close()
 		require.NoError(t, err)
 		wg.Wait()
 		tearDown()

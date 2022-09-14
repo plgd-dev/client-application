@@ -18,6 +18,7 @@ package http
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
@@ -174,11 +175,15 @@ func New(ctx context.Context, serviceName string, config Config, clientApplicati
 
 // Serve starts the service's HTTP server and blocks
 func (s *Service) Serve() error {
-	return s.httpServer.Serve(s.listener)
+	err := s.httpServer.Serve(s.listener)
+	if errors.Is(err, http.ErrServerClosed) {
+		return nil
+	}
+	return nil
 }
 
-// Shutdown ends serving
-func (s *Service) Shutdown() error {
+// Close serving
+func (s *Service) Close() error {
 	return s.httpServer.Shutdown(context.Background())
 }
 
