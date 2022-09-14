@@ -3,61 +3,61 @@ skinparam backgroundColor transparent
 hide footbox
 
 box "D2D Client"
-participant C as "Web App"
-participant S as "Service"
+participant S as "Web App\n(running in the browser)"
+participant C as "Service\n(local or remote host)"
 end box
 
 box "plgd hub"
-participant O as "OAuth 2.0 Server"
 participant CA as "Certificate Authority"
+participant OA as "OAuth 2.0 Server"
 end box
 
-C -> S: GetConfiguration
+S -> C: GetConfiguration
 return
 alt #GetConfiguration.device_authentication_mode == PRE_SHARED_KEY
   alt #GetConfiguration.is_initialized == true
-      note over S #aqua
+      note over C #aqua
        D2D Client - service is initialized.
       end note
-  else Pink false
-      C -> S ++: Initialize with preshared key
-      activate C
+  else false
+      S -> C ++: Initialize\n(preshared key) 
+      activate S
       return
-      note over S #aqua
+      note over C #aqua
       D2D Client - service is initialized.
       end note
-      deactivate C
+      deactivate S
   end
 else X509
-    C -> O ++: Authenticate user
-    return JWT token 
+    S -> OA ++: Authenticate user
+    return JWT User token 
     alt #GetConfiguration.is_initialized == true
-      note over S #aqua
+      note over C #aqua
       D2D Client - service is initialized.
       end note
     else false
         alt #GetConfiguration.remote_provisioning.mode == SELF
-          C -> S ++: Initialize with empty body and token
-          activate C
+          S -> C ++: Initialize\n(User token)
+          activate S
           return
-          note over S #aqua
+          note over C #aqua
           D2D Client - service is initialized.
           end note
-          deactivate C
+          deactivate S
         else USER_AGENT
-          C -> O ++: Get JWKS
-          activate C
-          return jwks
-          C -> S ++: Initialize with jwks
-          return Identity certificate challenge with identity CSR and state
-          C-> CA ++: Sign identity CSR
-          return Certificate
-          C -> S ++: Finish initialize with state, and identity certificate
+          S -> OA ++: Get /.well-known/jwks.json
+          activate S
+          return jwks.json
+          S -> C ++: Initialize\n(jwks.json, User token)
+          return Identity certificate challenge\n(D2D Client Identity CSR, state)
+          S-> CA ++: Sign D2D Client Identity CSR\n(CSR, User token)
+          return Identity Certificate chain
+          S -> C ++: Finish Initialize\n(Identity Certificate Chain, User token, state)
           return
-          note over S #aqua
+          note over C #aqua
           D2D Client - service is initialized.
           end note
-          deactivate C
+          deactivate S
         end
     end
 end
