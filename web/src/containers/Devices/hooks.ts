@@ -1,6 +1,5 @@
 import debounce from 'lodash/debounce'
 import { useStreamApi, useEmitter } from '@shared-ui/common/hooks'
-import { useAppConfig } from '@/containers/App'
 
 import {
   devicesApiEndpoints,
@@ -12,14 +11,17 @@ import { getResourceRegistrationNotificationKey } from './utils'
 import { useSelector } from 'react-redux'
 import { getDevicesDiscoveryTimeout } from '@/containers/Devices/slice'
 import { StreamApiPropsType } from '@/containers/Devices/Devices.types'
+import { security } from '@shared-ui/common/services'
+import { SecurityConfig } from '@/containers/App/App.types'
+
+const getConfig = () => security.getGeneralConfig() as SecurityConfig
 
 export const useDevicesList = () => {
-  const { httpGatewayAddress } = useAppConfig()
   const discoveryTimeout = useSelector(getDevicesDiscoveryTimeout)
 
   // Fetch the data
   const { data, updateData, ...rest } = useStreamApi(
-    `${httpGatewayAddress}${devicesApiEndpoints.DEVICES}`,
+    `${getConfig().httpGatewayAddress}${devicesApiEndpoints.DEVICES}`,
     {
       shadowQueryParameter: `?timeout=${
         discoveryTimeout / TIMEOUT_UNIT_PRECISION
@@ -39,11 +41,11 @@ export const useDevicesList = () => {
 }
 
 export const useDeviceDetails = (deviceId: string) => {
-  const { httpGatewayAddress } = useAppConfig()
-
   // Fetch the data
   const { data, updateData, ...rest }: StreamApiPropsType = useStreamApi(
-    `${httpGatewayAddress}${devicesApiEndpoints.DEVICES}/${deviceId}`,
+    `${getConfig().httpGatewayAddress}${
+      devicesApiEndpoints.DEVICES
+    }/${deviceId}`,
     { streamApi: false }
   )
 
@@ -71,11 +73,11 @@ export const useDeviceDetails = (deviceId: string) => {
 }
 
 export const useDevicesResources = (deviceId: string) => {
-  const { httpGatewayAddress } = useAppConfig()
-
   // Fetch the data
   const { data, updateData, ...rest }: StreamApiPropsType = useStreamApi(
-    `${httpGatewayAddress}${devicesApiEndpoints.DEVICES}/${deviceId}/${devicesApiEndpoints.DEVICES_RESOURCES_SUFFIX}`,
+    `${getConfig().httpGatewayAddress}${
+      devicesApiEndpoints.DEVICES
+    }/${deviceId}/${devicesApiEndpoints.DEVICES_RESOURCES_SUFFIX}`,
     { parseResult: 'json' }
   )
 
