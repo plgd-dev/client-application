@@ -20,14 +20,6 @@ const AppAuthProvider = forwardRef((props: any, ref) => {
     userManager,
   } = useAuth()
 
-  if (wellKnownConfig) {
-    security.setWebOAuthConfig({
-      authority: wellKnownConfig.remoteProvisioning.authorization.authority,
-      clientId: wellKnownConfig.remoteProvisioning.authorization.clientId,
-      redirect_uri: window.location.origin,
-    })
-  }
-
   if (userData) {
     security.setAccessToken(userData.access_token)
 
