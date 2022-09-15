@@ -131,7 +131,7 @@ export const addDeviceByIp = (deviceIp: string) =>
 /**
  * Own device by deviceId
  */
-export const ownDeviceApi = (deviceId: string) => {
+export const ownDeviceApi = (deviceId: string) =>
   fetchApi(
     `${getConfig().httpGatewayAddress}${
       devicesApiEndpoints.DEVICES
@@ -142,9 +142,9 @@ export const ownDeviceApi = (deviceId: string) => {
       const state = result.data.identityCertificateChallenge.state
       //owning with csr
       // @ts-ignore
-      const { authority } = security.getWebOAuthConfig()
+      const { certificateAuthorityAddress } = security.getWebOAuthConfig()
       signIdentityCsr(
-        authority,
+        certificateAuthorityAddress,
         result.data.identityCertificateChallenge.certificateSigningRequest
       ).then(result => {
         fetchApi(
@@ -163,7 +163,6 @@ export const ownDeviceApi = (deviceId: string) => {
       return result
     }
   })
-}
 
 /**
  * DisOwn device by deviceId
