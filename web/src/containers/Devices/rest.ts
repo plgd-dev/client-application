@@ -1,6 +1,7 @@
 import { fetchApi, security } from '@shared-ui/common/services'
 import { devicesApiEndpoints } from './constants'
 import { interfaceGetParam } from './utils'
+import { signIdentityCsr } from '@/containers/App/AppRest'
 
 type SecurityConfig = {
   httpGatewayAddress: string
@@ -64,22 +65,18 @@ export const updateDevicesResourceApi = (
     deviceId,
     href,
     currentInterface = '',
-    ttl,
   }: {
     deviceId: string
     href: string
     currentInterface?: string
-    ttl: string | number
   },
   data: any
 ) =>
   fetchApi(
     `${getConfig().httpGatewayAddress}${
       devicesApiEndpoints.DEVICES
-    }/${deviceId}/resources${href}?timeToLive=${ttl}&${interfaceGetParam(
-      currentInterface
-    )}`,
-    { method: 'PUT', body: data, timeToLive: ttl }
+    }/${deviceId}/resources${href}${interfaceGetParam(currentInterface)}`,
+    { method: 'PUT', body: data }
   )
 
 /**
@@ -90,22 +87,18 @@ export const createDevicesResourceApi = (
     deviceId,
     href,
     currentInterface = '',
-    ttl,
   }: {
     deviceId: string
     href: string
     currentInterface?: string
-    ttl: string | number
   },
   data: any
 ) =>
   fetchApi(
     `${getConfig().httpGatewayAddress}${
       devicesApiEndpoints.DEVICES
-    }/${deviceId}/resource-links${href}?timeToLive=${ttl}&${interfaceGetParam(
-      currentInterface
-    )}`,
-    { method: 'POST', body: data, timeToLive: ttl }
+    }/${deviceId}/resource-links${href}?${interfaceGetParam(currentInterface)}`,
+    { method: 'POST', body: data }
   )
 
 /**
@@ -138,13 +131,39 @@ export const addDeviceByIp = (deviceIp: string) =>
 /**
  * Own device by deviceId
  */
-export const ownDeviceApi = (deviceId: string) =>
+export const ownDeviceApi = (deviceId: string) => {
   fetchApi(
     `${getConfig().httpGatewayAddress}${
       devicesApiEndpoints.DEVICES
     }/${deviceId}/own`,
     { method: 'POST' }
-  )
+  ).then(result => {
+    if (result?.data?.identityCertificateChallenge) {
+      const state = result.data.identityCertificateChallenge.state
+      //owning with csr
+      // @ts-ignore
+      const { authority } = security.getWebOAuthConfig()
+      signIdentityCsr(
+        authority,
+        result.data.identityCertificateChallenge.certificateSigningRequest
+      ).then(result => {
+        fetchApi(
+          `${getConfig().httpGatewayAddress}${
+            devicesApiEndpoints.DEVICES
+          }/${deviceId}/own/${state}`,
+          {
+            method: 'POST',
+            body: {
+              certificate: result.data.certificate,
+            },
+          }
+        ).then(r => r)
+      })
+    } else {
+      return result
+    }
+  })
+}
 
 /**
  * DisOwn device by deviceId

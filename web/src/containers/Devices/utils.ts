@@ -17,7 +17,6 @@ import {
   MINIMAL_TTL_VALUE_MS,
   devicesProvisionStatuses,
   devicesStatusSeverities,
-  RESOURCE_DEFAULT_TTL,
 } from './constants'
 import { messages as t } from './Devices.i18n'
 import { updateDevicesResourceApi } from '@/containers/Devices/rest'
@@ -27,10 +26,16 @@ import { ResourcesType } from '@/containers/Devices/Devices.types'
 const { INFINITE, NS, MS, S, M, H } = commandTimeoutUnits
 
 // Returns the extension for resources API for the selected interface
-export const interfaceGetParam = (currentInterface: string | null) =>
-  currentInterface && currentInterface !== ''
-    ? `resourceInterface=${currentInterface}`
+export const interfaceGetParam = (
+  currentInterface: string | null,
+  join = false
+) => {
+  const _join = join ? '&' : ''
+
+  return currentInterface && currentInterface !== ''
+    ? `${_join}resourceInterface=${currentInterface}`
     : ''
+}
 
 // Return true if a resource contains the oic.if.create interface, meaning a new resource can be created from this resource
 export const canCreateResource = (interfaces: string[]) =>
@@ -363,15 +368,14 @@ export const updateResourceMethod = async (
     deviceId,
     href,
     currentInterface = '',
-    ttl = RESOURCE_DEFAULT_TTL,
-  }: { deviceId: string; href: string; currentInterface: string; ttl?: number },
+  }: { deviceId: string; href: string; currentInterface: string },
   resourceDataUpdate: any,
   successCallback: () => void,
   errorCallback: (error: any) => void
 ) => {
   try {
     await updateDevicesResourceApi(
-      { deviceId, href, currentInterface, ttl },
+      { deviceId, href, currentInterface },
       resourceDataUpdate
     )
 
