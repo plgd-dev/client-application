@@ -9,10 +9,10 @@ import reportWebVitals from './reportWebVitals'
 reportWebVitals()
 
 ReactDOM.render(
-  <Provider store={store}>
-    <IntlProvider>
-      <App />
-    </IntlProvider>
-  </Provider>,
-  document.getElementById('root')
+    <Provider store={store}>
+        <IntlProvider>
+            <App />
+        </IntlProvider>
+    </Provider>,
+    document.getElementById('root')
 )

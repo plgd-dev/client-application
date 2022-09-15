@@ -11,90 +11,81 @@ import { isValidEndpoint } from '@/containers/Devices/utils'
 import { knownResourceTypes } from '@/containers/Devices/constants'
 import { Props, defaultProps } from './DevicesDPSModal.types'
 
-const DevicesDPSModal: FC<Props> = props => {
-  const { show, onClose, updateResource, resources } = {
-    ...defaultProps,
-    ...props,
-  }
-  const { formatMessage: _ } = useIntl()
-  const [inputValue, setInputValue] = useState('')
-  const [hasError, setHasError] = useState(false)
-  const DpsResource = useMemo(
-    () =>
-      resources &&
-      resources.find(resource =>
-        resource.resourceTypes.includes(knownResourceTypes.X_PLGD_DPS_CONF)
-      ),
-    [resources]
-  )
-
-  const handleInputChange = (e: any) => {
-    const value = e.target.value
-    const isValid = isValidEndpoint(value)
-
-    !hasError && !isValid && setHasError(true)
-    hasError && isValid && setHasError(false)
-    setInputValue(e.target.value)
-  }
-
-  const renderBody = () => {
-    return (
-      <Label
-        title={_(t.deviceProvisioningServiceEndpoint)}
-        onClick={e => e.preventDefault()}
-      >
-        <TextField
-          className={classNames({ error: hasError })}
-          value={inputValue}
-          onChange={handleInputChange}
-        />
-      </Label>
+const DevicesDPSModal: FC<Props> = (props) => {
+    const { show, onClose, updateResource, resources } = {
+        ...defaultProps,
+        ...props,
+    }
+    const { formatMessage: _ } = useIntl()
+    const [inputValue, setInputValue] = useState('')
+    const [hasError, setHasError] = useState(false)
+    const DpsResource = useMemo(
+        () =>
+            resources &&
+            resources.find((resource) => resource.resourceTypes.includes(knownResourceTypes.X_PLGD_DPS_CONF)),
+        [resources]
     )
-  }
 
-  const handleSubmit = () => {
-    isFunction(onClose) && onClose && onClose()
-    isFunction(updateResource) &&
-      DpsResource &&
-      updateResource(
-        { href: DpsResource.href },
-        {
-          endpoint: inputValue,
-        }
-      )
-  }
+    const handleInputChange = (e: any) => {
+        const value = e.target.value
+        const isValid = isValidEndpoint(value)
 
-  const handleClose = () => {
-    setInputValue('')
-    setHasError(false)
-    isFunction(onClose) && onClose && onClose()
-  }
+        !hasError && !isValid && setHasError(true)
+        hasError && isValid && setHasError(false)
+        setInputValue(e.target.value)
+    }
 
-  const renderFooter = () => (
-    <div className="w-100 d-flex justify-content-end">
-      <Button variant="secondary" onClick={handleClose}>
-        {_(t.cancel)}
-      </Button>
+    const renderBody = () => {
+        return (
+            <Label title={_(t.deviceProvisioningServiceEndpoint)} onClick={(e) => e.preventDefault()}>
+                <TextField
+                    className={classNames({ error: hasError })}
+                    value={inputValue}
+                    onChange={handleInputChange}
+                />
+            </Label>
+        )
+    }
 
-      <Button
-        variant="primary"
-        onClick={handleSubmit}
-        disabled={hasError || inputValue === ''}
-      >
-        {_(t.save)}
-      </Button>
-    </div>
-  )
+    const handleSubmit = () => {
+        isFunction(onClose) && onClose && onClose()
+        isFunction(updateResource) &&
+            DpsResource &&
+            updateResource(
+                { href: DpsResource.href },
+                {
+                    endpoint: inputValue,
+                }
+            )
+    }
 
-  return (
-    <Modal
-      show={show}
-      onClose={onClose}
-      title={_(t.provisionNewDeviceTitle)}
-      renderBody={renderBody}
-      renderFooter={renderFooter}
-    />
-  )
+    const handleClose = () => {
+        setInputValue('')
+        setHasError(false)
+        isFunction(onClose) && onClose && onClose()
+    }
+
+    const renderFooter = () => (
+        <div className='w-100 d-flex justify-content-end'>
+            <Button variant='secondary' onClick={handleClose}>
+                {_(t.cancel)}
+            </Button>
+
+            <Button variant='primary' onClick={handleSubmit} disabled={hasError || inputValue === ''}>
+                {_(t.save)}
+            </Button>
+        </div>
+    )
+
+    return (
+        <Modal
+            show={show}
+            onClose={onClose}
+            title={_(t.provisionNewDeviceTitle)}
+            renderBody={renderBody}
+            renderFooter={renderFooter}
+        />
+    )
 }
 
 DevicesDPSModal.displayName = 'DevicesDPSModal'
