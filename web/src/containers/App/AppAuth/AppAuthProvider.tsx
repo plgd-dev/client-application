@@ -32,6 +32,12 @@ const AppAuthProvider = forwardRef((props: any, ref) => {
     getSignOutMethod() {
       return signOutMethod
     },
+    getLoading() {
+      return isLoading
+    },
+    getUserData() {
+      return userData
+    },
   }))
 
   useEffect(() => {

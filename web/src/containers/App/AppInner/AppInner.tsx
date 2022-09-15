@@ -25,6 +25,7 @@ import { messages as t } from '../App.i18n'
 import { security } from '@shared-ui/common/services'
 import { Props } from './AppInner.types'
 import { reset } from '@/containers/App/AppRest'
+import UserWidget from '@shared-ui/components/new/UserWidget'
 
 const AppInner = (props: Props) => {
   const { wellKnownConfig, configError, setInitialize } = props
@@ -52,6 +53,18 @@ const AppInner = (props: Props) => {
   }
 
   const AppLayout = () => {
+    const handleLogout = () => {
+      if (authProviderRef) {
+        const signOutMethod = authProviderRef?.current?.getSignOutMethod()
+
+        reset().then(_r => {
+          signOutMethod().then((r: void) => {
+            setInitialize(false)
+          })
+        })
+      }
+    }
+
     if (
       wellKnownConfig?.deviceAuthenticationMode ===
       DEVICE_AUTH_MODE.PRE_SHARED_KEY
@@ -77,23 +90,28 @@ const AppInner = (props: Props) => {
       >
         <Container fluid id="app" className={classNames({ collapsed })}>
           <StatusBar>
-            <button
-              className="m-l-10"
-              onClick={() => {
-                if (authProviderRef) {
-                  const signOutMethod =
-                    authProviderRef?.current?.getSignOutMethod()
+            <UserWidget
+              isLoading={authProviderRef?.current?.getLoading()!}
+              userData={authProviderRef?.current?.getUserData()!}
+              logout={handleLogout}
+            />
+            {/*<button*/}
+            {/*  className="m-l-10"*/}
+            {/*  onClick={() => {*/}
+            {/*    if (authProviderRef) {*/}
+            {/*      const signOutMethod =*/}
+            {/*        authProviderRef?.current?.getSignOutMethod()*/}
 
-                  reset().then(_r => {
-                    signOutMethod().then((r: void) => {
-                      setInitialize(false)
-                    })
-                  })
-                }
-              }}
-            >
-              signOut
-            </button>
+            {/*      reset().then(_r => {*/}
+            {/*        signOutMethod().then((r: void) => {*/}
+            {/*          setInitialize(false)*/}
+            {/*        })*/}
+            {/*      })*/}
+            {/*    }*/}
+            {/*  }}*/}
+            {/*>*/}
+            {/*  signOut*/}
+            {/*</button>*/}
           </StatusBar>
           <LeftPanel>
             <Menu
