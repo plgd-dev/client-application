@@ -1132,7 +1132,7 @@
           "type": "object"
         }
       },
-      "title": "The client application must be initialized when GetConfigurationResponse.is_initialized is set to false.\nThe initialization depends on the GetConfigurationResponse.device_authentication_mode.\nFor:\n - PRE_SHARED_KEY - pre_shared_key values need to be set.\n - X509 - this values need to be set only if GetConfigurationResponse.remote_provisioning.mode is set to USER_AGENT, for SELF just use empty values"
+      "title": "The client application must be initialized when GetConfigurationResponse.is_initialized is set to false.\nThe initialization depends on the GetConfigurationResponse.device_authentication_mode.\nFor:\n - PRE_SHARED_KEY - pre_shared_key values need to be set.\n - X509 - jwks need to be set only if GetConfigurationResponse.remote_provisioning.mode is set to USER_AGENT"
     },
     "pbInitializeResponse": {
       "type": "object",

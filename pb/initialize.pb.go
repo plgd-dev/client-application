@@ -5,7 +5,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// 	http://www.apache.org/licenses/LICENSE-2.0
+//     http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -146,7 +146,7 @@ func (x *InitializeX509) GetCertificate() string {
 // The initialization depends on the GetConfigurationResponse.device_authentication_mode.
 // For:
 //  - PRE_SHARED_KEY - pre_shared_key values need to be set.
-//  - X509 - this values need to be set only if GetConfigurationResponse.remote_provisioning.mode is set to USER_AGENT, for SELF just use empty values
+//  - X509 - jwks need to be set only if GetConfigurationResponse.remote_provisioning.mode is set to USER_AGENT
 type InitializeRequest struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
