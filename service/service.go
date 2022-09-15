@@ -80,10 +80,10 @@ func New(ctx context.Context, config Config, info *grpc.ServiceInformation, file
 	if err != nil {
 		return nil, fmt.Errorf("cannot create device service: %w", err)
 	}
-	closerFunc.AddFunc(deviceService.Close)
 	clientApplicationServer := grpc.NewClientApplicationServer(config.RemoteProvisioning, deviceService, info, logger)
 	closerFunc.AddFunc(clientApplicationServer.Close)
-	services := make([]service.APIService, 0, 2)
+	services := make([]service.APIService, 0, 3)
+	services = append(services, deviceService)
 	if config.APIs.HTTP.Enabled {
 		httpService, err := newHttpService(ctx, config, clientApplicationServer, fileWatcher, logger, tracerProvider)
 		if err != nil {

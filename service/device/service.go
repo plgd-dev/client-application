@@ -317,9 +317,10 @@ func (s *Service) serveWithHandlingSignal() error {
 }
 
 // Close turn off server.
-func (s *Service) Close() {
+func (s *Service) Close() error {
 	s.authenticationClient.Reset()
 	close(s.done)
+	return nil
 }
 
 func (s *Service) GetIdentityCSR(id string) ([]byte, error) {

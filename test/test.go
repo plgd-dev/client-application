@@ -288,7 +288,7 @@ func NewClientApplicationServer(ctx context.Context, opts ...ClientApplicationSe
 
 	clientApplicationServer := serviceGrpc.NewClientApplicationServer(remoteProvisioningCfg, d, NewServiceInformation(), logger)
 	return clientApplicationServer, func() {
-		d.Close()
+		_ = d.Close()
 		clientApplicationServer.Close()
 		wg.Wait()
 	}, nil

@@ -180,13 +180,13 @@ type TLSConfig struct {
 
 func (c *TLSConfig) Validate() error {
 	switch c.Authentication {
-	case "":
-		return fmt.Errorf("authentication('%v')", c.Authentication)
+	case AuthenticationX509:
 	case AuthenticationPreSharedKey:
 		if err := c.PreSharedKey.Validate(); err != nil {
 			return fmt.Errorf("preSharedKey.%w", err)
 		}
-	case AuthenticationX509:
+	default:
+		return fmt.Errorf("authentication('%v') - supports only '%v,%v'", c.Authentication, AuthenticationPreSharedKey, AuthenticationX509)
 	}
 	return nil
 }

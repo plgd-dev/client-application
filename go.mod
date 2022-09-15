@@ -14,7 +14,7 @@ require (
 	github.com/jellydator/ttlcache/v3 v3.0.0
 	github.com/jessevdk/go-flags v1.5.0
 	github.com/lestrrat-go/jwx v1.2.25
-	github.com/pion/dtls/v2 v2.1.5
+	github.com/pion/dtls/v2 v2.1.6-0.20220901062921-4f8fa1e090f3
 	github.com/plgd-dev/device v1.2.2-0.20220909120457-cd4f25bd7a45
 	github.com/plgd-dev/go-coap/v2 v2.6.1-0.20220908135617-44907dcbde7a
 	github.com/plgd-dev/hub/v2 v2.4.9-0.20220914120909-6c6ed501201a
