@@ -90,11 +90,7 @@ const AppInner = (props: Props) => {
       >
         <Container fluid id="app" className={classNames({ collapsed })}>
           <StatusBar>
-            <UserWidget
-              isLoading={authProviderRef?.current?.getLoading()!}
-              userData={authProviderRef?.current?.getUserData()!}
-              logout={handleLogout}
-            />
+            <UserWidget logout={handleLogout} />
             {/*<button*/}
             {/*  className="m-l-10"*/}
             {/*  onClick={() => {*/}
