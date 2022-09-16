@@ -7,6 +7,8 @@ import (
 	"github.com/google/uuid"
 	"github.com/lestrrat-go/jwx/jwk"
 	"github.com/plgd-dev/client-application/pb"
+	"github.com/plgd-dev/hub/v2/identity-store/events"
+	plgdJwt "github.com/plgd-dev/hub/v2/pkg/security/jwt"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -62,6 +64,24 @@ func (s *ClientApplicationServer) ParseWithClaims(token string, claims jwt.Claim
 	if err != nil {
 		return status.Errorf(codes.Unauthenticated, "could not parse token: %v", err)
 	}
+
+	scopeClaims, ok := claims.(*plgdJwt.ScopeClaims)
+	if !ok {
+		return status.Errorf(codes.Unauthenticated, "invalid type of token claims %T", claims)
+	}
+	plgdClaims := plgdJwt.Claims(*scopeClaims)
+	owner := plgdClaims.Owner(s.remoteProvisioningConfig.Authorization.OwnerClaim)
+	if owner == "" {
+		return status.Errorf(codes.Unauthenticated, "owner claim is not set")
+	}
+	ownerID, err := uuid.Parse(events.OwnerToUUID(owner))
+	if owner == "" {
+		return status.Errorf(codes.Unauthenticated, "cannot parse owner claim to UUID: %v", err)
+	}
+	if ownerID != c.owner {
+		return status.Errorf(codes.Unauthenticated, "unexpected owner('%v')", owner)
+	}
+
 	return nil
 }
 
