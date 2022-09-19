@@ -83,7 +83,7 @@ func (s *remoteSign) SendCertificate(ctx context.Context, certificate []byte) er
 	case <-ctx.Done():
 		return fmt.Errorf("cannot send certificate: %w", ctx.Err())
 	case <-s.ctx.Done():
-		return fmt.Errorf("cannot send certificate: %w", ctx.Err())
+		return fmt.Errorf("cannot send certificate: %w", s.ctx.Err())
 	case s.certificateSignChan <- certificate:
 		return nil
 	}

@@ -52,14 +52,13 @@ func (c *JSONWebKeyCache) LookupKey(token *jwt.Token) (jwk.Key, error) {
 }
 
 func (s *ClientApplicationServer) ParseWithClaims(token string, claims jwt.Claims) error {
+	if token == "" {
+		return status.Errorf(codes.Unauthenticated, "missing token")
+	}
 	c := s.jwksCache.Load()
 	if c == nil {
 		return status.Errorf(codes.Unauthenticated, "cannot validate token: missing JWK cache")
 	}
-	if token == "" {
-		return status.Errorf(codes.Unauthenticated, "missing token")
-	}
-
 	_, err := jwt.ParseWithClaims(token, claims, c.GetKey)
 	if err != nil {
 		return status.Errorf(codes.Unauthenticated, "could not parse token: %v", err)

@@ -46,9 +46,7 @@ type ClientApplicationServer struct {
 
 func NewClientApplicationServer(remoteProvisioningConfig remoteProvisioning.Config, serviceDevice *serviceDevice.Service, info *ServiceInformation, logger log.Logger) *ClientApplicationServer {
 	csrCache := ttlcache.New[uuid.UUID, bool]()
-	remoteOwnSignCache := ttlcache.New[uuid.UUID, *remoteSign]()
 	go csrCache.Start()
-	go remoteOwnSignCache.Start()
 	return &ClientApplicationServer{
 		serviceDevice:            serviceDevice,
 		info:                     info,
@@ -80,9 +78,6 @@ func (s *ClientApplicationServer) deleteDevice(ctx context.Context, deviceID uui
 	dev, ok := s.devices.PullOut(deviceID)
 	if !ok {
 		return nil
-	}
-	if !ok {
-		return status.Error(codes.Internal, "cast error")
 	}
 	if err := dev.Close(ctx); err != nil {
 		return status.Errorf(codes.Internal, "cannot close device %v connections: %v", deviceID, err)

@@ -51,7 +51,7 @@ func (s *ClientApplicationServer) GetJSONWebKeys(ctx context.Context, req *pb.Ge
 	}
 	var jwkMap map[string]interface{}
 	err = json.Unmarshal(marshaledJwk, &jwkMap)
-	if jwksCache == nil {
+	if err != nil {
 		return nil, status.Errorf(codes.Internal, "cannot unmarshal json to jwkMap: %v", err)
 	}
 	resp, err := structpb.NewStruct(jwkMap)

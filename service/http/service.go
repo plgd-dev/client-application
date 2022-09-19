@@ -179,7 +179,7 @@ func (s *Service) Serve() error {
 	if errors.Is(err, http.ErrServerClosed) {
 		return nil
 	}
-	return nil
+	return err
 }
 
 // Close serving
