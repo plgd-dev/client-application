@@ -175,7 +175,7 @@ func MakeJWTPayload(key interface{}, jwkKey jwk.Key, data []byte) ([]byte, error
 
 func TestClientApplicationServerOwnDeviceRemoteProvisioning(t *testing.T) {
 	dev := test.MustFindDeviceByName(test.DevsimName, []pb.GetDevicesRequest_UseMulticast{pb.GetDevicesRequest_IPV4})
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*3600)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*8)
 	defer cancel()
 	tearDown := setupRemoteProvisioning(t)
 	defer tearDown()
@@ -190,7 +190,7 @@ func TestClientApplicationServerOwnDeviceRemoteProvisioning(t *testing.T) {
 	require.Equal(t, http.StatusOK, resp.StatusCode)
 
 	request = httpgwTest.NewRequest(http.MethodPost, serviceHttp.OwnDevice, encodeToBody(t, &pb.OwnDeviceRequest{
-		Timeout: (time.Second * 3600).Nanoseconds(),
+		Timeout: (time.Second * 8).Nanoseconds(),
 	})).Host(test.CLIENT_APPLICATION_HTTP_HOST).AuthToken(token).DeviceId(dev.Id).Build()
 	resp = httpgwTest.HTTPDo(t, request)
 	require.Equal(t, http.StatusOK, resp.StatusCode)

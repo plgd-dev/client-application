@@ -61,15 +61,26 @@ func newGrpcService(ctx context.Context, config Config, clientApplicationServer 
 	return grpcService, nil
 }
 
-func closeHttpOnError(err error, services []service.APIService) error {
-	if len(services) > 0 {
-		err = fmt.Errorf("cannot create grpc service: %w", err)
-		err2 := services[0].Close()
-		if err2 != nil {
-			err = fmt.Errorf(`[%w,"cannot close http service: %v"]`, err, err2)
+func closeServicesOnError(err error, services []service.APIService) error {
+	errors := []error{err}
+	for _, s := range services {
+		switch s.(type) {
+		case *http.Service:
+			err := s.Close()
+			if err != nil {
+				errors = append(errors, fmt.Errorf("cannot close http service: %w", err))
+			}
+		case *device.Service:
+			err := s.Close()
+			if err != nil {
+				errors = append(errors, fmt.Errorf("cannot close device service: %w", err))
+			}
 		}
 	}
-	return err
+	if len(errors) == 1 {
+		return errors[0]
+	}
+	return fmt.Errorf("%v", errors)
 }
 
 // New creates server.
@@ -96,7 +107,7 @@ func New(ctx context.Context, config Config, info *grpc.ServiceInformation, file
 		grpcService, err := newGrpcService(ctx, config, clientApplicationServer, fileWatcher, logger, tracerProvider)
 		if err != nil {
 			closerFunc.Execute()
-			return nil, closeHttpOnError(err, services)
+			return nil, closeServicesOnError(fmt.Errorf("cannot create grpc service: %w", err), services)
 		}
 		services = append(services, grpcService)
 	}

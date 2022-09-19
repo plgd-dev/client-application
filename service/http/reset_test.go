@@ -30,7 +30,7 @@ import (
 )
 
 func TestClientApplicationServerReset(t *testing.T) {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*3600)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*8)
 	defer cancel()
 
 	tearDown := setupRemoteProvisioning(t)

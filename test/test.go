@@ -271,6 +271,10 @@ func NewClientApplicationServer(ctx context.Context, opts ...ClientApplicationSe
 	if err := deviceCfg.Validate(); err != nil {
 		return nil, nil, err
 	}
+	remoteProvisioningCfg := cfg.RemoteProvisioningCfg
+	if err := remoteProvisioningCfg.Validate(); err != nil {
+		return nil, nil, err
+	}
 	d, err := serviceDevice.New(ctx, "client-application-device", deviceCfg, logger, trace.NewNoopTracerProvider())
 	if err != nil {
 		return nil, nil, err
@@ -281,10 +285,6 @@ func NewClientApplicationServer(ctx context.Context, opts ...ClientApplicationSe
 		defer wg.Done()
 		_ = d.Serve()
 	}()
-	remoteProvisioningCfg := cfg.RemoteProvisioningCfg
-	if err := remoteProvisioningCfg.Validate(); err != nil {
-		return nil, nil, err
-	}
 
 	clientApplicationServer := serviceGrpc.NewClientApplicationServer(remoteProvisioningCfg, d, NewServiceInformation(), logger)
 	return clientApplicationServer, func() {
