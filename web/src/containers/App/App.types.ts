@@ -12,6 +12,7 @@ export type RemoteProvisioningDataType = {
         authority: string
         clientId: string
         ownerClaim: string
+        scopes: string[]
     }
     mode: string
     userAgent: {

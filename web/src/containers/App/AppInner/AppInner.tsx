@@ -24,6 +24,7 @@ import { Props } from './AppInner.types'
 import { reset } from '@/containers/App/AppRest'
 import UserWidget from '@shared-ui/components/new/UserWidget'
 import { AppAuthProviderRefType } from '@/containers/App/AppAuthProvider/AppAuthProvider.types'
+import InitializedByAnother from '@/containers/App/AppInner/InitializedByAnother/InitializedByAnother'
 
 const AppInner = (props: Props) => {
     const { wellKnownConfig, configError, setInitialize } = props
@@ -48,17 +49,23 @@ const AppInner = (props: Props) => {
         })
     }
 
+    const [initializedByAnother, setInitializedByAnother] = useState(false)
+
     const AppLayout = () => {
         const handleLogout = () => {
             if (authProviderRef) {
                 const signOutMethod = authProviderRef?.current?.getSignOutMethod()
 
                 if (signOutMethod) {
-                    reset().then((_r) => {
-                        signOutMethod().then((_r: void) => {
-                            setInitialize(false)
+                    if (!initializedByAnother) {
+                        reset().then((_r) => {
+                            signOutMethod().then((_r: void) => {
+                                setInitialize(false)
+                            })
                         })
-                    })
+                    } else {
+                        signOutMethod().then()
+                    }
                 }
             }
         }
@@ -97,10 +104,12 @@ const AppInner = (props: Props) => {
                             ]}
                             collapsed={collapsed}
                             toggleCollapsed={() => setCollapsed(!collapsed)}
+                            initializedByAnother={initializedByAnother}
                         />
                     </LeftPanel>
                     <div id='content'>
-                        <Routes />
+                        <InitializedByAnother show={initializedByAnother} logout={handleLogout} />
+                        {!initializedByAnother && <Routes />}
                         <Footer
                             links={[
                                 {
@@ -132,6 +141,7 @@ const AppInner = (props: Props) => {
         <AppContext.Provider
             value={{
                 collapsed,
+                setInitializedByAnother: () => setInitializedByAnother(true),
                 buildInformation: buildInformation || undefined,
             }}
         >
