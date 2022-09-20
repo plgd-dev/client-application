@@ -8,7 +8,6 @@ import { DEVICE_AUTH_MODE } from '@/constants'
 import ConditionalWrapper from '@shared-ui/components/new/ConditionalWrapper'
 import AppLoader from '@/containers/App/AppLoader/AppLoader'
 import AppInner from '@/containers/App/AppInner/AppInner'
-import { User } from 'oidc-client-ts'
 import { security } from '@shared-ui/common/services'
 
 const App = () => {
