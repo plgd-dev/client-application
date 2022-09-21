@@ -44,7 +44,7 @@ const App = () => {
 
     const oidcCommonSettings = {
         authority: wellKnownConfig?.remoteProvisioning.authorization.authority || '',
-        scope: wellKnownConfig?.remoteProvisioning.authorization.scopes.join?.(' ') || 'openid',
+        scope: wellKnownConfig?.remoteProvisioning.authorization.scopes.join?.(' '),
     }
 
     return (
