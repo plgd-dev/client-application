@@ -1,7 +1,7 @@
 import { useContext, useEffect, useState } from 'react'
 import AppContext from './AppContext'
 import './App.scss'
-import { WellKnownConfigType } from '@/containers/App/App.types'
+import { WellKnownConfigType} from '@/containers/App/App.types'
 import { getAppWellKnownConfiguration } from '@/containers/App/AppRest'
 import {AuthProvider, UserManager} from 'oidc-react'
 import { DEVICE_AUTH_MODE } from '@/constants'
@@ -67,8 +67,8 @@ const App = () => {
                             client_id: wellKnownConfig?.remoteProvisioning.authorization.clientId,
                             redirect_uri: window.location.origin,
                             extraQueryParams: {
-                                audience: wellKnownConfig?.remoteProvisioning.authorization.audience,
-                            },
+                                audience: wellKnownConfig?.remoteProvisioning.authorization.audience || false
+                            }
                         })
                     }
                 >

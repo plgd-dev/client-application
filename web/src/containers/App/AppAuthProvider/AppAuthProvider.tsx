@@ -1,7 +1,7 @@
-import { useAuth } from 'oidc-react'
-import { security } from '@shared-ui/common/services'
-import { forwardRef, useEffect, useImperativeHandle } from 'react'
-import { REMOTE_PROVISIONING_MODE } from '@/constants'
+import {useAuth} from 'oidc-react'
+import {security} from '@shared-ui/common/services'
+import {forwardRef, useEffect, useImperativeHandle} from 'react'
+import {REMOTE_PROVISIONING_MODE} from '@/constants'
 import {
     getJwksData,
     getOpenIdConfiguration,
@@ -10,11 +10,11 @@ import {
     signIdentityCsr,
 } from '@/containers/App/AppRest'
 import AppLoader from '@/containers/App/AppLoader/AppLoader'
-import { AppAuthProviderRefType, Props } from './AppAuthProvider.types'
+import {AppAuthProviderRefType, Props} from './AppAuthProvider.types'
 
 const AppAuthProvider = forwardRef<AppAuthProviderRefType, Props>((props, ref) => {
-    const { wellKnownConfig, children, setAuthError, setInitialize } = props
-    const { isLoading, userData, signOutRedirect: signOutMethod, userManager } = useAuth()
+    const {wellKnownConfig, children, setAuthError, setInitialize} = props
+    const {isLoading, userData, signOutRedirect, userManager} = useAuth()
 
     if (userData) {
         security.setAccessToken(userData.access_token)
@@ -25,7 +25,9 @@ const AppAuthProvider = forwardRef<AppAuthProviderRefType, Props>((props, ref) =
     }
 
     useImperativeHandle(ref, () => ({
-        getSignOutMethod: () => signOutMethod,
+        getSignOutMethod: () => signOutRedirect({
+            post_logout_redirect_uri: window.location.origin,
+        }),
     }))
 
     useEffect(() => {
@@ -60,7 +62,7 @@ const AppAuthProvider = forwardRef<AppAuthProviderRefType, Props>((props, ref) =
     }, [wellKnownConfig, isLoading, setAuthError, setInitialize])
 
     if (isLoading || !wellKnownConfig || !wellKnownConfig?.isInitialized) {
-        return <AppLoader />
+        return <AppLoader/>
     }
 
     return children

@@ -54,17 +54,17 @@ const AppInner = (props: Props) => {
     const AppLayout = () => {
         const handleLogout = () => {
             if (authProviderRef) {
-                const signOutMethod = authProviderRef?.current?.getSignOutMethod()
+                const signOut = authProviderRef?.current?.getSignOutMethod()
 
-                if (signOutMethod) {
+                if (signOut) {
                     if (!initializedByAnother) {
                         reset().then((_r) => {
-                            signOutMethod().then((_r: void) => {
+                            signOut().then((_r: void) => {
                                 setInitialize(false)
                             })
                         })
                     } else {
-                        signOutMethod().then()
+                        signOut().then()
                     }
                 }
             }
