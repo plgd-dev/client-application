@@ -1,5 +1,5 @@
 import { WellKnownConfigType } from '@/containers/App/App.types'
-import { ReactElement, ReactNode } from 'react'
+import { ReactElement } from 'react'
 
 export type AppAuthProviderRefType = {
     getSignOutMethod(): () => Promise<void>
