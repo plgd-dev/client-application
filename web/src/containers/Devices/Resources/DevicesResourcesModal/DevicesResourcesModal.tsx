@@ -38,19 +38,21 @@ const DevicesResourcesModal: FC<Props> = ({
     const isUpdateModal = type === UPDATE_RESOURCE
     const updateLabel = !loading ? _(t.update) : _(t.updating)
     const createLabel = !loading ? _(t.create) : _(t.creating)
-    const initialInterfaceValue = { value: '', label: _(t.deviceInterfaces) }
+    const initialInterfaceValue = { value: '', label: _(t.resourceInterfaces) }
     const [selectedInterface, setSelectedInterface] = useState(initialInterfaceValue)
 
     useEffect(() => {
         if (resourceData) {
-            setJsonData(resourceData?.data?.content)
+            const dataToDisplay = resourceData?.data?.content
+            setJsonData(dataToDisplay)
+
             // Set the retrieved JSON object to the editor
             if (typeof resourceData === 'object') {
                 // @ts-ignore
-                editor?.current?.set(resourceData)
-            } else if (typeof resourceData === 'string') {
+                editor?.current?.set(dataToDisplay)
+            } else{
                 // @ts-ignore
-                editor?.current?.setText(resourceData)
+                editor?.current?.setText(dataToDisplay)
             }
         }
     }, [resourceData])
