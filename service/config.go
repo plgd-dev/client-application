@@ -22,15 +22,17 @@ import (
 	"github.com/plgd-dev/client-application/service/device"
 	"github.com/plgd-dev/client-application/service/grpc"
 	"github.com/plgd-dev/client-application/service/http"
+	"github.com/plgd-dev/client-application/service/remoteProvisioning"
 	"github.com/plgd-dev/hub/v2/pkg/config"
 	"github.com/plgd-dev/hub/v2/pkg/log"
 )
 
 // Config represent application configuration
 type Config struct {
-	Log     log.Config    `yaml:"log" json:"log"`
-	APIs    APIsConfig    `yaml:"apis" json:"apis"`
-	Clients ClientsConfig `yaml:"clients" json:"clients"`
+	Log                log.Config                `yaml:"log" json:"log"`
+	APIs               APIsConfig                `yaml:"apis" json:"apis"`
+	Clients            ClientsConfig             `yaml:"clients" json:"clients"`
+	RemoteProvisioning remoteProvisioning.Config `yaml:"remoteProvisioning" json:"remoteProvisioning"`
 }
 
 func (c *Config) Validate() error {
@@ -42,6 +44,9 @@ func (c *Config) Validate() error {
 	}
 	if err := c.Log.Validate(); err != nil {
 		return fmt.Errorf("log.%w", err)
+	}
+	if err := c.RemoteProvisioning.Validate(); err != nil {
+		return fmt.Errorf("remoteProvisioning.%w", err)
 	}
 	return nil
 }

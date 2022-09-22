@@ -18,9 +18,11 @@ package http
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
+	"regexp"
 	"strings"
 
 	"github.com/fullstorydev/grpchan/inprocgrpc"
@@ -43,8 +45,9 @@ type Service struct {
 }
 
 type RequestHandler struct {
-	mux     *runtime.ServeMux
-	version string
+	mux                     *runtime.ServeMux
+	clientApplicationServer *grpc.ClientApplicationServer
+	config                  Config
 }
 
 func splitURIPath(requestURI, prefix string) []string {
@@ -70,6 +73,37 @@ func resourceMatcher(r *http.Request, rm *router.RouteMatch) bool {
 	return false
 }
 
+func createAuthFunc(config Config, clientApplicationServer *grpc.ClientApplicationServer) func(ctx context.Context, method, uri string) (context.Context, error) {
+	auth := func(ctx context.Context, method, uri string) (context.Context, error) {
+		return ctx, nil
+	}
+	if clientApplicationServer.HasJWTAuthorizationEnabled() {
+		whiteList := []kitNetHttp.RequestMatcher{
+			{
+				Method: http.MethodGet,
+				URI:    regexp.MustCompile(regexp.QuoteMeta(WellKnownJWKs)),
+			},
+			{
+				Method: http.MethodGet,
+				URI:    regexp.MustCompile(regexp.QuoteMeta(WellKnownConfiguration)),
+			},
+			{
+				// token is directly verified by clientApplication
+				Method: http.MethodPost,
+				URI:    regexp.MustCompile(regexp.QuoteMeta(Initialize)),
+			},
+		}
+		if config.UI.Enabled {
+			whiteList = append(whiteList, kitNetHttp.RequestMatcher{
+				Method: http.MethodGet,
+				URI:    regexp.MustCompile(`^\/(a$|[^a].*|ap$|a[^p].*|ap[^i].*|api[^/])`),
+			})
+		}
+		auth = kitNetHttp.NewInterceptorWithValidator(clientApplicationServer, authRules, whiteList...)
+	}
+	return auth
+}
+
 // New creates new HTTP service
 func New(ctx context.Context, serviceName string, config Config, clientApplicationServer *grpc.ClientApplicationServer, fileWatcher *fsnotify.Watcher, logger log.Logger, tracerProvider trace.TracerProvider) (*Service, error) {
 	listener, err := listener.New(config.Config, fileWatcher, logger)
@@ -81,9 +115,7 @@ func New(ctx context.Context, serviceName string, config Config, clientApplicati
 	pb.RegisterClientApplicationServer(ch, clientApplicationServer)
 	grpcClient := pb.NewClientApplicationClient(ch)
 
-	auth := func(ctx context.Context, method, uri string) (context.Context, error) {
-		return ctx, nil
-	}
+	auth := createAuthFunc(config, clientApplicationServer)
 	mux := serverMux.New()
 	r := serverMux.NewRouter(queryCaseInsensitive, auth)
 
@@ -101,14 +133,13 @@ func New(ctx context.Context, serviceName string, config Config, clientApplicati
 		_ = listener.Close()
 		return nil, fmt.Errorf("failed to register grpc-gateway handler: %w", err)
 	}
-	requestHandler := &RequestHandler{mux: mux, version: clientApplicationServer.Version()}
+	requestHandler := &RequestHandler{mux: mux, clientApplicationServer: clientApplicationServer, config: config}
 	r.PathPrefix(Devices).Methods(http.MethodPut).MatcherFunc(resourceMatcher).HandlerFunc(requestHandler.updateResource)
 	r.PathPrefix(Devices).Methods(http.MethodPost).MatcherFunc(resourceMatcher).HandlerFunc(requestHandler.createResource)
 	r.PathPrefix(ApiV1).Handler(mux)
-
+	r.PathPrefix(WellKnown).Handler(mux)
 	// serve www directory
 	if config.UI.Enabled {
-		r.HandleFunc(WebConfiguration, getWebConfiguration).Methods(http.MethodGet)
 		fs := http.FileServer(http.Dir(config.UI.Directory))
 		r.PathPrefix("/").Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			c := httptest.NewRecorder()
@@ -144,11 +175,15 @@ func New(ctx context.Context, serviceName string, config Config, clientApplicati
 
 // Serve starts the service's HTTP server and blocks
 func (s *Service) Serve() error {
-	return s.httpServer.Serve(s.listener)
+	err := s.httpServer.Serve(s.listener)
+	if errors.Is(err, http.ErrServerClosed) {
+		return nil
+	}
+	return err
 }
 
-// Shutdown ends serving
-func (s *Service) Shutdown() error {
+// Close serving
+func (s *Service) Close() error {
 	return s.httpServer.Shutdown(context.Background())
 }
 
@@ -172,4 +207,27 @@ var queryCaseInsensitive = map[string]string{
 	strings.ToLower(TimeoutQueryKey):               TimeoutQueryKey,
 	strings.ToLower(OwnershipStatusFilterQueryKey): OwnershipStatusFilterQueryKey,
 	strings.ToLower(TypeFilterQueryKey):            TypeFilterQueryKey,
+}
+
+var authRules = map[string][]kitNetHttp.AuthArgs{
+	http.MethodGet: {
+		{
+			URI: regexp.MustCompile(regexp.QuoteMeta(ApiV1) + `\/.*`),
+		},
+	},
+	http.MethodPost: {
+		{
+			URI: regexp.MustCompile(regexp.QuoteMeta(ApiV1) + `\/.*`),
+		},
+	},
+	http.MethodDelete: {
+		{
+			URI: regexp.MustCompile(regexp.QuoteMeta(ApiV1) + `\/.*`),
+		},
+	},
+	http.MethodPut: {
+		{
+			URI: regexp.MustCompile(regexp.QuoteMeta(ApiV1) + `\/.*`),
+		},
+	},
 }

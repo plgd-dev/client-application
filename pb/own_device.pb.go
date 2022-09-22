@@ -5,7 +5,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// 	http://www.apache.org/licenses/LICENSE-2.0
+//     http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -42,6 +42,8 @@ type OwnDeviceRequest struct {
 	unknownFields protoimpl.UnknownFields
 
 	DeviceId string `protobuf:"bytes,1,opt,name=device_id,json=deviceId,proto3" json:"device_id,omitempty"`
+	// Defines how long own process will wait for the OwnDeviceRequest with set_identity_certificate in nanoseconds. Default value is 15secs.
+	Timeout int64 `protobuf:"varint,2,opt,name=timeout,proto3" json:"timeout,omitempty"`
 }
 
 func (x *OwnDeviceRequest) Reset() {
@@ -83,10 +85,20 @@ func (x *OwnDeviceRequest) GetDeviceId() string {
 	return ""
 }
 
+func (x *OwnDeviceRequest) GetTimeout() int64 {
+	if x != nil {
+		return x.Timeout
+	}
+	return 0
+}
+
 type OwnDeviceResponse struct {
 	state         protoimpl.MessageState
 	sizeCache     protoimpl.SizeCache
 	unknownFields protoimpl.UnknownFields
+
+	// Filled when OwnDeviceRequest.get_identity_csr is true
+	IdentityCertificateChallenge *IdentityCertificateChallenge `protobuf:"bytes,1,opt,name=identity_certificate_challenge,json=identityCertificateChallenge,proto3" json:"identity_certificate_challenge,omitempty"`
 }
 
 func (x *OwnDeviceResponse) Reset() {
@@ -121,6 +133,116 @@ func (*OwnDeviceResponse) Descriptor() ([]byte, []int) {
 	return file_github_com_plgd_dev_client_application_pb_own_device_proto_rawDescGZIP(), []int{1}
 }
 
+func (x *OwnDeviceResponse) GetIdentityCertificateChallenge() *IdentityCertificateChallenge {
+	if x != nil {
+		return x.IdentityCertificateChallenge
+	}
+	return nil
+}
+
+type FinishOwnDeviceRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	DeviceId string `protobuf:"bytes,1,opt,name=device_id,json=deviceId,proto3" json:"device_id,omitempty"`
+	// Use value form OwnDeviceResponse.get_identity_csr.state
+	State string `protobuf:"bytes,2,opt,name=state,proto3" json:"state,omitempty"`
+	// Certificate chain in PEM format
+	Certificate []byte `protobuf:"bytes,3,opt,name=certificate,proto3" json:"certificate,omitempty"`
+}
+
+func (x *FinishOwnDeviceRequest) Reset() {
+	*x = FinishOwnDeviceRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_github_com_plgd_dev_client_application_pb_own_device_proto_msgTypes[2]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *FinishOwnDeviceRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*FinishOwnDeviceRequest) ProtoMessage() {}
+
+func (x *FinishOwnDeviceRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_github_com_plgd_dev_client_application_pb_own_device_proto_msgTypes[2]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use FinishOwnDeviceRequest.ProtoReflect.Descriptor instead.
+func (*FinishOwnDeviceRequest) Descriptor() ([]byte, []int) {
+	return file_github_com_plgd_dev_client_application_pb_own_device_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *FinishOwnDeviceRequest) GetDeviceId() string {
+	if x != nil {
+		return x.DeviceId
+	}
+	return ""
+}
+
+func (x *FinishOwnDeviceRequest) GetState() string {
+	if x != nil {
+		return x.State
+	}
+	return ""
+}
+
+func (x *FinishOwnDeviceRequest) GetCertificate() []byte {
+	if x != nil {
+		return x.Certificate
+	}
+	return nil
+}
+
+type FinishOwnDeviceResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+}
+
+func (x *FinishOwnDeviceResponse) Reset() {
+	*x = FinishOwnDeviceResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_github_com_plgd_dev_client_application_pb_own_device_proto_msgTypes[3]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *FinishOwnDeviceResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*FinishOwnDeviceResponse) ProtoMessage() {}
+
+func (x *FinishOwnDeviceResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_github_com_plgd_dev_client_application_pb_own_device_proto_msgTypes[3]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use FinishOwnDeviceResponse.ProtoReflect.Descriptor instead.
+func (*FinishOwnDeviceResponse) Descriptor() ([]byte, []int) {
+	return file_github_com_plgd_dev_client_application_pb_own_device_proto_rawDescGZIP(), []int{3}
+}
+
 var File_github_com_plgd_dev_client_application_pb_own_device_proto protoreflect.FileDescriptor
 
 var file_github_com_plgd_dev_client_application_pb_own_device_proto_rawDesc = []byte{
@@ -128,15 +250,33 @@ var file_github_com_plgd_dev_client_application_pb_own_device_proto_rawDesc = []
 	0x64, 0x2d, 0x64, 0x65, 0x76, 0x2f, 0x63, 0x6c, 0x69, 0x65, 0x6e, 0x74, 0x2d, 0x61, 0x70, 0x70,
 	0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x2f, 0x70, 0x62, 0x2f, 0x6f, 0x77, 0x6e, 0x5f,
 	0x64, 0x65, 0x76, 0x69, 0x63, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x12, 0x0a, 0x73, 0x65,
-	0x72, 0x76, 0x69, 0x63, 0x65, 0x2e, 0x70, 0x62, 0x22, 0x2f, 0x0a, 0x10, 0x4f, 0x77, 0x6e, 0x44,
-	0x65, 0x76, 0x69, 0x63, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x1b, 0x0a, 0x09,
-	0x64, 0x65, 0x76, 0x69, 0x63, 0x65, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52,
-	0x08, 0x64, 0x65, 0x76, 0x69, 0x63, 0x65, 0x49, 0x64, 0x22, 0x13, 0x0a, 0x11, 0x4f, 0x77, 0x6e,
-	0x44, 0x65, 0x76, 0x69, 0x63, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x42, 0x2e,
-	0x5a, 0x2c, 0x67, 0x69, 0x74, 0x68, 0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x70, 0x6c, 0x67,
-	0x64, 0x2d, 0x64, 0x65, 0x76, 0x2f, 0x63, 0x6c, 0x69, 0x65, 0x6e, 0x74, 0x2d, 0x61, 0x70, 0x70,
-	0x6c, 0x69, 0x63, 0x61, 0x74, 0x69, 0x6f, 0x6e, 0x2f, 0x70, 0x62, 0x3b, 0x70, 0x62, 0x62, 0x06,
-	0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x72, 0x76, 0x69, 0x63, 0x65, 0x2e, 0x70, 0x62, 0x1a, 0x13, 0x70, 0x62, 0x2f, 0x69, 0x6e, 0x69,
+	0x74, 0x69, 0x61, 0x6c, 0x69, 0x7a, 0x65, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x22, 0x49, 0x0a,
+	0x10, 0x4f, 0x77, 0x6e, 0x44, 0x65, 0x76, 0x69, 0x63, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73,
+	0x74, 0x12, 0x1b, 0x0a, 0x09, 0x64, 0x65, 0x76, 0x69, 0x63, 0x65, 0x5f, 0x69, 0x64, 0x18, 0x01,
+	0x20, 0x01, 0x28, 0x09, 0x52, 0x08, 0x64, 0x65, 0x76, 0x69, 0x63, 0x65, 0x49, 0x64, 0x12, 0x18,
+	0x0a, 0x07, 0x74, 0x69, 0x6d, 0x65, 0x6f, 0x75, 0x74, 0x18, 0x02, 0x20, 0x01, 0x28, 0x03, 0x52,
+	0x07, 0x74, 0x69, 0x6d, 0x65, 0x6f, 0x75, 0x74, 0x22, 0x83, 0x01, 0x0a, 0x11, 0x4f, 0x77, 0x6e,
+	0x44, 0x65, 0x76, 0x69, 0x63, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x6e,
+	0x0a, 0x1e, 0x69, 0x64, 0x65, 0x6e, 0x74, 0x69, 0x74, 0x79, 0x5f, 0x63, 0x65, 0x72, 0x74, 0x69,
+	0x66, 0x69, 0x63, 0x61, 0x74, 0x65, 0x5f, 0x63, 0x68, 0x61, 0x6c, 0x6c, 0x65, 0x6e, 0x67, 0x65,
+	0x18, 0x01, 0x20, 0x01, 0x28, 0x0b, 0x32, 0x28, 0x2e, 0x73, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65,
+	0x2e, 0x70, 0x62, 0x2e, 0x49, 0x64, 0x65, 0x6e, 0x74, 0x69, 0x74, 0x79, 0x43, 0x65, 0x72, 0x74,
+	0x69, 0x66, 0x69, 0x63, 0x61, 0x74, 0x65, 0x43, 0x68, 0x61, 0x6c, 0x6c, 0x65, 0x6e, 0x67, 0x65,
+	0x52, 0x1c, 0x69, 0x64, 0x65, 0x6e, 0x74, 0x69, 0x74, 0x79, 0x43, 0x65, 0x72, 0x74, 0x69, 0x66,
+	0x69, 0x63, 0x61, 0x74, 0x65, 0x43, 0x68, 0x61, 0x6c, 0x6c, 0x65, 0x6e, 0x67, 0x65, 0x22, 0x6d,
+	0x0a, 0x16, 0x46, 0x69, 0x6e, 0x69, 0x73, 0x68, 0x4f, 0x77, 0x6e, 0x44, 0x65, 0x76, 0x69, 0x63,
+	0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x1b, 0x0a, 0x09, 0x64, 0x65, 0x76, 0x69,
+	0x63, 0x65, 0x5f, 0x69, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x09, 0x52, 0x08, 0x64, 0x65, 0x76,
+	0x69, 0x63, 0x65, 0x49, 0x64, 0x12, 0x14, 0x0a, 0x05, 0x73, 0x74, 0x61, 0x74, 0x65, 0x18, 0x02,
+	0x20, 0x01, 0x28, 0x09, 0x52, 0x05, 0x73, 0x74, 0x61, 0x74, 0x65, 0x12, 0x20, 0x0a, 0x0b, 0x63,
+	0x65, 0x72, 0x74, 0x69, 0x66, 0x69, 0x63, 0x61, 0x74, 0x65, 0x18, 0x03, 0x20, 0x01, 0x28, 0x0c,
+	0x52, 0x0b, 0x63, 0x65, 0x72, 0x74, 0x69, 0x66, 0x69, 0x63, 0x61, 0x74, 0x65, 0x22, 0x19, 0x0a,
+	0x17, 0x46, 0x69, 0x6e, 0x69, 0x73, 0x68, 0x4f, 0x77, 0x6e, 0x44, 0x65, 0x76, 0x69, 0x63, 0x65,
+	0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x42, 0x2e, 0x5a, 0x2c, 0x67, 0x69, 0x74, 0x68,
+	0x75, 0x62, 0x2e, 0x63, 0x6f, 0x6d, 0x2f, 0x70, 0x6c, 0x67, 0x64, 0x2d, 0x64, 0x65, 0x76, 0x2f,
+	0x63, 0x6c, 0x69, 0x65, 0x6e, 0x74, 0x2d, 0x61, 0x70, 0x70, 0x6c, 0x69, 0x63, 0x61, 0x74, 0x69,
+	0x6f, 0x6e, 0x2f, 0x70, 0x62, 0x3b, 0x70, 0x62, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -151,17 +291,21 @@ func file_github_com_plgd_dev_client_application_pb_own_device_proto_rawDescGZIP
 	return file_github_com_plgd_dev_client_application_pb_own_device_proto_rawDescData
 }
 
-var file_github_com_plgd_dev_client_application_pb_own_device_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
+var file_github_com_plgd_dev_client_application_pb_own_device_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
 var file_github_com_plgd_dev_client_application_pb_own_device_proto_goTypes = []interface{}{
-	(*OwnDeviceRequest)(nil),  // 0: service.pb.OwnDeviceRequest
-	(*OwnDeviceResponse)(nil), // 1: service.pb.OwnDeviceResponse
+	(*OwnDeviceRequest)(nil),             // 0: service.pb.OwnDeviceRequest
+	(*OwnDeviceResponse)(nil),            // 1: service.pb.OwnDeviceResponse
+	(*FinishOwnDeviceRequest)(nil),       // 2: service.pb.FinishOwnDeviceRequest
+	(*FinishOwnDeviceResponse)(nil),      // 3: service.pb.FinishOwnDeviceResponse
+	(*IdentityCertificateChallenge)(nil), // 4: service.pb.IdentityCertificateChallenge
 }
 var file_github_com_plgd_dev_client_application_pb_own_device_proto_depIdxs = []int32{
-	0, // [0:0] is the sub-list for method output_type
-	0, // [0:0] is the sub-list for method input_type
-	0, // [0:0] is the sub-list for extension type_name
-	0, // [0:0] is the sub-list for extension extendee
-	0, // [0:0] is the sub-list for field type_name
+	4, // 0: service.pb.OwnDeviceResponse.identity_certificate_challenge:type_name -> service.pb.IdentityCertificateChallenge
+	1, // [1:1] is the sub-list for method output_type
+	1, // [1:1] is the sub-list for method input_type
+	1, // [1:1] is the sub-list for extension type_name
+	1, // [1:1] is the sub-list for extension extendee
+	0, // [0:1] is the sub-list for field type_name
 }
 
 func init() { file_github_com_plgd_dev_client_application_pb_own_device_proto_init() }
@@ -169,6 +313,7 @@ func file_github_com_plgd_dev_client_application_pb_own_device_proto_init() {
 	if File_github_com_plgd_dev_client_application_pb_own_device_proto != nil {
 		return
 	}
+	file_pb_initialize_proto_init()
 	if !protoimpl.UnsafeEnabled {
 		file_github_com_plgd_dev_client_application_pb_own_device_proto_msgTypes[0].Exporter = func(v interface{}, i int) interface{} {
 			switch v := v.(*OwnDeviceRequest); i {
@@ -194,6 +339,30 @@ func file_github_com_plgd_dev_client_application_pb_own_device_proto_init() {
 				return nil
 			}
 		}
+		file_github_com_plgd_dev_client_application_pb_own_device_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*FinishOwnDeviceRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_github_com_plgd_dev_client_application_pb_own_device_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*FinishOwnDeviceResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -201,7 +370,7 @@ func file_github_com_plgd_dev_client_application_pb_own_device_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_github_com_plgd_dev_client_application_pb_own_device_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   2,
+			NumMessages:   4,
 			NumExtensions: 0,
 			NumServices:   0,
 		},

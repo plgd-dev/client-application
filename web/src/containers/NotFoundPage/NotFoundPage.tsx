@@ -5,15 +5,15 @@ import { Props } from './NotFoundPage.types'
 import { FC } from 'react'
 
 const NotFoundPage: FC<Props> = ({ title, message }) => {
-  const { formatMessage: _ } = useIntl()
-  const pageTitle = title || _(t.pageTitle)
+    const { formatMessage: _ } = useIntl()
+    const pageTitle = title || _(t.pageTitle)
 
-  return (
-    <Layout title={pageTitle || ''}>
-      <h2>{pageTitle}</h2>
-      {message || _(t.notFoundPageDefaultMessage)}
-    </Layout>
-  )
+    return (
+        <Layout title={pageTitle || ''}>
+            <h2>{pageTitle}</h2>
+            {message || _(t.notFoundPageDefaultMessage)}
+        </Layout>
+    )
 }
 
 NotFoundPage.displayName = 'NotFoundPage'

@@ -81,5 +81,18 @@ clients:
             keyFile: /certs/mfg_key.pem
             certFile: /certs/mfg_crt.pem
       tls:
-        subjectUuid: 57b3fae9-adf5-4e34-90ea-e77784407103
-        preSharedKeyUuid: 46178d21-d480-4e95-9bd3-6c9eefa8d9d8
+        authentication: preSharedKey
+        preSharedKey:
+          subjectUuid: 57b3fae9-adf5-4e34-90ea-e77784407103
+          keyUuid: 46178d21-d480-4e95-9bd3-6c9eefa8d9d8
+remoteProvisioning:
+  mode: ""
+  userAgent:
+    certificateAuthorityAddress: ""
+    csrChallengeStateExpiration: 1m
+  authorization:
+    authority: ""
+    clientId: ""
+    audience: ""
+    scopes: []
+    ownerClaim: "sub"

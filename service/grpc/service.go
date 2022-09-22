@@ -38,6 +38,14 @@ func New(ctx context.Context, serviceName string, config Config, clientApplicati
 	interceptor := kitNetGrpc.MakeAuthInterceptors(func(ctx context.Context, method string) (context.Context, error) {
 		return ctx, nil
 	})
+	if clientApplicationServer.HasJWTAuthorizationEnabled() {
+		methods := []string{
+			"/" + pb.ClientApplication_ServiceDesc.ServiceName + "/UpdateJSONWebKeys",
+			"/" + pb.ClientApplication_ServiceDesc.ServiceName + "/GetJSONWebKeys",
+			"/" + pb.ClientApplication_ServiceDesc.ServiceName + "/GetConfiguration",
+		}
+		interceptor = server.NewAuth(clientApplicationServer, server.WithWhiteListedMethods(methods...))
+	}
 	opts, err := server.MakeDefaultOptions(interceptor, logger, tracerProvider)
 	if err != nil {
 		return nil, fmt.Errorf("cannot create grpc server options: %w", err)
@@ -60,8 +68,9 @@ func (s *Service) Serve() error {
 }
 
 // Shutdown ends serving
-func (s *Service) Stop() {
+func (s *Service) Close() error {
 	s.grpcServer.Stop()
+	return nil
 }
 
 func (s *Service) Address() string {

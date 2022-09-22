@@ -30,9 +30,57 @@
     "application/protojson"
   ],
   "paths": {
+    "/.well-known/configuration": {
+      "get": {
+        "summary": "Provides configuration for clients of client application.",
+        "operationId": "ClientApplication_GetConfiguration",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbGetConfigurationResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "client-application"
+        ]
+      }
+    },
+    "/.well-known/jwks.json": {
+      "get": {
+        "summary": "Get jwks.json.",
+        "description": "Available only when GetConfigurationResponse.device_authentication_mode == X509 and GetConfigurationResponse.remote_provisioning.mode == USER_AGENT.",
+        "operationId": "ClientApplication_GetJSONWebKeys",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "type": "object"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "client-application"
+        ]
+      }
+    },
     "/api/v1/devices": {
       "get": {
-        "summary": "Discover devices by client application. This operation fills cache of mappings deviceId to endpoints and this cache is used by other calls.",
+        "summary": "Discover devices by client application.",
+        "description": "This operation fills cache of mappings deviceId to endpoints and this cache is used by other calls.",
         "operationId": "ClientApplication_GetDevices",
         "responses": {
           "200": {
@@ -82,7 +130,7 @@
           },
           {
             "name": "useEndpoints",
-            "description": "Returns devices via endpoints. Default: [] - filter is disabled. New devices will be added to cache. Not reachable devices will be not in response.\nEndpoint can be in format:\n- \u003chost\u003e:\u003cport\u003e is interpreted as coap://\u003chost\u003e:\u003cport\u003e\n- \u003chost\u003e is interpreted as coap://\u003chost\u003e:5683.",
+            "description": "Returns devices via endpoints. Default: [] - filter is disabled. New devices will be added to cache. Not reachable devices will be not in response.\nEndpoint can be in format:\n- \u003chost\u003e:\u003cport\u003e is interpreted as coap://\u003chost\u003e:\u003cport\u003e\n- \u003chost\u003e is interpreted as coap://\u003chost\u003e:5683",
             "in": "query",
             "required": false,
             "type": "array",
@@ -93,10 +141,10 @@
           },
           {
             "name": "timeout",
-            "description": "How long to wait for the devices responses for responses in milliseconds. Default: 0 - means 2sec.",
+            "description": "How long to wait for the devices responses for responses in nanoseconds. Default: 0 - means 2sec.",
             "in": "query",
             "required": false,
-            "type": "integer",
+            "type": "string",
             "format": "int64"
           },
           {
@@ -128,10 +176,16 @@
         ],
         "tags": [
           "Devices"
+        ],
+        "security": [
+          {
+            "OAuth2": []
+          }
         ]
       },
       "delete": {
-        "summary": "Deletes all devices from the cache. To fill the cache again, call GetDevices.",
+        "summary": "Deletes all devices from the cache.",
+        "description": "To fill the cache again, call GetDevices.",
         "operationId": "ClientApplication_ClearCache",
         "responses": {
           "200": {
@@ -149,12 +203,18 @@
         },
         "tags": [
           "Devices"
+        ],
+        "security": [
+          {
+            "OAuth2": []
+          }
         ]
       }
     },
     "/api/v1/devices/{deviceId}": {
       "get": {
-        "summary": "Get device information from the device. Device needs to be stored in cache otherwise it returns not found.",
+        "summary": "Get device information from the device.",
+        "description": "Device needs to be stored in cache otherwise it returns not found.",
         "operationId": "ClientApplication_GetDevice",
         "responses": {
           "200": {
@@ -180,12 +240,18 @@
         ],
         "tags": [
           "Device"
+        ],
+        "security": [
+          {
+            "OAuth2": []
+          }
         ]
       }
     },
     "/api/v1/devices/{deviceId}/disown": {
       "post": {
-        "summary": "Disown the device. Device needs to be stored in cache otherwise it returns not found.",
+        "summary": "Disown the device.",
+        "description": "Device needs to be stored in cache otherwise it returns not found.",
         "operationId": "ClientApplication_DisownDevice",
         "responses": {
           "200": {
@@ -211,12 +277,18 @@
         ],
         "tags": [
           "Device"
+        ],
+        "security": [
+          {
+            "OAuth2": []
+          }
         ]
       }
     },
     "/api/v1/devices/{deviceId}/own": {
       "post": {
-        "summary": "Own the device. Device needs to be stored in cache otherwise it returns not found.",
+        "summary": "Own the device.",
+        "description": "When GetConfigurationResponse.device_authentication_mode == X509 and GetConfigurationResponse.remote_provisioning.mode == USER_AGENT the finish own need to be called:\n - own returns identity CSR of the device which need to be signed by certificate authority\n - in own/{state} call provides signed identity certificate to the device.option\nLook to https://raw.githubusercontent.com/plgd-dev/client-application/main/ownDevice.plantuml for flows.",
         "operationId": "ClientApplication_OwnDevice",
         "responses": {
           "200": {
@@ -238,16 +310,96 @@
             "in": "path",
             "required": true,
             "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "timeout": {
+                  "type": "string",
+                  "format": "int64",
+                  "description": "Defines how long own process will wait for the OwnDeviceRequest with set_identity_certificate in nanoseconds. Default value is 15secs."
+                }
+              }
+            }
           }
         ],
         "tags": [
           "Device"
+        ],
+        "security": [
+          {
+            "OAuth2": []
+          }
+        ]
+      }
+    },
+    "/api/v1/devices/{deviceId}/own/{state}": {
+      "post": {
+        "summary": "Finishing own the device for remote provisioning via USER_AGENT.",
+        "description": "Available only when GetConfigurationResponse.device_authentication_mode == X509 and GetConfigurationResponse.remote_provisioning.mode == USER_AGENT.",
+        "operationId": "ClientApplication_FinishOwnDevice",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbFinishOwnDeviceResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "deviceId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "state",
+            "description": "Use value form OwnDeviceResponse.get_identity_csr.state",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "certificate": {
+                  "type": "string",
+                  "format": "byte",
+                  "title": "Certificate chain in PEM format"
+                }
+              }
+            }
+          }
+        ],
+        "tags": [
+          "Device"
+        ],
+        "security": [
+          {
+            "OAuth2": []
+          }
         ]
       }
     },
     "/api/v1/devices/{deviceId}/resource-links": {
       "get": {
-        "summary": "Get resource links of devices. Device needs to be stored in cache otherwise it returns not found.",
+        "summary": "Get resource links of the device.",
+        "description": "Device needs to be stored in cache otherwise it returns not found.",
         "operationId": "ClientApplication_GetDeviceResourceLinks",
         "responses": {
           "200": {
@@ -273,12 +425,18 @@
         ],
         "tags": [
           "Device"
+        ],
+        "security": [
+          {
+            "OAuth2": []
+          }
         ]
       }
     },
     "/api/v1/devices/{resourceId.deviceId}/resource-links/{resourceId.href}": {
       "delete": {
-        "summary": "Delete a resource at the device. Device needs to be stored in cache otherwise it returns not found.",
+        "summary": "Delete a resource at the device.",
+        "description": "Device needs to be stored in cache otherwise it returns not found.",
         "operationId": "ClientApplication_DeleteResource",
         "responses": {
           "200": {
@@ -305,15 +463,22 @@
             "name": "resourceId.href",
             "in": "path",
             "required": true,
-            "type": "string"
+            "type": "string",
+            "pattern": ".+"
           }
         ],
         "tags": [
           "Resource"
+        ],
+        "security": [
+          {
+            "OAuth2": []
+          }
         ]
       },
       "post": {
-        "summary": "Create a resource at the device. Device needs to be stored in cache otherwise it returns not found.",
+        "summary": "Create a resource at the device.",
+        "description": "Device needs to be stored in cache otherwise it returns not found.",
         "operationId": "ClientApplication_CreateResource",
         "responses": {
           "200": {
@@ -340,10 +505,11 @@
             "name": "resourceId.href",
             "in": "path",
             "required": true,
-            "type": "string"
+            "type": "string",
+            "pattern": ".+"
           },
           {
-            "name": "body",
+            "name": "content",
             "in": "body",
             "required": true,
             "schema": {
@@ -353,12 +519,18 @@
         ],
         "tags": [
           "Resource"
+        ],
+        "security": [
+          {
+            "OAuth2": []
+          }
         ]
       }
     },
     "/api/v1/devices/{resourceId.deviceId}/resources/{resourceId.href}": {
       "get": {
-        "summary": "Get a resource from the device. Device needs to be stored in cache otherwise it returns not found.",
+        "summary": "Get a resource from the device.",
+        "description": "Device needs to be stored in cache otherwise it returns not found.",
         "operationId": "ClientApplication_GetResource",
         "responses": {
           "200": {
@@ -385,15 +557,22 @@
             "name": "resourceId.href",
             "in": "path",
             "required": true,
-            "type": "string"
+            "type": "string",
+            "pattern": ".+"
           }
         ],
         "tags": [
           "Resource"
+        ],
+        "security": [
+          {
+            "OAuth2": []
+          }
         ]
       },
       "put": {
-        "summary": "Update a resource at the device. Device needs to be stored in cache otherwise it returns not found.",
+        "summary": "Update a resource at the device.",
+        "description": "Device needs to be stored in cache otherwise it returns not found.",
         "operationId": "ClientApplication_UpdateResource",
         "responses": {
           "200": {
@@ -420,10 +599,11 @@
             "name": "resourceId.href",
             "in": "path",
             "required": true,
-            "type": "string"
+            "type": "string",
+            "pattern": ".+"
           },
           {
-            "name": "body",
+            "name": "content",
             "in": "body",
             "required": true,
             "schema": {
@@ -433,17 +613,24 @@
         ],
         "tags": [
           "Resource"
+        ],
+        "security": [
+          {
+            "OAuth2": []
+          }
         ]
       }
     },
-    "/api/v1/information": {
+    "/api/v1/identity/certificate": {
       "get": {
-        "operationId": "ClientApplication_GetInformation",
+        "summary": "Get identity certificate of the client application.",
+        "description": "Available only when GetConfigurationResponse.device_authentication_mode == X509 and GetConfigurationResponse.remote_provisioning.mode == USER_AGENT.",
+        "operationId": "ClientApplication_GetIdentityCertificate",
         "responses": {
           "200": {
             "description": "A successful response.",
             "schema": {
-              "$ref": "#/definitions/pbGetInformationResponse"
+              "$ref": "#/definitions/pbGetIdentityCertificateResponse"
             }
           },
           "default": {
@@ -455,6 +642,141 @@
         },
         "tags": [
           "client-application"
+        ],
+        "security": [
+          {
+            "OAuth2": []
+          }
+        ]
+      }
+    },
+    "/api/v1/initialize": {
+      "post": {
+        "summary": "Initialize application when GetConfiguration.is_initialized is set to false.",
+        "description": "Look to https://raw.githubusercontent.com/plgd-dev/client-application/main/initialize.plantuml for flows.",
+        "operationId": "ClientApplication_Initialize",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbInitializeResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbInitializeRequest"
+            }
+          }
+        ],
+        "tags": [
+          "client-application"
+        ],
+        "security": [
+          {
+            "OAuth2": []
+          }
+        ]
+      }
+    },
+    "/api/v1/initialize/{state}": {
+      "post": {
+        "summary": "Finishing initialization for remote provisioning via USER_AGENT.",
+        "description": "Available only when GetConfigurationResponse.device_authentication_mode == X509 and GetConfigurationResponse.remote_provisioning.mode == USER_AGENT.",
+        "operationId": "ClientApplication_FinishInitialize",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbFinishInitializeResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "state",
+            "description": "Use value for pairing otherwise finish will be refused.",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "certificate": {
+                  "type": "string",
+                  "format": "byte",
+                  "title": "Certificate chain in PEM format"
+                }
+              }
+            }
+          }
+        ],
+        "tags": [
+          "client-application"
+        ],
+        "security": [
+          {
+            "OAuth2": []
+          }
+        ]
+      }
+    },
+    "/api/v1/reset": {
+      "post": {
+        "summary": "Flushes identity certificate, private key, device cache and jwks.json.",
+        "operationId": "ClientApplication_Reset",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbResetResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/pbResetRequest"
+            }
+          }
+        ],
+        "tags": [
+          "client-application"
+        ],
+        "security": [
+          {
+            "OAuth2": []
+          }
         ]
       }
     }
@@ -482,6 +804,14 @@
       "default": "UNKNOWN",
       "title": "- UNKNOWN: cannot determine ownership status\n - UNOWNED: device is ready to be owned the user\n - OWNED: device is owned by the user. to determine who own the device you need to get ownership resource /oic/sec/doxm\n - UNSUPPORTED: set when device is not secured. (iotivity-lite was built without security)"
     },
+    "GetConfigurationResponseDeviceAuthenticationMode": {
+      "type": "string",
+      "enum": [
+        "PRE_SHARED_KEY",
+        "X509"
+      ],
+      "default": "PRE_SHARED_KEY"
+    },
     "GetDevicesRequestOwnershipStatusFilter": {
       "type": "string",
       "enum": [
@@ -498,6 +828,14 @@
         "IPV6"
       ],
       "default": "IPV4"
+    },
+    "RemoteProvisioningMode": {
+      "type": "string",
+      "enum": [
+        "MODE_NONE",
+        "USER_AGENT"
+      ],
+      "default": "MODE_NONE"
     },
     "googlerpcStatus": {
       "type": "object",
@@ -574,6 +912,29 @@
           "type": "string"
         },
         "correlationId": {
+          "type": "string"
+        }
+      }
+    },
+    "pbAuthorization": {
+      "type": "object",
+      "properties": {
+        "clientId": {
+          "type": "string"
+        },
+        "audience": {
+          "type": "string"
+        },
+        "scopes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "ownerClaim": {
+          "type": "string"
+        },
+        "authority": {
           "type": "string"
         }
       }
@@ -691,7 +1052,13 @@
         }
       }
     },
-    "pbGetInformationResponse": {
+    "pbFinishInitializeResponse": {
+      "type": "object"
+    },
+    "pbFinishOwnDeviceResponse": {
+      "type": "object"
+    },
+    "pbGetConfigurationResponse": {
       "type": "object",
       "properties": {
         "version": {
@@ -708,6 +1075,71 @@
         },
         "releaseUrl": {
           "type": "string"
+        },
+        "isInitialized": {
+          "type": "boolean",
+          "title": "user don't need to call initialize endpoint"
+        },
+        "deviceAuthenticationMode": {
+          "$ref": "#/definitions/GetConfigurationResponseDeviceAuthenticationMode"
+        },
+        "remoteProvisioning": {
+          "$ref": "#/definitions/pbRemoteProvisioning"
+        }
+      }
+    },
+    "pbGetIdentityCertificateResponse": {
+      "type": "object",
+      "properties": {
+        "certificate": {
+          "type": "string",
+          "format": "byte"
+        }
+      }
+    },
+    "pbIdentityCertificateChallenge": {
+      "type": "object",
+      "properties": {
+        "certificateSigningRequest": {
+          "type": "string",
+          "format": "byte"
+        },
+        "state": {
+          "type": "string"
+        }
+      }
+    },
+    "pbInitializePreSharedKey": {
+      "type": "object",
+      "properties": {
+        "subjectUuid": {
+          "type": "string",
+          "description": "ID of the client application that is used to identify the client application by the device."
+        },
+        "keyUuid": {
+          "type": "string",
+          "description": "Associated secret to the client application ID."
+        }
+      }
+    },
+    "pbInitializeRequest": {
+      "type": "object",
+      "properties": {
+        "preSharedKey": {
+          "$ref": "#/definitions/pbInitializePreSharedKey"
+        },
+        "jwks": {
+          "type": "object"
+        }
+      },
+      "title": "The client application must be initialized when GetConfigurationResponse.is_initialized is set to false.\nThe initialization depends on the GetConfigurationResponse.device_authentication_mode.\nFor:\n - PRE_SHARED_KEY - pre_shared_key values need to be set.\n - X509 - jwks need to be set only if GetConfigurationResponse.remote_provisioning.mode is set to USER_AGENT"
+    },
+    "pbInitializeResponse": {
+      "type": "object",
+      "properties": {
+        "identityCertificateChallenge": {
+          "$ref": "#/definitions/pbIdentityCertificateChallenge",
+          "description": "If is set, the initialization process will be paused.\nFor the next call FinishInitialize, request must contain provided identity_certificate_challenge.state."
         }
       }
     },
@@ -723,7 +1155,13 @@
       }
     },
     "pbOwnDeviceResponse": {
-      "type": "object"
+      "type": "object",
+      "properties": {
+        "identityCertificateChallenge": {
+          "$ref": "#/definitions/pbIdentityCertificateChallenge",
+          "title": "Filled when OwnDeviceRequest.get_identity_csr is true"
+        }
+      }
     },
     "pbPolicy": {
       "type": "object",
@@ -733,6 +1171,26 @@
           "format": "int32"
         }
       }
+    },
+    "pbRemoteProvisioning": {
+      "type": "object",
+      "properties": {
+        "mode": {
+          "$ref": "#/definitions/RemoteProvisioningMode"
+        },
+        "userAgent": {
+          "$ref": "#/definitions/pbUserAgent"
+        },
+        "authorization": {
+          "$ref": "#/definitions/pbAuthorization"
+        }
+      }
+    },
+    "pbResetRequest": {
+      "type": "object"
+    },
+    "pbResetResponse": {
+      "type": "object"
     },
     "pbResourceChanged": {
       "type": "object",
@@ -890,17 +1348,34 @@
       ],
       "default": "UNSET"
     },
+    "pbUserAgent": {
+      "type": "object",
+      "properties": {
+        "certificateAuthorityAddress": {
+          "type": "string"
+        },
+        "csrChallengeStateExpiration": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
     "protobufAny": {
       "type": "object",
       "properties": {
-        "typeUrl": {
+        "@type": {
           "type": "string"
-        },
-        "value": {
-          "type": "string",
-          "format": "byte"
         }
-      }
+      },
+      "additionalProperties": {}
+    },
+    "protobufNullValue": {
+      "type": "string",
+      "enum": [
+        "NULL_VALUE"
+      ],
+      "default": "NULL_VALUE",
+      "description": "`NullValue` is a singleton enumeration to represent the null value for the\n`Value` type union.\n\n The JSON representation for `NullValue` is JSON `null`.\n\n - NULL_VALUE: Null value."
     },
     "resourceaggregatepbContent": {
       "type": "object",
@@ -985,6 +1460,13 @@
         "CANCELED"
       ],
       "default": "UNKNOWN"
+    }
+  },
+  "securityDefinitions": {
+    "OAuth2": {
+      "type": "oauth2",
+      "description": "OAuth2 authorization is used when GetConfigurationResponse.device_authentication_mode == X509",
+      "flow": "accessCode"
     }
   }
 }

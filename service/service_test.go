@@ -17,10 +17,15 @@
 package service_test
 
 import (
+	"context"
 	"fmt"
 	"testing"
 
+	"github.com/plgd-dev/client-application/service"
 	"github.com/plgd-dev/client-application/test"
+	"github.com/plgd-dev/hub/v2/pkg/fsnotify"
+	"github.com/plgd-dev/hub/v2/pkg/log"
+	"github.com/stretchr/testify/require"
 )
 
 func TestServiceServe(t *testing.T) {
@@ -28,4 +33,21 @@ func TestServiceServe(t *testing.T) {
 
 	shutDown := test.SetUp(t)
 	defer shutDown()
+}
+
+func TestServiceFailSetup(t *testing.T) {
+	cfg := test.MakeConfig(t)
+	cfg.APIs.GRPC.Addr = cfg.APIs.HTTP.Addr
+
+	ctx := context.Background()
+	logger := log.NewLogger(cfg.Log)
+	require.NoError(t, cfg.Validate())
+
+	fileWatcher, err := fsnotify.NewWatcher()
+	require.NoError(t, err)
+	defer func() {
+		_ = fileWatcher.Close()
+	}()
+	_, err = service.New(ctx, cfg, test.NewServiceInformation(), fileWatcher, logger)
+	require.Error(t, err)
 }

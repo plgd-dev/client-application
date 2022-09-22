@@ -50,5 +50,8 @@ func (c *UIConfig) Validate() error {
 }
 
 func (c *Config) Validate() error {
+	if err := c.UI.Validate(); err != nil {
+		return fmt.Errorf("ui.%w", err)
+	}
 	return c.Config.Validate()
 }

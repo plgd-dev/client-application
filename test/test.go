@@ -32,6 +32,7 @@ import (
 	serviceDevice "github.com/plgd-dev/client-application/service/device"
 	serviceGrpc "github.com/plgd-dev/client-application/service/grpc"
 	"github.com/plgd-dev/client-application/service/http"
+	"github.com/plgd-dev/client-application/service/remoteProvisioning"
 	"github.com/plgd-dev/device/schema"
 	"github.com/plgd-dev/device/schema/device"
 	deviceTest "github.com/plgd-dev/device/test"
@@ -79,6 +80,7 @@ func MakeConfig(t require.TestingT) service.Config {
 	cfg.APIs.HTTP = MakeHttpConfig()
 	cfg.APIs.GRPC = MakeGrpcConfig()
 	cfg.Clients.Device = MakeDeviceConfig()
+	cfg.RemoteProvisioning = MakeRemoteProvisioningConfig()
 
 	require.NoError(t, cfg.Validate())
 
@@ -93,6 +95,7 @@ func SetUp(t *testing.T) (tearDown func()) {
 func New(t *testing.T, cfg service.Config) func() {
 	ctx := context.Background()
 	logger := log.NewLogger(cfg.Log)
+	require.NoError(t, cfg.Validate())
 
 	fileWatcher, err := fsnotify.NewWatcher()
 	require.NoError(t, err)
@@ -113,7 +116,7 @@ func New(t *testing.T, cfg service.Config) func() {
 }
 
 func MakeDeviceConfig() serviceDevice.Config {
-	return serviceDevice.Config{
+	cfg := serviceDevice.Config{
 		COAP: serviceDevice.CoapConfig{
 			MaxMessageSize: 256 * 1024,
 			InactivityMonitor: serviceDevice.InactivityMonitor{
@@ -124,8 +127,11 @@ func MakeDeviceConfig() serviceDevice.Config {
 				SZX:     "1024",
 			},
 			TLS: serviceDevice.TLSConfig{
-				SubjectUUID:      "57b3fae9-adf5-4e34-90ea-e77784407103",
-				PreSharedKeyUUID: "46178d21-d480-4e95-9bd3-6c9eefa8d9d8",
+				Authentication: serviceDevice.AuthenticationPreSharedKey,
+				PreSharedKey: serviceDevice.PreSharedKeyConfig{
+					SubjectUUID: "57b3fae9-adf5-4e34-90ea-e77784407103",
+					KeyUUID:     "46178d21-d480-4e95-9bd3-6c9eefa8d9d8",
+				},
 			},
 			OwnershipTransfer: serviceDevice.OwnershipTransferConfig{
 				Methods: []serviceDevice.OwnershipTransferMethod{serviceDevice.OwnershipTransferJustWorks, serviceDevice.OwnershipTransferManufacturerCertificate},
@@ -139,6 +145,7 @@ func MakeDeviceConfig() serviceDevice.Config {
 			},
 		},
 	}
+	return cfg
 }
 
 func MakeHttpConfig() service.HTTPConfig {
@@ -178,6 +185,21 @@ func MakeGrpcConfig() service.GRPCConfig {
 	}
 }
 
+func MakeRemoteProvisioningConfig() remoteProvisioning.Config {
+	return remoteProvisioning.Config{
+		Mode: remoteProvisioning.Mode_None,
+		UserAgentConfig: remoteProvisioning.UserAgentConfig{
+			CSRChallengeStateExpiration: time.Minute * 10,
+			CertificateAuthorityAddress: config.CERTIFICATE_AUTHORITY_HOST,
+		},
+		Authorization: remoteProvisioning.AuthorizationConfig{
+			OwnerClaim: config.OWNER_CLAIM,
+			Authority:  config.OAUTH_SERVER_HOST,
+			ClientID:   config.OAUTH_MANAGER_CLIENT_ID,
+		},
+	}
+}
+
 func NewHttpService(ctx context.Context, t *testing.T) (*http.Service, func()) {
 	cfg := MakeConfig(t)
 	cfg.APIs.HTTP.TLS.ClientCertificateRequired = false
@@ -198,7 +220,7 @@ func NewHttpService(ctx context.Context, t *testing.T) (*http.Service, func()) {
 	}()
 
 	cleanUp := func() {
-		err = s.Shutdown()
+		err = s.Close()
 		require.NoError(t, err)
 		wg.Wait()
 		tearDown()
@@ -209,14 +231,17 @@ func NewHttpService(ctx context.Context, t *testing.T) (*http.Service, func()) {
 
 func NewServiceInformation() *serviceGrpc.ServiceInformation {
 	return &serviceGrpc.ServiceInformation{
-		Version:    VERSION,
-		BuildDate:  BUILD_DATE,
-		CommitHash: COMMIT_HASH,
+		Version:                  VERSION,
+		BuildDate:                BUILD_DATE,
+		CommitHash:               COMMIT_HASH,
+		IsInitialized:            true,
+		DeviceAuthenticationMode: pb.GetConfigurationResponse_PRE_SHARED_KEY,
 	}
 }
 
 type ClientApplicationServerCfg struct {
-	Cfg serviceDevice.Config
+	Cfg                   serviceDevice.Config
+	RemoteProvisioningCfg remoteProvisioning.Config
 }
 
 type ClientApplicationServerOpt = func(c *ClientApplicationServerCfg)
@@ -227,18 +252,30 @@ func WithDeviceConfig(cfg serviceDevice.Config) ClientApplicationServerOpt {
 	}
 }
 
+func WithRemoteProvisioningConfig(cfg remoteProvisioning.Config) ClientApplicationServerOpt {
+	return func(c *ClientApplicationServerCfg) {
+		c.RemoteProvisioningCfg = cfg
+	}
+}
+
 func NewClientApplicationServer(ctx context.Context, opts ...ClientApplicationServerOpt) (*serviceGrpc.ClientApplicationServer, func(), error) {
 	logger := log.NewLogger(log.MakeDefaultConfig())
 	cfg := ClientApplicationServerCfg{
-		Cfg: MakeDeviceConfig(),
+		Cfg:                   MakeDeviceConfig(),
+		RemoteProvisioningCfg: MakeRemoteProvisioningConfig(),
 	}
 	for _, o := range opts {
 		o(&cfg)
 	}
-	if err := cfg.Cfg.Validate(); err != nil {
+	deviceCfg := cfg.Cfg
+	if err := deviceCfg.Validate(); err != nil {
 		return nil, nil, err
 	}
-	d, err := serviceDevice.New(ctx, "client-application-device", cfg.Cfg, logger, trace.NewNoopTracerProvider())
+	remoteProvisioningCfg := cfg.RemoteProvisioningCfg
+	if err := remoteProvisioningCfg.Validate(); err != nil {
+		return nil, nil, err
+	}
+	d, err := serviceDevice.New(ctx, "client-application-device", deviceCfg, logger, trace.NewNoopTracerProvider())
 	if err != nil {
 		return nil, nil, err
 	}
@@ -249,8 +286,10 @@ func NewClientApplicationServer(ctx context.Context, opts ...ClientApplicationSe
 		_ = d.Serve()
 	}()
 
-	return serviceGrpc.NewClientApplicationServer(d, NewServiceInformation(), logger), func() {
-		d.Close()
+	clientApplicationServer := serviceGrpc.NewClientApplicationServer(remoteProvisioningCfg, d, NewServiceInformation(), logger)
+	return clientApplicationServer, func() {
+		_ = d.Close()
+		clientApplicationServer.Close()
 		wg.Wait()
 	}, nil
 }

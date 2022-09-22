@@ -1,5 +1,5 @@
 export type Props = {
-  loading: boolean
-  refresh: () => void
-  openTimeoutModal: () => void
+    loading: boolean
+    refresh: () => void
+    openTimeoutModal: () => void
 }

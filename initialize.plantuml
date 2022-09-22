@@ -1,0 +1,64 @@
+@startuml Sequence
+skinparam backgroundColor transparent
+hide footbox
+
+box "D2D Client"
+participant S as "Web App\n(running in the browser)"
+participant C as "Service\n(local or remote host)"
+end box
+
+box "plgd hub"
+participant CA as "Certificate Authority"
+participant OA as "OAuth 2.0 Server"
+end box
+
+S -> C: GetConfiguration
+return
+alt #GetConfiguration.device_authentication_mode == PRE_SHARED_KEY
+  alt #GetConfiguration.is_initialized == true
+      note over C #aqua
+       D2D Client - service is initialized.
+      end note
+  else false
+      S -> C ++: Initialize\n(preshared key) 
+      activate S
+      return
+      note over C #aqua
+      D2D Client - service is initialized.
+      end note
+      deactivate S
+  end
+else X509
+    S -> OA ++: Authenticate user
+    return JWT User token 
+    alt #GetConfiguration.is_initialized == true
+      note over C #aqua
+      D2D Client - service is initialized.
+      end note
+    else false
+        alt #GetConfiguration.remote_provisioning.mode == SELF
+          S -> C ++: Initialize\n(User token)
+          activate S
+          return
+          note over C #aqua
+          D2D Client - service is initialized.
+          end note
+          deactivate S
+        else USER_AGENT
+          S -> OA ++: Get /.well-known/jwks.json
+          activate S
+          return jwks.json
+          S -> C ++: Initialize\n(jwks.json, User token)
+          return Identity certificate challenge\n(D2D Client Identity CSR, state)
+          S-> CA ++: Sign D2D Client Identity CSR\n(CSR, User token)
+          return Identity Certificate chain
+          S -> C ++: Finish Initialize\n(Identity Certificate Chain, User token, state)
+          return
+          note over C #aqua
+          D2D Client - service is initialized.
+          end note
+          deactivate S
+        end
+    end
+end
+@enduml

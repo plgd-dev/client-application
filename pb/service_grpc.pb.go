@@ -9,6 +9,7 @@ import (
 	grpc "google.golang.org/grpc"
 	codes "google.golang.org/grpc/codes"
 	status "google.golang.org/grpc/status"
+	structpb "google.golang.org/protobuf/types/known/structpb"
 )
 
 // This is a compile-time assertion to ensure that this generated file
@@ -20,27 +21,23 @@ const _ = grpc.SupportPackageIsVersion7
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ClientApplicationClient interface {
-	// Discover devices by client application. This operation fills cache of mappings deviceId to endpoints and this cache is used by other calls.
 	GetDevices(ctx context.Context, in *GetDevicesRequest, opts ...grpc.CallOption) (ClientApplication_GetDevicesClient, error)
-	// Get device information from the device. Device needs to be stored in cache otherwise it returns not found.
 	GetDevice(ctx context.Context, in *GetDeviceRequest, opts ...grpc.CallOption) (*pb.Device, error)
-	// Get resource links of devices. Device needs to be stored in cache otherwise it returns not found.
 	GetDeviceResourceLinks(ctx context.Context, in *GetDeviceResourceLinksRequest, opts ...grpc.CallOption) (*events.ResourceLinksPublished, error)
-	// Get a resource from the device. Device needs to be stored in cache otherwise it returns not found.
 	GetResource(ctx context.Context, in *GetResourceRequest, opts ...grpc.CallOption) (*pb.Resource, error)
-	// Update a resource at the device. Device needs to be stored in cache otherwise it returns not found.
 	UpdateResource(ctx context.Context, in *UpdateResourceRequest, opts ...grpc.CallOption) (*pb.UpdateResourceResponse, error)
-	// Create a resource at the device. Device needs to be stored in cache otherwise it returns not found.
 	CreateResource(ctx context.Context, in *CreateResourceRequest, opts ...grpc.CallOption) (*pb.CreateResourceResponse, error)
-	// Delete a resource at the device. Device needs to be stored in cache otherwise it returns not found.
 	DeleteResource(ctx context.Context, in *DeleteResourceRequest, opts ...grpc.CallOption) (*pb.DeleteResourceResponse, error)
-	// Own the device. Device needs to be stored in cache otherwise it returns not found.
 	OwnDevice(ctx context.Context, in *OwnDeviceRequest, opts ...grpc.CallOption) (*OwnDeviceResponse, error)
-	// Disown the device. Device needs to be stored in cache otherwise it returns not found.
+	FinishOwnDevice(ctx context.Context, in *FinishOwnDeviceRequest, opts ...grpc.CallOption) (*FinishOwnDeviceResponse, error)
 	DisownDevice(ctx context.Context, in *DisownDeviceRequest, opts ...grpc.CallOption) (*DisownDeviceResponse, error)
-	// Deletes all devices from the cache. To fill the cache again, call GetDevices.
 	ClearCache(ctx context.Context, in *ClearCacheRequest, opts ...grpc.CallOption) (*ClearCacheResponse, error)
-	GetInformation(ctx context.Context, in *GetInformationRequest, opts ...grpc.CallOption) (*GetInformationResponse, error)
+	GetConfiguration(ctx context.Context, in *GetConfigurationRequest, opts ...grpc.CallOption) (*GetConfigurationResponse, error)
+	GetJSONWebKeys(ctx context.Context, in *GetJSONWebKeysRequest, opts ...grpc.CallOption) (*structpb.Struct, error)
+	GetIdentityCertificate(ctx context.Context, in *GetIdentityCertificateRequest, opts ...grpc.CallOption) (*GetIdentityCertificateResponse, error)
+	Initialize(ctx context.Context, in *InitializeRequest, opts ...grpc.CallOption) (*InitializeResponse, error)
+	FinishInitialize(ctx context.Context, in *FinishInitializeRequest, opts ...grpc.CallOption) (*FinishInitializeResponse, error)
+	Reset(ctx context.Context, in *ResetRequest, opts ...grpc.CallOption) (*ResetResponse, error)
 }
 
 type clientApplicationClient struct {
@@ -146,6 +143,15 @@ func (c *clientApplicationClient) OwnDevice(ctx context.Context, in *OwnDeviceRe
 	return out, nil
 }
 
+func (c *clientApplicationClient) FinishOwnDevice(ctx context.Context, in *FinishOwnDeviceRequest, opts ...grpc.CallOption) (*FinishOwnDeviceResponse, error) {
+	out := new(FinishOwnDeviceResponse)
+	err := c.cc.Invoke(ctx, "/service.pb.ClientApplication/FinishOwnDevice", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 func (c *clientApplicationClient) DisownDevice(ctx context.Context, in *DisownDeviceRequest, opts ...grpc.CallOption) (*DisownDeviceResponse, error) {
 	out := new(DisownDeviceResponse)
 	err := c.cc.Invoke(ctx, "/service.pb.ClientApplication/DisownDevice", in, out, opts...)
@@ -164,9 +170,54 @@ func (c *clientApplicationClient) ClearCache(ctx context.Context, in *ClearCache
 	return out, nil
 }
 
-func (c *clientApplicationClient) GetInformation(ctx context.Context, in *GetInformationRequest, opts ...grpc.CallOption) (*GetInformationResponse, error) {
-	out := new(GetInformationResponse)
-	err := c.cc.Invoke(ctx, "/service.pb.ClientApplication/GetInformation", in, out, opts...)
+func (c *clientApplicationClient) GetConfiguration(ctx context.Context, in *GetConfigurationRequest, opts ...grpc.CallOption) (*GetConfigurationResponse, error) {
+	out := new(GetConfigurationResponse)
+	err := c.cc.Invoke(ctx, "/service.pb.ClientApplication/GetConfiguration", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *clientApplicationClient) GetJSONWebKeys(ctx context.Context, in *GetJSONWebKeysRequest, opts ...grpc.CallOption) (*structpb.Struct, error) {
+	out := new(structpb.Struct)
+	err := c.cc.Invoke(ctx, "/service.pb.ClientApplication/GetJSONWebKeys", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *clientApplicationClient) GetIdentityCertificate(ctx context.Context, in *GetIdentityCertificateRequest, opts ...grpc.CallOption) (*GetIdentityCertificateResponse, error) {
+	out := new(GetIdentityCertificateResponse)
+	err := c.cc.Invoke(ctx, "/service.pb.ClientApplication/GetIdentityCertificate", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *clientApplicationClient) Initialize(ctx context.Context, in *InitializeRequest, opts ...grpc.CallOption) (*InitializeResponse, error) {
+	out := new(InitializeResponse)
+	err := c.cc.Invoke(ctx, "/service.pb.ClientApplication/Initialize", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *clientApplicationClient) FinishInitialize(ctx context.Context, in *FinishInitializeRequest, opts ...grpc.CallOption) (*FinishInitializeResponse, error) {
+	out := new(FinishInitializeResponse)
+	err := c.cc.Invoke(ctx, "/service.pb.ClientApplication/FinishInitialize", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *clientApplicationClient) Reset(ctx context.Context, in *ResetRequest, opts ...grpc.CallOption) (*ResetResponse, error) {
+	out := new(ResetResponse)
+	err := c.cc.Invoke(ctx, "/service.pb.ClientApplication/Reset", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -177,27 +228,23 @@ func (c *clientApplicationClient) GetInformation(ctx context.Context, in *GetInf
 // All implementations must embed UnimplementedClientApplicationServer
 // for forward compatibility
 type ClientApplicationServer interface {
-	// Discover devices by client application. This operation fills cache of mappings deviceId to endpoints and this cache is used by other calls.
 	GetDevices(*GetDevicesRequest, ClientApplication_GetDevicesServer) error
-	// Get device information from the device. Device needs to be stored in cache otherwise it returns not found.
 	GetDevice(context.Context, *GetDeviceRequest) (*pb.Device, error)
-	// Get resource links of devices. Device needs to be stored in cache otherwise it returns not found.
 	GetDeviceResourceLinks(context.Context, *GetDeviceResourceLinksRequest) (*events.ResourceLinksPublished, error)
-	// Get a resource from the device. Device needs to be stored in cache otherwise it returns not found.
 	GetResource(context.Context, *GetResourceRequest) (*pb.Resource, error)
-	// Update a resource at the device. Device needs to be stored in cache otherwise it returns not found.
 	UpdateResource(context.Context, *UpdateResourceRequest) (*pb.UpdateResourceResponse, error)
-	// Create a resource at the device. Device needs to be stored in cache otherwise it returns not found.
 	CreateResource(context.Context, *CreateResourceRequest) (*pb.CreateResourceResponse, error)
-	// Delete a resource at the device. Device needs to be stored in cache otherwise it returns not found.
 	DeleteResource(context.Context, *DeleteResourceRequest) (*pb.DeleteResourceResponse, error)
-	// Own the device. Device needs to be stored in cache otherwise it returns not found.
 	OwnDevice(context.Context, *OwnDeviceRequest) (*OwnDeviceResponse, error)
-	// Disown the device. Device needs to be stored in cache otherwise it returns not found.
+	FinishOwnDevice(context.Context, *FinishOwnDeviceRequest) (*FinishOwnDeviceResponse, error)
 	DisownDevice(context.Context, *DisownDeviceRequest) (*DisownDeviceResponse, error)
-	// Deletes all devices from the cache. To fill the cache again, call GetDevices.
 	ClearCache(context.Context, *ClearCacheRequest) (*ClearCacheResponse, error)
-	GetInformation(context.Context, *GetInformationRequest) (*GetInformationResponse, error)
+	GetConfiguration(context.Context, *GetConfigurationRequest) (*GetConfigurationResponse, error)
+	GetJSONWebKeys(context.Context, *GetJSONWebKeysRequest) (*structpb.Struct, error)
+	GetIdentityCertificate(context.Context, *GetIdentityCertificateRequest) (*GetIdentityCertificateResponse, error)
+	Initialize(context.Context, *InitializeRequest) (*InitializeResponse, error)
+	FinishInitialize(context.Context, *FinishInitializeRequest) (*FinishInitializeResponse, error)
+	Reset(context.Context, *ResetRequest) (*ResetResponse, error)
 	mustEmbedUnimplementedClientApplicationServer()
 }
 
@@ -229,14 +276,32 @@ func (UnimplementedClientApplicationServer) DeleteResource(context.Context, *Del
 func (UnimplementedClientApplicationServer) OwnDevice(context.Context, *OwnDeviceRequest) (*OwnDeviceResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method OwnDevice not implemented")
 }
+func (UnimplementedClientApplicationServer) FinishOwnDevice(context.Context, *FinishOwnDeviceRequest) (*FinishOwnDeviceResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FinishOwnDevice not implemented")
+}
 func (UnimplementedClientApplicationServer) DisownDevice(context.Context, *DisownDeviceRequest) (*DisownDeviceResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method DisownDevice not implemented")
 }
 func (UnimplementedClientApplicationServer) ClearCache(context.Context, *ClearCacheRequest) (*ClearCacheResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ClearCache not implemented")
 }
-func (UnimplementedClientApplicationServer) GetInformation(context.Context, *GetInformationRequest) (*GetInformationResponse, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method GetInformation not implemented")
+func (UnimplementedClientApplicationServer) GetConfiguration(context.Context, *GetConfigurationRequest) (*GetConfigurationResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetConfiguration not implemented")
+}
+func (UnimplementedClientApplicationServer) GetJSONWebKeys(context.Context, *GetJSONWebKeysRequest) (*structpb.Struct, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetJSONWebKeys not implemented")
+}
+func (UnimplementedClientApplicationServer) GetIdentityCertificate(context.Context, *GetIdentityCertificateRequest) (*GetIdentityCertificateResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetIdentityCertificate not implemented")
+}
+func (UnimplementedClientApplicationServer) Initialize(context.Context, *InitializeRequest) (*InitializeResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Initialize not implemented")
+}
+func (UnimplementedClientApplicationServer) FinishInitialize(context.Context, *FinishInitializeRequest) (*FinishInitializeResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FinishInitialize not implemented")
+}
+func (UnimplementedClientApplicationServer) Reset(context.Context, *ResetRequest) (*ResetResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Reset not implemented")
 }
 func (UnimplementedClientApplicationServer) mustEmbedUnimplementedClientApplicationServer() {}
 
@@ -398,6 +463,24 @@ func _ClientApplication_OwnDevice_Handler(srv interface{}, ctx context.Context, 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ClientApplication_FinishOwnDevice_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FinishOwnDeviceRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ClientApplicationServer).FinishOwnDevice(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/service.pb.ClientApplication/FinishOwnDevice",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ClientApplicationServer).FinishOwnDevice(ctx, req.(*FinishOwnDeviceRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _ClientApplication_DisownDevice_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(DisownDeviceRequest)
 	if err := dec(in); err != nil {
@@ -434,20 +517,110 @@ func _ClientApplication_ClearCache_Handler(srv interface{}, ctx context.Context,
 	return interceptor(ctx, in, info, handler)
 }
 
-func _ClientApplication_GetInformation_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetInformationRequest)
+func _ClientApplication_GetConfiguration_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetConfigurationRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(ClientApplicationServer).GetInformation(ctx, in)
+		return srv.(ClientApplicationServer).GetConfiguration(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/service.pb.ClientApplication/GetInformation",
+		FullMethod: "/service.pb.ClientApplication/GetConfiguration",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ClientApplicationServer).GetInformation(ctx, req.(*GetInformationRequest))
+		return srv.(ClientApplicationServer).GetConfiguration(ctx, req.(*GetConfigurationRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ClientApplication_GetJSONWebKeys_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetJSONWebKeysRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ClientApplicationServer).GetJSONWebKeys(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/service.pb.ClientApplication/GetJSONWebKeys",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ClientApplicationServer).GetJSONWebKeys(ctx, req.(*GetJSONWebKeysRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ClientApplication_GetIdentityCertificate_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetIdentityCertificateRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ClientApplicationServer).GetIdentityCertificate(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/service.pb.ClientApplication/GetIdentityCertificate",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ClientApplicationServer).GetIdentityCertificate(ctx, req.(*GetIdentityCertificateRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ClientApplication_Initialize_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(InitializeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ClientApplicationServer).Initialize(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/service.pb.ClientApplication/Initialize",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ClientApplicationServer).Initialize(ctx, req.(*InitializeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ClientApplication_FinishInitialize_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FinishInitializeRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ClientApplicationServer).FinishInitialize(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/service.pb.ClientApplication/FinishInitialize",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ClientApplicationServer).FinishInitialize(ctx, req.(*FinishInitializeRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ClientApplication_Reset_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ResetRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ClientApplicationServer).Reset(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/service.pb.ClientApplication/Reset",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ClientApplicationServer).Reset(ctx, req.(*ResetRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -488,6 +661,10 @@ var ClientApplication_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _ClientApplication_OwnDevice_Handler,
 		},
 		{
+			MethodName: "FinishOwnDevice",
+			Handler:    _ClientApplication_FinishOwnDevice_Handler,
+		},
+		{
 			MethodName: "DisownDevice",
 			Handler:    _ClientApplication_DisownDevice_Handler,
 		},
@@ -496,8 +673,28 @@ var ClientApplication_ServiceDesc = grpc.ServiceDesc{
 			Handler:    _ClientApplication_ClearCache_Handler,
 		},
 		{
-			MethodName: "GetInformation",
-			Handler:    _ClientApplication_GetInformation_Handler,
+			MethodName: "GetConfiguration",
+			Handler:    _ClientApplication_GetConfiguration_Handler,
+		},
+		{
+			MethodName: "GetJSONWebKeys",
+			Handler:    _ClientApplication_GetJSONWebKeys_Handler,
+		},
+		{
+			MethodName: "GetIdentityCertificate",
+			Handler:    _ClientApplication_GetIdentityCertificate_Handler,
+		},
+		{
+			MethodName: "Initialize",
+			Handler:    _ClientApplication_Initialize_Handler,
+		},
+		{
+			MethodName: "FinishInitialize",
+			Handler:    _ClientApplication_FinishInitialize_Handler,
+		},
+		{
+			MethodName: "Reset",
+			Handler:    _ClientApplication_Reset_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

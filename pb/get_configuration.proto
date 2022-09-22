@@ -1,0 +1,63 @@
+// ************************************************************************
+// Copyright (C) 2022 plgd.dev, s.r.o.
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// ************************************************************************
+
+syntax = "proto3";
+
+package service.pb;
+
+option go_package = "github.com/plgd-dev/client-application/pb;pb";
+
+message GetConfigurationRequest {}
+
+message UserAgent {
+    string certificate_authority_address = 1;
+    int64 csr_challenge_state_expiration = 2; // in nanoseconds
+}
+
+message Authorization {
+    string client_id = 1;
+    string audience = 2;
+    repeated string scopes = 3;
+    string owner_claim = 4;
+    string authority = 5;
+}
+
+message RemoteProvisioning {
+    enum Mode {
+        MODE_NONE = 0;
+        USER_AGENT = 1;
+    };
+    Mode mode = 1;
+    UserAgent user_agent = 2;
+    Authorization authorization = 3;
+}
+
+
+message GetConfigurationResponse {
+    enum DeviceAuthenticationMode {
+        PRE_SHARED_KEY = 0;
+        X509 = 1;
+    };
+    string version = 1;
+    string build_date = 2;
+    string commit_hash = 3;
+    string commit_date = 4;
+    string release_url = 5;
+    // user don't need to call initialize endpoint
+    bool is_initialized = 6;
+    DeviceAuthenticationMode device_authentication_mode = 7;
+    RemoteProvisioning remote_provisioning = 8;
+}

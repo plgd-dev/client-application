@@ -5,7 +5,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// 	http://www.apache.org/licenses/LICENSE-2.0
+//     http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -18,11 +18,28 @@ syntax = "proto3";
 
 package service.pb;
 
+import "pb/initialize.proto";
+
 option go_package = "github.com/plgd-dev/client-application/pb;pb";
 
 message OwnDeviceRequest {
-  string device_id = 1;
+    string device_id = 1;
+    // Defines how long own process will wait for the OwnDeviceRequest with set_identity_certificate in nanoseconds. Default value is 15secs.
+    int64 timeout = 2;
 }
 
 message OwnDeviceResponse {
+    // Filled when OwnDeviceRequest.get_identity_csr is true
+    IdentityCertificateChallenge identity_certificate_challenge = 1; 
+}
+
+message FinishOwnDeviceRequest {
+    string device_id = 1;
+    // Use value form OwnDeviceResponse.get_identity_csr.state
+    string state = 2;
+    // Certificate chain in PEM format
+    bytes certificate = 3;
+}
+
+message FinishOwnDeviceResponse {
 }

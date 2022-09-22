@@ -1,0 +1,68 @@
+@import '@shared-ui/common/styles/colors';
+
+.preSharedKeySetupPage {
+    min-height: 100vh;
+    display: flex;
+
+    .colLeft {
+        flex: 0 0 auto;
+        width: 600px;
+        background: $primary_100;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+
+        .top {
+            padding: 40px;
+
+            h1 {
+                color: #fff;
+                text-align: center;
+                font-weight: bold;
+                margin: 0 0 30px 0;
+            }
+
+            .claim {
+                color: #fff;
+                text-align: center;
+                font-size: 18px;
+            }
+        }
+
+        .bottom {
+            display: flex;
+            justify-content: center;
+
+            svg {
+                width: 200px;
+                height: 140px;
+            }
+        }
+    }
+
+    .colRight {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        margin: 0 auto;
+        padding: 20px;
+        flex: 1 1 auto;
+
+        h2 {
+            margin: 0 0 30px 0;
+            font-weight: bold;
+            font-size: 24px;
+        }
+
+        .formContainer {
+            max-width: 450px;
+            width: 100%;
+
+            .buttons-wrapper {
+                display: flex;
+                justify-content: flex-end;
+            }
+        }
+    }
+}

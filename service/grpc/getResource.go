@@ -58,7 +58,11 @@ func responseToData(response []byte) *commands.Content {
 }
 
 func (s *ClientApplicationServer) GetResource(ctx context.Context, req *pb.GetResourceRequest) (*grpcgwPb.Resource, error) {
-	dev, err := s.getDevice(req.GetResourceId().GetDeviceId())
+	devID, err := strDeviceID2UUID(req.GetResourceId().GetDeviceId())
+	if err != nil {
+		return nil, err
+	}
+	dev, err := s.getDevice(devID)
 	if err != nil {
 		return nil, err
 	}

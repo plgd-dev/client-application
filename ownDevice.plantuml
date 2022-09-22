@@ -1,0 +1,33 @@
+@startuml Sequence
+skinparam backgroundColor transparent
+hide footbox
+
+box "D2D Client"
+participant S as "Web App\n(running in the browser)"
+participant C as "Service\n(local or remote host)"
+end box
+
+box "plgd hub"
+participant CA as "Certificate Authority"
+end box
+
+alt GetConfiguration.device_authentication_mode == X509
+  alt remote_provisioning.mode == USER_AGENT
+    S -> C++: Own device\n(User token)
+    activate S
+    C -> S: Identity certificate challenge\n(Device Identity CSR, state)
+    S -> CA ++:  Sign Device Identity CSR\n(CSR, User token)
+    return Identity Certificate Chain
+    S -> C: Finish Own\n(Identity Certificate Chain, User token, state)
+    return Device owned
+    deactivate C
+    deactivate S
+  else SELF
+    S -> C++: Own device\n(User token)
+    return Device owned
+  end
+else PRE_SHARED_KEY
+  S -> C ++: Own device
+  return Device owned
+end
+@enduml

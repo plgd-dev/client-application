@@ -4,5 +4,5 @@ export type Props = {
 }
 
 export const defaultProps = {
-    show: false
+    show: false,
 }

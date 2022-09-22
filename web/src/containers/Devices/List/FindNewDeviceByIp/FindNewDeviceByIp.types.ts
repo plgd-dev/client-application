@@ -1,3 +1,3 @@
 export type Props = {
-  disabled: boolean
+    disabled: boolean
 }

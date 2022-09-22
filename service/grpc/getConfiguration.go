@@ -22,10 +22,13 @@ import (
 	"github.com/plgd-dev/client-application/pb"
 )
 
-func (s *ClientApplicationServer) GetInformation(ctx context.Context, _ *pb.GetInformationRequest) (*pb.GetInformationResponse, error) {
-	return &pb.GetInformationResponse{
-		Version:    s.info.Version,
-		BuildDate:  s.info.BuildDate,
-		CommitHash: s.info.CommitHash,
-	}, nil
+func (s *ClientApplicationServer) GetConfiguration(ctx context.Context, _ *pb.GetConfigurationRequest) (*pb.GetConfigurationResponse, error) {
+	info := s.info.Clone()
+	info.DeviceAuthenticationMode = s.serviceDevice.GetDeviceAuthenticationMode()
+	info.IsInitialized = s.serviceDevice.IsInitialized()
+	if info.DeviceAuthenticationMode == pb.GetConfigurationResponse_X509 {
+		info.RemoteProvisioning = s.remoteProvisioningConfig.ToProto()
+	}
+
+	return info, nil
 }

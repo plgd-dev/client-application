@@ -14,28 +14,37 @@
 // limitations under the License.
 // ************************************************************************
 
-package grpc_test
+package grpc
 
 import (
 	"context"
-	"testing"
-	"time"
 
+	"github.com/google/uuid"
 	"github.com/plgd-dev/client-application/pb"
-	"github.com/plgd-dev/client-application/test"
-	"github.com/stretchr/testify/require"
+	"github.com/plgd-dev/hub/v2/pkg/log"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
-func TestClientApplicationServerGetInformation(t *testing.T) {
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*120)
-	defer cancel()
+func (s *ClientApplicationServer) reset(ctx context.Context) {
+	s.jwksCache.Store(nil)
+	s.serviceDevice.Reset()
+	s.csrCache.DeleteAll()
+	s.remoteOwnSignCache.Range(func(key uuid.UUID, value *remoteSign) bool {
+		s.remoteOwnSignCache.Delete(key)
+		value.cancel()
+		return true
+	})
+	_, err := s.ClearCache(ctx, &pb.ClearCacheRequest{})
+	if err != nil {
+		log.Warnf("cannot clear cache: %v", err)
+	}
+}
 
-	s, teardown, err := test.NewClientApplicationServer(ctx)
-	require.NoError(t, err)
-	defer teardown()
-
-	// get device
-	d1, err := s.GetInformation(ctx, &pb.GetInformationRequest{})
-	require.NoError(t, err)
-	require.Equal(t, test.NewServiceInformation(), d1)
+func (s *ClientApplicationServer) Reset(ctx context.Context, req *pb.ResetRequest) (*pb.ResetResponse, error) {
+	if !s.serviceDevice.IsInitialized() {
+		return nil, status.Errorf(codes.FailedPrecondition, "not initialized")
+	}
+	s.reset(ctx)
+	return &pb.ResetResponse{}, nil
 }

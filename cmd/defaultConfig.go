@@ -28,6 +28,7 @@ import (
 	service "github.com/plgd-dev/client-application/service"
 	"github.com/plgd-dev/client-application/service/device"
 	"github.com/plgd-dev/client-application/service/http"
+	"github.com/plgd-dev/client-application/service/remoteProvisioning"
 	"github.com/plgd-dev/hub/v2/pkg/log"
 	grpcServer "github.com/plgd-dev/hub/v2/pkg/net/grpc/server"
 	httpServer "github.com/plgd-dev/hub/v2/pkg/net/http/server"
@@ -90,13 +91,25 @@ func createDefaultConfig(uiDirectory string) service.Config {
 						SZX:     "1024",
 					},
 					TLS: device.TLSConfig{
-						SubjectUUID:      uuid.NewString(),
-						PreSharedKeyUUID: uuid.NewString(),
+						Authentication: device.AuthenticationPreSharedKey,
+						PreSharedKey: device.PreSharedKeyConfig{
+							SubjectUUID: uuid.NewString(),
+							KeyUUID:     uuid.NewString(),
+						},
 					},
 					OwnershipTransfer: device.OwnershipTransferConfig{
 						Methods: []device.OwnershipTransferMethod{device.OwnershipTransferJustWorks},
 					},
 				},
+			},
+		},
+		RemoteProvisioning: remoteProvisioning.Config{
+			Mode: remoteProvisioning.Mode_None,
+			UserAgentConfig: remoteProvisioning.UserAgentConfig{
+				CSRChallengeStateExpiration: time.Minute * 1,
+			},
+			Authorization: remoteProvisioning.AuthorizationConfig{
+				OwnerClaim: "sub",
 			},
 		},
 	}

@@ -26,8 +26,10 @@ const (
 	ApplicationProtoJsonContentType = "application/protojson"
 	ApplicationJsonContentType      = "application/json"
 
-	Api   = "/api"
-	ApiV1 = Api + "/v1"
+	Api       = "/api"
+	ApiV1     = Api + "/v1"
+	WellKnown = "/.well-known"
+	Identity  = ApiV1 + "/identity"
 
 	Devices             = ApiV1 + "/devices"
 	Device              = Devices + "/{" + DeviceIDKey + "}"
@@ -37,5 +39,14 @@ const (
 	DeviceResource      = DeviceResources + "/{" + ResourceHrefKey + "}"
 	OwnDevice           = Device + "/own"
 	DisownDevice        = Device + "/disown"
-	WebConfiguration    = "/web_configuration.json"
+
+	Initialize             = ApiV1 + "/initialize"
+	Reset                  = ApiV1 + "/reset"
+	IdentityCertificate    = Identity + "/certificate"
+	WellKnownJWKs          = WellKnown + "/jwks.json"
+	WellKnownConfiguration = WellKnown + "/configuration"
 )
+
+func FinishInitialize(state string) string {
+	return Initialize + "/" + state
+}

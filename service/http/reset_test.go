@@ -17,24 +17,40 @@
 package http_test
 
 import (
+	"context"
 	"net/http"
 	"testing"
+	"time"
 
 	serviceHttp "github.com/plgd-dev/client-application/service/http"
 	"github.com/plgd-dev/client-application/test"
 	httpgwTest "github.com/plgd-dev/hub/v2/http-gateway/test"
+	hubTestOAuthServer "github.com/plgd-dev/hub/v2/test/oauth-server/test"
 	"github.com/stretchr/testify/require"
 )
 
-func TestClientApplicationServerGetWebConfiguration(t *testing.T) {
-	cfg := test.MakeConfig(t)
-	cfg.APIs.HTTP.TLS.ClientCertificateRequired = false
-	cfg.APIs.HTTP.UI.Enabled = true
-	shutDown := test.New(t, cfg)
-	defer shutDown()
+func TestClientApplicationServerReset(t *testing.T) {
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*8)
+	defer cancel()
 
-	request := httpgwTest.NewRequest(http.MethodGet, serviceHttp.WebConfiguration, nil).
-		Host(test.CLIENT_APPLICATION_HTTP_HOST).Build()
+	tearDown := setupRemoteProvisioning(t)
+	defer tearDown()
+
+	initializeRemoteProvisioning(ctx, t)
+
+	token := hubTestOAuthServer.GetDefaultAccessToken(t)
+
+	// reset
+	request := httpgwTest.NewRequest(http.MethodPost, serviceHttp.Reset, nil).
+		Host(test.CLIENT_APPLICATION_HTTP_HOST).AuthToken(token).Build()
 	resp := httpgwTest.HTTPDo(t, request)
 	require.Equal(t, http.StatusOK, resp.StatusCode)
+
+	// try again reset - should fail
+	request = httpgwTest.NewRequest(http.MethodPost, serviceHttp.Reset, nil).
+		Host(test.CLIENT_APPLICATION_HTTP_HOST).AuthToken(token).Build()
+	resp = httpgwTest.HTTPDo(t, request)
+	require.Equal(t, http.StatusUnauthorized, resp.StatusCode)
+
+	initializeRemoteProvisioning(ctx, t)
 }

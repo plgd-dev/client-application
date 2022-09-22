@@ -18,28 +18,43 @@ package grpc
 
 import (
 	"context"
-	"sync"
 
+	"github.com/google/uuid"
+	"github.com/jellydator/ttlcache/v3"
 	"github.com/plgd-dev/client-application/pb"
 	serviceDevice "github.com/plgd-dev/client-application/service/device"
+	"github.com/plgd-dev/client-application/service/remoteProvisioning"
+	"github.com/plgd-dev/go-coap/v2/pkg/sync"
 	"github.com/plgd-dev/hub/v2/pkg/log"
+	"go.uber.org/atomic"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
 type ClientApplicationServer struct {
-	serviceDevice *serviceDevice.Service
-	info          *ServiceInformation
-	logger        log.Logger
-	devices       sync.Map
 	pb.UnimplementedClientApplicationServer
+
+	serviceDevice            *serviceDevice.Service
+	info                     *ServiceInformation
+	logger                   log.Logger
+	devices                  *sync.Map[uuid.UUID, *device]
+	csrCache                 *ttlcache.Cache[uuid.UUID, bool]
+	remoteProvisioningConfig remoteProvisioning.Config
+	jwksCache                atomic.Pointer[JSONWebKeyCache]
+	remoteOwnSignCache       *sync.Map[uuid.UUID, *remoteSign]
 }
 
-func NewClientApplicationServer(serviceDevice *serviceDevice.Service, info *ServiceInformation, logger log.Logger) *ClientApplicationServer {
+func NewClientApplicationServer(remoteProvisioningConfig remoteProvisioning.Config, serviceDevice *serviceDevice.Service, info *ServiceInformation, logger log.Logger) *ClientApplicationServer {
+	csrCache := ttlcache.New[uuid.UUID, bool]()
+	go csrCache.Start()
 	return &ClientApplicationServer{
-		serviceDevice: serviceDevice,
-		info:          info,
-		logger:        logger,
+		serviceDevice:            serviceDevice,
+		info:                     info,
+		logger:                   logger,
+		csrCache:                 csrCache,
+		remoteProvisioningConfig: remoteProvisioningConfig,
+		remoteOwnSignCache:       sync.NewMap[uuid.UUID, *remoteSign](),
+		devices:                  sync.NewMap[uuid.UUID, *device](),
 	}
 }
 
@@ -47,26 +62,22 @@ func (s *ClientApplicationServer) Version() string {
 	return s.info.Version
 }
 
-func (s *ClientApplicationServer) getDevice(deviceID string) (*device, error) {
-	d, ok := s.devices.Load(deviceID)
+func (s *ClientApplicationServer) Close() {
+	s.csrCache.Stop()
+}
+
+func (s *ClientApplicationServer) getDevice(deviceID uuid.UUID) (*device, error) {
+	dev, ok := s.devices.Load(deviceID)
 	if !ok {
 		return nil, status.Errorf(codes.NotFound, "device %v not found", deviceID)
-	}
-	dev, ok := d.(*device)
-	if !ok {
-		return nil, status.Error(codes.Internal, "cast error")
 	}
 	return dev, nil
 }
 
-func (s *ClientApplicationServer) deleteDevice(ctx context.Context, deviceID string) error {
-	d, ok := s.devices.LoadAndDelete(deviceID)
+func (s *ClientApplicationServer) deleteDevice(ctx context.Context, deviceID uuid.UUID) error {
+	dev, ok := s.devices.PullOut(deviceID)
 	if !ok {
 		return nil
-	}
-	dev, ok := d.(*device)
-	if !ok {
-		return status.Error(codes.Internal, "cast error")
 	}
 	if err := dev.Close(ctx); err != nil {
 		return status.Errorf(codes.Internal, "cannot close device %v connections: %v", deviceID, err)
