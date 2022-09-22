@@ -5,7 +5,7 @@ export type DevicesResourcesModalType = typeof resourceModalTypes[keyof typeof r
 
 export type DevicesResourcesModalParamsType = {
     href: string
-    currentInterface?: string
+    currentInterface: string
 }
 
 export type Props = {
@@ -22,7 +22,7 @@ export type Props = {
     isDeviceOnline: boolean
     isUnregistered: boolean
     loading: boolean
-    onClose?: () => void
+    onClose: () => void
     resourceData?: {
         types: string[]
         data: {

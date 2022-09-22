@@ -121,6 +121,10 @@ export const messages = defineMessages({
         id: 'devices.resources',
         defaultMessage: 'Resources',
     },
+    resourceInterfaces: {
+        id: 'devices.resourceInterfaces',
+        defaultMessage: 'Resource Interfaces',
+    },
     deviceId: {
         id: 'devices.deviceId',
         defaultMessage: 'Device ID',

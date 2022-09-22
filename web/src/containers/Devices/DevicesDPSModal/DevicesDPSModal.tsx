@@ -52,7 +52,7 @@ const DevicesDPSModal: FC<Props> = (props) => {
         isFunction(updateResource) &&
             DpsResource &&
             updateResource(
-                { href: DpsResource.href },
+                { href: DpsResource.href, currentInterface: '' },
                 {
                     endpoint: inputValue,
                 }

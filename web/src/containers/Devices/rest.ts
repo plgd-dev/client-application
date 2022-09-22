@@ -50,7 +50,7 @@ export const getDevicesResourcesApi = ({
     fetchApi(
         `${getConfig().httpGatewayAddress}${
             devicesApiEndpoints.DEVICES
-        }/${deviceId}/resources${href}?${interfaceGetParam(currentInterface)}`
+        }/${deviceId}/resources${href}${interfaceGetParam(currentInterface)}`
     )
 
 /**
@@ -93,7 +93,7 @@ export const createDevicesResourceApi = (
     fetchApi(
         `${getConfig().httpGatewayAddress}${
             devicesApiEndpoints.DEVICES
-        }/${deviceId}/resource-links${href}?${interfaceGetParam(currentInterface)}`,
+        }/${deviceId}/resource-links${href}${interfaceGetParam(currentInterface)}`,
         { method: 'POST', body: data }
     )
 
