@@ -55,7 +55,7 @@ func (s *authenticationPreSharedKey) GetIdentityCSR(id string) ([]byte, error) {
 	return nil, errPreSharedKeyAuthentication
 }
 
-func (s *authenticationPreSharedKey) SetIdentityCertificate(chainPem []byte) error {
+func (s *authenticationPreSharedKey) SetIdentityCertificate(owner string, chainPem []byte) error {
 	return errPreSharedKeyAuthentication
 }
 
@@ -76,4 +76,8 @@ func (s *authenticationPreSharedKey) IsInitialized() bool {
 
 func (s *authenticationPreSharedKey) Reset() {
 	// nothing to do
+}
+
+func (s *authenticationPreSharedKey) GetOwner() string {
+	return s.config.Load().COAP.TLS.PreSharedKey.SubjectUUID
 }

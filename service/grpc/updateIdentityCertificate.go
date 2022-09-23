@@ -58,7 +58,7 @@ func (s *ClientApplicationServer) updateIdentityCertificate(ctx context.Context,
 	if err != nil {
 		return status.Errorf(codes.Unauthenticated, "cannot get owner from token: %v", err)
 	}
-	owner = events.OwnerToUUID(owner)
+	ownerID := events.OwnerToUUID(owner)
 	certs, err := security.ParseX509FromPEM(req.GetCertificate())
 	if err != nil {
 		return status.Errorf(codes.InvalidArgument, "cannot parse certificate: %v", err)
@@ -67,10 +67,10 @@ func (s *ClientApplicationServer) updateIdentityCertificate(ctx context.Context,
 	if err != nil {
 		return status.Errorf(codes.InvalidArgument, "cannot get owner id from certificate: %v", err)
 	}
-	if owner != ident {
+	if ownerID != ident {
 		return status.Errorf(codes.InvalidArgument, "invalid owner id")
 	}
-	if err := s.serviceDevice.SetIdentityCertificate(req.GetCertificate()); err != nil {
+	if err := s.serviceDevice.SetIdentityCertificate(owner, req.GetCertificate()); err != nil {
 		return status.Errorf(codes.Internal, "cannot set certificate: %v", err)
 	}
 	return nil

@@ -56,6 +56,7 @@ func TestClientApplicationServerGetConfigurationX509UserAgent(t *testing.T) {
 	require.NoError(t, err)
 	exp := test.NewServiceInformation()
 	exp.IsInitialized = false
+	exp.Owner = ""
 	exp.DeviceAuthenticationMode = pb.GetConfigurationResponse_X509
 	exp.RemoteProvisioning = remoteProvisioningConfig.ToProto().Clone()
 	require.Equal(t, exp, d1)

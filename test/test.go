@@ -52,6 +52,7 @@ const (
 	VERSION                      = "v0.0.1-test"
 	BUILD_DATE                   = "1.1.1970"
 	COMMIT_HASH                  = "aaa"
+	PSK_OWNER                    = "57b3fae9-adf5-4e34-90ea-e77784407103"
 )
 
 var (
@@ -129,7 +130,7 @@ func MakeDeviceConfig() serviceDevice.Config {
 			TLS: serviceDevice.TLSConfig{
 				Authentication: serviceDevice.AuthenticationPreSharedKey,
 				PreSharedKey: serviceDevice.PreSharedKeyConfig{
-					SubjectUUID: "57b3fae9-adf5-4e34-90ea-e77784407103",
+					SubjectUUID: PSK_OWNER,
 					KeyUUID:     "46178d21-d480-4e95-9bd3-6c9eefa8d9d8",
 				},
 			},
@@ -236,6 +237,7 @@ func NewServiceInformation() *serviceGrpc.ServiceInformation {
 		CommitHash:               COMMIT_HASH,
 		IsInitialized:            true,
 		DeviceAuthenticationMode: pb.GetConfigurationResponse_PRE_SHARED_KEY,
+		Owner:                    PSK_OWNER,
 	}
 }
 

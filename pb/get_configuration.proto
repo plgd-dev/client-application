@@ -60,4 +60,5 @@ message GetConfigurationResponse {
     bool is_initialized = 6;
     DeviceAuthenticationMode device_authentication_mode = 7;
     RemoteProvisioning remote_provisioning = 8;
+    string owner = 9;
 }
