@@ -1085,6 +1085,9 @@
         },
         "remoteProvisioning": {
           "$ref": "#/definitions/pbRemoteProvisioning"
+        },
+        "owner": {
+          "type": "string"
         }
       }
     },

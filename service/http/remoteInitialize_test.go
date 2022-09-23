@@ -70,6 +70,7 @@ func initializeRemoteProvisioning(ctx context.Context, t *testing.T) {
 	err = protojson.Unmarshal(configRespBody, &configResp)
 	require.NoError(t, err)
 	require.False(t, configResp.GetIsInitialized())
+	require.Equal(t, configResp.GetOwner(), "")
 	require.Equal(t, configResp.GetDeviceAuthenticationMode(), pb.GetConfigurationResponse_X509)
 	require.Equal(t, configResp.GetRemoteProvisioning().GetMode(), pb.RemoteProvisioning_USER_AGENT)
 
@@ -169,6 +170,7 @@ func TestClientApplicationServerUpdateIdentityCertificate(t *testing.T) {
 	err = protojson.Unmarshal(configRespBody, &configResp)
 	require.NoError(t, err)
 	require.False(t, configResp.GetIsInitialized())
+	require.Equal(t, configResp.GetOwner(), "")
 	require.Equal(t, configResp.GetDeviceAuthenticationMode(), pb.GetConfigurationResponse_X509)
 	require.Equal(t, configResp.GetRemoteProvisioning().GetMode(), pb.RemoteProvisioning_USER_AGENT)
 
@@ -213,4 +215,14 @@ func TestClientApplicationServerUpdateIdentityCertificate(t *testing.T) {
 	var clientCertificate pb.GetIdentityCertificateResponse
 	decodeBody(t, resp.Body, &clientCertificate)
 	require.Equal(t, certificate, clientCertificate.Certificate)
+
+	request = httpgwTest.NewRequest(http.MethodGet, serviceHttp.WellKnownConfiguration, nil).Host(test.CLIENT_APPLICATION_HTTP_HOST).Build()
+	resp = httpgwTest.HTTPDo(t, request)
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+	configRespBody, err = io.ReadAll(resp.Body)
+	require.NoError(t, err)
+	err = protojson.Unmarshal(configRespBody, &configResp)
+	require.NoError(t, err)
+	require.True(t, configResp.GetIsInitialized())
+	require.Equal(t, configResp.GetOwner(), "1")
 }

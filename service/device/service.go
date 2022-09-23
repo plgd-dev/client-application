@@ -44,10 +44,11 @@ type AuthenticationClient interface {
 	DialDTLS(ctx context.Context, addr string, dtlsCfg *dtls.Config, opts ...coap.DialOptionFunc) (*coap.ClientCloseHandler, error)
 	DialTLS(ctx context.Context, addr string, tlsCfg *tls.Config, opts ...coap.DialOptionFunc) (*coap.ClientCloseHandler, error)
 	GetOwnerID() (string, error)
+	GetOwner() string
 	GetOwnOptions() []core.OwnOption
 
 	GetIdentityCSR(id string) ([]byte, error)
-	SetIdentityCertificate(chainPem []byte) error
+	SetIdentityCertificate(owner string, chainPem []byte) error
 	GetIdentityCertificate() (tls.Certificate, error)
 	GetCertificateAuthorities() ([]*x509.Certificate, error)
 	IsInitialized() bool
@@ -327,8 +328,8 @@ func (s *Service) GetIdentityCSR(id string) ([]byte, error) {
 	return s.authenticationClient.GetIdentityCSR(id)
 }
 
-func (s *Service) SetIdentityCertificate(chainPem []byte) error {
-	return s.authenticationClient.SetIdentityCertificate(chainPem)
+func (s *Service) SetIdentityCertificate(owner string, chainPem []byte) error {
+	return s.authenticationClient.SetIdentityCertificate(owner, chainPem)
 }
 
 func (s *Service) GetIdentityCertificate() (tls.Certificate, error) {
@@ -351,4 +352,8 @@ func (s *Service) IsInitialized() bool {
 
 func (s *Service) Reset() {
 	s.authenticationClient.Reset()
+}
+
+func (s *Service) GetOwner() string {
+	return s.authenticationClient.GetOwner()
 }

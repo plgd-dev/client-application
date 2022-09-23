@@ -22,6 +22,7 @@ type authenticationX509 struct {
 	config      Config
 	privateKey  atomic.Pointer[ecdsa.PrivateKey]
 	certificate atomic.Pointer[tls.Certificate]
+	owner       atomic.String
 }
 
 func newAuthenticationX509(config Config) *authenticationX509 {
@@ -164,7 +165,7 @@ func (s *authenticationX509) updateCertificate(crt tls.Certificate) error {
 	}
 }
 
-func (s *authenticationX509) SetIdentityCertificate(chainPem []byte) error {
+func (s *authenticationX509) SetIdentityCertificate(owner string, chainPem []byte) error {
 	privateKey := s.privateKey.Load()
 	if privateKey == nil {
 		return fmt.Errorf("private key is not set")
@@ -184,6 +185,7 @@ func (s *authenticationX509) SetIdentityCertificate(chainPem []byte) error {
 	if err := s.updateCertificate(crt); err != nil {
 		return fmt.Errorf("cannot update certificate: %w", err)
 	}
+	s.owner.Store(owner)
 	return nil
 }
 
@@ -214,4 +216,9 @@ func (s *authenticationX509) IsInitialized() bool {
 func (s *authenticationX509) Reset() {
 	s.certificate.Store((*tls.Certificate)(nil))
 	s.privateKey.Store((*ecdsa.PrivateKey)(nil))
+	s.owner.Store("")
+}
+
+func (s *authenticationX509) GetOwner() string {
+	return s.owner.Load()
 }
