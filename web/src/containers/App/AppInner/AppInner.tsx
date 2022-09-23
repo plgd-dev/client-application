@@ -25,20 +25,24 @@ import { reset } from '@/containers/App/AppRest'
 import UserWidget from '@shared-ui/components/new/UserWidget'
 import { AppAuthProviderRefType } from '@/containers/App/AppAuthProvider/AppAuthProvider.types'
 import InitializedByAnother from '@/containers/App/AppInner/InitializedByAnother/InitializedByAnother'
+import {WellKnownConfigType} from "@/containers/App/App.types";
+
+const getBuildInformation = (wellKnownConfig: WellKnownConfigType) => ({
+    buildDate: wellKnownConfig?.buildDate || '',
+    commitHash: wellKnownConfig?.commitHash || '' ,
+    commitDate: wellKnownConfig?.commitDate || '',
+    releaseUrl: wellKnownConfig?.releaseUrl || '' ,
+    version: wellKnownConfig?.version || '',
+})
+
 
 const AppInner = (props: Props) => {
     const { wellKnownConfig, configError, setInitialize } = props
-    const buildInformation = {
-        version: wellKnownConfig?.version,
-        buildDate: wellKnownConfig?.buildDate,
-        commitHash: wellKnownConfig?.commitHash,
-        commitDate: wellKnownConfig?.commitDate,
-        releaseUrl: wellKnownConfig?.releaseUrl,
-    }
+    const buildInformation = getBuildInformation(wellKnownConfig)
     const [authError, setAuthError] = useState<string | undefined>(undefined)
     const [collapsed, setCollapsed] = useLocalStorage('leftPanelCollapsed', true)
     const { formatMessage: _ } = useIntl()
-    const authProviderRef = useRef<AppAuthProviderRefType>(null)
+    const authProviderRef = useRef<AppAuthProviderRefType | null>(null)
 
     if (wellKnownConfig) {
         security.setWebOAuthConfig({
