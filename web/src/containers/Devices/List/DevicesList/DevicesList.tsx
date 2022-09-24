@@ -95,7 +95,7 @@ const DevicesList: FC<Props> = (props) => {
                 className: 'actions',
             },
         ],
-        [] // eslint-disable-line
+        [loading] // eslint-disable-line
     )
 
     const validData = (data: any) => (!data || data[0] === undefined ? [] : data)
