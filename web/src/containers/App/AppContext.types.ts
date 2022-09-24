@@ -1,7 +1,7 @@
-import { BuildInformationType } from '@/containers/App/App.types'
+import { BuildInformationType } from '@shared-ui/common/hooks'
 
 export type AppContextType = {
     buildInformation?: BuildInformationType | null
     collapsed: boolean
-    setInitializedByAnother?: () => void
+    unauthorizedCallback?: () => void
 }

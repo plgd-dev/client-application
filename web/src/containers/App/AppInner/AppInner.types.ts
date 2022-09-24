@@ -1,9 +1,8 @@
-import { WellKnownConfigType } from '@/containers/App/App.types'
+import { WellKnownConfigType } from '@shared-ui/common/hooks'
 
 export type Props = {
-    configError?: {
-        message: string
-    }
+    configError: Error | undefined
+    reFetchConfig: any
     setInitialize: (isInitialize?: boolean) => void
     wellKnownConfig: WellKnownConfigType
 }

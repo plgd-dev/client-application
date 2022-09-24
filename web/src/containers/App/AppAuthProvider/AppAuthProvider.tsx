@@ -1,7 +1,7 @@
-import {useAuth} from 'oidc-react'
-import {security} from '@shared-ui/common/services'
-import {forwardRef, useEffect, useImperativeHandle} from 'react'
-import {REMOTE_PROVISIONING_MODE} from '@/constants'
+import { useAuth, User } from 'oidc-react'
+import { security } from '@shared-ui/common/services'
+import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react'
+import { REMOTE_PROVISIONING_MODE } from '@/constants'
 import {
     getJwksData,
     getOpenIdConfiguration,
@@ -10,14 +10,16 @@ import {
     signIdentityCsr,
 } from '@/containers/App/AppRest'
 import AppLoader from '@/containers/App/AppLoader/AppLoader'
-import {AppAuthProviderRefType, Props} from './AppAuthProvider.types'
+import { AppAuthProviderRefType, Props } from './AppAuthProvider.types'
 
 const AppAuthProvider = forwardRef<AppAuthProviderRefType, Props>((props, ref) => {
-    const {wellKnownConfig, children, setAuthError, setInitialize} = props
-    const {isLoading, userData, signOutRedirect, userManager} = useAuth()
+    const { wellKnownConfig, children, setAuthError, setInitialize } = props
+    const { isLoading, userData, signOutRedirect, userManager } = useAuth()
+    const userDataRef = useRef<User | null>(null)
 
     if (userData) {
         security.setAccessToken(userData.access_token)
+        userDataRef.current = userData
 
         if (userManager) {
             security.setUserManager(userManager)
@@ -25,9 +27,11 @@ const AppAuthProvider = forwardRef<AppAuthProviderRefType, Props>((props, ref) =
     }
 
     useImperativeHandle(ref, () => ({
-        getSignOutMethod: () => signOutRedirect({
-            post_logout_redirect_uri: window.location.origin,
-        }),
+        getSignOutMethod: () =>
+            signOutRedirect({
+                post_logout_redirect_uri: window.location.origin,
+            }),
+        getUserData: () => userDataRef.current,
     }))
 
     useEffect(() => {
@@ -44,7 +48,7 @@ const AppAuthProvider = forwardRef<AppAuthProviderRefType, Props>((props, ref) =
                             const state = result.data.identityCertificateChallenge.state
 
                             signIdentityCsr(
-                                wellKnownConfig?.remoteProvisioning.userAgent.certificateAuthorityAddress,
+                                wellKnownConfig.remoteProvisioning.userAgent.certificateAuthorityAddress,
                                 result.data.identityCertificateChallenge.certificateSigningRequest
                             ).then((result) => {
                                 initializeFinal(state, result.data.certificate).then(() => {
@@ -62,7 +66,7 @@ const AppAuthProvider = forwardRef<AppAuthProviderRefType, Props>((props, ref) =
     }, [wellKnownConfig, isLoading, setAuthError, setInitialize])
 
     if (isLoading || !wellKnownConfig || !wellKnownConfig?.isInitialized) {
-        return <AppLoader/>
+        return <AppLoader />
     }
 
     return children
