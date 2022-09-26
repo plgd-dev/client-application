@@ -64,7 +64,7 @@ const AppInner = (props: Props) => {
             if (authProviderRef) {
                 const userData: User = authProviderRef?.current?.getUserData()
                 const parsedData = jwtDecode(userData.access_token)
-                const ownerId = get(parsedData, 'owner-id', '')
+                const ownerId = get(parsedData, newWellKnownConfig.remoteProvisioning.authorization.ownerClaim, '')
 
                 if (ownerId !== newWellKnownConfig?.owner) {
                     setInitializedByAnother(true)
