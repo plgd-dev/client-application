@@ -14,7 +14,7 @@ import { history } from '@/store'
 import { Helmet } from 'react-helmet'
 import appConfig from '@/config'
 import { BrowserNotificationsContainer, ToastContainer } from '@shared-ui/components/new'
-import { useLocalStorage } from '@shared-ui/common/hooks'
+import { useLocalStorage, WellKnownConfigType } from '@shared-ui/common/hooks'
 import AppAuthProvider from '@/containers/App/AppAuthProvider/AppAuthProvider'
 import { ReactElement, useRef, useState } from 'react'
 import ConditionalWrapper from '@shared-ui/components/new/ConditionalWrapper'
@@ -25,20 +25,25 @@ import { reset } from '@/containers/App/AppRest'
 import UserWidget from '@shared-ui/components/new/UserWidget'
 import { AppAuthProviderRefType } from '@/containers/App/AppAuthProvider/AppAuthProvider.types'
 import InitializedByAnother from '@/containers/App/AppInner/InitializedByAnother/InitializedByAnother'
+import { User } from 'oidc-react'
+import jwtDecode from 'jwt-decode'
+import get from 'lodash/get'
+
+const getBuildInformation = (wellKnownConfig: WellKnownConfigType) => ({
+    buildDate: wellKnownConfig?.buildDate || '',
+    commitHash: wellKnownConfig?.commitHash || '',
+    commitDate: wellKnownConfig?.commitDate || '',
+    releaseUrl: wellKnownConfig?.releaseUrl || '',
+    version: wellKnownConfig?.version || '',
+})
 
 const AppInner = (props: Props) => {
-    const { wellKnownConfig, configError, setInitialize } = props
-    const buildInformation = {
-        version: wellKnownConfig?.version,
-        buildDate: wellKnownConfig?.buildDate,
-        commitHash: wellKnownConfig?.commitHash,
-        commitDate: wellKnownConfig?.commitDate,
-        releaseUrl: wellKnownConfig?.releaseUrl,
-    }
+    const { wellKnownConfig, configError, reFetchConfig, setInitialize } = props
+    const buildInformation = getBuildInformation(wellKnownConfig)
     const [authError, setAuthError] = useState<string | undefined>(undefined)
     const [collapsed, setCollapsed] = useLocalStorage('leftPanelCollapsed', true)
     const { formatMessage: _ } = useIntl()
-    const authProviderRef = useRef<AppAuthProviderRefType>(null)
+    const authProviderRef = useRef<AppAuthProviderRefType | null>(null)
 
     if (wellKnownConfig) {
         security.setWebOAuthConfig({
@@ -50,11 +55,30 @@ const AppInner = (props: Props) => {
     }
 
     const [initializedByAnother, setInitializedByAnother] = useState(false)
+    const [suspectedUnauthorized, setSuspectedUnauthorized] = useState(false)
+
+    const unauthorizedCallback = () => {
+        setSuspectedUnauthorized(true)
+
+        reFetchConfig().then((newWellKnownConfig: WellKnownConfigType) => {
+            if (authProviderRef) {
+                const userData: User = authProviderRef?.current?.getUserData()
+                const parsedData = jwtDecode(userData.access_token)
+                const ownerId = get(parsedData, newWellKnownConfig.remoteProvisioning.authorization.ownerClaim, '')
+
+                if (ownerId !== newWellKnownConfig?.owner) {
+                    setInitializedByAnother(true)
+                }
+            }
+
+            setSuspectedUnauthorized(false)
+        })
+    }
 
     const AppLayout = () => {
         const handleLogout = () => {
             if (authProviderRef) {
-                const signOut = authProviderRef?.current?.getSignOutMethod()
+                const signOut = authProviderRef?.current?.getSignOutMethod
 
                 if (signOut) {
                     if (!initializedByAnother) {
@@ -102,14 +126,14 @@ const AppInner = (props: Props) => {
                                     className: 'devices',
                                 },
                             ]}
-                            collapsed={collapsed}
+                            collapsed={!!collapsed}
                             toggleCollapsed={() => setCollapsed(!collapsed)}
                             initializedByAnother={initializedByAnother}
                         />
                     </LeftPanel>
                     <div id='content'>
                         <InitializedByAnother show={initializedByAnother} logout={handleLogout} />
-                        {!initializedByAnother && <Routes />}
+                        {!initializedByAnother && !suspectedUnauthorized && <Routes />}
                         <Footer
                             links={[
                                 {
@@ -141,7 +165,7 @@ const AppInner = (props: Props) => {
         <AppContext.Provider
             value={{
                 collapsed,
-                setInitializedByAnother: () => setInitializedByAnother(true),
+                unauthorizedCallback,
                 buildInformation: buildInformation || undefined,
             }}
         >

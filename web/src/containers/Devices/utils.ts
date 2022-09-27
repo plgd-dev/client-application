@@ -23,11 +23,7 @@ import { ResourcesType } from '@/containers/Devices/Devices.types'
 const { INFINITE, NS, MS, S, M, H } = commandTimeoutUnits
 
 // Returns the extension for resources API for the selected interface
-export const interfaceGetParam = (currentInterface: string | null, join = false) => {
-    const _join = join ? '&' : ''
-
-    return currentInterface && currentInterface !== '' ? `${_join}resourceInterface=${currentInterface}` : ''
-}
+export const interfaceGetParam = (currentInterface: string | null, join = '?') => currentInterface && currentInterface !== '' ? `${join}resourceInterface=${currentInterface}` : ''
 
 // Return true if a resource contains the oic.if.create interface, meaning a new resource can be created from this resource
 export const canCreateResource = (interfaces: string[]) => interfaces.includes(knownInterfaces.OIC_IF_CREATE)

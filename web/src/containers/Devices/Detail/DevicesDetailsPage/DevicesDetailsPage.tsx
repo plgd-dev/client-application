@@ -97,7 +97,7 @@ const DevicesDetailsPage = () => {
     }
 
     const deviceStatus = data?.metadata?.status?.value
-    const isOnline = devicesStatuses.ONLINE === deviceStatus
+    const isOnline = true
     const isUnregistered = devicesStatuses.UNREGISTERED === deviceStatus
     const greyedOutClassName = classNames({
         'grayed-out': isUnregistered,
