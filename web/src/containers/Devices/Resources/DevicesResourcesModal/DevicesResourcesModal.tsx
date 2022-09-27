@@ -50,7 +50,7 @@ const DevicesResourcesModal: FC<Props> = ({
             if (typeof resourceData === 'object') {
                 // @ts-ignore
                 editor?.current?.set(dataToDisplay)
-            } else{
+            } else {
                 // @ts-ignore
                 editor?.current?.setText(dataToDisplay)
             }
@@ -169,7 +169,7 @@ const DevicesResourcesModal: FC<Props> = ({
     return (
         <Modal
             show={!!data}
-            onClose={() => !disabled ? onClose : undefined}
+            onClose={disabled ? undefined : () => onClose()}
             title={data?.href}
             renderBody={renderBody}
             renderFooter={renderFooter}
