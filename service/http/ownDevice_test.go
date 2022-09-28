@@ -203,7 +203,6 @@ func TestClientApplicationServerOwnDeviceRemoteProvisioning(t *testing.T) {
 	request = httpgwTest.NewRequest(http.MethodPost, serviceHttp.OwnDevice+"/"+ownCSRResp.GetIdentityCertificateChallenge().GetState(), encodeToBody(t, &pb.FinishOwnDeviceRequest{
 		Certificate: certificate,
 	})).Host(test.CLIENT_APPLICATION_HTTP_HOST).AuthToken(token).DeviceId(dev.Id).Build()
-	time.Sleep(time.Second)
 	resp = httpgwTest.HTTPDo(t, request)
 	require.Equal(t, http.StatusOK, resp.StatusCode)
 	var ownCertificateResp pb.FinishOwnDeviceResponse
@@ -227,4 +226,41 @@ func TestClientApplicationServerOwnDeviceRemoteProvisioning(t *testing.T) {
 	resp = httpgwTest.HTTPDo(t, request)
 	_ = resp.Body.Close()
 	require.Equal(t, http.StatusOK, resp.StatusCode)
+}
+
+func TestClientApplicationServerOwnDeviceRemoteProvisioningFails(t *testing.T) {
+	dev := test.MustFindDeviceByName(test.DevsimName, []pb.GetDevicesRequest_UseMulticast{pb.GetDevicesRequest_IPV4})
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*8)
+	defer cancel()
+	tearDown := setupRemoteProvisioning(t)
+	defer tearDown()
+
+	initializeRemoteProvisioning(ctx, t)
+
+	token := hubTestOAuthServerTest.GetDefaultAccessToken(t)
+	ctx = kitNetGrpc.CtxWithToken(ctx, token)
+	request := httpgwTest.NewRequest(http.MethodGet, serviceHttp.Devices, nil).
+		Host(test.CLIENT_APPLICATION_HTTP_HOST).AuthToken(token).Build()
+	resp := httpgwTest.HTTPDo(t, request)
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+
+	request = httpgwTest.NewRequest(http.MethodPost, serviceHttp.OwnDevice, encodeToBody(t, &pb.OwnDeviceRequest{
+		Timeout: (time.Millisecond * 100).Nanoseconds(),
+	})).Host(test.CLIENT_APPLICATION_HTTP_HOST).AuthToken(token).DeviceId(dev.Id).Build()
+	resp = httpgwTest.HTTPDo(t, request)
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+	var ownCSRResp pb.OwnDeviceResponse
+	decodeBody(t, resp.Body, &ownCSRResp)
+	require.NotEmpty(t, ownCSRResp.GetIdentityCertificateChallenge().GetCertificateSigningRequest())
+	require.NotEmpty(t, ownCSRResp.GetIdentityCertificateChallenge().GetState())
+
+	// fail for timeout
+	time.Sleep(time.Second)
+
+	certificate := signCSR(ctx, t, ownCSRResp.GetIdentityCertificateChallenge().GetCertificateSigningRequest())
+	request = httpgwTest.NewRequest(http.MethodPost, serviceHttp.OwnDevice+"/"+ownCSRResp.GetIdentityCertificateChallenge().GetState(), encodeToBody(t, &pb.FinishOwnDeviceRequest{
+		Certificate: certificate,
+	})).Host(test.CLIENT_APPLICATION_HTTP_HOST).AuthToken(token).DeviceId(dev.Id).Build()
+	resp = httpgwTest.HTTPDo(t, request)
+	require.Equal(t, http.StatusNotFound, resp.StatusCode)
 }
