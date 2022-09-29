@@ -30,18 +30,18 @@ const App = () => {
         return <AppLoader />
     }
 
-    const oidcCommonSettings = {
-        authority: wellKnownConfig.remoteProvisioning.authorization.authority || '',
-        scope: wellKnownConfig.remoteProvisioning.authorization.scopes.join?.(' '),
-    }
+    const getOidcCommonSettings = () => ({
+        authority: wellKnownConfig.remoteProvisioning?.authorization.authority || '',
+        scope: wellKnownConfig.remoteProvisioning?.authorization.scopes.join?.(' '),
+    })
 
     return (
         <ConditionalWrapper
             condition={wellKnownConfig?.deviceAuthenticationMode === DEVICE_AUTH_MODE.X509}
             wrapper={(child: any) => (
                 <AuthProvider
-                    {...oidcCommonSettings}
-                    clientId={wellKnownConfig?.remoteProvisioning.authorization.clientId || ''}
+                    {...getOidcCommonSettings()}
+                    clientId={wellKnownConfig?.remoteProvisioning?.authorization.clientId || ''}
                     redirectUri={window.location.origin}
                     onSignIn={async () => {
                         // remove auth params
@@ -51,11 +51,11 @@ const App = () => {
                     automaticSilentRenew={true}
                     userManager={
                         new UserManager({
-                            ...oidcCommonSettings,
-                            client_id: wellKnownConfig?.remoteProvisioning.authorization.clientId,
+                            ...getOidcCommonSettings(),
+                            client_id: wellKnownConfig?.remoteProvisioning?.authorization.clientId,
                             redirect_uri: window.location.origin,
                             extraQueryParams: {
-                                audience: wellKnownConfig?.remoteProvisioning.authorization.audience || false,
+                                audience: wellKnownConfig?.remoteProvisioning?.authorization.audience || false,
                             },
                         } as UserManagerSettings)
                     }
