@@ -39,16 +39,16 @@ const AppAuthProvider = forwardRef<AppAuthProviderRefType, Props>((props, ref) =
             !isLoading &&
             wellKnownConfig &&
             !wellKnownConfig.isInitialized &&
-            wellKnownConfig.remoteProvisioning.mode === REMOTE_PROVISIONING_MODE.USER_AGENT
+            wellKnownConfig.remoteProvisioning?.mode === REMOTE_PROVISIONING_MODE.USER_AGENT
         ) {
             try {
-                getOpenIdConfiguration(wellKnownConfig.remoteProvisioning.authorization.authority).then((result) => {
+                getOpenIdConfiguration(wellKnownConfig.remoteProvisioning?.authorization.authority).then((result) => {
                     getJwksData(result.data.jwks_uri).then((result) => {
                         initializeJwksData(result.data).then((result) => {
                             const state = result.data.identityCertificateChallenge.state
 
                             signIdentityCsr(
-                                wellKnownConfig.remoteProvisioning.userAgent.certificateAuthorityAddress,
+                                wellKnownConfig.remoteProvisioning?.userAgent.certificateAuthorityAddress as string,
                                 result.data.identityCertificateChallenge.certificateSigningRequest
                             ).then((result) => {
                                 initializeFinal(state, result.data.certificate).then(() => {

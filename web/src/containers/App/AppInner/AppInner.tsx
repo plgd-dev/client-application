@@ -45,7 +45,7 @@ const AppInner = (props: Props) => {
     const { formatMessage: _ } = useIntl()
     const authProviderRef = useRef<AppAuthProviderRefType | null>(null)
 
-    if (wellKnownConfig) {
+    if (wellKnownConfig && wellKnownConfig.remoteProvisioning) {
         security.setWebOAuthConfig({
             authority: wellKnownConfig.remoteProvisioning.authorization.authority,
             certificateAuthorityAddress: wellKnownConfig.remoteProvisioning.userAgent.certificateAuthorityAddress,
@@ -64,7 +64,7 @@ const AppInner = (props: Props) => {
             if (authProviderRef) {
                 const userData: User = authProviderRef?.current?.getUserData()
                 const parsedData = jwtDecode(userData.access_token)
-                const ownerId = get(parsedData, newWellKnownConfig.remoteProvisioning.authorization.ownerClaim, '')
+                const ownerId = get(parsedData, newWellKnownConfig.remoteProvisioning?.authorization.ownerClaim as string, '')
 
                 if (ownerId !== newWellKnownConfig?.owner) {
                     setInitializedByAnother(true)
@@ -114,7 +114,7 @@ const AppInner = (props: Props) => {
             >
                 <Container fluid id='app' className={classNames({ collapsed })}>
                     <StatusBar>
-                        <UserWidget logout={handleLogout} />
+                        {wellKnownConfig && wellKnownConfig.remoteProvisioning && (<UserWidget logout={handleLogout} />)}
                     </StatusBar>
                     <LeftPanel>
                         <Menu
