@@ -38,7 +38,7 @@ const App = () => {
     return (
         <ConditionalWrapper
             condition={wellKnownConfig?.deviceAuthenticationMode === DEVICE_AUTH_MODE.X509}
-            wrapper={(child) => (
+            wrapper={(child: any) => (
                 <AuthProvider
                     {...oidcCommonSettings}
                     clientId={wellKnownConfig?.remoteProvisioning.authorization.clientId || ''}
