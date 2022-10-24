@@ -109,4 +109,24 @@ The configuration sets up access to the devices via COAP protocol.
 | `apis.coap.tls.subjectUuid` | UUID | `Provides an identifier for client applications for establishing TLS connections or for devices that are set as owner devices` | `""` |
 | `apis.coap.tls.preSharedKeyUuid` | UUID | `Pre-shared key used in conjunction with subjectUUID to enable TLS connection.` | `""` |
 
+### Remote provisioning
+
+The configuration sets up ownership and authorization of devices via the [remote provisioning mode](https://docs.plgd.dev/docs/device-to-device-client/client-initialization).
+
+Supported modes:
+
+* [Devices and single client](https://docs.plgd.dev/docs/device-to-device-client/client-initialization/#devices-and-single-client) configure `remoteProvisioning.mode` to `""`
+* [User agent mediates CSR from the client](https://docs.plgd.dev/docs/device-to-device-client/client-initialization/#devices-and-single-client) configure `remoteProvisioning.mode` to `"userAgent"` and all other properties.
+
+| Property | Type | Description | Default |
+| ---------- | -------- | -------------- | ------- |
+| `remoteProvisioning.mode` | string | `Provides remote provisioning mode. In "userAgent" mode all signing certificates goes through the user agent (browser,cli). "" means none. The supported values are: "", "userAgent"` | `""` |
+| `remoteProvisioning.userAgent.certificateAuthorityAddress` | string | `Certificate authority server address in format {DNS}:{PORT}` | `""` |
+| `remoteProvisioning.userAgent.csrChallengeStateExpiration` | string | `Defines how long is valid csr challenge.` | `"1m"` |
+| `remoteProvisioning.authorization.authority` | string | `Authority is the address of the token-issuing authentication server.` | `""` |
+| `remoteProvisioning.authorization.clientId` | string | `Client ID to exchange an authorization code for an access token.` | `""` |
+| `remoteProvisioning.authorization.audience` | string | `Identifier of the API configured in your OAuth provider.` | `""` |
+| `remoteProvisioning.authorization.scopes` | []string | `List of required scopes.` | `[]` |
+| `remoteProvisioning.authorization.ownerClaim` | string | `Claim used to identify owner of the device.` | `"sub"` |
+
 > Note that the string type related to time (i.e. timeout, idleConnTimeout, expirationTime) is decimal numbers, each with optional fraction and a unit suffix, such as "300ms", "1.5h" or "2h45m". Valid time units are "ns", "us", "ms", "s", "m", "h".
