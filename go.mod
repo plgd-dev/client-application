@@ -19,7 +19,7 @@ require (
 	github.com/plgd-dev/go-coap/v2 v2.6.1-0.20220908135617-44907dcbde7a
 	github.com/plgd-dev/hub/v2 v2.4.9-0.20220915131334-1d10b169ea04
 	github.com/plgd-dev/kit/v2 v2.0.0-20211006190727-057b33161b90
-	github.com/stretchr/testify v1.8.0
+	github.com/stretchr/testify v1.8.1
 	go.opentelemetry.io/otel/trace v1.10.0
 	go.uber.org/atomic v1.10.0
 	go.uber.org/zap v1.23.0
