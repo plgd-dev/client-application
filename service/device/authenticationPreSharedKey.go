@@ -7,8 +7,10 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/pion/dtls/v2"
-	"github.com/plgd-dev/device/client/core"
-	"github.com/plgd-dev/device/pkg/net/coap"
+	"github.com/plgd-dev/device/v2/client/core"
+	"github.com/plgd-dev/device/v2/pkg/net/coap"
+	"github.com/plgd-dev/go-coap/v3/tcp"
+	"github.com/plgd-dev/go-coap/v3/udp"
 	"go.uber.org/atomic"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -26,7 +28,7 @@ func newAuthenticationPreSharedKey(config Config) *authenticationPreSharedKey {
 	}
 }
 
-func (s *authenticationPreSharedKey) DialDTLS(ctx context.Context, addr string, _ *dtls.Config, opts ...coap.DialOptionFunc) (*coap.ClientCloseHandler, error) {
+func (s *authenticationPreSharedKey) DialDTLS(ctx context.Context, addr string, _ *dtls.Config, opts ...udp.Option) (*coap.ClientCloseHandler, error) {
 	idBin, _ := s.config.Load().COAP.TLS.PreSharedKey.subjectUUID.MarshalBinary()
 	dtlsCfg := &dtls.Config{
 		PSKIdentityHint: idBin,
@@ -39,7 +41,7 @@ func (s *authenticationPreSharedKey) DialDTLS(ctx context.Context, addr string, 
 	return coap.DialUDPSecure(ctx, addr, dtlsCfg, opts...)
 }
 
-func (s *authenticationPreSharedKey) DialTLS(ctx context.Context, addr string, tlsCfg *tls.Config, opts ...coap.DialOptionFunc) (*coap.ClientCloseHandler, error) {
+func (s *authenticationPreSharedKey) DialTLS(ctx context.Context, addr string, tlsCfg *tls.Config, opts ...tcp.Option) (*coap.ClientCloseHandler, error) {
 	return nil, errPreSharedKeyAuthentication
 }
 

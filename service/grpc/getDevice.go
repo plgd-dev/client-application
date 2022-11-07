@@ -20,7 +20,7 @@ import (
 	"context"
 
 	"github.com/plgd-dev/client-application/pb"
-	plgdDevice "github.com/plgd-dev/device/schema/device"
+	plgdDevice "github.com/plgd-dev/device/v2/schema/device"
 	grpcgwPb "github.com/plgd-dev/hub/v2/grpc-gateway/pb"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"

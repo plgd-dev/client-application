@@ -23,8 +23,8 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/plgd-dev/client-application/pb"
-	"github.com/plgd-dev/device/client/core"
-	"github.com/plgd-dev/device/schema"
+	"github.com/plgd-dev/device/v2/client/core"
+	"github.com/plgd-dev/device/v2/schema"
 	grpcgwPb "github.com/plgd-dev/hub/v2/grpc-gateway/pb"
 	"github.com/plgd-dev/hub/v2/pkg/net/grpc"
 	"go.uber.org/atomic"

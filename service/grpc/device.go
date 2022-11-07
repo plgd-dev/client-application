@@ -24,10 +24,10 @@ import (
 
 	"github.com/google/uuid"
 	serviceDevice "github.com/plgd-dev/client-application/service/device"
-	"github.com/plgd-dev/device/client/core"
-	"github.com/plgd-dev/device/schema"
-	plgdDevice "github.com/plgd-dev/device/schema/device"
-	"github.com/plgd-dev/device/schema/doxm"
+	"github.com/plgd-dev/device/v2/client/core"
+	"github.com/plgd-dev/device/v2/schema"
+	plgdDevice "github.com/plgd-dev/device/v2/schema/device"
+	"github.com/plgd-dev/device/v2/schema/doxm"
 	grpcgwPb "github.com/plgd-dev/hub/v2/grpc-gateway/pb"
 	"github.com/plgd-dev/hub/v2/pkg/log"
 	"github.com/plgd-dev/hub/v2/resource-aggregate/commands"
@@ -65,7 +65,7 @@ func newDevice(deviceID uuid.UUID, serviceDevice *serviceDevice.Service, logger 
 		logger: logger.With(log.DeviceIDKey, deviceID),
 	}
 	coreDeviceCfg := serviceDevice.GetDeviceConfiguration()
-	coreDeviceCfg.ErrFunc = d.ErrorFunc
+	coreDeviceCfg.Logger = serviceDevice.DeviceLogger()
 	d.Device = core.NewDevice(coreDeviceCfg, deviceID.String(), []string{}, d.GetEndpoints)
 	return &d
 }

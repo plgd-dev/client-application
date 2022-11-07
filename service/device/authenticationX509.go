@@ -12,8 +12,10 @@ import (
 	"time"
 
 	"github.com/pion/dtls/v2"
-	"github.com/plgd-dev/device/client/core"
-	"github.com/plgd-dev/device/pkg/net/coap"
+	"github.com/plgd-dev/device/v2/client/core"
+	"github.com/plgd-dev/device/v2/pkg/net/coap"
+	"github.com/plgd-dev/go-coap/v3/tcp"
+	"github.com/plgd-dev/go-coap/v3/udp"
 	"github.com/plgd-dev/kit/v2/security/generateCertificate"
 	"go.uber.org/atomic"
 )
@@ -70,7 +72,7 @@ func (s *authenticationX509) getClientCerts() (*tls.Certificate, *x509.CertPool,
 	return crt, clientCAs, nil
 }
 
-func (s *authenticationX509) DialDTLS(ctx context.Context, addr string, dtlsCfg *dtls.Config, opts ...coap.DialOptionFunc) (*coap.ClientCloseHandler, error) {
+func (s *authenticationX509) DialDTLS(ctx context.Context, addr string, dtlsCfg *dtls.Config, opts ...udp.Option) (*coap.ClientCloseHandler, error) {
 	crt, clientCAs, err := s.getClientCerts()
 	if err != nil {
 		return nil, err
@@ -80,7 +82,7 @@ func (s *authenticationX509) DialDTLS(ctx context.Context, addr string, dtlsCfg 
 	return coap.DialUDPSecure(ctx, addr, dtlsCfg, opts...)
 }
 
-func (s *authenticationX509) DialTLS(ctx context.Context, addr string, tlsCfg *tls.Config, opts ...coap.DialOptionFunc) (*coap.ClientCloseHandler, error) {
+func (s *authenticationX509) DialTLS(ctx context.Context, addr string, tlsCfg *tls.Config, opts ...tcp.Option) (*coap.ClientCloseHandler, error) {
 	crt, clientCAs, err := s.getClientCerts()
 	if err != nil {
 		return nil, err

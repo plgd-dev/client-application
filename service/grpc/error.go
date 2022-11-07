@@ -19,8 +19,8 @@ package grpc
 import (
 	"errors"
 
-	coapStatus "github.com/plgd-dev/go-coap/v2/message/status"
-	"github.com/plgd-dev/kit/v2/coapconv"
+	coapStatus "github.com/plgd-dev/go-coap/v3/message/status"
+	"github.com/plgd-dev/hub/v2/coap-gateway/coapconv"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
