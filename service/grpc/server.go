@@ -24,7 +24,7 @@ import (
 	"github.com/plgd-dev/client-application/pb"
 	serviceDevice "github.com/plgd-dev/client-application/service/device"
 	"github.com/plgd-dev/client-application/service/remoteProvisioning"
-	"github.com/plgd-dev/go-coap/v2/pkg/sync"
+	"github.com/plgd-dev/go-coap/v3/pkg/sync"
 	"github.com/plgd-dev/hub/v2/pkg/log"
 	"go.uber.org/atomic"
 	"google.golang.org/grpc/codes"
@@ -75,7 +75,7 @@ func (s *ClientApplicationServer) getDevice(deviceID uuid.UUID) (*device, error)
 }
 
 func (s *ClientApplicationServer) deleteDevice(ctx context.Context, deviceID uuid.UUID) error {
-	dev, ok := s.devices.PullOut(deviceID)
+	dev, ok := s.devices.LoadAndDelete(deviceID)
 	if !ok {
 		return nil
 	}

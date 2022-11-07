@@ -23,7 +23,7 @@ import (
 
 	"github.com/plgd-dev/client-application/pb"
 	"github.com/plgd-dev/client-application/test"
-	"github.com/plgd-dev/go-coap/v2/message"
+	"github.com/plgd-dev/go-coap/v3/message"
 	grpcgwPb "github.com/plgd-dev/hub/v2/grpc-gateway/pb"
 	"github.com/plgd-dev/hub/v2/resource-aggregate/commands"
 	hubTest "github.com/plgd-dev/hub/v2/test"

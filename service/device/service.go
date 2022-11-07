@@ -27,22 +27,26 @@ import (
 
 	"github.com/pion/dtls/v2"
 	"github.com/plgd-dev/client-application/pb"
-	"github.com/plgd-dev/device/client/core"
-	"github.com/plgd-dev/device/client/core/otm"
-	justworks "github.com/plgd-dev/device/client/core/otm/just-works"
-	"github.com/plgd-dev/device/client/core/otm/manufacturer"
-	"github.com/plgd-dev/device/pkg/net/coap"
-	coapNet "github.com/plgd-dev/go-coap/v2/net"
-	"github.com/plgd-dev/go-coap/v2/net/monitor/inactivity"
-	"github.com/plgd-dev/go-coap/v2/udp"
-	"github.com/plgd-dev/go-coap/v2/udp/client"
+	"github.com/plgd-dev/device/v2/client/core"
+	"github.com/plgd-dev/device/v2/client/core/otm"
+	justworks "github.com/plgd-dev/device/v2/client/core/otm/just-works"
+	"github.com/plgd-dev/device/v2/client/core/otm/manufacturer"
+	"github.com/plgd-dev/device/v2/pkg/net/coap"
+	"github.com/plgd-dev/device/v2/schema"
+	coapNet "github.com/plgd-dev/go-coap/v3/net"
+	"github.com/plgd-dev/go-coap/v3/options"
+	"github.com/plgd-dev/go-coap/v3/tcp"
+	tcpClient "github.com/plgd-dev/go-coap/v3/tcp/client"
+	"github.com/plgd-dev/go-coap/v3/udp"
+	udpClient "github.com/plgd-dev/go-coap/v3/udp/client"
+	udpServer "github.com/plgd-dev/go-coap/v3/udp/server"
 	"github.com/plgd-dev/hub/v2/pkg/log"
 	"go.opentelemetry.io/otel/trace"
 )
 
 type AuthenticationClient interface {
-	DialDTLS(ctx context.Context, addr string, dtlsCfg *dtls.Config, opts ...coap.DialOptionFunc) (*coap.ClientCloseHandler, error)
-	DialTLS(ctx context.Context, addr string, tlsCfg *tls.Config, opts ...coap.DialOptionFunc) (*coap.ClientCloseHandler, error)
+	DialDTLS(ctx context.Context, addr string, dtlsCfg *dtls.Config, opts ...udp.Option) (*coap.ClientCloseHandler, error)
+	DialTLS(ctx context.Context, addr string, tlsCfg *tls.Config, opts ...tcp.Option) (*coap.ClientCloseHandler, error)
 	GetOwnerID() (string, error)
 	GetOwner() string
 	GetOwnOptions() []core.OwnOption
@@ -59,8 +63,8 @@ type Service struct {
 	config               Config
 	logger               log.Logger
 	tracerProvider       trace.TracerProvider
-	udp4server           *udp.Server
-	udp6server           *udp.Server
+	udp4server           *udpServer.Server
+	udp6server           *udpServer.Server
 	udp4Listener         *coapNet.UDPConn
 	udp6Listener         *coapNet.UDPConn
 	done                 chan struct{}
@@ -68,6 +72,10 @@ type Service struct {
 }
 
 var closeHandlerKey = "close-handler"
+
+func errClosingConnection(debugf func(fmt string, a ...any), scheme schema.Scheme, remoteAddr net.Addr) {
+	debugf("closing connection %v://%v for inactivity", scheme, remoteAddr)
+}
 
 // New creates new GRPC service
 func New(ctx context.Context, serviceName string, config Config, logger log.Logger, tracerProvider trace.TracerProvider) (*Service, error) {
@@ -79,22 +87,20 @@ func New(ctx context.Context, serviceName string, config Config, logger log.Logg
 		authenticationClient = newAuthenticationX509(config)
 	}
 
-	opts := []udp.ServerOption{
-		udp.WithContext(ctx),
-		udp.WithOnNewClientConn(func(cc *client.ClientConn) {
+	opts := []udpServer.Option{
+		options.WithContext(ctx),
+		options.WithOnNewConn(func(cc *udpClient.Conn) {
 			closeHander := coap.NewOnCloseHandler()
 			cc.AddOnClose(func() {
 				closeHander.OnClose(nil)
 			})
 			cc.SetContextValue(&closeHandlerKey, closeHander)
 		}),
-		udp.WithMaxMessageSize(config.COAP.MaxMessageSize),
-		udp.WithBlockwise(config.COAP.BlockwiseTransfer.Enabled, config.COAP.BlockwiseTransfer.szx, config.COAP.InactivityMonitor.Timeout),
-		udp.WithErrors(errFunc),
-		udp.WithInactivityMonitor(config.COAP.InactivityMonitor.Timeout, func(cc inactivity.ClientConn) {
-			if c, ok := cc.(*client.ClientConn); ok {
-				log.Debugf("closing connection %v for inactivity", c.RemoteAddr())
-			}
+		options.WithMaxMessageSize(config.COAP.MaxMessageSize),
+		options.WithBlockwise(config.COAP.BlockwiseTransfer.Enabled, config.COAP.BlockwiseTransfer.szx, config.COAP.InactivityMonitor.Timeout),
+		options.WithErrors(errFunc),
+		options.WithInactivityMonitor(config.COAP.InactivityMonitor.Timeout, func(cc *udpClient.Conn) {
+			errClosingConnection(log.Debugf, "coap", cc.RemoteAddr())
 			_ = cc.Close()
 		}),
 	}
@@ -130,52 +136,60 @@ func errFunc(err error) {
 	log.Debug(err)
 }
 
-func (s *Service) DialDTLS(ctx context.Context, addr string, dtlsCfg *dtls.Config, opts ...coap.DialOptionFunc) (*coap.ClientCloseHandler, error) {
-	dialOpts := []coap.DialOptionFunc{
-		coap.WithInactivityMonitor(s.config.COAP.InactivityMonitor.Timeout),
-		coap.WithMaxMessageSize(s.config.COAP.MaxMessageSize),
-		coap.WithBlockwise(s.config.COAP.BlockwiseTransfer.Enabled, s.config.COAP.BlockwiseTransfer.szx, s.config.COAP.InactivityMonitor.Timeout),
-		coap.WithErrors(s.ErrFunc),
-	}
-	return s.authenticationClient.DialDTLS(ctx, addr, dtlsCfg, append(dialOpts, opts...)...)
+func (s *Service) errFunc(err error) {
+	s.logger.Debug(err)
 }
 
-func (s *Service) DialOwnership(ctx context.Context, addr string, dtlsCfg *dtls.Config, opts ...coap.DialOptionFunc) (*coap.ClientCloseHandler, error) {
-	dialOpts := []coap.DialOptionFunc{
-		coap.WithInactivityMonitor(s.config.COAP.InactivityMonitor.Timeout),
-		coap.WithMaxMessageSize(s.config.COAP.MaxMessageSize),
-		coap.WithBlockwise(s.config.COAP.BlockwiseTransfer.Enabled, s.config.COAP.BlockwiseTransfer.szx, s.config.COAP.InactivityMonitor.Timeout),
-		coap.WithErrors(s.ErrFunc),
+func (s *Service) getDialUDPOptions(secure bool) []udp.Option {
+	dialOpts := []udp.Option{
+		options.WithInactivityMonitor(s.config.COAP.InactivityMonitor.Timeout, func(cc *udpClient.Conn) {
+			scheme := schema.UDPScheme
+			if secure {
+				scheme = schema.TCPSecureScheme
+			}
+			errClosingConnection(log.Debugf, scheme, cc.RemoteAddr())
+			_ = cc.Close()
+		}),
+		options.WithMaxMessageSize(s.config.COAP.MaxMessageSize),
+		options.WithBlockwise(s.config.COAP.BlockwiseTransfer.Enabled, s.config.COAP.BlockwiseTransfer.szx, s.config.COAP.InactivityMonitor.Timeout),
+		options.WithErrors(s.errFunc),
 	}
-	return coap.DialUDPSecure(ctx, addr, dtlsCfg, append(dialOpts, opts...)...)
+	return dialOpts
+}
+
+func (s *Service) DialDTLS(ctx context.Context, addr string, dtlsCfg *dtls.Config, opts ...udp.Option) (*coap.ClientCloseHandler, error) {
+	return s.authenticationClient.DialDTLS(ctx, addr, dtlsCfg, append(s.getDialUDPOptions(true), opts...)...)
+}
+
+func (s *Service) DialOwnership(ctx context.Context, addr string, dtlsCfg *dtls.Config, opts ...udp.Option) (*coap.ClientCloseHandler, error) {
+	return coap.DialUDPSecure(ctx, addr, dtlsCfg, append(s.getDialUDPOptions(true), opts...)...)
 }
 
 type UDPClientConn struct {
-	*client.Client
+	*udpClient.Conn
 }
 
 func (c *UDPClientConn) Context() context.Context {
-	if cc, ok := c.Client.ClientConn().(*client.ClientConn); ok {
-		// we need to check if connection will be closed for inactivity
-		cc.CheckExpirations(time.Now().Add(50 * time.Millisecond))
-		if cc.Context().Err() == nil {
-			// move inactivity timeout to future
-			cc.InactivityMonitor().Notify()
-		}
+	cc := c.Conn
+	// we need to check if connection will be closed for inactivity
+	cc.CheckExpirations(time.Now().Add(50 * time.Millisecond))
+	if cc.Context().Err() == nil {
+		// move inactivity timeout to future
+		cc.InactivityMonitor().Notify()
 	}
-	return c.Client.Context()
+	return cc.Context()
 }
 
-func (s *Service) DialUDP(ctx context.Context, addr string, opts ...coap.DialOptionFunc) (*coap.ClientCloseHandler, error) {
+func (s *Service) DialUDP(ctx context.Context, addr string, opts ...udp.Option) (*coap.ClientCloseHandler, error) {
 	udpAddr, err := net.ResolveUDPAddr("udp", addr)
 	if err != nil {
 		return nil, err
 	}
-	var cc *client.ClientConn
+	var cc *udpClient.Conn
 	if udpAddr.IP.To4() != nil {
-		cc, err = s.udp4server.NewClientConn(udpAddr)
+		cc, err = s.udp4server.NewConn(udpAddr)
 	} else {
-		cc, err = s.udp6server.NewClientConn(udpAddr)
+		cc, err = s.udp6server.NewConn(udpAddr)
 	}
 	if err != nil {
 		return nil, err
@@ -190,31 +204,36 @@ func (s *Service) DialUDP(ctx context.Context, addr string, opts ...coap.DialOpt
 		_ = cc.Close()
 		return nil, fmt.Errorf("failed to create client connection: close handler is not *coap.OnCloseHandler")
 	}
-	return coap.NewClientCloseHandler(&UDPClientConn{Client: cc.Client()}, h), nil
+	return coap.NewClientCloseHandler(&UDPClientConn{Conn: cc}, h), nil
 }
 
-func (s *Service) DialTCP(ctx context.Context, addr string, opts ...coap.DialOptionFunc) (*coap.ClientCloseHandler, error) {
-	dialOpts := []coap.DialOptionFunc{
-		coap.WithInactivityMonitor(s.config.COAP.InactivityMonitor.Timeout),
-		coap.WithMaxMessageSize(s.config.COAP.MaxMessageSize),
-		coap.WithBlockwise(s.config.COAP.BlockwiseTransfer.Enabled, s.config.COAP.BlockwiseTransfer.szx, s.config.COAP.InactivityMonitor.Timeout),
-		coap.WithErrors(s.ErrFunc),
+func (s *Service) getDialTCPOptions(secure bool) []tcp.Option {
+	dialOpts := []tcp.Option{
+		options.WithInactivityMonitor(s.config.COAP.InactivityMonitor.Timeout, func(cc *tcpClient.Conn) {
+			scheme := schema.TCPScheme
+			if secure {
+				scheme = schema.TCPSecureScheme
+			}
+			errClosingConnection(log.Debugf, scheme, cc.RemoteAddr())
+			_ = cc.Close()
+		}),
+		options.WithMaxMessageSize(s.config.COAP.MaxMessageSize),
+		options.WithBlockwise(s.config.COAP.BlockwiseTransfer.Enabled, s.config.COAP.BlockwiseTransfer.szx, s.config.COAP.InactivityMonitor.Timeout),
+		options.WithErrors(s.errFunc),
 	}
-	return coap.DialTCP(ctx, addr, append(dialOpts, opts...)...)
+	return dialOpts
 }
 
-func (s *Service) DialTLS(ctx context.Context, addr string, tlsCfg *tls.Config, opts ...coap.DialOptionFunc) (*coap.ClientCloseHandler, error) {
-	dialOpts := []coap.DialOptionFunc{
-		coap.WithInactivityMonitor(s.config.COAP.InactivityMonitor.Timeout),
-		coap.WithMaxMessageSize(s.config.COAP.MaxMessageSize),
-		coap.WithBlockwise(s.config.COAP.BlockwiseTransfer.Enabled, s.config.COAP.BlockwiseTransfer.szx, s.config.COAP.InactivityMonitor.Timeout),
-		coap.WithErrors(s.ErrFunc),
-	}
-	return s.authenticationClient.DialTLS(ctx, addr, tlsCfg, append(dialOpts, opts...)...)
+func (s *Service) DialTCP(ctx context.Context, addr string, opts ...tcp.Option) (*coap.ClientCloseHandler, error) {
+	return coap.DialTCP(ctx, addr, append(s.getDialTCPOptions(false), opts...)...)
 }
 
-func (s *Service) ErrFunc(err error) {
-	log.Debug(err)
+func (s *Service) DialTLS(ctx context.Context, addr string, tlsCfg *tls.Config, opts ...tcp.Option) (*coap.ClientCloseHandler, error) {
+	return s.authenticationClient.DialTLS(ctx, addr, tlsCfg, append(s.getDialTCPOptions(true), opts...)...)
+}
+
+func (s *Service) DeviceLogger() core.Logger {
+	return s.logger.DTLSLoggerFactory().NewLogger("client-application/device")
 }
 
 func (s *Service) GetDeviceConfiguration() core.DeviceConfiguration {
@@ -223,7 +242,7 @@ func (s *Service) GetDeviceConfiguration() core.DeviceConfiguration {
 		DialUDP:  s.DialUDP,
 		DialTCP:  s.DialTCP,
 		DialTLS:  s.DialTLS,
-		ErrFunc:  s.ErrFunc,
+		Logger:   s.DeviceLogger(),
 		TLSConfig: &core.TLSConfig{
 			GetCertificate:            s.authenticationClient.GetIdentityCertificate,
 			GetCertificateAuthorities: s.authenticationClient.GetCertificateAuthorities,

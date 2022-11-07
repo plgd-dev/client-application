@@ -28,18 +28,19 @@ import (
 	"github.com/google/uuid"
 	"github.com/plgd-dev/client-application/pb"
 	serviceDevice "github.com/plgd-dev/client-application/service/device"
-	"github.com/plgd-dev/device/client/core"
-	"github.com/plgd-dev/device/pkg/net/coap"
-	"github.com/plgd-dev/device/schema"
-	plgdDevice "github.com/plgd-dev/device/schema/device"
-	"github.com/plgd-dev/device/schema/doxm"
-	"github.com/plgd-dev/device/schema/resources"
-	"github.com/plgd-dev/go-coap/v2/message"
-	coapCodes "github.com/plgd-dev/go-coap/v2/message/codes"
-	coapSync "github.com/plgd-dev/go-coap/v2/pkg/sync"
-	"github.com/plgd-dev/go-coap/v2/udp"
-	"github.com/plgd-dev/go-coap/v2/udp/client"
-	"github.com/plgd-dev/go-coap/v2/udp/message/pool"
+	"github.com/plgd-dev/device/v2/client/core"
+	"github.com/plgd-dev/device/v2/pkg/net/coap"
+	"github.com/plgd-dev/device/v2/schema"
+	plgdDevice "github.com/plgd-dev/device/v2/schema/device"
+	"github.com/plgd-dev/device/v2/schema/doxm"
+	"github.com/plgd-dev/device/v2/schema/resources"
+	"github.com/plgd-dev/go-coap/v3/message"
+	coapCodes "github.com/plgd-dev/go-coap/v3/message/codes"
+	"github.com/plgd-dev/go-coap/v3/message/pool"
+	"github.com/plgd-dev/go-coap/v3/options"
+	coapSync "github.com/plgd-dev/go-coap/v3/pkg/sync"
+	"github.com/plgd-dev/go-coap/v3/udp"
+	"github.com/plgd-dev/go-coap/v3/udp/client"
 	grpcgwPb "github.com/plgd-dev/hub/v2/grpc-gateway/pb"
 	"github.com/plgd-dev/hub/v2/pkg/log"
 	pkgStrings "github.com/plgd-dev/hub/v2/pkg/strings"
@@ -187,7 +188,7 @@ func onDiscoveryResourceResponse(serviceDevice *serviceDevice.Service, logger lo
 	return nil
 }
 
-func discoverDiscoveryResources(ctx context.Context, discoveryCfg core.DiscoveryConfiguration, onResponse func(conn *client.ClientConn, resp *pool.Message)) error {
+func discoverDiscoveryResources(ctx context.Context, discoveryCfg core.DiscoveryConfiguration, onResponse func(conn *client.Conn, resp *pool.Message)) error {
 	var lock sync.Mutex
 	var errors []error
 
@@ -262,7 +263,7 @@ func onDeviceResourceResponse(serviceDevice *serviceDevice.Service, logger log.L
 	return nil
 }
 
-func discoverDeviceResource(ctx context.Context, discoveryCfg core.DiscoveryConfiguration, onResponse func(conn *client.ClientConn, resp *pool.Message)) error {
+func discoverDeviceResource(ctx context.Context, discoveryCfg core.DiscoveryConfiguration, onResponse func(conn *client.Conn, resp *pool.Message)) error {
 	discoveryClients, err := core.DialDiscoveryAddresses(ctx, discoveryCfg, func(err error) {})
 	if err != nil {
 		return status.Error(codes.Internal, err.Error())
@@ -287,7 +288,7 @@ func toDiscoveryConfiguration(ipVersionFilter ipVersionFilter) core.DiscoveryCon
 	return discoveryCfg
 }
 
-func getDevicesByMulticast(ctx context.Context, discoveryCfg core.DiscoveryConfiguration, onDeviceResourceResponse, onDiscoveryResourceResponse func(conn *client.ClientConn, resp *pool.Message)) {
+func getDevicesByMulticast(ctx context.Context, discoveryCfg core.DiscoveryConfiguration, onDeviceResourceResponse, onDiscoveryResourceResponse func(conn *client.Conn, resp *pool.Message)) {
 	var wg sync.WaitGroup
 	wg.Add(1)
 
@@ -342,7 +343,7 @@ func getDeviceByMulticastAddress(ctx context.Context, serviceDevice *serviceDevi
 	discoveryResource := atomic.NewBool(false)
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
-	getDevicesByMulticast(ctx, discoveryConfiguration, func(conn *client.ClientConn, resp *pool.Message) {
+	getDevicesByMulticast(ctx, discoveryConfiguration, func(conn *client.Conn, resp *pool.Message) {
 		_ = conn.Close()
 		err := onDeviceResourceResponse(serviceDevice, logger, resp, devices)
 		if err != nil {
@@ -351,7 +352,7 @@ func getDeviceByMulticastAddress(ctx context.Context, serviceDevice *serviceDevi
 		if deviceResource.CompareAndSwap(false, true) && discoveryResource.Load() {
 			cancel()
 		}
-	}, func(conn *client.ClientConn, resp *pool.Message) {
+	}, func(conn *client.Conn, resp *pool.Message) {
 		_ = conn.Close()
 		err := onDiscoveryResourceResponse(serviceDevice, logger, conn.RemoteAddr(), resp, devices)
 		if err != nil {
@@ -373,7 +374,7 @@ func getDeviceByAddress(ctx context.Context, serviceDevice *serviceDevice.Servic
 		hostname = "[" + hostname + "]"
 	}
 	address := fmt.Sprintf("%s:%d", hostname, addr.GetPort())
-	client, err := udp.Dial(address, udp.WithContext(ctx))
+	client, err := udp.Dial(address, options.WithContext(ctx))
 	if err != nil {
 		return err
 	}
@@ -558,10 +559,10 @@ func (s *ClientApplicationServer) GetDevices(req *pb.GetDevicesRequest, srv pb.C
 	}
 	if len(req.GetUseMulticast()) > 0 {
 		toCall = append(toCall, func() {
-			getDevicesByMulticast(discoveryCtx, toDiscoveryConfiguration(toUseMulticastFilter(req.GetUseMulticast())), func(conn *client.ClientConn, resp *pool.Message) {
+			getDevicesByMulticast(discoveryCtx, toDiscoveryConfiguration(toUseMulticastFilter(req.GetUseMulticast())), func(conn *client.Conn, resp *pool.Message) {
 				_ = conn.Close()
 				_ = onDeviceResourceResponse(s.serviceDevice, s.logger, resp, discoveredDevices)
-			}, func(conn *client.ClientConn, resp *pool.Message) {
+			}, func(conn *client.Conn, resp *pool.Message) {
 				_ = conn.Close()
 				_ = onDiscoveryResourceResponse(s.serviceDevice, s.logger, conn.RemoteAddr(), resp, discoveredDevices)
 			})
