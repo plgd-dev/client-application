@@ -29,7 +29,7 @@ import (
 )
 
 func (s *ClientApplicationServer) GetJSONWebKeys(ctx context.Context, req *pb.GetJSONWebKeysRequest) (*structpb.Struct, error) {
-	if s.remoteProvisioningConfig.Mode != remoteProvisioning.Mode_UserAgent {
+	if s.GetConfig().RemoteProvisioning.Mode != remoteProvisioning.Mode_UserAgent {
 		return nil, status.Errorf(codes.Unimplemented, "not supported")
 	}
 	jwksCache := s.jwksCache.Load()

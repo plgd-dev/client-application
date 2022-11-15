@@ -18,8 +18,6 @@ package http_test
 
 import (
 	"bytes"
-	"errors"
-	"io"
 	"net/http"
 	"testing"
 
@@ -42,23 +40,7 @@ func TestClientApplicationServerClearCache(t *testing.T) {
 	shutDown := test.New(t, cfg)
 	defer shutDown()
 
-	getDevices := func() {
-		request := httpgwTest.NewRequest(http.MethodGet, serviceHttp.Devices, nil).
-			Host(test.CLIENT_APPLICATION_HTTP_HOST).Build()
-		resp := httpgwTest.HTTPDo(t, request)
-		require.Equal(t, http.StatusOK, resp.StatusCode)
-		for {
-			var dev grpcgwPb.Device
-			err := httpgwTest.Unmarshal(resp.StatusCode, resp.Body, &dev)
-			if errors.Is(err, io.EOF) {
-				break
-			}
-			require.NoError(t, err)
-		}
-		_ = resp.Body.Close()
-	}
-	// fill cache
-	getDevices()
+	getDevices(t, "")
 
 	// own device
 	request := httpgwTest.NewRequest(http.MethodPost, serviceHttp.OwnDevice, nil).
@@ -114,7 +96,7 @@ func TestClientApplicationServerClearCache(t *testing.T) {
 	assert.Equal(t, http.StatusNotFound, resp.StatusCode)
 
 	// fill cache again
-	getDevices()
+	getDevices(t, "")
 
 	// revert update device name
 	request = httpgwTest.NewRequest(http.MethodPut, serviceHttp.DeviceResource, bytes.NewBufferString(`{"n":"`+test.DevsimName+`"}`)).

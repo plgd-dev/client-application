@@ -17,10 +17,27 @@
 package grpc
 
 import (
+	"time"
+
 	"github.com/plgd-dev/client-application/pb"
 	"github.com/plgd-dev/client-application/pkg/net/grpc/server"
+	grpcServer "github.com/plgd-dev/hub/v2/pkg/net/grpc/server"
 )
 
 type Config = server.Config
 
 type ServiceInformation = pb.GetConfigurationResponse
+
+var defaultConfig = Config{
+	Addr: ":8081",
+	TLS: server.TLSConfig{
+		Enabled: false,
+	},
+	EnforcementPolicy: grpcServer.EnforcementPolicyConfig{
+		MinTime: 5 * time.Minute,
+	},
+}
+
+func DefaultConfig() Config {
+	return defaultConfig
+}

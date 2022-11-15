@@ -35,9 +35,14 @@ func (s *ClientApplicationServer) reset(ctx context.Context) {
 		value.cancel()
 		return true
 	})
-	_, err := s.ClearCache(ctx, &pb.ClearCacheRequest{})
-	if err != nil {
-		log.Warnf("cannot clear cache: %v", err)
+	if _, err := s.ClearCache(ctx, &pb.ClearCacheRequest{}); err != nil {
+		log.Warnf("cannot clear device cache: %v", err)
+	}
+	if s.signIdentityCertificateRemotely() {
+		return
+	}
+	if err := s.UpdatePSK("", ""); err != nil {
+		log.Warnf("cannot reset psk: %v", err)
 	}
 }
 

@@ -18,9 +18,9 @@ package grpc
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/plgd-dev/client-application/pb"
+	"github.com/plgd-dev/hub/v2/pkg/log"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -40,22 +40,53 @@ func (s *ClientApplicationServer) InitializeRemoteProvisioning(ctx context.Conte
 	}, nil
 }
 
+func (s *ClientApplicationServer) UpdatePSK(subjectUUID, key string) error {
+	s.updatePSKLock.Lock()
+	defer s.updatePSKLock.Unlock()
+	isInitialized := s.serviceDevice.IsInitialized()
+	if isInitialized && (subjectUUID != "" || key != "") {
+		return status.Errorf(codes.FailedPrecondition, "already initialized")
+	}
+	if !isInitialized && (subjectUUID == "" && key == "") {
+		return status.Errorf(codes.FailedPrecondition, "not initialized")
+	}
+	cfg := s.GetConfig()
+	cfg.Clients.Device.COAP.TLS.PreSharedKey.Key = key
+	cfg.Clients.Device.COAP.TLS.PreSharedKey.SubjectUUIDStr = subjectUUID
+	return s.StoreConfig(cfg)
+}
+
 func (s *ClientApplicationServer) Initialize(ctx context.Context, req *pb.InitializeRequest) (*pb.InitializeResponse, error) {
 	if s.serviceDevice.IsInitialized() {
-		return nil, status.Errorf(codes.AlreadyExists, "already initialized")
+		return nil, status.Errorf(codes.FailedPrecondition, "already initialized")
 	}
 	if s.signIdentityCertificateRemotely() {
 		return s.InitializeRemoteProvisioning(ctx, req)
 	}
-	return nil, fmt.Errorf("not implemented")
+	if req.GetPreSharedKey().GetSubjectUuid() == "" {
+		return nil, status.Errorf(codes.InvalidArgument, "invalid pre-shared subject")
+	}
+	if req.GetPreSharedKey().GetKey() == "" {
+		return nil, status.Errorf(codes.InvalidArgument, "invalid pre-shared key")
+	}
+	if err := s.UpdatePSK(req.GetPreSharedKey().GetSubjectUuid(), req.GetPreSharedKey().GetKey()); err != nil {
+		return nil, err
+	}
+	if _, err := s.ClearCache(ctx, &pb.ClearCacheRequest{}); err != nil {
+		log.Warnf("cannot clear device cache: %v", err)
+	}
+	return &pb.InitializeResponse{}, nil
 }
 
 func (s *ClientApplicationServer) FinishInitialize(ctx context.Context, req *pb.FinishInitializeRequest) (*pb.FinishInitializeResponse, error) {
 	if s.serviceDevice.IsInitialized() {
-		return nil, status.Errorf(codes.AlreadyExists, "already initialized")
+		return nil, status.Errorf(codes.FailedPrecondition, "already initialized")
 	}
 	if err := s.updateIdentityCertificate(ctx, req); err != nil {
 		return nil, err
+	}
+	if _, err := s.ClearCache(ctx, &pb.ClearCacheRequest{}); err != nil {
+		log.Warnf("cannot clear device cache: %v", err)
 	}
 	return &pb.FinishInitializeResponse{}, nil
 }

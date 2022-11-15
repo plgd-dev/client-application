@@ -40,7 +40,7 @@ func (s *ClientApplicationServer) validateState(state uuid.UUID) bool {
 }
 
 func (s *ClientApplicationServer) signIdentityCertificateRemotely() bool {
-	return s.remoteProvisioningConfig.Mode == remoteProvisioning.Mode_UserAgent && s.serviceDevice.GetDeviceAuthenticationMode() == pb.GetConfigurationResponse_X509
+	return s.GetConfig().RemoteProvisioning.Mode == remoteProvisioning.Mode_UserAgent && s.serviceDevice.GetDeviceAuthenticationMode() == pb.GetConfigurationResponse_X509
 }
 
 func (s *ClientApplicationServer) updateIdentityCertificate(ctx context.Context, req *pb.FinishInitializeRequest) error {
@@ -54,7 +54,7 @@ func (s *ClientApplicationServer) updateIdentityCertificate(ctx context.Context,
 	if !s.validateState(state) {
 		return status.Errorf(codes.InvalidArgument, "invalid state")
 	}
-	owner, err := grpc.OwnerFromTokenMD(ctx, s.remoteProvisioningConfig.Authorization.OwnerClaim)
+	owner, err := grpc.OwnerFromTokenMD(ctx, s.GetConfig().RemoteProvisioning.Authorization.OwnerClaim)
 	if err != nil {
 		return status.Errorf(codes.Unauthenticated, "cannot get owner from token: %v", err)
 	}

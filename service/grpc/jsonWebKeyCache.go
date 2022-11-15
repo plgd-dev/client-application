@@ -69,7 +69,7 @@ func (s *ClientApplicationServer) ParseWithClaims(token string, claims jwt.Claim
 		return status.Errorf(codes.Unauthenticated, "invalid type of token claims %T", claims)
 	}
 	plgdClaims := plgdJwt.Claims(*scopeClaims)
-	owner := plgdClaims.Owner(s.remoteProvisioningConfig.Authorization.OwnerClaim)
+	owner := plgdClaims.Owner(s.GetConfig().RemoteProvisioning.Authorization.OwnerClaim)
 	if owner == "" {
 		return status.Errorf(codes.Unauthenticated, "owner claim is not set")
 	}

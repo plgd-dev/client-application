@@ -785,11 +785,14 @@
     "DeviceMetadata": {
       "type": "object",
       "properties": {
-        "status": {
-          "$ref": "#/definitions/pbConnectionStatus"
+        "connection": {
+          "$ref": "#/definitions/pbConnection"
         },
-        "shadowSynchronization": {
-          "$ref": "#/definitions/pbShadowSynchronization"
+        "twinSynchronization": {
+          "$ref": "#/definitions/pbTwinSynchronization"
+        },
+        "twinEnabled": {
+          "type": "boolean"
         }
       }
     },
@@ -836,6 +839,16 @@
         "USER_AGENT"
       ],
       "default": "MODE_NONE"
+    },
+    "TwinSynchronizationState": {
+      "type": "string",
+      "enum": [
+        "OUT_OF_SYNC",
+        "DISABLED",
+        "SYNCING",
+        "IN_SYNC"
+      ],
+      "default": "OUT_OF_SYNC"
     },
     "googlerpcStatus": {
       "type": "object",
@@ -942,22 +955,38 @@
     "pbClearCacheResponse": {
       "type": "object"
     },
-    "pbConnectionStatus": {
+    "pbCommandMetadata": {
       "type": "object",
       "properties": {
-        "value": {
-          "$ref": "#/definitions/pbConnectionStatusStatus"
-        },
-        "validUntil": {
-          "type": "string",
-          "format": "int64"
-        },
         "connectionId": {
           "type": "string"
+        },
+        "sequence": {
+          "type": "string",
+          "format": "uint64"
         }
       }
     },
-    "pbConnectionStatusStatus": {
+    "pbConnection": {
+      "type": "object",
+      "properties": {
+        "status": {
+          "$ref": "#/definitions/pbConnectionStatus"
+        },
+        "onlineValidUntil": {
+          "type": "string",
+          "format": "int64"
+        },
+        "id": {
+          "type": "string"
+        },
+        "connectedAt": {
+          "type": "string",
+          "format": "int64"
+        }
+      }
+    },
+    "pbConnectionStatus": {
       "type": "string",
       "enum": [
         "OFFLINE",
@@ -1119,9 +1148,9 @@
           "type": "string",
           "description": "ID of the client application that is used to identify the client application by the device."
         },
-        "keyUuid": {
+        "key": {
           "type": "string",
-          "description": "Associated secret to the client application ID."
+          "description": "Associated secret to the client application ID. Only first 16bytes is used."
         }
       }
     },
@@ -1342,14 +1371,24 @@
         }
       }
     },
-    "pbShadowSynchronization": {
-      "type": "string",
-      "enum": [
-        "UNSET",
-        "ENABLED",
-        "DISABLED"
-      ],
-      "default": "UNSET"
+    "pbTwinSynchronization": {
+      "type": "object",
+      "properties": {
+        "state": {
+          "$ref": "#/definitions/TwinSynchronizationState"
+        },
+        "syncingAt": {
+          "type": "string",
+          "format": "int64"
+        },
+        "inSyncAt": {
+          "type": "string",
+          "format": "int64"
+        },
+        "commandMetadata": {
+          "$ref": "#/definitions/pbCommandMetadata"
+        }
+      }
     },
     "pbUserAgent": {
       "type": "object",

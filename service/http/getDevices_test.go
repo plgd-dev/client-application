@@ -33,6 +33,25 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func getDevices(t *testing.T, token string) {
+	request := httpgwTest.NewRequest(http.MethodGet, serviceHttp.Devices, nil).
+		Host(test.CLIENT_APPLICATION_HTTP_HOST)
+	if token != "" {
+		request = request.AuthToken(token)
+	}
+	resp := httpgwTest.HTTPDo(t, request.Build())
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+	for {
+		var dev grpcgwPb.Device
+		err := httpgwTest.Unmarshal(resp.StatusCode, resp.Body, &dev)
+		if errors.Is(err, io.EOF) {
+			break
+		}
+		require.NoError(t, err)
+	}
+	_ = resp.Body.Close()
+}
+
 func TestClientApplicationServerGetDevices(t *testing.T) {
 	device := test.MustFindDeviceByName(test.DevsimName, []pb.GetDevicesRequest_UseMulticast{pb.GetDevicesRequest_IPV4})
 	u, err := url.Parse(device.Endpoints[0])

@@ -21,9 +21,7 @@ import (
 	"crypto/ecdsa"
 	"crypto/rsa"
 	"crypto/x509"
-	"errors"
 	"fmt"
-	"io"
 	"net/http"
 	"os"
 	"testing"
@@ -37,7 +35,6 @@ import (
 	"github.com/plgd-dev/client-application/pb"
 	serviceHttp "github.com/plgd-dev/client-application/service/http"
 	"github.com/plgd-dev/client-application/test"
-	grpcgwPb "github.com/plgd-dev/hub/v2/grpc-gateway/pb"
 	httpgwTest "github.com/plgd-dev/hub/v2/http-gateway/test"
 	kitNetGrpc "github.com/plgd-dev/hub/v2/pkg/net/grpc"
 	hubTestOAuthServerService "github.com/plgd-dev/hub/v2/test/oauth-server/service"
@@ -54,37 +51,17 @@ func TestClientApplicationServerOwnDevice(t *testing.T) {
 	shutDown := test.New(t, cfg)
 	defer shutDown()
 
-	request := httpgwTest.NewRequest(http.MethodGet, serviceHttp.Devices, nil).
-		Host(test.CLIENT_APPLICATION_HTTP_HOST).Build()
-	resp := httpgwTest.HTTPDo(t, request)
-	require.Equal(t, http.StatusOK, resp.StatusCode)
-	for {
-		var dev grpcgwPb.Device
-		err := httpgwTest.Unmarshal(resp.StatusCode, resp.Body, &dev)
-		if errors.Is(err, io.EOF) {
-			break
-		}
-		require.NoError(t, err)
-	}
-	_ = resp.Body.Close()
+	getDevices(t, "")
 
-	request = httpgwTest.NewRequest(http.MethodPost, serviceHttp.OwnDevice, nil).
-		Host(test.CLIENT_APPLICATION_HTTP_HOST).DeviceId(dev.Id).Build()
-	resp = httpgwTest.HTTPDo(t, request)
-	_ = resp.Body.Close()
-	require.Equal(t, http.StatusOK, resp.StatusCode)
+	doSimpleOwn(t, dev.Id, http.StatusOK)
 
-	request = httpgwTest.NewRequest(http.MethodGet, serviceHttp.DeviceResource, nil).
+	request := httpgwTest.NewRequest(http.MethodGet, serviceHttp.DeviceResource, nil).
 		Host(test.CLIENT_APPLICATION_HTTP_HOST).DeviceId(dev.Id).ResourceHref("/light/1").Build()
-	resp = httpgwTest.HTTPDo(t, request)
+	resp := httpgwTest.HTTPDo(t, request)
 	_ = resp.Body.Close()
 	require.Equal(t, http.StatusOK, resp.StatusCode)
 
-	request = httpgwTest.NewRequest(http.MethodPost, serviceHttp.DisownDevice, nil).
-		Host(test.CLIENT_APPLICATION_HTTP_HOST).DeviceId(dev.Id).Build()
-	resp = httpgwTest.HTTPDo(t, request)
-	_ = resp.Body.Close()
-	require.Equal(t, http.StatusOK, resp.StatusCode)
+	doDisown(t, dev.Id, http.StatusOK)
 }
 
 func createJwkKey(privateKey interface{}) (jwk.Key, error) {
@@ -184,15 +161,12 @@ func TestClientApplicationServerOwnDeviceRemoteProvisioning(t *testing.T) {
 
 	token := hubTestOAuthServerTest.GetDefaultAccessToken(t)
 	ctx = kitNetGrpc.CtxWithToken(ctx, token)
-	request := httpgwTest.NewRequest(http.MethodGet, serviceHttp.Devices, nil).
-		Host(test.CLIENT_APPLICATION_HTTP_HOST).AuthToken(token).Build()
-	resp := httpgwTest.HTTPDo(t, request)
-	require.Equal(t, http.StatusOK, resp.StatusCode)
+	getDevices(t, token)
 
-	request = httpgwTest.NewRequest(http.MethodPost, serviceHttp.OwnDevice, encodeToBody(t, &pb.OwnDeviceRequest{
+	request := httpgwTest.NewRequest(http.MethodPost, serviceHttp.OwnDevice, encodeToBody(t, &pb.OwnDeviceRequest{
 		Timeout: (time.Second * 8).Nanoseconds(),
 	})).Host(test.CLIENT_APPLICATION_HTTP_HOST).AuthToken(token).DeviceId(dev.Id).Build()
-	resp = httpgwTest.HTTPDo(t, request)
+	resp := httpgwTest.HTTPDo(t, request)
 	require.Equal(t, http.StatusOK, resp.StatusCode)
 	var ownCSRResp pb.OwnDeviceResponse
 	decodeBody(t, resp.Body, &ownCSRResp)
@@ -239,15 +213,13 @@ func TestClientApplicationServerOwnDeviceRemoteProvisioningFails(t *testing.T) {
 
 	token := hubTestOAuthServerTest.GetDefaultAccessToken(t)
 	ctx = kitNetGrpc.CtxWithToken(ctx, token)
-	request := httpgwTest.NewRequest(http.MethodGet, serviceHttp.Devices, nil).
-		Host(test.CLIENT_APPLICATION_HTTP_HOST).AuthToken(token).Build()
-	resp := httpgwTest.HTTPDo(t, request)
-	require.Equal(t, http.StatusOK, resp.StatusCode)
 
-	request = httpgwTest.NewRequest(http.MethodPost, serviceHttp.OwnDevice, encodeToBody(t, &pb.OwnDeviceRequest{
+	getDevices(t, token)
+
+	request := httpgwTest.NewRequest(http.MethodPost, serviceHttp.OwnDevice, encodeToBody(t, &pb.OwnDeviceRequest{
 		Timeout: (time.Millisecond * 100).Nanoseconds(),
 	})).Host(test.CLIENT_APPLICATION_HTTP_HOST).AuthToken(token).DeviceId(dev.Id).Build()
-	resp = httpgwTest.HTTPDo(t, request)
+	resp := httpgwTest.HTTPDo(t, request)
 	require.Equal(t, http.StatusOK, resp.StatusCode)
 	var ownCSRResp pb.OwnDeviceResponse
 	decodeBody(t, resp.Body, &ownCSRResp)

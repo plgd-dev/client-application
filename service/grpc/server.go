@@ -18,14 +18,15 @@ package grpc
 
 import (
 	"context"
+	"sync"
 
 	"github.com/google/uuid"
 	"github.com/jellydator/ttlcache/v3"
 	"github.com/plgd-dev/client-application/pb"
+	"github.com/plgd-dev/client-application/service/config"
 	configGrpc "github.com/plgd-dev/client-application/service/config/grpc"
-	"github.com/plgd-dev/client-application/service/config/remoteProvisioning"
 	serviceDevice "github.com/plgd-dev/client-application/service/device"
-	"github.com/plgd-dev/go-coap/v3/pkg/sync"
+	coapSync "github.com/plgd-dev/go-coap/v3/pkg/sync"
 	"github.com/plgd-dev/hub/v2/pkg/log"
 	"go.uber.org/atomic"
 	"google.golang.org/grpc/codes"
@@ -35,32 +36,50 @@ import (
 type ClientApplicationServer struct {
 	pb.UnimplementedClientApplicationServer
 
-	serviceDevice            *serviceDevice.Service
-	info                     *configGrpc.ServiceInformation
-	logger                   log.Logger
-	devices                  *sync.Map[uuid.UUID, *device]
-	csrCache                 *ttlcache.Cache[uuid.UUID, bool]
-	remoteProvisioningConfig remoteProvisioning.Config
-	jwksCache                atomic.Pointer[JSONWebKeyCache]
-	remoteOwnSignCache       *sync.Map[uuid.UUID, *remoteSign]
+	serviceDevice      *serviceDevice.Service
+	info               *configGrpc.ServiceInformation
+	logger             log.Logger
+	devices            *coapSync.Map[uuid.UUID, *device]
+	csrCache           *ttlcache.Cache[uuid.UUID, bool]
+	config             *atomic.Pointer[config.Config]
+	jwksCache          atomic.Pointer[JSONWebKeyCache]
+	remoteOwnSignCache *coapSync.Map[uuid.UUID, *remoteSign]
+
+	updatePSKLock sync.Mutex
 }
 
-func NewClientApplicationServer(remoteProvisioningConfig remoteProvisioning.Config, serviceDevice *serviceDevice.Service, info *configGrpc.ServiceInformation, logger log.Logger) *ClientApplicationServer {
+func NewClientApplicationServer(cfg *atomic.Pointer[config.Config], serviceDevice *serviceDevice.Service, info *configGrpc.ServiceInformation, logger log.Logger) *ClientApplicationServer {
 	csrCache := ttlcache.New[uuid.UUID, bool]()
 	go csrCache.Start()
 	return &ClientApplicationServer{
-		serviceDevice:            serviceDevice,
-		info:                     info,
-		logger:                   logger,
-		csrCache:                 csrCache,
-		remoteProvisioningConfig: remoteProvisioningConfig,
-		remoteOwnSignCache:       sync.NewMap[uuid.UUID, *remoteSign](),
-		devices:                  sync.NewMap[uuid.UUID, *device](),
+		serviceDevice:      serviceDevice,
+		info:               info,
+		logger:             logger,
+		csrCache:           csrCache,
+		config:             cfg,
+		remoteOwnSignCache: coapSync.NewMap[uuid.UUID, *remoteSign](),
+		devices:            coapSync.NewMap[uuid.UUID, *device](),
 	}
 }
 
 func (s *ClientApplicationServer) Version() string {
 	return s.info.Version
+}
+
+func (s *ClientApplicationServer) GetConfig() config.Config {
+	cfg := s.config.Load()
+	return *cfg
+}
+
+func (s *ClientApplicationServer) StoreConfig(cfg config.Config) error {
+	if err := cfg.Validate(); err != nil {
+		return status.Errorf(codes.InvalidArgument, "invalid configuration: %v", err)
+	}
+	if err := cfg.Store(); err != nil {
+		return status.Errorf(codes.Internal, "cannot store configuration: %v", err)
+	}
+	s.config.Store(&cfg)
+	return nil
 }
 
 func (s *ClientApplicationServer) Close() {

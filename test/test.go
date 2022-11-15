@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"path/filepath"
 	"sync"
 	"testing"
 	"time"
@@ -47,6 +48,7 @@ import (
 	"github.com/plgd-dev/kit/v2/codec/cbor"
 	"github.com/stretchr/testify/require"
 	"go.opentelemetry.io/otel/trace"
+	"go.uber.org/atomic"
 	"google.golang.org/grpc"
 )
 
@@ -79,7 +81,7 @@ func MustGetHostname() string {
 	return n
 }
 
-func MakeConfig(t require.TestingT) config.Config {
+func MakeConfig2() (config.Config, error) {
 	var cfg config.Config
 	cfg.Log = log.MakeDefaultConfig()
 	cfg.APIs.HTTP = MakeHttpConfig()
@@ -87,8 +89,17 @@ func MakeConfig(t require.TestingT) config.Config {
 	cfg.Clients.Device = MakeDeviceConfig()
 	cfg.RemoteProvisioning = MakeRemoteProvisioningConfig()
 
-	require.NoError(t, cfg.Validate())
+	err := cfg.Validate()
+	if err != nil {
+		return config.Config{}, err
+	}
 
+	return cfg, nil
+}
+
+func MakeConfig(t *testing.T) config.Config {
+	cfg, err := MakeConfig2()
+	require.NoError(t, err)
 	return cfg
 }
 
@@ -100,6 +111,11 @@ func SetUp(t *testing.T) (tearDown func()) {
 func New(t *testing.T, cfg config.Config) func() {
 	ctx := context.Background()
 	logger := log.NewLogger(cfg.Log)
+
+	configDir, err := os.MkdirTemp("", "test.*****")
+	require.NoError(t, err)
+	configPath := filepath.Join(configDir, "config.yaml")
+	cfg.SetConfigPath(configPath)
 	require.NoError(t, cfg.Validate())
 
 	fileWatcher, err := fsnotify.NewWatcher()
@@ -117,6 +133,8 @@ func New(t *testing.T, cfg config.Config) func() {
 	return func() {
 		_ = s.Close()
 		wg.Wait()
+		err = os.RemoveAll(configDir)
+		require.NoError(t, err)
 	}
 }
 
@@ -135,7 +153,7 @@ func MakeDeviceConfig() configDevice.Config {
 				Authentication: configDevice.AuthenticationPreSharedKey,
 				PreSharedKey: configDevice.PreSharedKeyConfig{
 					SubjectUUIDStr: PSK_OWNER,
-					KeyUUIDStr:     "46178d21-d480-4e95-9bd3-6c9eefa8d9d8",
+					Key:            "46178d21-d480-4e95-9bd3-6c9eefa8d9d8",
 				},
 			},
 			OwnershipTransfer: configDevice.OwnershipTransferConfig{
@@ -265,23 +283,29 @@ func WithRemoteProvisioningConfig(cfg remoteProvisioning.Config) ClientApplicati
 }
 
 func NewClientApplicationServer(ctx context.Context, opts ...ClientApplicationServerOpt) (*serviceGrpc.ClientApplicationServer, func(), error) {
-	logger := log.NewLogger(log.MakeDefaultConfig())
-	cfg := ClientApplicationServerCfg{
+	cfg, err := MakeConfig2()
+	if err != nil {
+		return nil, nil, err
+	}
+	updateCfg := ClientApplicationServerCfg{
 		Cfg:                   MakeDeviceConfig(),
 		RemoteProvisioningCfg: MakeRemoteProvisioningConfig(),
 	}
 	for _, o := range opts {
-		o(&cfg)
+		o(&updateCfg)
 	}
-	deviceCfg := cfg.Cfg
-	if err := deviceCfg.Validate(); err != nil {
+	deviceCfg := updateCfg.Cfg
+	if err = deviceCfg.Validate(); err != nil {
 		return nil, nil, err
 	}
-	remoteProvisioningCfg := cfg.RemoteProvisioningCfg
-	if err := remoteProvisioningCfg.Validate(); err != nil {
+	remoteProvisioningCfg := updateCfg.RemoteProvisioningCfg
+	if err = remoteProvisioningCfg.Validate(); err != nil {
 		return nil, nil, err
 	}
-	d, err := serviceDevice.New(ctx, "client-application-device", deviceCfg, logger, trace.NewNoopTracerProvider())
+	logger := log.NewLogger(cfg.Log)
+	d, err := serviceDevice.New(ctx, "client-application-device", func() configDevice.Config {
+		return deviceCfg
+	}, logger, trace.NewNoopTracerProvider())
 	if err != nil {
 		return nil, nil, err
 	}
@@ -291,8 +315,9 @@ func NewClientApplicationServer(ctx context.Context, opts ...ClientApplicationSe
 		defer wg.Done()
 		_ = d.Serve()
 	}()
-
-	clientApplicationServer := serviceGrpc.NewClientApplicationServer(remoteProvisioningCfg, d, NewServiceInformation(), logger)
+	cfg.RemoteProvisioning = remoteProvisioningCfg
+	cfg.Clients.Device = deviceCfg
+	clientApplicationServer := serviceGrpc.NewClientApplicationServer(atomic.NewPointer(&cfg), d, NewServiceInformation(), logger)
 	return clientApplicationServer, func() {
 		_ = d.Close()
 		clientApplicationServer.Close()

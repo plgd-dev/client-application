@@ -168,21 +168,21 @@ func (c *CoapConfig) Validate() error {
 type PreSharedKeyConfig struct {
 	SubjectUUIDStr string    `yaml:"subjectUuid" json:"subjectUuid"`
 	subjectUUID    uuid.UUID `yaml:"-"`
-	KeyUUIDStr     string    `yaml:"keyUuid" json:"keyUuid"`
-	keyUUID        uuid.UUID `yaml:"-"`
+	Key            string    `yaml:"key" json:"key"`
 }
 
-func (c *PreSharedKeyConfig) Get() (uuid.UUID, uuid.UUID) {
-	return c.subjectUUID, c.keyUUID
+func (c *PreSharedKeyConfig) Get() (uuid.UUID, string) {
+	return c.subjectUUID, c.Key
 }
 
 func (c *PreSharedKeyConfig) Validate() error {
 	var err error
-	if c.KeyUUIDStr == "" && c.SubjectUUIDStr == "" {
+	if c.Key == "" && c.SubjectUUIDStr == "" {
+		c.subjectUUID = uuid.Nil
 		return nil
 	}
-	if c.keyUUID, err = uuid.Parse(c.KeyUUIDStr); err != nil || c.keyUUID == uuid.Nil {
-		return fmt.Errorf("keyUuid('%v') - %w", c.KeyUUIDStr, err)
+	if c.Key == "" {
+		return fmt.Errorf("key('%v') - is empty", c.Key)
 	}
 	if c.subjectUUID, err = uuid.Parse(c.SubjectUUIDStr); err != nil || c.subjectUUID == uuid.Nil {
 		return fmt.Errorf("subjectUUID('%v') - %w", c.SubjectUUIDStr, err)
@@ -261,4 +261,31 @@ func (c *BlockwiseTransferConfig) Validate() error {
 		return fmt.Errorf("blockSize('%v')", c.SZXStr)
 	}
 	return nil
+}
+
+var defaultConfig = Config{
+	COAP: CoapConfig{
+		MaxMessageSize: 256 * 1024,
+		InactivityMonitor: InactivityMonitor{
+			Timeout: time.Second * 10,
+		},
+		BlockwiseTransfer: BlockwiseTransferConfig{
+			Enabled: true,
+			SZXStr:  "1024",
+		},
+		TLS: TLSConfig{
+			Authentication: AuthenticationPreSharedKey,
+			PreSharedKey: PreSharedKeyConfig{
+				SubjectUUIDStr: uuid.NewString(),
+				Key:            uuid.NewString(),
+			},
+		},
+		OwnershipTransfer: OwnershipTransferConfig{
+			Methods: []OwnershipTransferMethod{OwnershipTransferJustWorks},
+		},
+	},
+}
+
+func DefaultConfig() Config {
+	return defaultConfig
 }
