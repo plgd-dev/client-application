@@ -19,7 +19,7 @@ package device_test
 import (
 	"testing"
 
-	"github.com/plgd-dev/client-application/service/device"
+	"github.com/plgd-dev/client-application/service/config/device"
 	"github.com/plgd-dev/client-application/test"
 	"github.com/stretchr/testify/require"
 )

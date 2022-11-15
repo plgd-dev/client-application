@@ -22,7 +22,7 @@ import (
 
 	"github.com/lestrrat-go/jwx/jwk"
 	"github.com/plgd-dev/client-application/pb"
-	"github.com/plgd-dev/client-application/service/remoteProvisioning"
+	"github.com/plgd-dev/client-application/service/config/remoteProvisioning"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/structpb"

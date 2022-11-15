@@ -22,8 +22,9 @@ import (
 	"github.com/google/uuid"
 	"github.com/jellydator/ttlcache/v3"
 	"github.com/plgd-dev/client-application/pb"
+	configGrpc "github.com/plgd-dev/client-application/service/config/grpc"
+	"github.com/plgd-dev/client-application/service/config/remoteProvisioning"
 	serviceDevice "github.com/plgd-dev/client-application/service/device"
-	"github.com/plgd-dev/client-application/service/remoteProvisioning"
 	"github.com/plgd-dev/go-coap/v3/pkg/sync"
 	"github.com/plgd-dev/hub/v2/pkg/log"
 	"go.uber.org/atomic"
@@ -35,7 +36,7 @@ type ClientApplicationServer struct {
 	pb.UnimplementedClientApplicationServer
 
 	serviceDevice            *serviceDevice.Service
-	info                     *ServiceInformation
+	info                     *configGrpc.ServiceInformation
 	logger                   log.Logger
 	devices                  *sync.Map[uuid.UUID, *device]
 	csrCache                 *ttlcache.Cache[uuid.UUID, bool]
@@ -44,7 +45,7 @@ type ClientApplicationServer struct {
 	remoteOwnSignCache       *sync.Map[uuid.UUID, *remoteSign]
 }
 
-func NewClientApplicationServer(remoteProvisioningConfig remoteProvisioning.Config, serviceDevice *serviceDevice.Service, info *ServiceInformation, logger log.Logger) *ClientApplicationServer {
+func NewClientApplicationServer(remoteProvisioningConfig remoteProvisioning.Config, serviceDevice *serviceDevice.Service, info *configGrpc.ServiceInformation, logger log.Logger) *ClientApplicationServer {
 	csrCache := ttlcache.New[uuid.UUID, bool]()
 	go csrCache.Start()
 	return &ClientApplicationServer{

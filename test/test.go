@@ -29,17 +29,21 @@ import (
 	"github.com/plgd-dev/client-application/pkg/net/grpc/server"
 	"github.com/plgd-dev/client-application/pkg/net/listener"
 	"github.com/plgd-dev/client-application/service"
+	"github.com/plgd-dev/client-application/service/config"
+	configDevice "github.com/plgd-dev/client-application/service/config/device"
+	configGrpc "github.com/plgd-dev/client-application/service/config/grpc"
+	configHttp "github.com/plgd-dev/client-application/service/config/http"
+	"github.com/plgd-dev/client-application/service/config/remoteProvisioning"
 	serviceDevice "github.com/plgd-dev/client-application/service/device"
 	serviceGrpc "github.com/plgd-dev/client-application/service/grpc"
 	"github.com/plgd-dev/client-application/service/http"
-	"github.com/plgd-dev/client-application/service/remoteProvisioning"
 	"github.com/plgd-dev/device/v2/schema"
 	"github.com/plgd-dev/device/v2/schema/device"
 	deviceTest "github.com/plgd-dev/device/v2/test"
 	grpcgwPb "github.com/plgd-dev/hub/v2/grpc-gateway/pb"
 	"github.com/plgd-dev/hub/v2/pkg/fsnotify"
 	"github.com/plgd-dev/hub/v2/pkg/log"
-	"github.com/plgd-dev/hub/v2/test/config"
+	testConfig "github.com/plgd-dev/hub/v2/test/config"
 	"github.com/plgd-dev/kit/v2/codec/cbor"
 	"github.com/stretchr/testify/require"
 	"go.opentelemetry.io/otel/trace"
@@ -75,8 +79,8 @@ func MustGetHostname() string {
 	return n
 }
 
-func MakeConfig(t require.TestingT) service.Config {
-	var cfg service.Config
+func MakeConfig(t require.TestingT) config.Config {
+	var cfg config.Config
 	cfg.Log = log.MakeDefaultConfig()
 	cfg.APIs.HTTP = MakeHttpConfig()
 	cfg.APIs.GRPC = MakeGrpcConfig()
@@ -93,7 +97,7 @@ func SetUp(t *testing.T) (tearDown func()) {
 }
 
 // New creates test coap-gateway.
-func New(t *testing.T, cfg service.Config) func() {
+func New(t *testing.T, cfg config.Config) func() {
 	ctx := context.Background()
 	logger := log.NewLogger(cfg.Log)
 	require.NoError(t, cfg.Validate())
@@ -116,28 +120,28 @@ func New(t *testing.T, cfg service.Config) func() {
 	}
 }
 
-func MakeDeviceConfig() serviceDevice.Config {
-	cfg := serviceDevice.Config{
-		COAP: serviceDevice.CoapConfig{
+func MakeDeviceConfig() configDevice.Config {
+	cfg := configDevice.Config{
+		COAP: configDevice.CoapConfig{
 			MaxMessageSize: 256 * 1024,
-			InactivityMonitor: serviceDevice.InactivityMonitor{
+			InactivityMonitor: configDevice.InactivityMonitor{
 				Timeout: time.Second * 1,
 			},
-			BlockwiseTransfer: serviceDevice.BlockwiseTransferConfig{
+			BlockwiseTransfer: configDevice.BlockwiseTransferConfig{
 				Enabled: true,
-				SZX:     "1024",
+				SZXStr:  "1024",
 			},
-			TLS: serviceDevice.TLSConfig{
-				Authentication: serviceDevice.AuthenticationPreSharedKey,
-				PreSharedKey: serviceDevice.PreSharedKeyConfig{
-					SubjectUUID: PSK_OWNER,
-					KeyUUID:     "46178d21-d480-4e95-9bd3-6c9eefa8d9d8",
+			TLS: configDevice.TLSConfig{
+				Authentication: configDevice.AuthenticationPreSharedKey,
+				PreSharedKey: configDevice.PreSharedKeyConfig{
+					SubjectUUIDStr: PSK_OWNER,
+					KeyUUIDStr:     "46178d21-d480-4e95-9bd3-6c9eefa8d9d8",
 				},
 			},
-			OwnershipTransfer: serviceDevice.OwnershipTransferConfig{
-				Methods: []serviceDevice.OwnershipTransferMethod{serviceDevice.OwnershipTransferJustWorks, serviceDevice.OwnershipTransferManufacturerCertificate},
-				Manufacturer: serviceDevice.ManufacturerConfig{
-					TLS: serviceDevice.ManufacturerTLSConfig{
+			OwnershipTransfer: configDevice.OwnershipTransferConfig{
+				Methods: []configDevice.OwnershipTransferMethod{configDevice.OwnershipTransferJustWorks, configDevice.OwnershipTransferManufacturerCertificate},
+				Manufacturer: configDevice.ManufacturerConfig{
+					TLS: configDevice.ManufacturerTLSConfig{
 						CAPool:   MFG_ROOT_CA_CRT,
 						CertFile: MFG_CLIENT_APPLICATION_CRT,
 						KeyFile:  MFG_CLIENT_APPLICATION_KEY,
@@ -149,11 +153,11 @@ func MakeDeviceConfig() serviceDevice.Config {
 	return cfg
 }
 
-func MakeHttpConfig() service.HTTPConfig {
-	cfg := config.MakeListenerConfig(CLIENT_APPLICATION_HTTP_HOST)
-	return service.HTTPConfig{
+func MakeHttpConfig() config.HTTPConfig {
+	cfg := testConfig.MakeListenerConfig(CLIENT_APPLICATION_HTTP_HOST)
+	return config.HTTPConfig{
 		Enabled: true,
-		Config: http.Config{
+		Config: configHttp.Config{
 			Config: listener.Config{
 				Addr: cfg.Addr,
 				TLS: listener.TLSConfig{
@@ -161,7 +165,7 @@ func MakeHttpConfig() service.HTTPConfig {
 					Config:  cfg.TLS,
 				},
 			},
-			CORS: http.CORSConfig{
+			CORS: configHttp.CORSConfig{
 				AllowedOrigins: []string{"*"},
 				AllowedHeaders: []string{"Accept", "Accept-Language", "Accept-Encoding", "Content-Type", "Content-Language", "Content-Length", "Origin", "X-CSRF-Token", "Authorization"},
 				AllowedMethods: []string{"GET", "PATCH", "HEAD", "POST", "PUT", "OPTIONS", "DELETE"},
@@ -170,11 +174,11 @@ func MakeHttpConfig() service.HTTPConfig {
 	}
 }
 
-func MakeGrpcConfig() service.GRPCConfig {
-	cfg := config.MakeGrpcServerConfig(CLIENT_APPLICATION_GRPC_HOST)
-	return service.GRPCConfig{
+func MakeGrpcConfig() config.GRPCConfig {
+	cfg := testConfig.MakeGrpcServerConfig(CLIENT_APPLICATION_GRPC_HOST)
+	return config.GRPCConfig{
 		Enabled: true,
-		Config: serviceGrpc.Config{
+		Config: configGrpc.Config{
 			Addr:              cfg.Addr,
 			EnforcementPolicy: cfg.EnforcementPolicy,
 			KeepAlive:         cfg.KeepAlive,
@@ -191,12 +195,12 @@ func MakeRemoteProvisioningConfig() remoteProvisioning.Config {
 		Mode: remoteProvisioning.Mode_None,
 		UserAgentConfig: remoteProvisioning.UserAgentConfig{
 			CSRChallengeStateExpiration: time.Minute * 10,
-			CertificateAuthorityAddress: config.CERTIFICATE_AUTHORITY_HOST,
+			CertificateAuthorityAddress: testConfig.CERTIFICATE_AUTHORITY_HOST,
 		},
 		Authorization: remoteProvisioning.AuthorizationConfig{
-			OwnerClaim: config.OWNER_CLAIM,
-			Authority:  config.OAUTH_SERVER_HOST,
-			ClientID:   config.OAUTH_MANAGER_CLIENT_ID,
+			OwnerClaim: testConfig.OWNER_CLAIM,
+			Authority:  testConfig.OAUTH_SERVER_HOST,
+			ClientID:   testConfig.OAUTH_MANAGER_CLIENT_ID,
 		},
 	}
 }
@@ -230,8 +234,8 @@ func NewHttpService(ctx context.Context, t *testing.T) (*http.Service, func()) {
 	return s, cleanUp
 }
 
-func NewServiceInformation() *serviceGrpc.ServiceInformation {
-	return &serviceGrpc.ServiceInformation{
+func NewServiceInformation() *configGrpc.ServiceInformation {
+	return &configGrpc.ServiceInformation{
 		Version:                  VERSION,
 		BuildDate:                BUILD_DATE,
 		CommitHash:               COMMIT_HASH,
@@ -242,13 +246,13 @@ func NewServiceInformation() *serviceGrpc.ServiceInformation {
 }
 
 type ClientApplicationServerCfg struct {
-	Cfg                   serviceDevice.Config
+	Cfg                   configDevice.Config
 	RemoteProvisioningCfg remoteProvisioning.Config
 }
 
 type ClientApplicationServerOpt = func(c *ClientApplicationServerCfg)
 
-func WithDeviceConfig(cfg serviceDevice.Config) ClientApplicationServerOpt {
+func WithDeviceConfig(cfg configDevice.Config) ClientApplicationServerOpt {
 	return func(c *ClientApplicationServerCfg) {
 		c.Cfg = cfg
 	}

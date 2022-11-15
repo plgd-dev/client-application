@@ -26,6 +26,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/plgd-dev/go-coap/v3/net/blockwise"
 	"github.com/plgd-dev/hub/v2/pkg/security/certManager/client"
+	pkgStrings "github.com/plgd-dev/hub/v2/pkg/strings"
 	"github.com/plgd-dev/kit/v2/security"
 )
 
@@ -41,17 +42,33 @@ func (c *Config) Validate() error {
 }
 
 type ManufacturerTLSConfig struct {
-	CAPool      string              `yaml:"caPool" json:"caPool" description:"file path to the root certificates in PEM format"`
+	CAPool      interface{}         `yaml:"caPool" json:"caPool" description:"file path to the root certificates in PEM format"`
 	KeyFile     string              `yaml:"keyFile" json:"keyFile" description:"file name of private key in PEM format"`
 	CertFile    string              `yaml:"certFile" json:"certFile" description:"file name of certificate in PEM format"`
 	certificate tls.Certificate     `yaml:"-"`
 	caPool      []*x509.Certificate `yaml:"-"`
 }
 
+func (c *ManufacturerTLSConfig) GetCAPool() []*x509.Certificate {
+	return c.caPool
+}
+
+func (c *ManufacturerTLSConfig) GetCertificate() tls.Certificate {
+	return c.certificate
+}
+
 func (c *ManufacturerTLSConfig) Validate() error {
-	caPool, err := security.LoadX509(c.CAPool)
-	if err != nil {
-		return fmt.Errorf("caPool('%v') - %w", c.CAPool, err)
+	caPoolArray, ok := pkgStrings.ToStringArray(c.CAPool)
+	if !ok {
+		return fmt.Errorf("caPool('%v')", c.CAPool)
+	}
+	var caPool []*x509.Certificate
+	for idx, ca := range caPoolArray {
+		certs, err := security.LoadX509(ca)
+		if err != nil {
+			return fmt.Errorf("caPool[%d]('%v') - %w", idx, ca, err)
+		}
+		caPool = append(caPool, certs...)
 	}
 	certificate, err := tls.LoadX509KeyPair(c.CertFile, c.KeyFile)
 	if err != nil {
@@ -149,19 +166,26 @@ func (c *CoapConfig) Validate() error {
 }
 
 type PreSharedKeyConfig struct {
-	SubjectUUID string    `yaml:"subjectUuid" json:"subjectUuid"`
-	subjectUUID uuid.UUID `yaml:"-"`
-	KeyUUID     string    `yaml:"keyUuid" json:"keyUuid"`
-	keyUUID     uuid.UUID `yaml:"-"`
+	SubjectUUIDStr string    `yaml:"subjectUuid" json:"subjectUuid"`
+	subjectUUID    uuid.UUID `yaml:"-"`
+	KeyUUIDStr     string    `yaml:"keyUuid" json:"keyUuid"`
+	keyUUID        uuid.UUID `yaml:"-"`
+}
+
+func (c *PreSharedKeyConfig) Get() (uuid.UUID, uuid.UUID) {
+	return c.subjectUUID, c.keyUUID
 }
 
 func (c *PreSharedKeyConfig) Validate() error {
 	var err error
-	if c.keyUUID, err = uuid.Parse(c.KeyUUID); err != nil || c.keyUUID == uuid.Nil {
-		return fmt.Errorf("keyUuid('%v') - %w", c.KeyUUID, err)
+	if c.KeyUUIDStr == "" && c.SubjectUUIDStr == "" {
+		return nil
 	}
-	if c.subjectUUID, err = uuid.Parse(c.SubjectUUID); err != nil || c.keyUUID == uuid.Nil {
-		return fmt.Errorf("subjectUUID('%v') - %w", c.SubjectUUID, err)
+	if c.keyUUID, err = uuid.Parse(c.KeyUUIDStr); err != nil || c.keyUUID == uuid.Nil {
+		return fmt.Errorf("keyUuid('%v') - %w", c.KeyUUIDStr, err)
+	}
+	if c.subjectUUID, err = uuid.Parse(c.SubjectUUIDStr); err != nil || c.subjectUUID == uuid.Nil {
+		return fmt.Errorf("subjectUUID('%v') - %w", c.SubjectUUIDStr, err)
 	}
 	return nil
 }
@@ -204,15 +228,19 @@ func (c *InactivityMonitor) Validate() error {
 
 type BlockwiseTransferConfig struct {
 	Enabled bool          `yaml:"enabled" json:"enabled"`
-	SZX     string        `yaml:"blockSize" json:"blockSize"`
+	SZXStr  string        `yaml:"blockSize" json:"blockSize"`
 	szx     blockwise.SZX `yaml:"-" json:"-"`
+}
+
+func (c *BlockwiseTransferConfig) GetSZX() blockwise.SZX {
+	return c.szx
 }
 
 func (c *BlockwiseTransferConfig) Validate() error {
 	if !c.Enabled {
 		return nil
 	}
-	switch strings.ToLower(c.SZX) {
+	switch strings.ToLower(c.SZXStr) {
 	case "16":
 		c.szx = blockwise.SZX16
 	case "32":
@@ -230,7 +258,7 @@ func (c *BlockwiseTransferConfig) Validate() error {
 	case "bert":
 		c.szx = blockwise.SZXBERT
 	default:
-		return fmt.Errorf("blockSize('%v')", c.SZX)
+		return fmt.Errorf("blockSize('%v')", c.SZXStr)
 	}
 	return nil
 }

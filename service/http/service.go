@@ -31,6 +31,7 @@ import (
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/plgd-dev/client-application/pb"
 	"github.com/plgd-dev/client-application/pkg/net/listener"
+	configHttp "github.com/plgd-dev/client-application/service/config/http"
 	"github.com/plgd-dev/client-application/service/grpc"
 	"github.com/plgd-dev/hub/v2/http-gateway/serverMux"
 	"github.com/plgd-dev/hub/v2/pkg/fsnotify"
@@ -47,7 +48,7 @@ type Service struct {
 type RequestHandler struct {
 	mux                     *runtime.ServeMux
 	clientApplicationServer *grpc.ClientApplicationServer
-	config                  Config
+	config                  configHttp.Config
 }
 
 func splitURIPath(requestURI, prefix string) []string {
@@ -73,7 +74,7 @@ func resourceMatcher(r *http.Request, rm *router.RouteMatch) bool {
 	return false
 }
 
-func createAuthFunc(config Config, clientApplicationServer *grpc.ClientApplicationServer) func(ctx context.Context, method, uri string) (context.Context, error) {
+func createAuthFunc(config configHttp.Config, clientApplicationServer *grpc.ClientApplicationServer) func(ctx context.Context, method, uri string) (context.Context, error) {
 	auth := func(ctx context.Context, method, uri string) (context.Context, error) {
 		return ctx, nil
 	}
@@ -105,7 +106,7 @@ func createAuthFunc(config Config, clientApplicationServer *grpc.ClientApplicati
 }
 
 // New creates new HTTP service
-func New(ctx context.Context, serviceName string, config Config, clientApplicationServer *grpc.ClientApplicationServer, fileWatcher *fsnotify.Watcher, logger log.Logger, tracerProvider trace.TracerProvider) (*Service, error) {
+func New(ctx context.Context, serviceName string, config configHttp.Config, clientApplicationServer *grpc.ClientApplicationServer, fileWatcher *fsnotify.Watcher, logger log.Logger, tracerProvider trace.TracerProvider) (*Service, error) {
 	listener, err := listener.New(config.Config, fileWatcher, logger)
 	if err != nil {
 		return nil, fmt.Errorf("cannot create grpc server: %w", err)

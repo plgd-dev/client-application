@@ -21,7 +21,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/plgd-dev/client-application/pb"
-	"github.com/plgd-dev/client-application/service/remoteProvisioning"
+	"github.com/plgd-dev/client-application/service/config/remoteProvisioning"
 	"github.com/plgd-dev/device/v2/pkg/net/coap"
 	"github.com/plgd-dev/hub/v2/identity-store/events"
 	"github.com/plgd-dev/hub/v2/pkg/net/grpc"

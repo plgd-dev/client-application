@@ -14,15 +14,15 @@
 // limitations under the License.
 // ************************************************************************
 
-package service
+package config
 
 import (
 	"fmt"
 
-	"github.com/plgd-dev/client-application/service/device"
-	"github.com/plgd-dev/client-application/service/grpc"
-	"github.com/plgd-dev/client-application/service/http"
-	"github.com/plgd-dev/client-application/service/remoteProvisioning"
+	"github.com/plgd-dev/client-application/service/config/device"
+	"github.com/plgd-dev/client-application/service/config/grpc"
+	"github.com/plgd-dev/client-application/service/config/http"
+	"github.com/plgd-dev/client-application/service/config/remoteProvisioning"
 	"github.com/plgd-dev/hub/v2/pkg/config"
 	"github.com/plgd-dev/hub/v2/pkg/log"
 )

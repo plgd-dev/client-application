@@ -18,19 +18,14 @@ package grpc
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/plgd-dev/client-application/pb"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
-func (s *ClientApplicationServer) Initialize(ctx context.Context, req *pb.InitializeRequest) (*pb.InitializeResponse, error) {
-	if s.serviceDevice.IsInitialized() {
-		return nil, status.Errorf(codes.AlreadyExists, "already initialized")
-	}
-	if !s.signIdentityCertificateRemotely() {
-		return nil, status.Errorf(codes.InvalidArgument, "initialize with certificate is disabled")
-	}
+func (s *ClientApplicationServer) InitializeRemoteProvisioning(ctx context.Context, req *pb.InitializeRequest) (*pb.InitializeResponse, error) {
 	err := s.UpdateJSONWebKeys(ctx, req.GetJwks())
 	if err != nil {
 		return nil, err
@@ -43,6 +38,16 @@ func (s *ClientApplicationServer) Initialize(ctx context.Context, req *pb.Initia
 	return &pb.InitializeResponse{
 		IdentityCertificateChallenge: respCsr,
 	}, nil
+}
+
+func (s *ClientApplicationServer) Initialize(ctx context.Context, req *pb.InitializeRequest) (*pb.InitializeResponse, error) {
+	if s.serviceDevice.IsInitialized() {
+		return nil, status.Errorf(codes.AlreadyExists, "already initialized")
+	}
+	if s.signIdentityCertificateRemotely() {
+		return s.InitializeRemoteProvisioning(ctx, req)
+	}
+	return nil, fmt.Errorf("not implemented")
 }
 
 func (s *ClientApplicationServer) FinishInitialize(ctx context.Context, req *pb.FinishInitializeRequest) (*pb.FinishInitializeResponse, error) {

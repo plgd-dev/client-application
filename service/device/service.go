@@ -27,6 +27,7 @@ import (
 
 	"github.com/pion/dtls/v2"
 	"github.com/plgd-dev/client-application/pb"
+	configDevice "github.com/plgd-dev/client-application/service/config/device"
 	"github.com/plgd-dev/device/v2/client/core"
 	"github.com/plgd-dev/device/v2/client/core/otm"
 	justworks "github.com/plgd-dev/device/v2/client/core/otm/just-works"
@@ -60,7 +61,7 @@ type AuthenticationClient interface {
 }
 
 type Service struct {
-	config               Config
+	config               configDevice.Config
 	logger               log.Logger
 	tracerProvider       trace.TracerProvider
 	udp4server           *udpServer.Server
@@ -78,12 +79,12 @@ func errClosingConnection(debugf func(fmt string, a ...any), scheme schema.Schem
 }
 
 // New creates new GRPC service
-func New(ctx context.Context, serviceName string, config Config, logger log.Logger, tracerProvider trace.TracerProvider) (*Service, error) {
+func New(ctx context.Context, serviceName string, config configDevice.Config, logger log.Logger, tracerProvider trace.TracerProvider) (*Service, error) {
 	var authenticationClient AuthenticationClient
 	switch config.COAP.TLS.Authentication {
-	case AuthenticationPreSharedKey:
+	case configDevice.AuthenticationPreSharedKey:
 		authenticationClient = newAuthenticationPreSharedKey(config)
-	case AuthenticationX509:
+	case configDevice.AuthenticationX509:
 		authenticationClient = newAuthenticationX509(config)
 	}
 
@@ -97,7 +98,7 @@ func New(ctx context.Context, serviceName string, config Config, logger log.Logg
 			cc.SetContextValue(&closeHandlerKey, closeHander)
 		}),
 		options.WithMaxMessageSize(config.COAP.MaxMessageSize),
-		options.WithBlockwise(config.COAP.BlockwiseTransfer.Enabled, config.COAP.BlockwiseTransfer.szx, config.COAP.InactivityMonitor.Timeout),
+		options.WithBlockwise(config.COAP.BlockwiseTransfer.Enabled, config.COAP.BlockwiseTransfer.GetSZX(), config.COAP.InactivityMonitor.Timeout),
 		options.WithErrors(errFunc),
 		options.WithInactivityMonitor(config.COAP.InactivityMonitor.Timeout, func(cc *udpClient.Conn) {
 			errClosingConnection(log.Debugf, "coap", cc.RemoteAddr())
@@ -151,7 +152,7 @@ func (s *Service) getDialUDPOptions(secure bool) []udp.Option {
 			_ = cc.Close()
 		}),
 		options.WithMaxMessageSize(s.config.COAP.MaxMessageSize),
-		options.WithBlockwise(s.config.COAP.BlockwiseTransfer.Enabled, s.config.COAP.BlockwiseTransfer.szx, s.config.COAP.InactivityMonitor.Timeout),
+		options.WithBlockwise(s.config.COAP.BlockwiseTransfer.Enabled, s.config.COAP.BlockwiseTransfer.GetSZX(), s.config.COAP.InactivityMonitor.Timeout),
 		options.WithErrors(s.errFunc),
 	}
 	return dialOpts
@@ -218,7 +219,7 @@ func (s *Service) getDialTCPOptions(secure bool) []tcp.Option {
 			_ = cc.Close()
 		}),
 		options.WithMaxMessageSize(s.config.COAP.MaxMessageSize),
-		options.WithBlockwise(s.config.COAP.BlockwiseTransfer.Enabled, s.config.COAP.BlockwiseTransfer.szx, s.config.COAP.InactivityMonitor.Timeout),
+		options.WithBlockwise(s.config.COAP.BlockwiseTransfer.Enabled, s.config.COAP.BlockwiseTransfer.GetSZX(), s.config.COAP.InactivityMonitor.Timeout),
 		options.WithErrors(s.errFunc),
 	}
 	return dialOpts
@@ -255,7 +256,7 @@ func (s *Service) GetOwnershipClients() []otm.Client {
 	clients := make([]otm.Client, 0, 2)
 	for _, m := range s.config.COAP.OwnershipTransfer.Methods {
 		var c otm.Client
-		if m == OwnershipTransferManufacturerCertificate {
+		if m == configDevice.OwnershipTransferManufacturerCertificate {
 			c = s.getManufacturerCertificateClient()
 		} else {
 			c = s.getJustWorksClient()
@@ -270,7 +271,7 @@ func (s *Service) getJustWorksClient() *justworks.Client {
 }
 
 func (s *Service) getManufacturerCertificateClient() *manufacturer.Client {
-	return manufacturer.NewClient(s.config.COAP.OwnershipTransfer.Manufacturer.TLS.certificate, s.config.COAP.OwnershipTransfer.Manufacturer.TLS.caPool, manufacturer.WithDialDTLS(s.DialOwnership))
+	return manufacturer.NewClient(s.config.COAP.OwnershipTransfer.Manufacturer.TLS.GetCertificate(), s.config.COAP.OwnershipTransfer.Manufacturer.TLS.GetCAPool(), manufacturer.WithDialDTLS(s.DialOwnership))
 }
 
 func (s *Service) GetOwnOptions() []core.OwnOption {
@@ -357,9 +358,9 @@ func (s *Service) GetIdentityCertificate() (tls.Certificate, error) {
 
 func (s *Service) GetDeviceAuthenticationMode() pb.GetConfigurationResponse_DeviceAuthenticationMode {
 	switch s.config.COAP.TLS.Authentication {
-	case AuthenticationX509:
+	case configDevice.AuthenticationX509:
 		return pb.GetConfigurationResponse_X509
-	case AuthenticationPreSharedKey:
+	case configDevice.AuthenticationPreSharedKey:
 		return pb.GetConfigurationResponse_PRE_SHARED_KEY
 	}
 	return pb.GetConfigurationResponse_PRE_SHARED_KEY

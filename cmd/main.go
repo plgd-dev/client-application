@@ -23,8 +23,9 @@ import (
 
 	"github.com/jessevdk/go-flags"
 	service "github.com/plgd-dev/client-application/service"
-	"github.com/plgd-dev/client-application/service/grpc"
-	"github.com/plgd-dev/hub/v2/pkg/config"
+	"github.com/plgd-dev/client-application/service/config"
+	"github.com/plgd-dev/client-application/service/config/grpc"
+	pkgConfig "github.com/plgd-dev/hub/v2/pkg/config"
 	"github.com/plgd-dev/hub/v2/pkg/fsnotify"
 	"github.com/plgd-dev/hub/v2/pkg/log"
 )
@@ -51,8 +52,8 @@ func main() {
 		log.Errorf("cannot create default config: %v", err)
 		return
 	}
-	var cfg service.Config
-	if err := config.LoadAndValidateConfig(&cfg); err != nil {
+	var cfg config.Config
+	if err := pkgConfig.LoadAndValidateConfig(&cfg); err != nil {
 		log.Errorf("cannot load config: %v", err)
 		return
 	}

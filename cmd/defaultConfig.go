@@ -25,21 +25,21 @@ import (
 	"github.com/google/uuid"
 	"github.com/plgd-dev/client-application/pkg/net/grpc/server"
 	"github.com/plgd-dev/client-application/pkg/net/listener"
-	service "github.com/plgd-dev/client-application/service"
-	"github.com/plgd-dev/client-application/service/device"
-	"github.com/plgd-dev/client-application/service/http"
-	"github.com/plgd-dev/client-application/service/remoteProvisioning"
+	"github.com/plgd-dev/client-application/service/config"
+	"github.com/plgd-dev/client-application/service/config/device"
+	"github.com/plgd-dev/client-application/service/config/http"
+	"github.com/plgd-dev/client-application/service/config/remoteProvisioning"
 	"github.com/plgd-dev/hub/v2/pkg/log"
 	grpcServer "github.com/plgd-dev/hub/v2/pkg/net/grpc/server"
 	httpServer "github.com/plgd-dev/hub/v2/pkg/net/http/server"
 )
 
-func createDefaultConfig(uiDirectory string) service.Config {
+func createDefaultConfig(uiDirectory string) config.Config {
 	logCfg := log.MakeDefaultConfig()
 	logCfg.Encoding = "console"
-	return service.Config{
-		APIs: service.APIsConfig{
-			HTTP: service.HTTPConfig{
+	return config.Config{
+		APIs: config.APIsConfig{
+			HTTP: config.HTTPConfig{
 				Enabled: true,
 				Config: http.Config{
 					Config: listener.Config{
@@ -65,7 +65,7 @@ func createDefaultConfig(uiDirectory string) service.Config {
 					},
 				},
 			},
-			GRPC: service.GRPCConfig{
+			GRPC: config.GRPCConfig{
 				Enabled: true,
 				Config: server.Config{
 					Addr: ":8081",
@@ -79,7 +79,7 @@ func createDefaultConfig(uiDirectory string) service.Config {
 			},
 		},
 		Log: logCfg,
-		Clients: service.ClientsConfig{
+		Clients: config.ClientsConfig{
 			Device: device.Config{
 				COAP: device.CoapConfig{
 					MaxMessageSize: 256 * 1024,
@@ -88,13 +88,13 @@ func createDefaultConfig(uiDirectory string) service.Config {
 					},
 					BlockwiseTransfer: device.BlockwiseTransferConfig{
 						Enabled: true,
-						SZX:     "1024",
+						SZXStr:  "1024",
 					},
 					TLS: device.TLSConfig{
 						Authentication: device.AuthenticationPreSharedKey,
 						PreSharedKey: device.PreSharedKeyConfig{
-							SubjectUUID: uuid.NewString(),
-							KeyUUID:     uuid.NewString(),
+							SubjectUUIDStr: uuid.NewString(),
+							KeyUUIDStr:     uuid.NewString(),
 						},
 					},
 					OwnershipTransfer: device.OwnershipTransferConfig{

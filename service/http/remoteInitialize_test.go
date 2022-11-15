@@ -27,9 +27,9 @@ import (
 	"time"
 
 	"github.com/plgd-dev/client-application/pb"
-	"github.com/plgd-dev/client-application/service/device"
+	"github.com/plgd-dev/client-application/service/config/device"
+	"github.com/plgd-dev/client-application/service/config/remoteProvisioning"
 	serviceHttp "github.com/plgd-dev/client-application/service/http"
-	"github.com/plgd-dev/client-application/service/remoteProvisioning"
 	"github.com/plgd-dev/client-application/test"
 	hubCAPb "github.com/plgd-dev/hub/v2/certificate-authority/pb"
 	caService "github.com/plgd-dev/hub/v2/certificate-authority/test"

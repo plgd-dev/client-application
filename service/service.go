@@ -21,6 +21,8 @@ import (
 	"fmt"
 	"net"
 
+	"github.com/plgd-dev/client-application/service/config"
+	configGrpc "github.com/plgd-dev/client-application/service/config/grpc"
 	"github.com/plgd-dev/client-application/service/device"
 	"github.com/plgd-dev/client-application/service/grpc"
 	"github.com/plgd-dev/client-application/service/http"
@@ -33,7 +35,7 @@ import (
 
 const serviceName = "client-application"
 
-func newHttpService(ctx context.Context, config Config, clientApplicationServer *grpc.ClientApplicationServer, fileWatcher *fsnotify.Watcher, logger log.Logger, tracerProvider trace.TracerProvider) (*http.Service, error) {
+func newHttpService(ctx context.Context, config config.Config, clientApplicationServer *grpc.ClientApplicationServer, fileWatcher *fsnotify.Watcher, logger log.Logger, tracerProvider trace.TracerProvider) (*http.Service, error) {
 	httpService, err := http.New(ctx, serviceName, config.APIs.HTTP.Config, clientApplicationServer, fileWatcher, logger, tracerProvider)
 	if err != nil {
 		return nil, fmt.Errorf("cannot create http service: %w", err)
@@ -47,7 +49,7 @@ func newHttpService(ctx context.Context, config Config, clientApplicationServer 
 	return httpService, err
 }
 
-func newGrpcService(ctx context.Context, config Config, clientApplicationServer *grpc.ClientApplicationServer, fileWatcher *fsnotify.Watcher, logger log.Logger, tracerProvider trace.TracerProvider) (*grpc.Service, error) {
+func newGrpcService(ctx context.Context, config config.Config, clientApplicationServer *grpc.ClientApplicationServer, fileWatcher *fsnotify.Watcher, logger log.Logger, tracerProvider trace.TracerProvider) (*grpc.Service, error) {
 	grpcService, err := grpc.New(ctx, serviceName, config.APIs.GRPC.Config, clientApplicationServer, fileWatcher, logger, tracerProvider)
 	if err != nil {
 		return nil, err
@@ -84,7 +86,7 @@ func closeServicesOnError(err error, services []service.APIService) error {
 }
 
 // New creates server.
-func New(ctx context.Context, config Config, info *grpc.ServiceInformation, fileWatcher *fsnotify.Watcher, logger log.Logger) (*service.Service, error) {
+func New(ctx context.Context, config config.Config, info *configGrpc.ServiceInformation, fileWatcher *fsnotify.Watcher, logger log.Logger) (*service.Service, error) {
 	tracerProvider := trace.NewNoopTracerProvider()
 	var closerFunc fn.FuncList
 	deviceService, err := device.New(ctx, serviceName, config.Clients.Device, logger, tracerProvider)

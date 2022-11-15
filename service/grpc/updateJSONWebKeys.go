@@ -21,7 +21,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/lestrrat-go/jwx/jwk"
-	"github.com/plgd-dev/client-application/service/remoteProvisioning"
+	"github.com/plgd-dev/client-application/service/config/remoteProvisioning"
 	"github.com/plgd-dev/hub/v2/identity-store/events"
 	"github.com/plgd-dev/hub/v2/pkg/net/grpc"
 	plgdJwt "github.com/plgd-dev/hub/v2/pkg/security/jwt"
