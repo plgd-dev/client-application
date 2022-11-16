@@ -19,11 +19,14 @@ package grpc
 import (
 	"context"
 
+	"github.com/google/uuid"
 	"github.com/plgd-dev/client-application/pb"
 	"github.com/plgd-dev/hub/v2/pkg/log"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
+
+const errAlreadyInitialized = "already initialized"
 
 func (s *ClientApplicationServer) InitializeRemoteProvisioning(ctx context.Context, req *pb.InitializeRequest) (*pb.InitializeResponse, error) {
 	err := s.UpdateJSONWebKeys(ctx, req.GetJwks())
@@ -45,7 +48,7 @@ func (s *ClientApplicationServer) UpdatePSK(subjectUUID, key string) error {
 	defer s.updatePSKLock.Unlock()
 	isInitialized := s.serviceDevice.IsInitialized()
 	if isInitialized && (subjectUUID != "" || key != "") {
-		return status.Errorf(codes.FailedPrecondition, "already initialized")
+		return status.Errorf(codes.FailedPrecondition, errAlreadyInitialized)
 	}
 	if !isInitialized && (subjectUUID == "" && key == "") {
 		return status.Errorf(codes.FailedPrecondition, "not initialized")
@@ -58,13 +61,17 @@ func (s *ClientApplicationServer) UpdatePSK(subjectUUID, key string) error {
 
 func (s *ClientApplicationServer) Initialize(ctx context.Context, req *pb.InitializeRequest) (*pb.InitializeResponse, error) {
 	if s.serviceDevice.IsInitialized() {
-		return nil, status.Errorf(codes.FailedPrecondition, "already initialized")
+		return nil, status.Errorf(codes.FailedPrecondition, errAlreadyInitialized)
 	}
 	if s.signIdentityCertificateRemotely() {
 		return s.InitializeRemoteProvisioning(ctx, req)
 	}
 	if req.GetPreSharedKey().GetSubjectUuid() == "" {
-		return nil, status.Errorf(codes.InvalidArgument, "invalid pre-shared subject")
+		return nil, status.Errorf(codes.InvalidArgument, "invalid pre-shared subjectUuid(%v)", req.GetPreSharedKey().GetSubjectUuid())
+	}
+	_, err := uuid.Parse(req.GetPreSharedKey().GetSubjectUuid())
+	if err != nil {
+		return nil, status.Errorf(codes.InvalidArgument, "invalid pre-shared subjectUuid(%v): %w", req.GetPreSharedKey().GetSubjectUuid(), err)
 	}
 	if req.GetPreSharedKey().GetKey() == "" {
 		return nil, status.Errorf(codes.InvalidArgument, "invalid pre-shared key")
@@ -80,7 +87,7 @@ func (s *ClientApplicationServer) Initialize(ctx context.Context, req *pb.Initia
 
 func (s *ClientApplicationServer) FinishInitialize(ctx context.Context, req *pb.FinishInitializeRequest) (*pb.FinishInitializeResponse, error) {
 	if s.serviceDevice.IsInitialized() {
-		return nil, status.Errorf(codes.FailedPrecondition, "already initialized")
+		return nil, status.Errorf(codes.FailedPrecondition, errAlreadyInitialized)
 	}
 	if err := s.updateIdentityCertificate(ctx, req); err != nil {
 		return nil, err

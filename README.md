@@ -103,7 +103,7 @@ The configuration sets up access to the devices via COAP protocol.
 | `apis.coap.blockwiseTransfer.enabled` | bool | `If true, enable blockwise transfer of coap messages.` | `false` |
 | `apis.coap.blockwiseTransfer.blockSize` | int | `Size of blockwise transfer block.` | `1024` |
 | `apis.coap.ownershipTransfer.methods` | []string | `Allowed ownership transfer methods. The supported values are: "justWorks", "manufacturerCertificate".` | `"justWorks"` |
-| `apis.coap.ownershipTransfer.manufacturerCertificate.tls.caPool` | string | `File path to the root certificate certificate in PEM format which might contain multiple certificates in a single file.` |  `""` |
+| `apis.coap.ownershipTransfer.manufacturerCertificate.tls.caPool` | []string | `File paths to the root certificates in PEM format. The file may contain multiple certificates.` |  `""` |
 | `apis.coap.ownershipTransfer.manufacturerCertificate.tls.keyFile` | string | `File path to certificate client application private key in PEM format.` | `""` |
 | `apis.coap.ownershipTransfer.manufacturerCertificate.tls.certFile` | string | `File path to certificate client application certificate in PEM format.` | `""` |
 | `apis.coap.tls.preSharedKey.subjectUuid` | UUID | `Provides an identifier for client applications for establishing TLS connections or for devices that are set as owner devices` | `""` |

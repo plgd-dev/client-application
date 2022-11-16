@@ -160,7 +160,7 @@ func MakeDeviceConfig() configDevice.Config {
 				Methods: []configDevice.OwnershipTransferMethod{configDevice.OwnershipTransferJustWorks, configDevice.OwnershipTransferManufacturerCertificate},
 				Manufacturer: configDevice.ManufacturerConfig{
 					TLS: configDevice.ManufacturerTLSConfig{
-						CAPool:   MFG_ROOT_CA_CRT,
+						CAPool:   []string{MFG_ROOT_CA_CRT},
 						CertFile: MFG_CLIENT_APPLICATION_CRT,
 						KeyFile:  MFG_CLIENT_APPLICATION_KEY,
 					},
