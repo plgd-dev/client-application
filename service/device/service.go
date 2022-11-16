@@ -50,7 +50,7 @@ type AuthenticationClient interface {
 	DialTLS(ctx context.Context, addr string, tlsCfg *tls.Config, opts ...tcp.Option) (*coap.ClientCloseHandler, error)
 	GetOwnerID() (string, error)
 	GetOwner() string
-	GetOwnOptions() []core.OwnOption
+	GetOwnOptions() ([]core.OwnOption, error)
 
 	GetIdentityCSR(id string) ([]byte, error)
 	SetIdentityCertificate(owner string, chainPem []byte) error
@@ -279,7 +279,7 @@ func (s *Service) getManufacturerCertificateClient() *manufacturer.Client {
 	return manufacturer.NewClient(config.COAP.OwnershipTransfer.Manufacturer.TLS.GetCertificate(), config.COAP.OwnershipTransfer.Manufacturer.TLS.GetCAPool(), manufacturer.WithDialDTLS(s.DialOwnership))
 }
 
-func (s *Service) GetOwnOptions() []core.OwnOption {
+func (s *Service) GetOwnOptions() ([]core.OwnOption, error) {
 	return s.authenticationClient.GetOwnOptions()
 }
 

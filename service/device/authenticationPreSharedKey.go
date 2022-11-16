@@ -43,6 +43,12 @@ func toKeyBin(key string) []byte {
 
 func (s *authenticationPreSharedKey) DialDTLS(ctx context.Context, addr string, _ *dtls.Config, opts ...udp.Option) (*coap.ClientCloseHandler, error) {
 	subjectUUID, key := s.GetPreSharedKey()
+	if subjectUUID == uuid.Nil {
+		return nil, status.Errorf(codes.Unauthenticated, "subjectUuid is empty")
+	}
+	if key == "" {
+		return nil, status.Errorf(codes.Unauthenticated, "key is empty")
+	}
 	idBin, _ := subjectUUID.MarshalBinary()
 	dtlsCfg := &dtls.Config{
 		PSKIdentityHint: idBin,
@@ -63,9 +69,12 @@ func (s *authenticationPreSharedKey) GetOwnerID() (string, error) {
 	return s.GetOwner(), nil
 }
 
-func (s *authenticationPreSharedKey) GetOwnOptions() []core.OwnOption {
+func (s *authenticationPreSharedKey) GetOwnOptions() ([]core.OwnOption, error) {
 	_, key := s.GetPreSharedKey()
-	return []core.OwnOption{core.WithPresharedKey(toKeyBin(key))}
+	if key == "" {
+		return nil, status.Errorf(codes.Unauthenticated, "key is empty")
+	}
+	return []core.OwnOption{core.WithPresharedKey(toKeyBin(key))}, nil
 }
 
 func (s *authenticationPreSharedKey) GetIdentityCSR(id string) ([]byte, error) {

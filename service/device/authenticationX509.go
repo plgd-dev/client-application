@@ -101,8 +101,8 @@ func (s *authenticationX509) GetOwnerID() (string, error) {
 	return coap.GetDeviceIDFromIdentityCertificate(crt.Leaf)
 }
 
-func (s *authenticationX509) GetOwnOptions() []core.OwnOption {
-	return nil
+func (s *authenticationX509) GetOwnOptions() ([]core.OwnOption, error) {
+	return nil, nil
 }
 
 func (s *authenticationX509) GetIdentityCSR(id string) ([]byte, error) {

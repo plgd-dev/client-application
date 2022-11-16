@@ -71,7 +71,7 @@ func (s *ClientApplicationServer) Initialize(ctx context.Context, req *pb.Initia
 	}
 	_, err := uuid.Parse(req.GetPreSharedKey().GetSubjectUuid())
 	if err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "invalid pre-shared subjectUuid(%v): %w", req.GetPreSharedKey().GetSubjectUuid(), err)
+		return nil, status.Errorf(codes.InvalidArgument, "invalid pre-shared subjectUuid(%v): %v", req.GetPreSharedKey().GetSubjectUuid(), err)
 	}
 	if req.GetPreSharedKey().GetKey() == "" {
 		return nil, status.Errorf(codes.InvalidArgument, "invalid pre-shared key")

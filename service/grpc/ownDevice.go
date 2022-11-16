@@ -141,11 +141,15 @@ func (s *ClientApplicationServer) ownDeviceGetCSR(ctx context.Context, timeoutVa
 		return nil, status.Errorf(codes.Unavailable, "cannot get CSR: state %v is already in progress", remoteSign.state)
 	}
 	go func() {
-		ownOpts := s.serviceDevice.GetOwnOptions()
+		defer s.remoteOwnSignCache.Delete(deviceStateID(dev.ID, remoteSign.state))
+		ownOpts, err := s.serviceDevice.GetOwnOptions()
+		if err != nil {
+			remoteSign.Close(fmt.Errorf("cannot get own options: %w", err))
+			return
+		}
 		ownOpts = append(ownOpts, core.WithSetupCertificates(remoteSign.Sign))
-		err := dev.Own(remoteSign.ctx, links, s.serviceDevice.GetOwnershipClients(), ownOpts...)
+		err = dev.Own(remoteSign.ctx, links, s.serviceDevice.GetOwnershipClients(), ownOpts...)
 		remoteSign.Close(err)
-		s.remoteOwnSignCache.Delete(deviceStateID(dev.ID, remoteSign.state))
 	}()
 	csr, err := remoteSign.ReadCSR(ctx)
 	if err != nil {
@@ -199,7 +203,11 @@ func (s *ClientApplicationServer) OwnDevice(ctx context.Context, req *pb.OwnDevi
 		return resp, nil
 	}
 
-	err = dev.Own(ctx, links, s.serviceDevice.GetOwnershipClients(), s.serviceDevice.GetOwnOptions()...)
+	ownOptions, err := s.serviceDevice.GetOwnOptions()
+	if err != nil {
+		return nil, convErrToGrpcStatus(codes.Unavailable, fmt.Errorf("cannot get own options: %w", err)).Err()
+	}
+	err = dev.Own(ctx, links, s.serviceDevice.GetOwnershipClients(), ownOptions...)
 	if err != nil {
 		return nil, convErrToGrpcStatus(codes.Unavailable, fmt.Errorf("cannot own device %v: %w", dev.ID, err)).Err()
 	}
