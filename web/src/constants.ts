@@ -2,7 +2,7 @@ export const DEVICE_AUTH_CODE_SESSION_KEY = 'tempDeviceAuthCode'
 
 export const DEVICE_AUTH_MODE = {
     X509: 'X509',
-    PRE_SHARED_KEY: 'preSharedKey',
+    PRE_SHARED_KEY: 'PRE_SHARED_KEY',
 }
 
 export const REMOTE_PROVISIONING_MODE = {

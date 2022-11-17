@@ -44,3 +44,14 @@ export const reset = () =>
         method: 'POST',
         body: {},
     })
+
+export const initializedByPreShared = (subjectUuid: string, key: string) =>
+    fetchApi(`${getConfig().httpGatewayAddress}/api/v1/initialize`, {
+        method: 'POST',
+        body: {
+            preSharedKey: {
+                subjectUuid,
+                key,
+            },
+        },
+    })

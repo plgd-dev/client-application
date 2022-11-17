@@ -13,7 +13,7 @@ import { Router } from 'react-router-dom'
 import { history } from '@/store'
 import { Helmet } from 'react-helmet'
 import appConfig from '@/config'
-import { BrowserNotificationsContainer, ToastContainer } from '@shared-ui/components/new'
+import { BrowserNotificationsContainer, Button, ToastContainer } from '@shared-ui/components/new'
 import { useLocalStorage, WellKnownConfigType } from '@shared-ui/common/hooks'
 import AppAuthProvider from '@/containers/App/AppAuthProvider/AppAuthProvider'
 import { ReactElement, useRef, useState } from 'react'
@@ -64,7 +64,11 @@ const AppInner = (props: Props) => {
             if (authProviderRef) {
                 const userData: User = authProviderRef?.current?.getUserData()
                 const parsedData = jwtDecode(userData.access_token)
-                const ownerId = get(parsedData, newWellKnownConfig.remoteProvisioning?.authorization.ownerClaim as string, '')
+                const ownerId = get(
+                    parsedData,
+                    newWellKnownConfig.remoteProvisioning?.authorization.ownerClaim as string,
+                    ''
+                )
 
                 if (ownerId !== newWellKnownConfig?.owner) {
                     setInitializedByAnother(true)
@@ -90,12 +94,20 @@ const AppInner = (props: Props) => {
                     } else {
                         signOut().then()
                     }
+                } else {
+                    // preshared mode
+                    reset().then(() => {
+                        setInitialize(false)
+                    })
                 }
             }
         }
 
-        if (wellKnownConfig?.deviceAuthenticationMode === DEVICE_AUTH_MODE.PRE_SHARED_KEY) {
-            return <PreSharedKeySetup />
+        if (
+            !wellKnownConfig?.isInitialized &&
+            wellKnownConfig?.deviceAuthenticationMode === DEVICE_AUTH_MODE.PRE_SHARED_KEY
+        ) {
+            return <PreSharedKeySetup setInitialize={setInitialize} />
         }
 
         return (
@@ -114,7 +126,13 @@ const AppInner = (props: Props) => {
             >
                 <Container fluid id='app' className={classNames({ collapsed })}>
                     <StatusBar>
-                        {wellKnownConfig && wellKnownConfig.remoteProvisioning && (<UserWidget logout={handleLogout} />)}
+                        {wellKnownConfig && wellKnownConfig.remoteProvisioning && <UserWidget logout={handleLogout} />}
+                        {wellKnownConfig &&
+                            wellKnownConfig?.deviceAuthenticationMode === DEVICE_AUTH_MODE.PRE_SHARED_KEY && (
+                                <Button className='m-l-15' onClick={handleLogout}>
+                                    Logout
+                                </Button>
+                            )}
                     </StatusBar>
                     <LeftPanel>
                         <Menu

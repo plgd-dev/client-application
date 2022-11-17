@@ -1,17 +1,17 @@
 import { defineMessages } from '@formatjs/intl'
 
 export const messages = defineMessages({
-    username: {
-        id: 'preSharedKeySetup.username',
-        defaultMessage: 'Username',
+    uuid: {
+        id: 'preSharedKeySetup.uuid',
+        defaultMessage: 'UUID',
     },
-    password: {
-        id: 'preSharedKeySetup.password',
-        defaultMessage: 'Password',
+    key: {
+        id: 'preSharedKeySetup.key',
+        defaultMessage: 'Key',
     },
-    save: {
-        id: 'preSharedKeySetup.save',
-        defaultMessage: 'Save',
+    initialize: {
+        id: 'preSharedKeySetup.initialize',
+        defaultMessage: 'Initialize',
     },
     generate: {
         id: 'preSharedKeySetup.generate',

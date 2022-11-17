@@ -7,11 +7,24 @@ import { useIntl } from 'react-intl'
 import { messages as t } from './PreSharedKeySetup.i18n'
 import { useState } from 'react'
 import Button from '../../../../shared-ui/src/components/new/Button'
+import Form from 'react-bootstrap/Form'
+import { initializedByPreShared } from '@/containers/App/AppRest'
+import { Props } from './PreSharedKeySetup.types'
 
-const PreSharedKeySetup = () => {
+const PreSharedKeySetup = (props: Props) => {
+    const { setInitialize } = props
     const { formatMessage: _ } = useIntl()
-    const [username, setUsername] = useState<string>('')
-    const [password, setPassword] = useState<string>('')
+    const [uuid, setUuid] = useState<string>('')
+    const [key, setKey] = useState<string>('')
+
+    const handleSubmit = () => {
+        initializedByPreShared(uuid, key).then((r) => {
+            if (r.status === 200) {
+                setInitialize(true)
+            }
+        })
+    }
+
     return (
         <div className='preSharedKeySetupPage'>
             <div className='colLeft'>
@@ -25,35 +38,32 @@ const PreSharedKeySetup = () => {
             </div>
             <div className='colRight'>
                 <div className='formContainer'>
-                    <h2>Welcome to Start</h2>
+                    <h2>Pre shared key setup</h2>
                     <div className='fromWrapper'>
                         <form action=''>
-                            <Label title={_(t.username)} onClick={(e) => e.preventDefault()}>
+                            <Label title={_(t.uuid)} onClick={(e) => e.preventDefault()}>
                                 <TextField
                                     className={classNames({ error: false })}
-                                    value={username}
-                                    onChange={(e) => setUsername(e.target.value)}
+                                    value={uuid}
+                                    onChange={(e) => setUuid(e.target.value)}
                                 />
                             </Label>
-                            <Label title={_(t.password)} onClick={(e) => e.preventDefault()}>
-                                <TextField
+                            <Label title={_(t.key)} onClick={(e) => e.preventDefault()}>
+                                <Form.Control
                                     className={classNames({ error: false })}
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
+                                    type='password'
+                                    value={key}
+                                    onChange={(e) => setKey(e.target.value)}
                                 />
                             </Label>
                             <div className='buttons-wrapper'>
-                                <Button icon='fa-bacon' variant='secondary' onClick={console.log}>
-                                    {_(t.generate)}
-                                </Button>
                                 <Button
-                                    icon='fa-bacon'
                                     variant='primary'
-                                    disabled={!username || !password}
+                                    disabled={!uuid || !key}
                                     className='m-l-10'
-                                    onClick={console.log}
+                                    onClick={handleSubmit}
                                 >
-                                    {_(t.save)}
+                                    {_(t.initialize)}
                                 </Button>
                             </div>
                         </form>
