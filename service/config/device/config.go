@@ -166,26 +166,26 @@ func (c *CoapConfig) Validate() error {
 }
 
 type PreSharedKeyConfig struct {
-	SubjectUUIDStr string    `yaml:"subjectUuid" json:"subjectUuid"`
-	subjectUUID    uuid.UUID `yaml:"-"`
-	Key            string    `yaml:"key" json:"key"`
+	SubjectIDStr string    `yaml:"subjectId" json:"subjectId"`
+	subjectID    uuid.UUID `yaml:"-"`
+	Key          string    `yaml:"key" json:"key"`
 }
 
 func (c *PreSharedKeyConfig) Get() (uuid.UUID, string) {
-	return c.subjectUUID, c.Key
+	return c.subjectID, c.Key
 }
 
 func (c *PreSharedKeyConfig) Validate() error {
 	var err error
-	if c.Key == "" && c.SubjectUUIDStr == "" {
-		c.subjectUUID = uuid.Nil
+	if c.Key == "" && c.SubjectIDStr == "" {
+		c.subjectID = uuid.Nil
 		return nil
 	}
 	if c.Key == "" {
 		return fmt.Errorf("key('%v') - is empty", c.Key)
 	}
-	if c.subjectUUID, err = uuid.Parse(c.SubjectUUIDStr); err != nil || c.subjectUUID == uuid.Nil {
-		return fmt.Errorf("subjectUUID('%v') - %w", c.SubjectUUIDStr, err)
+	if c.subjectID, err = uuid.Parse(c.SubjectIDStr); err != nil || c.subjectID == uuid.Nil {
+		return fmt.Errorf("subjectUUID('%v') - %w", c.SubjectIDStr, err)
 	}
 	return nil
 }
@@ -276,8 +276,8 @@ var defaultConfig = Config{
 		TLS: TLSConfig{
 			Authentication: AuthenticationPreSharedKey,
 			PreSharedKey: PreSharedKeyConfig{
-				SubjectUUIDStr: uuid.NewString(),
-				Key:            uuid.NewString(),
+				SubjectIDStr: uuid.NewString(),
+				Key:          uuid.NewString(),
 			},
 		},
 		OwnershipTransfer: OwnershipTransferConfig{

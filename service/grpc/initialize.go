@@ -55,7 +55,7 @@ func (s *ClientApplicationServer) UpdatePSK(subjectUUID, key string) error {
 	}
 	cfg := s.GetConfig()
 	cfg.Clients.Device.COAP.TLS.PreSharedKey.Key = key
-	cfg.Clients.Device.COAP.TLS.PreSharedKey.SubjectUUIDStr = subjectUUID
+	cfg.Clients.Device.COAP.TLS.PreSharedKey.SubjectIDStr = subjectUUID
 	return s.StoreConfig(cfg)
 }
 
@@ -66,17 +66,17 @@ func (s *ClientApplicationServer) Initialize(ctx context.Context, req *pb.Initia
 	if s.signIdentityCertificateRemotely() {
 		return s.InitializeRemoteProvisioning(ctx, req)
 	}
-	if req.GetPreSharedKey().GetSubjectUuid() == "" {
-		return nil, status.Errorf(codes.InvalidArgument, "invalid pre-shared subjectUuid(%v)", req.GetPreSharedKey().GetSubjectUuid())
+	if req.GetPreSharedKey().GetSubjectId() == "" {
+		return nil, status.Errorf(codes.InvalidArgument, "invalid pre-shared subjectUuid(%v)", req.GetPreSharedKey().GetSubjectId())
 	}
-	_, err := uuid.Parse(req.GetPreSharedKey().GetSubjectUuid())
+	_, err := uuid.Parse(req.GetPreSharedKey().GetSubjectId())
 	if err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "invalid pre-shared subjectUuid(%v): %v", req.GetPreSharedKey().GetSubjectUuid(), err)
+		return nil, status.Errorf(codes.InvalidArgument, "invalid pre-shared subjectUuid(%v): %v", req.GetPreSharedKey().GetSubjectId(), err)
 	}
 	if req.GetPreSharedKey().GetKey() == "" {
 		return nil, status.Errorf(codes.InvalidArgument, "invalid pre-shared key")
 	}
-	if err := s.UpdatePSK(req.GetPreSharedKey().GetSubjectUuid(), req.GetPreSharedKey().GetKey()); err != nil {
+	if err := s.UpdatePSK(req.GetPreSharedKey().GetSubjectId(), req.GetPreSharedKey().GetKey()); err != nil {
 		return nil, err
 	}
 	if _, err := s.ClearCache(ctx, &pb.ClearCacheRequest{}); err != nil {

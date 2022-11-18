@@ -35,8 +35,8 @@ import (
 func doInitializePSK(t *testing.T, subjectID uuid.UUID, key string, expCode int) {
 	request := httpgwTest.NewRequest(http.MethodPost, serviceHttp.Initialize, encodeToBody(t, &pb.InitializeRequest{
 		PreSharedKey: &pb.InitializePreSharedKey{
-			SubjectUuid: subjectID.String(),
-			Key:         key,
+			SubjectId: subjectID.String(),
+			Key:       key,
 		},
 	})).Host(test.CLIENT_APPLICATION_HTTP_HOST).Build()
 	resp := httpgwTest.HTTPDo(t, request)
@@ -76,7 +76,7 @@ func setupClientApplicationForPSKInitialization(t *testing.T) func() {
 	cfg.APIs.HTTP.TLS.ClientCertificateRequired = false
 	cfg.Clients.Device.COAP.TLS.Authentication = device.AuthenticationPreSharedKey
 	cfg.Clients.Device.COAP.TLS.PreSharedKey.Key = ""
-	cfg.Clients.Device.COAP.TLS.PreSharedKey.SubjectUUIDStr = ""
+	cfg.Clients.Device.COAP.TLS.PreSharedKey.SubjectIDStr = ""
 	shutDown := test.New(t, cfg)
 
 	return shutDown

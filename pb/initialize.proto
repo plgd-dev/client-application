@@ -24,7 +24,7 @@ option go_package = "github.com/plgd-dev/client-application/pb;pb";
 
 message InitializePreSharedKey {
     // ID of the client application that is used to identify the client application by the device.
-    string subject_uuid = 1;
+    string subject_id = 1;
     // Associated secret to the client application ID. Only first 16bytes is used.
     string key = 2;
 }

@@ -152,8 +152,8 @@ func MakeDeviceConfig() configDevice.Config {
 			TLS: configDevice.TLSConfig{
 				Authentication: configDevice.AuthenticationPreSharedKey,
 				PreSharedKey: configDevice.PreSharedKeyConfig{
-					SubjectUUIDStr: PSK_OWNER,
-					Key:            "46178d21-d480-4e95-9bd3-6c9eefa8d9d8",
+					SubjectIDStr: PSK_OWNER,
+					Key:          "46178d21-d480-4e95-9bd3-6c9eefa8d9d8",
 				},
 			},
 			OwnershipTransfer: configDevice.OwnershipTransferConfig{

@@ -45,7 +45,7 @@ func TestNew(t *testing.T) {
 	require.Equal(t, cfg, cfg1)
 	require.NotEmpty(t, cfg1.String())
 	cfg.Clients.Device.COAP.TLS.PreSharedKey.Key = ""
-	cfg.Clients.Device.COAP.TLS.PreSharedKey.SubjectUUIDStr = ""
+	cfg.Clients.Device.COAP.TLS.PreSharedKey.SubjectIDStr = ""
 	err = cfg.Validate()
 	require.NoError(t, err)
 	err = cfg.Store()
@@ -54,5 +54,5 @@ func TestNew(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, cfg, cfg2)
 	require.Empty(t, cfg2.Clients.Device.COAP.TLS.PreSharedKey.Key)
-	require.Empty(t, cfg2.Clients.Device.COAP.TLS.PreSharedKey.SubjectUUIDStr)
+	require.Empty(t, cfg2.Clients.Device.COAP.TLS.PreSharedKey.SubjectIDStr)
 }

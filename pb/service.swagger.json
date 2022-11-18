@@ -1144,7 +1144,7 @@
     "pbInitializePreSharedKey": {
       "type": "object",
       "properties": {
-        "subjectUuid": {
+        "subjectId": {
           "type": "string",
           "description": "ID of the client application that is used to identify the client application by the device."
         },
