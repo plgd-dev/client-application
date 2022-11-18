@@ -35,7 +35,9 @@ func (s *ClientApplicationServer) InitializeRemoteProvisioning(ctx context.Conte
 	}
 	respCsr, err := s.getIdentityCSR(ctx)
 	if err != nil {
-		s.reset(ctx)
+		if err2 := s.reset(ctx); err2 != nil {
+			s.logger.Warnf("cannot reset when initialize remote provisioning fails(%v): %w", err, err2)
+		}
 		return nil, err
 	}
 	return &pb.InitializeResponse{

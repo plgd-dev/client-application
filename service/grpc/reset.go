@@ -26,7 +26,7 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (s *ClientApplicationServer) reset(ctx context.Context) {
+func (s *ClientApplicationServer) reset(ctx context.Context) error {
 	s.jwksCache.Store(nil)
 	s.serviceDevice.Reset()
 	s.csrCache.DeleteAll()
@@ -39,17 +39,18 @@ func (s *ClientApplicationServer) reset(ctx context.Context) {
 		log.Warnf("cannot clear device cache: %v", err)
 	}
 	if s.signIdentityCertificateRemotely() {
-		return
+		return nil
 	}
-	if err := s.UpdatePSK("", ""); err != nil {
-		log.Warnf("cannot reset psk: %v", err)
-	}
+	return s.UpdatePSK("", "")
 }
 
 func (s *ClientApplicationServer) Reset(ctx context.Context, req *pb.ResetRequest) (*pb.ResetResponse, error) {
 	if !s.serviceDevice.IsInitialized() {
 		return nil, status.Errorf(codes.FailedPrecondition, "not initialized")
 	}
-	s.reset(ctx)
+	err := s.reset(ctx)
+	if err != nil {
+		return nil, err
+	}
 	return &pb.ResetResponse{}, nil
 }
