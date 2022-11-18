@@ -44,7 +44,7 @@ func toKeyBin(key string) []byte {
 func (s *authenticationPreSharedKey) DialDTLS(ctx context.Context, addr string, _ *dtls.Config, opts ...udp.Option) (*coap.ClientCloseHandler, error) {
 	subjectUUID, key := s.GetPreSharedKey()
 	if subjectUUID == uuid.Nil {
-		return nil, status.Errorf(codes.Unauthenticated, "subjectUuid is empty")
+		return nil, status.Errorf(codes.Unauthenticated, "subjectId is empty")
 	}
 	if key == "" {
 		return nil, status.Errorf(codes.Unauthenticated, "key is empty")

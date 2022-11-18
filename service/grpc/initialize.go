@@ -69,11 +69,11 @@ func (s *ClientApplicationServer) Initialize(ctx context.Context, req *pb.Initia
 		return s.InitializeRemoteProvisioning(ctx, req)
 	}
 	if req.GetPreSharedKey().GetSubjectId() == "" {
-		return nil, status.Errorf(codes.InvalidArgument, "invalid pre-shared subjectUuid(%v)", req.GetPreSharedKey().GetSubjectId())
+		return nil, status.Errorf(codes.InvalidArgument, "invalid pre-shared subjectId(%v)", req.GetPreSharedKey().GetSubjectId())
 	}
 	_, err := uuid.Parse(req.GetPreSharedKey().GetSubjectId())
 	if err != nil {
-		return nil, status.Errorf(codes.InvalidArgument, "invalid pre-shared subjectUuid(%v): %v", req.GetPreSharedKey().GetSubjectId(), err)
+		return nil, status.Errorf(codes.InvalidArgument, "invalid pre-shared subjectId(%v): %v", req.GetPreSharedKey().GetSubjectId(), err)
 	}
 	if req.GetPreSharedKey().GetKey() == "" {
 		return nil, status.Errorf(codes.InvalidArgument, "invalid pre-shared key")
