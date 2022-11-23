@@ -16,7 +16,7 @@ export const messages = defineMessages({
     },
     subjectIdError: {
         id: 'preSharedKeySetup.subjectIdError',
-        defaultMessage: 'Wrong Subject ID format',
+        defaultMessage: 'Must be in UUD format: XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX',
     },
     key: {
         id: 'preSharedKeySetup.key',
