@@ -12,6 +12,12 @@ import { initializedByPreShared } from '@/containers/App/AppRest'
 import { Props } from './PreSharedKeySetup.types'
 import { copyToClipboard } from '../../../../shared-ui/src/common/utils'
 import { showSuccessToast, showErrorToast } from '../../../../shared-ui/src/components/old/toast'
+const validate = require('validate.js')
+
+type ValidationResult = {
+    subjectId?: string[]
+    ket?: string[]
+}
 
 const PreSharedKeySetup = (props: Props) => {
     const { setInitialize } = props
@@ -19,17 +25,22 @@ const PreSharedKeySetup = (props: Props) => {
     const [uuid, setUuid] = useState<string>('')
     const [key, setKey] = useState<string>('')
     const [passwordType, setPasswordType] = useState('password')
-    const [uuidError, setUUidError] = useState(false)
-
-    const checkIfValidUUID = (str: string) => {
-        // Regular expression to check if string is a valid UUID
-        const regexExp = /^[0-9a-fA-F]{8}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{4}\b-[0-9a-fA-F]{12}$/gi
-
-        return regexExp.test(str)
-    }
+    const [validationResult, setValidationResult] = useState<undefined | ValidationResult>(undefined)
 
     const handleSubmit = () => {
-        if (checkIfValidUUID(uuid)) {
+        const result = validate(
+            { subjectId: uuid, key },
+            {
+                subjectId: {
+                    presence: true,
+                },
+                key: {
+                    presence: true,
+                },
+            }
+        )
+
+        if (result === undefined) {
             initializedByPreShared(uuid, key)
                 .then((r) => {
                     if (r.status === 200) {
@@ -43,7 +54,7 @@ const PreSharedKeySetup = (props: Props) => {
                     })
                 })
         } else {
-            setUUidError(true)
+            setValidationResult(result)
         }
     }
 
@@ -56,9 +67,6 @@ const PreSharedKeySetup = (props: Props) => {
     }
 
     const handleUuidChange = (e: ChangeEvent<HTMLInputElement>) => {
-        if (uuidError) {
-            setUUidError(false)
-        }
         setUuid(e.target.value)
     }
 
@@ -80,7 +88,7 @@ const PreSharedKeySetup = (props: Props) => {
                         <form action=''>
                             <Label title={_(t.subjectId)} onClick={(e) => e.preventDefault()}>
                                 <TextField
-                                    className={classNames({ error: uuidError })}
+                                    className={classNames({ error: validationResult?.subjectId })}
                                     value={uuid}
                                     name='subjectId'
                                     autoComplete='subjectId'
@@ -90,7 +98,9 @@ const PreSharedKeySetup = (props: Props) => {
                                     <i className={`fas fa-copy`} />
                                 </span>
                             </Label>
-                            {uuidError && <div className='m-b-10 error-message'>{_(t.subjectIdError)}</div>}
+                            {validationResult?.subjectId && (
+                                <div className='m-b-10 error-message'>{_(t.subjectIdError)}</div>
+                            )}
                             <Label title={_(t.key)} onClick={(e) => e.preventDefault()}>
                                 <Form.Control
                                     className={classNames({ error: false })}
@@ -112,7 +122,7 @@ const PreSharedKeySetup = (props: Props) => {
                             <div className='buttons-wrapper'>
                                 <Button
                                     variant='primary'
-                                    disabled={!uuid || !key || uuidError}
+                                    disabled={!uuid || !key}
                                     className='m-l-10'
                                     onClick={handleSubmit}
                                 >
