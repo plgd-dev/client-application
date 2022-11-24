@@ -83,7 +83,7 @@ const PreSharedKeySetup = (props: Props) => {
             </div>
             <div className='colRight'>
                 <div className='formContainer'>
-                    <h2>Pre shared key setup</h2>
+                    <h2>{_(t.headline)}</h2>
                     <div className='fromWrapper'>
                         <form action=''>
                             <Label title={_(t.subjectId)} onClick={(e) => e.preventDefault()}>

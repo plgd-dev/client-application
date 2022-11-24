@@ -10,6 +10,10 @@ export const messages = defineMessages({
         defaultMessage:
             "Please copy your pre-shared key and store it securely. If you reinstall your application and you won't initialize it with the same Pre-shared Key, devices you previously owned won't be accessible and the factory reset on these devices will need to be executed.",
     },
+    headline: {
+        id: 'preSharedKeySetup.headline',
+        defaultMessage: 'Pre shared key setup',
+    },
     subjectId: {
         id: 'preSharedKeySetup.subjectId',
         defaultMessage: 'Subject ID',
