@@ -21,7 +21,6 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/google/uuid"
 	"github.com/plgd-dev/client-application/pb"
 	"github.com/plgd-dev/client-application/service/config/device"
 	serviceHttp "github.com/plgd-dev/client-application/service/http"
@@ -32,10 +31,10 @@ import (
 	"google.golang.org/protobuf/encoding/protojson"
 )
 
-func doInitializePSK(t *testing.T, subjectID uuid.UUID, key string, expCode int) {
+func doInitializePSK(t *testing.T, subjectID string, key string, expCode int) {
 	request := httpgwTest.NewRequest(http.MethodPost, serviceHttp.Initialize, encodeToBody(t, &pb.InitializeRequest{
 		PreSharedKey: &pb.InitializePreSharedKey{
-			SubjectId: subjectID.String(),
+			SubjectId: subjectID,
 			Key:       key,
 		},
 	})).Host(test.CLIENT_APPLICATION_HTTP_HOST).Build()
@@ -43,7 +42,7 @@ func doInitializePSK(t *testing.T, subjectID uuid.UUID, key string, expCode int)
 	require.Equal(t, expCode, resp.StatusCode)
 }
 
-func initializePSK(t *testing.T, subjectID uuid.UUID, key string) {
+func initializePSK(t *testing.T, subjectID string, key string) {
 	request := httpgwTest.NewRequest(http.MethodGet, serviceHttp.WellKnownConfiguration, nil).Host(test.CLIENT_APPLICATION_HTTP_HOST).Build()
 	resp := httpgwTest.HTTPDo(t, request)
 	require.Equal(t, http.StatusOK, resp.StatusCode)
@@ -53,7 +52,7 @@ func initializePSK(t *testing.T, subjectID uuid.UUID, key string) {
 	err = protojson.Unmarshal(configRespBody, &configResp)
 	require.NoError(t, err)
 	require.False(t, configResp.GetIsInitialized())
-	require.Equal(t, configResp.GetOwner(), "00000000-0000-0000-0000-000000000000")
+	require.Equal(t, configResp.GetOwner(), "")
 	require.Equal(t, configResp.GetDeviceAuthenticationMode(), pb.GetConfigurationResponse_PRE_SHARED_KEY)
 
 	doInitializePSK(t, subjectID, key, http.StatusOK)
@@ -67,7 +66,7 @@ func initializePSK(t *testing.T, subjectID uuid.UUID, key string) {
 	err = protojson.Unmarshal(configRespBody, &configResp1)
 	require.NoError(t, err)
 	require.True(t, configResp1.GetIsInitialized())
-	require.Equal(t, configResp1.GetOwner(), subjectID.String())
+	require.Equal(t, configResp1.GetOwner(), subjectID)
 }
 
 func setupClientApplicationForPSKInitialization(t *testing.T) func() {
@@ -99,7 +98,7 @@ func TestClientApplicationServerInitializeWithPSK(t *testing.T) {
 	shutDown := setupClientApplicationForPSKInitialization(t)
 	defer shutDown()
 
-	subjectID := uuid.MustParse("46178d21-d480-4e95-9bd3-6c9eefa8d9d8")
+	subjectID := "subjectID"
 	initializePSK(t, subjectID, "key")
 	doInitializePSK(t, subjectID, "key", http.StatusBadRequest)
 	doSimpleOwn(t, dev.GetId(), http.StatusNotFound)

@@ -66,7 +66,8 @@ func (s *authenticationPreSharedKey) DialTLS(ctx context.Context, addr string, t
 }
 
 func (s *authenticationPreSharedKey) GetOwnerID() (string, error) {
-	return s.GetOwner(), nil
+	subjectUUID, _ := s.GetPreSharedKey()
+	return subjectUUID.String(), nil
 }
 
 func (s *authenticationPreSharedKey) GetOwnOptions() ([]core.OwnOption, error) {
@@ -105,6 +106,5 @@ func (s *authenticationPreSharedKey) Reset() {
 }
 
 func (s *authenticationPreSharedKey) GetOwner() string {
-	subjectUUID, _ := s.GetPreSharedKey()
-	return subjectUUID.String()
+	return s.getConfig().COAP.TLS.PreSharedKey.SubjectIDStr
 }

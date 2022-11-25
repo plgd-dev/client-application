@@ -25,6 +25,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/plgd-dev/go-coap/v3/net/blockwise"
+	"github.com/plgd-dev/hub/v2/identity-store/events"
 	"github.com/plgd-dev/hub/v2/pkg/security/certManager/client"
 	pkgStrings "github.com/plgd-dev/hub/v2/pkg/strings"
 	"github.com/plgd-dev/kit/v2/security"
@@ -184,7 +185,7 @@ func (c *PreSharedKeyConfig) Validate() error {
 	if c.Key == "" {
 		return fmt.Errorf("key('%v') - is empty", c.Key)
 	}
-	if c.subjectID, err = uuid.Parse(c.SubjectIDStr); err != nil || c.subjectID == uuid.Nil {
+	if c.subjectID, err = uuid.Parse(events.OwnerToUUID(c.SubjectIDStr)); err != nil || c.subjectID == uuid.Nil {
 		return fmt.Errorf("subjectUUID('%v') - %w", c.SubjectIDStr, err)
 	}
 	return nil

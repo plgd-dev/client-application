@@ -21,6 +21,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/plgd-dev/client-application/pb"
+	"github.com/plgd-dev/hub/v2/identity-store/events"
 	"github.com/plgd-dev/hub/v2/pkg/log"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -71,7 +72,8 @@ func (s *ClientApplicationServer) Initialize(ctx context.Context, req *pb.Initia
 	if req.GetPreSharedKey().GetSubjectId() == "" {
 		return nil, status.Errorf(codes.InvalidArgument, "invalid pre-shared subjectId(%v)", req.GetPreSharedKey().GetSubjectId())
 	}
-	_, err := uuid.Parse(req.GetPreSharedKey().GetSubjectId())
+	subjectID := events.OwnerToUUID(req.GetPreSharedKey().GetSubjectId())
+	_, err := uuid.Parse(subjectID)
 	if err != nil {
 		return nil, status.Errorf(codes.InvalidArgument, "invalid pre-shared subjectId(%v): %v", req.GetPreSharedKey().GetSubjectId(), err)
 	}
