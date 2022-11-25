@@ -277,8 +277,8 @@ var defaultConfig = Config{
 		TLS: TLSConfig{
 			Authentication: AuthenticationPreSharedKey,
 			PreSharedKey: PreSharedKeyConfig{
-				SubjectIDStr: uuid.NewString(),
-				Key:          uuid.NewString(),
+				SubjectIDStr: "",
+				Key:          "",
 			},
 		},
 		OwnershipTransfer: OwnershipTransferConfig{
