@@ -25,7 +25,9 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/plgd-dev/go-coap/v3/net/blockwise"
+	"github.com/plgd-dev/hub/v2/identity-store/events"
 	"github.com/plgd-dev/hub/v2/pkg/security/certManager/client"
+	pkgStrings "github.com/plgd-dev/hub/v2/pkg/strings"
 	"github.com/plgd-dev/kit/v2/security"
 )
 
@@ -41,17 +43,33 @@ func (c *Config) Validate() error {
 }
 
 type ManufacturerTLSConfig struct {
-	CAPool      string              `yaml:"caPool" json:"caPool" description:"file path to the root certificates in PEM format"`
+	CAPool      interface{}         `yaml:"caPool" json:"caPool" description:"file path to the root certificates in PEM format"`
 	KeyFile     string              `yaml:"keyFile" json:"keyFile" description:"file name of private key in PEM format"`
 	CertFile    string              `yaml:"certFile" json:"certFile" description:"file name of certificate in PEM format"`
 	certificate tls.Certificate     `yaml:"-"`
 	caPool      []*x509.Certificate `yaml:"-"`
 }
 
+func (c *ManufacturerTLSConfig) GetCAPool() []*x509.Certificate {
+	return c.caPool
+}
+
+func (c *ManufacturerTLSConfig) GetCertificate() tls.Certificate {
+	return c.certificate
+}
+
 func (c *ManufacturerTLSConfig) Validate() error {
-	caPool, err := security.LoadX509(c.CAPool)
-	if err != nil {
-		return fmt.Errorf("caPool('%v') - %w", c.CAPool, err)
+	caPoolArray, ok := pkgStrings.ToStringArray(c.CAPool)
+	if !ok {
+		return fmt.Errorf("caPool('%v')", c.CAPool)
+	}
+	var caPool []*x509.Certificate
+	for idx, ca := range caPoolArray {
+		certs, err := security.LoadX509(ca)
+		if err != nil {
+			return fmt.Errorf("caPool[%d]('%v') - %w", idx, ca, err)
+		}
+		caPool = append(caPool, certs...)
 	}
 	certificate, err := tls.LoadX509KeyPair(c.CertFile, c.KeyFile)
 	if err != nil {
@@ -149,19 +167,26 @@ func (c *CoapConfig) Validate() error {
 }
 
 type PreSharedKeyConfig struct {
-	SubjectUUID string    `yaml:"subjectUuid" json:"subjectUuid"`
-	subjectUUID uuid.UUID `yaml:"-"`
-	KeyUUID     string    `yaml:"keyUuid" json:"keyUuid"`
-	keyUUID     uuid.UUID `yaml:"-"`
+	SubjectIDStr string    `yaml:"subjectId" json:"subjectId"`
+	subjectID    uuid.UUID `yaml:"-"`
+	Key          string    `yaml:"key" json:"key"`
+}
+
+func (c *PreSharedKeyConfig) Get() (uuid.UUID, string) {
+	return c.subjectID, c.Key
 }
 
 func (c *PreSharedKeyConfig) Validate() error {
 	var err error
-	if c.keyUUID, err = uuid.Parse(c.KeyUUID); err != nil || c.keyUUID == uuid.Nil {
-		return fmt.Errorf("keyUuid('%v') - %w", c.KeyUUID, err)
+	if c.Key == "" && c.SubjectIDStr == "" {
+		c.subjectID = uuid.Nil
+		return nil
 	}
-	if c.subjectUUID, err = uuid.Parse(c.SubjectUUID); err != nil || c.keyUUID == uuid.Nil {
-		return fmt.Errorf("subjectUUID('%v') - %w", c.SubjectUUID, err)
+	if c.Key == "" {
+		return fmt.Errorf("key('%v') - is empty", c.Key)
+	}
+	if c.subjectID, err = uuid.Parse(events.OwnerToUUID(c.SubjectIDStr)); err != nil || c.subjectID == uuid.Nil {
+		return fmt.Errorf("subjectUUID('%v') - %w", c.SubjectIDStr, err)
 	}
 	return nil
 }
@@ -204,15 +229,19 @@ func (c *InactivityMonitor) Validate() error {
 
 type BlockwiseTransferConfig struct {
 	Enabled bool          `yaml:"enabled" json:"enabled"`
-	SZX     string        `yaml:"blockSize" json:"blockSize"`
+	SZXStr  string        `yaml:"blockSize" json:"blockSize"`
 	szx     blockwise.SZX `yaml:"-" json:"-"`
+}
+
+func (c *BlockwiseTransferConfig) GetSZX() blockwise.SZX {
+	return c.szx
 }
 
 func (c *BlockwiseTransferConfig) Validate() error {
 	if !c.Enabled {
 		return nil
 	}
-	switch strings.ToLower(c.SZX) {
+	switch strings.ToLower(c.SZXStr) {
 	case "16":
 		c.szx = blockwise.SZX16
 	case "32":
@@ -230,7 +259,34 @@ func (c *BlockwiseTransferConfig) Validate() error {
 	case "bert":
 		c.szx = blockwise.SZXBERT
 	default:
-		return fmt.Errorf("blockSize('%v')", c.SZX)
+		return fmt.Errorf("blockSize('%v')", c.SZXStr)
 	}
 	return nil
+}
+
+var defaultConfig = Config{
+	COAP: CoapConfig{
+		MaxMessageSize: 256 * 1024,
+		InactivityMonitor: InactivityMonitor{
+			Timeout: time.Second * 10,
+		},
+		BlockwiseTransfer: BlockwiseTransferConfig{
+			Enabled: true,
+			SZXStr:  "1024",
+		},
+		TLS: TLSConfig{
+			Authentication: AuthenticationPreSharedKey,
+			PreSharedKey: PreSharedKeyConfig{
+				SubjectIDStr: "",
+				Key:          "",
+			},
+		},
+		OwnershipTransfer: OwnershipTransferConfig{
+			Methods: []OwnershipTransferMethod{OwnershipTransferJustWorks},
+		},
+	},
+}
+
+func DefaultConfig() Config {
+	return defaultConfig
 }

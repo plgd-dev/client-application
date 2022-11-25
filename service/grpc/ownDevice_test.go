@@ -23,7 +23,7 @@ import (
 	"time"
 
 	"github.com/plgd-dev/client-application/pb"
-	"github.com/plgd-dev/client-application/service/device"
+	"github.com/plgd-dev/client-application/service/config/device"
 	"github.com/plgd-dev/client-application/test"
 	"github.com/plgd-dev/hub/v2/resource-aggregate/commands"
 	"github.com/stretchr/testify/require"

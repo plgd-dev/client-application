@@ -21,6 +21,9 @@ import (
 	"fmt"
 	"net"
 
+	"github.com/plgd-dev/client-application/service/config"
+	configDevice "github.com/plgd-dev/client-application/service/config/device"
+	configGrpc "github.com/plgd-dev/client-application/service/config/grpc"
 	"github.com/plgd-dev/client-application/service/device"
 	"github.com/plgd-dev/client-application/service/grpc"
 	"github.com/plgd-dev/client-application/service/http"
@@ -29,11 +32,12 @@ import (
 	"github.com/plgd-dev/hub/v2/pkg/log"
 	"github.com/plgd-dev/hub/v2/pkg/service"
 	"go.opentelemetry.io/otel/trace"
+	"go.uber.org/atomic"
 )
 
 const serviceName = "client-application"
 
-func newHttpService(ctx context.Context, config Config, clientApplicationServer *grpc.ClientApplicationServer, fileWatcher *fsnotify.Watcher, logger log.Logger, tracerProvider trace.TracerProvider) (*http.Service, error) {
+func newHttpService(ctx context.Context, config config.Config, clientApplicationServer *grpc.ClientApplicationServer, fileWatcher *fsnotify.Watcher, logger log.Logger, tracerProvider trace.TracerProvider) (*http.Service, error) {
 	httpService, err := http.New(ctx, serviceName, config.APIs.HTTP.Config, clientApplicationServer, fileWatcher, logger, tracerProvider)
 	if err != nil {
 		return nil, fmt.Errorf("cannot create http service: %w", err)
@@ -47,7 +51,7 @@ func newHttpService(ctx context.Context, config Config, clientApplicationServer 
 	return httpService, err
 }
 
-func newGrpcService(ctx context.Context, config Config, clientApplicationServer *grpc.ClientApplicationServer, fileWatcher *fsnotify.Watcher, logger log.Logger, tracerProvider trace.TracerProvider) (*grpc.Service, error) {
+func newGrpcService(ctx context.Context, config config.Config, clientApplicationServer *grpc.ClientApplicationServer, fileWatcher *fsnotify.Watcher, logger log.Logger, tracerProvider trace.TracerProvider) (*grpc.Service, error) {
 	grpcService, err := grpc.New(ctx, serviceName, config.APIs.GRPC.Config, clientApplicationServer, fileWatcher, logger, tracerProvider)
 	if err != nil {
 		return nil, err
@@ -84,27 +88,30 @@ func closeServicesOnError(err error, services []service.APIService) error {
 }
 
 // New creates server.
-func New(ctx context.Context, config Config, info *grpc.ServiceInformation, fileWatcher *fsnotify.Watcher, logger log.Logger) (*service.Service, error) {
+func New(ctx context.Context, cfg config.Config, info *configGrpc.ServiceInformation, fileWatcher *fsnotify.Watcher, logger log.Logger) (*service.Service, error) {
 	tracerProvider := trace.NewNoopTracerProvider()
 	var closerFunc fn.FuncList
-	deviceService, err := device.New(ctx, serviceName, config.Clients.Device, logger, tracerProvider)
+	config := atomic.NewPointer(&cfg)
+	deviceService, err := device.New(ctx, serviceName, func() configDevice.Config {
+		return config.Load().Clients.Device
+	}, logger, tracerProvider)
 	if err != nil {
 		return nil, fmt.Errorf("cannot create device service: %w", err)
 	}
-	clientApplicationServer := grpc.NewClientApplicationServer(config.RemoteProvisioning, deviceService, info, logger)
+	clientApplicationServer := grpc.NewClientApplicationServer(config, deviceService, info, logger)
 	closerFunc.AddFunc(clientApplicationServer.Close)
 	services := make([]service.APIService, 0, 3)
 	services = append(services, deviceService)
-	if config.APIs.HTTP.Enabled {
-		httpService, err := newHttpService(ctx, config, clientApplicationServer, fileWatcher, logger, tracerProvider)
+	if cfg.APIs.HTTP.Enabled {
+		httpService, err := newHttpService(ctx, cfg, clientApplicationServer, fileWatcher, logger, tracerProvider)
 		if err != nil {
 			closerFunc.Execute()
 			return nil, fmt.Errorf("cannot create http service: %w", err)
 		}
 		services = append(services, httpService)
 	}
-	if config.APIs.GRPC.Enabled {
-		grpcService, err := newGrpcService(ctx, config, clientApplicationServer, fileWatcher, logger, tracerProvider)
+	if cfg.APIs.GRPC.Enabled {
+		grpcService, err := newGrpcService(ctx, cfg, clientApplicationServer, fileWatcher, logger, tracerProvider)
 		if err != nil {
 			closerFunc.Execute()
 			return nil, closeServicesOnError(fmt.Errorf("cannot create grpc service: %w", err), services)

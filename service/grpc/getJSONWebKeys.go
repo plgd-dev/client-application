@@ -22,14 +22,14 @@ import (
 
 	"github.com/lestrrat-go/jwx/jwk"
 	"github.com/plgd-dev/client-application/pb"
-	"github.com/plgd-dev/client-application/service/remoteProvisioning"
+	"github.com/plgd-dev/client-application/service/config/remoteProvisioning"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/structpb"
 )
 
 func (s *ClientApplicationServer) GetJSONWebKeys(ctx context.Context, req *pb.GetJSONWebKeysRequest) (*structpb.Struct, error) {
-	if s.remoteProvisioningConfig.Mode != remoteProvisioning.Mode_UserAgent {
+	if s.GetConfig().RemoteProvisioning.Mode != remoteProvisioning.Mode_UserAgent {
 		return nil, status.Errorf(codes.Unimplemented, "not supported")
 	}
 	jwksCache := s.jwksCache.Load()

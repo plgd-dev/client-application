@@ -14,15 +14,15 @@
 // limitations under the License.
 // ************************************************************************
 
-package service
+package config
 
 import (
 	"fmt"
 
-	"github.com/plgd-dev/client-application/service/device"
-	"github.com/plgd-dev/client-application/service/grpc"
-	"github.com/plgd-dev/client-application/service/http"
-	"github.com/plgd-dev/client-application/service/remoteProvisioning"
+	"github.com/plgd-dev/client-application/service/config/device"
+	"github.com/plgd-dev/client-application/service/config/grpc"
+	"github.com/plgd-dev/client-application/service/config/http"
+	"github.com/plgd-dev/client-application/service/config/remoteProvisioning"
 	"github.com/plgd-dev/hub/v2/pkg/config"
 	"github.com/plgd-dev/hub/v2/pkg/log"
 )
@@ -33,6 +33,23 @@ type Config struct {
 	APIs               APIsConfig                `yaml:"apis" json:"apis"`
 	Clients            ClientsConfig             `yaml:"clients" json:"clients"`
 	RemoteProvisioning remoteProvisioning.Config `yaml:"remoteProvisioning" json:"remoteProvisioning"`
+	configPath         string                    `yaml:"-" json:"-"`
+}
+
+func New(configPath string) (Config, error) {
+	if configPath == "" {
+		return Config{}, fmt.Errorf("path to config is empty")
+	}
+	var cfg Config
+	if err := config.LoadAndValidateConfig(&cfg); err != nil {
+		return Config{}, fmt.Errorf("cannot load config: %w", err)
+	}
+	cfg.configPath = configPath
+	return cfg, nil
+}
+
+func (c *Config) SetConfigPath(configPath string) {
+	c.configPath = configPath
 }
 
 func (c *Config) Validate() error {
@@ -97,4 +114,30 @@ func (c *ClientsConfig) Validate() error {
 // String return string representation of Config
 func (c Config) String() string {
 	return config.ToString(c)
+}
+
+func (c Config) Store() error {
+	return Store(c, c.configPath)
+}
+
+func DefaultConfig(uiDirectory string) Config {
+	logCfg := log.MakeDefaultConfig()
+	logCfg.Encoding = "console"
+	return Config{
+		Log: logCfg,
+		APIs: APIsConfig{
+			HTTP: HTTPConfig{
+				Enabled: true,
+				Config:  http.DefaultConfig(uiDirectory),
+			},
+			GRPC: GRPCConfig{
+				Enabled: true,
+				Config:  grpc.DefaultConfig(),
+			},
+		},
+		Clients: ClientsConfig{
+			Device: device.DefaultConfig(),
+		},
+		RemoteProvisioning: remoteProvisioning.DefaultConfig(),
+	}
 }

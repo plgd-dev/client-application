@@ -28,7 +28,8 @@ func (s *ClientApplicationServer) GetConfiguration(ctx context.Context, _ *pb.Ge
 	info.IsInitialized = s.serviceDevice.IsInitialized()
 	info.Owner = s.serviceDevice.GetOwner()
 	if info.DeviceAuthenticationMode == pb.GetConfigurationResponse_X509 {
-		info.RemoteProvisioning = s.remoteProvisioningConfig.ToProto()
+		remoteProvisioning := s.GetConfig().RemoteProvisioning
+		info.RemoteProvisioning = remoteProvisioning.ToProto()
 	}
 
 	return info, nil

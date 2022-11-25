@@ -18,6 +18,7 @@ package http
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/plgd-dev/client-application/pkg/net/listener"
 	"github.com/plgd-dev/hub/v2/pkg/net/http/server"
@@ -54,4 +55,30 @@ func (c *Config) Validate() error {
 		return fmt.Errorf("ui.%w", err)
 	}
 	return c.Config.Validate()
+}
+
+func DefaultConfig(uiDirectory string) Config {
+	return Config{
+		Config: listener.Config{
+			Addr: ":8080",
+			TLS: listener.TLSConfig{
+				Enabled: false,
+			},
+		},
+		CORS: CORSConfig{
+			AllowedOrigins: []string{"*"},
+			AllowedHeaders: []string{"Accept", "Accept-Language", "Accept-Encoding", "Content-Type", "Content-Language", "Content-Length", "Origin", "X-CSRF-Token", "Authorization"},
+			AllowedMethods: []string{"GET", "PATCH", "HEAD", "POST", "PUT", "OPTIONS", "DELETE"},
+		},
+		UI: UIConfig{
+			Enabled:   true,
+			Directory: uiDirectory,
+		},
+		Server: server.Config{
+			ReadTimeout:       time.Second * 8,
+			ReadHeaderTimeout: time.Second * 4,
+			WriteTimeout:      time.Second * 16,
+			IdleTimeout:       time.Second * 30,
+		},
+	}
 }

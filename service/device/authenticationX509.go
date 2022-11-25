@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/pion/dtls/v2"
+	configDevice "github.com/plgd-dev/client-application/service/config/device"
 	"github.com/plgd-dev/device/v2/client/core"
 	"github.com/plgd-dev/device/v2/pkg/net/coap"
 	"github.com/plgd-dev/go-coap/v3/tcp"
@@ -21,13 +22,13 @@ import (
 )
 
 type authenticationX509 struct {
-	config      Config
+	config      configDevice.Config
 	privateKey  atomic.Pointer[ecdsa.PrivateKey]
 	certificate atomic.Pointer[tls.Certificate]
 	owner       atomic.String
 }
 
-func newAuthenticationX509(config Config) *authenticationX509 {
+func newAuthenticationX509(config configDevice.Config) *authenticationX509 {
 	return &authenticationX509{
 		config: config,
 	}
@@ -100,8 +101,8 @@ func (s *authenticationX509) GetOwnerID() (string, error) {
 	return coap.GetDeviceIDFromIdentityCertificate(crt.Leaf)
 }
 
-func (s *authenticationX509) GetOwnOptions() []core.OwnOption {
-	return nil
+func (s *authenticationX509) GetOwnOptions() ([]core.OwnOption, error) {
+	return nil, nil
 }
 
 func (s *authenticationX509) GetIdentityCSR(id string) ([]byte, error) {

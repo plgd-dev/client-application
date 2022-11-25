@@ -29,6 +29,14 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+func doReset(t *testing.T, token string, expCode int) {
+	// reset
+	request := httpgwTest.NewRequest(http.MethodPost, serviceHttp.Reset, nil).
+		Host(test.CLIENT_APPLICATION_HTTP_HOST).AuthToken(token).Build()
+	resp := httpgwTest.HTTPDo(t, request)
+	require.Equal(t, expCode, resp.StatusCode)
+}
+
 func TestClientApplicationServerReset(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*8)
 	defer cancel()
@@ -41,16 +49,9 @@ func TestClientApplicationServerReset(t *testing.T) {
 	token := hubTestOAuthServer.GetDefaultAccessToken(t)
 
 	// reset
-	request := httpgwTest.NewRequest(http.MethodPost, serviceHttp.Reset, nil).
-		Host(test.CLIENT_APPLICATION_HTTP_HOST).AuthToken(token).Build()
-	resp := httpgwTest.HTTPDo(t, request)
-	require.Equal(t, http.StatusOK, resp.StatusCode)
+	doReset(t, token, http.StatusOK)
 
 	// try again reset - should fail
-	request = httpgwTest.NewRequest(http.MethodPost, serviceHttp.Reset, nil).
-		Host(test.CLIENT_APPLICATION_HTTP_HOST).AuthToken(token).Build()
-	resp = httpgwTest.HTTPDo(t, request)
-	require.Equal(t, http.StatusUnauthorized, resp.StatusCode)
-
+	doReset(t, token, http.StatusUnauthorized)
 	initializeRemoteProvisioning(ctx, t)
 }

@@ -20,100 +20,9 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"time"
 
-	"github.com/google/uuid"
-	"github.com/plgd-dev/client-application/pkg/net/grpc/server"
-	"github.com/plgd-dev/client-application/pkg/net/listener"
-	service "github.com/plgd-dev/client-application/service"
-	"github.com/plgd-dev/client-application/service/device"
-	"github.com/plgd-dev/client-application/service/http"
-	"github.com/plgd-dev/client-application/service/remoteProvisioning"
-	"github.com/plgd-dev/hub/v2/pkg/log"
-	grpcServer "github.com/plgd-dev/hub/v2/pkg/net/grpc/server"
-	httpServer "github.com/plgd-dev/hub/v2/pkg/net/http/server"
+	"github.com/plgd-dev/client-application/service/config"
 )
-
-func createDefaultConfig(uiDirectory string) service.Config {
-	logCfg := log.MakeDefaultConfig()
-	logCfg.Encoding = "console"
-	return service.Config{
-		APIs: service.APIsConfig{
-			HTTP: service.HTTPConfig{
-				Enabled: true,
-				Config: http.Config{
-					Config: listener.Config{
-						Addr: ":8080",
-						TLS: listener.TLSConfig{
-							Enabled: false,
-						},
-					},
-					CORS: http.CORSConfig{
-						AllowedOrigins: []string{"*"},
-						AllowedHeaders: []string{"Accept", "Accept-Language", "Accept-Encoding", "Content-Type", "Content-Language", "Content-Length", "Origin", "X-CSRF-Token", "Authorization"},
-						AllowedMethods: []string{"GET", "PATCH", "HEAD", "POST", "PUT", "OPTIONS", "DELETE"},
-					},
-					UI: http.UIConfig{
-						Enabled:   true,
-						Directory: uiDirectory,
-					},
-					Server: httpServer.Config{
-						ReadTimeout:       time.Second * 8,
-						ReadHeaderTimeout: time.Second * 4,
-						WriteTimeout:      time.Second * 16,
-						IdleTimeout:       time.Second * 30,
-					},
-				},
-			},
-			GRPC: service.GRPCConfig{
-				Enabled: true,
-				Config: server.Config{
-					Addr: ":8081",
-					TLS: server.TLSConfig{
-						Enabled: false,
-					},
-					EnforcementPolicy: grpcServer.EnforcementPolicyConfig{
-						MinTime: 5 * time.Minute,
-					},
-				},
-			},
-		},
-		Log: logCfg,
-		Clients: service.ClientsConfig{
-			Device: device.Config{
-				COAP: device.CoapConfig{
-					MaxMessageSize: 256 * 1024,
-					InactivityMonitor: device.InactivityMonitor{
-						Timeout: time.Second * 10,
-					},
-					BlockwiseTransfer: device.BlockwiseTransferConfig{
-						Enabled: true,
-						SZX:     "1024",
-					},
-					TLS: device.TLSConfig{
-						Authentication: device.AuthenticationPreSharedKey,
-						PreSharedKey: device.PreSharedKeyConfig{
-							SubjectUUID: uuid.NewString(),
-							KeyUUID:     uuid.NewString(),
-						},
-					},
-					OwnershipTransfer: device.OwnershipTransferConfig{
-						Methods: []device.OwnershipTransferMethod{device.OwnershipTransferJustWorks},
-					},
-				},
-			},
-		},
-		RemoteProvisioning: remoteProvisioning.Config{
-			Mode: remoteProvisioning.Mode_None,
-			UserAgentConfig: remoteProvisioning.UserAgentConfig{
-				CSRChallengeStateExpiration: time.Minute * 1,
-			},
-			Authorization: remoteProvisioning.AuthorizationConfig{
-				OwnerClaim: "sub",
-			},
-		},
-	}
-}
 
 func resolveDefaultConfig(configPath string) error {
 	configPathWasSet := true
@@ -133,7 +42,7 @@ func resolveDefaultConfig(configPath string) error {
 		return nil
 	}
 	configDirectoryPath := filepath.Dir(configPath)
-	cfg := createDefaultConfig(configDirectoryPath + "/www")
+	cfg := config.DefaultConfig(configDirectoryPath + "/www")
 	if err := os.WriteFile(configPath, []byte(cfg.String()), 0o600); err != nil {
 		return fmt.Errorf("cannot write default config: %w", err)
 	}

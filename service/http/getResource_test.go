@@ -17,8 +17,6 @@
 package http_test
 
 import (
-	"errors"
-	"io"
 	"net/http"
 	"testing"
 
@@ -97,19 +95,7 @@ func TestClientApplicationServerGetResource(t *testing.T) {
 	shutDown := test.New(t, cfg)
 	defer shutDown()
 
-	request := httpgwTest.NewRequest(http.MethodGet, serviceHttp.Devices, nil).
-		Host(test.CLIENT_APPLICATION_HTTP_HOST).Build()
-	resp := httpgwTest.HTTPDo(t, request)
-	require.Equal(t, http.StatusOK, resp.StatusCode)
-	for {
-		var dev grpcgwPb.Device
-		err := httpgwTest.Unmarshal(resp.StatusCode, resp.Body, &dev)
-		if errors.Is(err, io.EOF) {
-			break
-		}
-		require.NoError(t, err)
-	}
-	_ = resp.Body.Close()
+	getDevices(t, "")
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

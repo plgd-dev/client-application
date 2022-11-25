@@ -102,3 +102,18 @@ func (c *Config) ToProto() *pb.RemoteProvisioning {
 		Authorization: c.Authorization.ToProto(),
 	}
 }
+
+var defaultConfig = Config{
+	Mode: Mode_None,
+	UserAgentConfig: UserAgentConfig{
+		CSRChallengeStateExpiration: time.Minute * 1,
+	},
+	Authorization: AuthorizationConfig{
+		OwnerClaim: "sub",
+		Scopes:     []string{},
+	},
+}
+
+func DefaultConfig() Config {
+	return defaultConfig
+}

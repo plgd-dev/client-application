@@ -31,7 +31,7 @@ func (s *ClientApplicationServer) getIdentityCSR(ctx context.Context) (*pb.Ident
 	if !s.signIdentityCertificateRemotely() {
 		return nil, status.Errorf(codes.Unimplemented, "not supported")
 	}
-	owner, err := grpc.OwnerFromTokenMD(ctx, s.remoteProvisioningConfig.Authorization.OwnerClaim)
+	owner, err := grpc.OwnerFromTokenMD(ctx, s.GetConfig().RemoteProvisioning.Authorization.OwnerClaim)
 	if err != nil {
 		return nil, s.logger.LogAndReturnError(status.Errorf(codes.Unauthenticated, "cannot get owner from token: %v", err))
 	}
@@ -40,7 +40,7 @@ func (s *ClientApplicationServer) getIdentityCSR(ctx context.Context) (*pb.Ident
 		return nil, status.Error(codes.Unimplemented, err.Error())
 	}
 	state := uuid.New()
-	s.csrCache.Set(state, true, s.remoteProvisioningConfig.UserAgentConfig.CSRChallengeStateExpiration)
+	s.csrCache.Set(state, true, s.GetConfig().RemoteProvisioning.UserAgentConfig.CSRChallengeStateExpiration)
 	return &pb.IdentityCertificateChallenge{
 		CertificateSigningRequest: csr,
 		State:                     state.String(),
