@@ -25,7 +25,7 @@ import (
 	"testing"
 	"time"
 
-	_ "cloud.google.com/go"
+	// _ "cloud.google.com/go"
 	"github.com/plgd-dev/client-application/pb"
 	"github.com/plgd-dev/client-application/pkg/net/grpc/server"
 	"github.com/plgd-dev/client-application/pkg/net/listener"
