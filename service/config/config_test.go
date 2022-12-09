@@ -42,6 +42,10 @@ func TestNew(t *testing.T) {
 	os.Args = append(os.Args, "--config", configPath)
 	cfg1, err := config.New(configPath)
 	require.NoError(t, err)
+	require.Empty(t, cfg1.RemoteProvisioning.GetDeviceOauthClient().GetScopes())
+	cfg1.RemoteProvisioning.GetDeviceOauthClient().Scopes = nil
+	require.Empty(t, cfg1.RemoteProvisioning.GetWebOauthClient().GetScopes())
+	cfg1.RemoteProvisioning.GetWebOauthClient().Scopes = nil
 	require.Equal(t, cfg, cfg1)
 	require.NotEmpty(t, cfg1.String())
 	cfg.Clients.Device.COAP.TLS.PreSharedKey.Key = ""
@@ -52,6 +56,10 @@ func TestNew(t *testing.T) {
 	require.NoError(t, err)
 	cfg2, err := config.New(configPath)
 	require.NoError(t, err)
+	require.Empty(t, cfg2.RemoteProvisioning.GetDeviceOauthClient().GetScopes())
+	cfg2.RemoteProvisioning.GetDeviceOauthClient().Scopes = nil
+	require.Empty(t, cfg2.RemoteProvisioning.GetWebOauthClient().GetScopes())
+	cfg2.RemoteProvisioning.GetWebOauthClient().Scopes = nil
 	require.Equal(t, cfg, cfg2)
 	require.Empty(t, cfg2.Clients.Device.COAP.TLS.PreSharedKey.Key)
 	require.Empty(t, cfg2.Clients.Device.COAP.TLS.PreSharedKey.SubjectIDStr)

@@ -24,6 +24,7 @@ import (
 	"github.com/plgd-dev/client-application/pb"
 	serviceHttp "github.com/plgd-dev/client-application/service/http"
 	"github.com/plgd-dev/client-application/test"
+	"github.com/plgd-dev/device/v2/schema/configuration"
 	"github.com/plgd-dev/device/v2/schema/device"
 	grpcgwPb "github.com/plgd-dev/hub/v2/grpc-gateway/pb"
 	httpgwTest "github.com/plgd-dev/hub/v2/http-gateway/test"
@@ -83,7 +84,7 @@ func TestClientApplicationServerGetResource(t *testing.T) {
 			name: "forbidden - cannot establish TLS connection",
 			args: args{
 				deviceID: dev.Id,
-				href:     "/light/1",
+				href:     configuration.ResourceURI,
 			},
 			wantErr:  true,
 			wantCode: http.StatusForbidden,

@@ -65,7 +65,7 @@ func (s *ClientApplicationServer) UpdateResource(ctx context.Context, req *pb.Up
 	var response []byte
 	err = dev.UpdateResourceWithCodec(ctx, link, rawcodec.GetRawCodec(message.AppOcfCbor), updateData, &response)
 	if err != nil {
-		return nil, convErrToGrpcStatus(codes.Unavailable, fmt.Errorf("cannot get resource %v for device %v: %w", req.GetResourceId().GetHref(), dev.ID, err)).Err()
+		return nil, convErrToGrpcStatus(codes.Unavailable, fmt.Errorf("cannot update resource %v for device %v: %w", req.GetResourceId().GetHref(), dev.ID, err)).Err()
 	}
 	return &grpcgwPb.UpdateResourceResponse{
 		Data: &events.ResourceUpdated{

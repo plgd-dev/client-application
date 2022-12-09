@@ -5,7 +5,7 @@
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //
-// 	http://www.apache.org/licenses/LICENSE-2.0
+//     http://www.apache.org/licenses/LICENSE-2.0
 //
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,16 +14,25 @@
 // limitations under the License.
 // ************************************************************************
 
-//go:build tools
-// +build tools
+syntax = "proto3";
 
-package tools
+package service.pb;
 
-import (
-	_ "github.com/favadi/protoc-go-inject-tag"
-	_ "github.com/goreleaser/goreleaser"
-	_ "github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway"
-	_ "github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2"
-	_ "google.golang.org/grpc/cmd/protoc-gen-go-grpc"
-	_ "google.golang.org/protobuf/cmd/protoc-gen-go"
-)
+option go_package = "github.com/plgd-dev/client-application/pb;pb";
+
+message OnboardDeviceRequest {
+    string device_id = 1;
+    // endpoint in format <scheme>://<host>:<port>
+    string coap_gateway = 2;
+    // authorization code from the hub
+    string authorization_code = 3;
+    // authorization provider from the hub
+    string authorization_provider = 4;
+    // hub id in uuid format to allow hub access to device
+    string hub_id = 5;
+    // list of hub certificate authorities in PEM format to verify the hub certificate
+    string certificate_authorities = 6;
+}
+
+message OnboardDeviceResponse {
+}

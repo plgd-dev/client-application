@@ -29,11 +29,11 @@ import (
 
 // Config represent application configuration
 type Config struct {
-	Log                log.Config                `yaml:"log" json:"log"`
-	APIs               APIsConfig                `yaml:"apis" json:"apis"`
-	Clients            ClientsConfig             `yaml:"clients" json:"clients"`
-	RemoteProvisioning remoteProvisioning.Config `yaml:"remoteProvisioning" json:"remoteProvisioning"`
-	configPath         string                    `yaml:"-" json:"-"`
+	Log                log.Config                 `yaml:"log" json:"log"`
+	APIs               APIsConfig                 `yaml:"apis" json:"apis"`
+	Clients            ClientsConfig              `yaml:"clients" json:"clients"`
+	RemoteProvisioning *remoteProvisioning.Config `yaml:"remoteProvisioning" json:"remoteProvisioning"`
+	configPath         string                     `yaml:"-" json:"-"`
 }
 
 func New(configPath string) (Config, error) {

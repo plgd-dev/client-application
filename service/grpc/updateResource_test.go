@@ -25,6 +25,7 @@ import (
 	"github.com/plgd-dev/client-application/pb"
 	serviceHttp "github.com/plgd-dev/client-application/service/http"
 	"github.com/plgd-dev/client-application/test"
+	"github.com/plgd-dev/device/v2/schema/configuration"
 	"github.com/plgd-dev/device/v2/schema/device"
 	"github.com/plgd-dev/device/v2/schema/doxm"
 	grpcgwPb "github.com/plgd-dev/hub/v2/grpc-gateway/pb"
@@ -128,7 +129,7 @@ func TestClientApplicationServerUpdateResource(t *testing.T) {
 				req: &pb.UpdateResourceRequest{
 					ResourceId: &commands.ResourceId{
 						DeviceId: dev.Id,
-						Href:     "/light/1",
+						Href:     configuration.ResourceURI,
 					},
 					Content: &grpcgwPb.Content{
 						ContentType: serviceHttp.ApplicationJsonContentType,

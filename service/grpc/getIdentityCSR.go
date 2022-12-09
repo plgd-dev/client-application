@@ -18,6 +18,7 @@ package grpc
 
 import (
 	"context"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/plgd-dev/client-application/pb"
@@ -31,7 +32,8 @@ func (s *ClientApplicationServer) getIdentityCSR(ctx context.Context) (*pb.Ident
 	if !s.signIdentityCertificateRemotely() {
 		return nil, status.Errorf(codes.Unimplemented, "not supported")
 	}
-	owner, err := grpc.OwnerFromTokenMD(ctx, s.GetConfig().RemoteProvisioning.Authorization.OwnerClaim)
+	cfg := s.GetConfig()
+	owner, err := grpc.OwnerFromTokenMD(ctx, cfg.RemoteProvisioning.GetJwtOwnerClaim())
 	if err != nil {
 		return nil, s.logger.LogAndReturnError(status.Errorf(codes.Unauthenticated, "cannot get owner from token: %v", err))
 	}
@@ -40,7 +42,7 @@ func (s *ClientApplicationServer) getIdentityCSR(ctx context.Context) (*pb.Ident
 		return nil, status.Error(codes.Unimplemented, err.Error())
 	}
 	state := uuid.New()
-	s.csrCache.Set(state, true, s.GetConfig().RemoteProvisioning.UserAgentConfig.CSRChallengeStateExpiration)
+	s.csrCache.Set(state, true, time.Duration(cfg.RemoteProvisioning.GetUserAgent().GetCsrChallengeStateExpiration()))
 	return &pb.IdentityCertificateChallenge{
 		CertificateSigningRequest: csr,
 		State:                     state.String(),

@@ -28,16 +28,15 @@ import (
 
 	"github.com/plgd-dev/client-application/pb"
 	"github.com/plgd-dev/client-application/service/config/device"
-	"github.com/plgd-dev/client-application/service/config/remoteProvisioning"
 	serviceHttp "github.com/plgd-dev/client-application/service/http"
 	"github.com/plgd-dev/client-application/test"
 	hubCAPb "github.com/plgd-dev/hub/v2/certificate-authority/pb"
-	caService "github.com/plgd-dev/hub/v2/certificate-authority/test"
 	httpgwTest "github.com/plgd-dev/hub/v2/http-gateway/test"
 	kitNetGrpc "github.com/plgd-dev/hub/v2/pkg/net/grpc"
 	hubTest "github.com/plgd-dev/hub/v2/test"
 	"github.com/plgd-dev/hub/v2/test/config"
 	hubTestOAuthServer "github.com/plgd-dev/hub/v2/test/oauth-server/test"
+	hubTestService "github.com/plgd-dev/hub/v2/test/service"
 	"github.com/stretchr/testify/require"
 	"go.uber.org/zap/zapcore"
 	"google.golang.org/grpc"
@@ -110,20 +109,26 @@ func initializeRemoteProvisioning(ctx context.Context, t *testing.T) {
 	require.Equal(t, http.StatusOK, resp.StatusCode)
 }
 
-func setupRemoteProvisioning(t *testing.T) func() {
+func setupRemoteProvisioning(t *testing.T, services ...hubTestService.SetUpServicesConfig) func() {
 	cfg := test.MakeConfig(t)
 	cfg.Log.Level = zapcore.DebugLevel
 	cfg.APIs.HTTP.TLS.ClientCertificateRequired = false
 	cfg.Clients.Device.COAP.TLS.Authentication = device.AuthenticationX509
-	cfg.RemoteProvisioning.Mode = remoteProvisioning.Mode_UserAgent
+	cfg.RemoteProvisioning.Mode = pb.RemoteProvisioning_USER_AGENT
 	shutDown := test.New(t, cfg)
-	oauthServerTearDown := hubTestOAuthServer.SetUp(t)
-	caShutdown := caService.SetUp(t)
 
+	var service hubTestService.SetUpServicesConfig
+	if len(services) == 0 {
+		service = hubTestService.SetUpServicesOAuth | hubTestService.SetUpServicesCertificateAuthority
+	} else {
+		for _, s := range services {
+			service |= s
+		}
+	}
+	servicesShutdown := hubTestService.SetUpServices(context.TODO(), t, service)
 	return func() {
 		shutDown()
-		oauthServerTearDown()
-		caShutdown()
+		servicesShutdown()
 	}
 }
 
@@ -149,17 +154,14 @@ func TestClientApplicationServerUpdateIdentityCertificate(t *testing.T) {
 	cfg := test.MakeConfig(t)
 	cfg.APIs.HTTP.TLS.ClientCertificateRequired = false
 	cfg.Clients.Device.COAP.TLS.Authentication = device.AuthenticationX509
-	cfg.RemoteProvisioning.Mode = remoteProvisioning.Mode_UserAgent
+	cfg.RemoteProvisioning.Mode = pb.RemoteProvisioning_USER_AGENT
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*8)
 	defer cancel()
 	shutDown := test.New(t, cfg)
 	defer shutDown()
 
-	oauthServerTearDown := hubTestOAuthServer.SetUp(t)
-	defer oauthServerTearDown()
-
-	caShutdown := caService.SetUp(t)
-	defer caShutdown()
+	servicesShutdown := hubTestService.SetUpServices(ctx, t, hubTestService.SetUpServicesOAuth|hubTestService.SetUpServicesCertificateAuthority)
+	defer servicesShutdown()
 
 	request := httpgwTest.NewRequest(http.MethodGet, serviceHttp.WellKnownConfiguration, nil).Host(test.CLIENT_APPLICATION_HTTP_HOST).Build()
 	resp := httpgwTest.HTTPDo(t, request)

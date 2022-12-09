@@ -17,6 +17,8 @@
         "TEST_ROOT_CA_KEY": "${workspaceFolder}/.tmp/certs/rootcakey.pem",
         "TEST_ROOT_CA_CERT": "${workspaceFolder}/.tmp/certs/rootcacrt.pem",
         "TEST_CLOUD_SID": "adebc667-1f2b-41e3-bf5c-6d6eabc68cc6",
+        "TEST_COAP_GW_CERT_FILE": "${workspaceFolder}/.tmp/certs/coap.crt",
+        "TEST_COAP_GW_KEY_FILE": "${workspaceFolder}/.tmp/certs/coap.key",
         // "GOMAXPROCS": 1,
         // "GOFLAGS":"-mod=vendor",
         // "GRPC_VERBOSITY":"DEBUG",

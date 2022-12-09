@@ -24,6 +24,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/plgd-dev/client-application/pb"
 	"github.com/plgd-dev/client-application/test"
+	"github.com/plgd-dev/device/v2/schema/configuration"
 	"github.com/plgd-dev/device/v2/schema/device"
 	grpcgwPb "github.com/plgd-dev/hub/v2/grpc-gateway/pb"
 	"github.com/plgd-dev/hub/v2/resource-aggregate/commands"
@@ -94,7 +95,7 @@ func TestClientApplicationServerGetResource(t *testing.T) {
 				req: &pb.GetResourceRequest{
 					ResourceId: &commands.ResourceId{
 						DeviceId: dev.Id,
-						Href:     "/light/1",
+						Href:     configuration.ResourceURI,
 					},
 				},
 			},
