@@ -31,8 +31,8 @@ const App = () => {
     }
 
     const getOidcCommonSettings = () => ({
-        authority: wellKnownConfig.remoteProvisioning?.authorization.authority || '',
-        scope: wellKnownConfig.remoteProvisioning?.authorization.scopes.join?.(' '),
+        authority: wellKnownConfig.remoteProvisioning?.authority || '',
+        scope: wellKnownConfig.remoteProvisioning?.webOauthClient.scopes.join?.(' '),
     })
 
     return (
@@ -41,7 +41,7 @@ const App = () => {
             wrapper={(child: any) => (
                 <AuthProvider
                     {...getOidcCommonSettings()}
-                    clientId={wellKnownConfig?.remoteProvisioning?.authorization.clientId || ''}
+                    clientId={wellKnownConfig?.remoteProvisioning?.webOauthClient.clientId || ''}
                     redirectUri={window.location.origin}
                     onSignIn={async () => {
                         // remove auth params
@@ -52,10 +52,10 @@ const App = () => {
                     userManager={
                         new UserManager({
                             ...getOidcCommonSettings(),
-                            client_id: wellKnownConfig?.remoteProvisioning?.authorization.clientId,
+                            client_id: wellKnownConfig?.remoteProvisioning?.webOauthClient.clientId,
                             redirect_uri: window.location.origin,
                             extraQueryParams: {
-                                audience: wellKnownConfig?.remoteProvisioning?.authorization.audience || false,
+                                audience: wellKnownConfig?.remoteProvisioning?.webOauthClient.audience || false,
                             },
                         } as UserManagerSettings)
                     }
