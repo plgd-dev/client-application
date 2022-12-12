@@ -51,6 +51,8 @@ func main() {
 		log.Errorf("cannot create default config: %v", err)
 		return
 	}
+	// parse line arguments again because resolveDefaultConfig can set config path
+	_, _ = flags.NewParser(&opts, flags.Default|flags.IgnoreUnknown).Parse()
 	cfg, err := config.New(opts.ConfigPath)
 	if err != nil {
 		log.Errorf("cannot load config: %v", err)
