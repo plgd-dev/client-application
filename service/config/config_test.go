@@ -46,6 +46,8 @@ func TestNew(t *testing.T) {
 	cfg1.RemoteProvisioning.GetDeviceOauthClient().Scopes = nil
 	require.Empty(t, cfg1.RemoteProvisioning.GetWebOauthClient().GetScopes())
 	cfg1.RemoteProvisioning.GetWebOauthClient().Scopes = nil
+	require.Empty(t, cfg1.RemoteProvisioning.GetCaPool())
+	cfg1.RemoteProvisioning.CaPool = nil
 	require.Equal(t, cfg, cfg1)
 	require.NotEmpty(t, cfg1.String())
 	cfg.Clients.Device.COAP.TLS.PreSharedKey.Key = ""
@@ -60,6 +62,8 @@ func TestNew(t *testing.T) {
 	cfg2.RemoteProvisioning.GetDeviceOauthClient().Scopes = nil
 	require.Empty(t, cfg2.RemoteProvisioning.GetWebOauthClient().GetScopes())
 	cfg2.RemoteProvisioning.GetWebOauthClient().Scopes = nil
+	require.Empty(t, cfg2.RemoteProvisioning.GetCaPool())
+	cfg2.RemoteProvisioning.CaPool = nil
 	require.Equal(t, cfg, cfg2)
 	require.Empty(t, cfg2.Clients.Device.COAP.TLS.PreSharedKey.Key)
 	require.Empty(t, cfg2.Clients.Device.COAP.TLS.PreSharedKey.SubjectIDStr)
