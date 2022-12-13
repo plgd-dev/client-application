@@ -26,7 +26,7 @@ message GetConfigurationRequest {}
 
 message UserAgent {
     // in nanoseconds
-    int64 csr_challenge_state_expiration = 2;  // @gotags: yaml:"csrChallengeStateExpiration"
+    int64 csr_challenge_state_expiration = 1; // @gotags: yaml:"csrChallengeStateExpiration"
 }
 
 message RemoteProvisioning {
