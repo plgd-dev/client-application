@@ -213,23 +213,22 @@ func NewRemoteProvisioningConfig() *pb.RemoteProvisioning {
 		UserAgent: &pb.UserAgent{
 			CsrChallengeStateExpiration: (time.Minute * 10).Nanoseconds(),
 		},
-		CertificateAuthority: testConfig.CERTIFICATE_AUTHORITY_HOST,
+		CertificateAuthority: "https://" + testConfig.CERTIFICATE_AUTHORITY_HOST,
 		WebOauthClient: &pb.WebOauthClient{
 			ClientId: testConfig.OAUTH_MANAGER_CLIENT_ID,
 			Scopes:   []string{"openid"},
 		},
-		JwtOwnerClaim:          testConfig.OWNER_CLAIM,
-		Authority:              "https://" + testConfig.OAUTH_SERVER_HOST,
-		CoapGateway:            testConfig.ACTIVE_COAP_SCHEME + "://" + testConfig.COAP_GW_HOST,
-		CertificateAuthorities: testConfig.CA_POOL,
-		HttpGatewayAddress:     "http://" + CLIENT_APPLICATION_HTTP_HOST,
+		JwtOwnerClaim: testConfig.OWNER_CLAIM,
+		Authority:     "https://" + testConfig.OAUTH_SERVER_HOST,
+		CoapGateway:   testConfig.ACTIVE_COAP_SCHEME + "://" + testConfig.COAP_GW_HOST,
 		DeviceOauthClient: &pb.DeviceOauthClient{
 			ClientId:     testConfig.OAUTH_MANAGER_CLIENT_ID,
 			ProviderName: testConfig.DEVICE_PROVIDER,
 			Audience:     "http://" + CLIENT_APPLICATION_HTTP_HOST,
 			Scopes:       []string{"offline"},
 		},
-		Id: testConfig.HubID(),
+		Id:     testConfig.HubID(),
+		CaPool: []string{testConfig.CA_POOL},
 	}
 }
 

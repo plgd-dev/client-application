@@ -17,9 +17,11 @@ package pb
 
 import (
 	"fmt"
+	"os"
 	"time"
 
 	pb "github.com/plgd-dev/hub/v2/grpc-gateway/pb"
+	"github.com/plgd-dev/kit/v2/security"
 	"gopkg.in/yaml.v3"
 )
 
@@ -51,7 +53,6 @@ func (c *RemoteProvisioning) Clone() *RemoteProvisioning {
 		CoapGateway:            c.GetCoapGateway(),
 		CertificateAuthorities: c.GetCertificateAuthorities(),
 		Authority:              c.GetAuthority(),
-		HttpGatewayAddress:     c.GetHttpGatewayAddress(),
 		DeviceOauthClient:      c.GetDeviceOauthClient().Clone(),
 		CertificateAuthority:   c.GetCertificateAuthority(),
 	}
@@ -145,9 +146,25 @@ func (c *RemoteProvisioning) Validate() error {
 		if err := c.GetUserAgent().Validate(); err != nil {
 			return fmt.Errorf("userAgent.%w", err)
 		}
-		if c.GetCertificateAuthorities() == "" {
-			return fmt.Errorf("certificateAuthorities('%v')", c.GetCertificateAuthorities())
+		if len(c.GetCaPool()) == 0 {
+			break
 		}
+		var certificateAuthorities string
+		for i, ca := range c.GetCaPool() {
+			data, err := os.ReadFile(ca)
+			if err != nil {
+				return fmt.Errorf("caPool[%v]('%v') - %w", i, c.GetCaPool(), err)
+			}
+			_, err = security.ParseX509FromPEM(data)
+			if err != nil {
+				return fmt.Errorf("caPool[%v]('%v') - %w", i, c.GetCaPool(), err)
+			}
+			certificateAuthorities += string(data)
+			if certificateAuthorities[len(certificateAuthorities)-1] != '\n' {
+				certificateAuthorities += "\n"
+			}
+		}
+		c.CertificateAuthorities = certificateAuthorities
 	case RemoteProvisioning_MODE_NONE:
 	}
 	return nil

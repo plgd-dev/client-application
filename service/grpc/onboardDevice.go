@@ -82,11 +82,11 @@ func validateOnboardDeviceRequest(req *pb.OnboardDeviceRequest) (uuid.UUID, erro
 	if err != nil {
 		return uuid.UUID{}, err
 	}
-	if req.GetAuthorizationProvider() == "" {
-		return uuid.UUID{}, status.Error(codes.InvalidArgument, "invalid authorizationProvider")
+	if req.GetAuthorizationProviderName() == "" {
+		return uuid.UUID{}, status.Error(codes.InvalidArgument, "invalid authorizationProviderName")
 	}
-	if req.GetCoapGateway() == "" {
-		return uuid.UUID{}, status.Error(codes.InvalidArgument, "invalid coapGateway")
+	if req.GetCoapGatewayAddress() == "" {
+		return uuid.UUID{}, status.Error(codes.InvalidArgument, "invalid coapGatewayAddress")
 	}
 	if req.GetAuthorizationCode() == "" {
 		return uuid.UUID{}, status.Error(codes.InvalidArgument, "invalid authorizationCode")
@@ -136,9 +136,9 @@ func (s *ClientApplicationServer) OnboardDevice(ctx context.Context, req *pb.Onb
 			}
 		}
 		return pc.SetCloudResource(ctx, cloud.ConfigurationUpdateRequest{
-			AuthorizationProvider: req.GetAuthorizationProvider(),
+			AuthorizationProvider: req.GetAuthorizationProviderName(),
 			AuthorizationCode:     req.GetAuthorizationCode(),
-			URL:                   req.GetCoapGateway(),
+			URL:                   req.GetCoapGatewayAddress(),
 			CloudID:               req.GetHubId(),
 		})
 	}); err != nil {

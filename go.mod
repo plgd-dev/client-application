@@ -18,7 +18,7 @@ require (
 	github.com/pion/dtls/v2 v2.1.6-0.20221001075407-984d41b9981a
 	github.com/plgd-dev/device/v2 v2.0.2-0.20221202214050-f9f57f7c9a61
 	github.com/plgd-dev/go-coap/v3 v3.0.2-0.20221201101543-2e2c858a13f2
-	github.com/plgd-dev/hub/v2 v2.7.4-0.20221210110259-ca24aa39111b
+	github.com/plgd-dev/hub/v2 v2.7.4-0.20221213114839-98df2c84d8eb
 	github.com/plgd-dev/kit/v2 v2.0.0-20211006190727-057b33161b90
 	github.com/stretchr/testify v1.8.1
 	go.opentelemetry.io/otel/trace v1.11.1

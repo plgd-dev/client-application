@@ -139,10 +139,10 @@ func TestClientApplicationServerOnboardDeviceRemoteProvisioning(t *testing.T) {
 
 	// onboard
 	request = httpgwTest.NewRequest(http.MethodPost, serviceHttp.OnboardDevice, encodeToBody(t, &pb.OnboardDeviceRequest{
-		CoapGateway:           httpClientCfg.GetRemoteProvisioning().GetCoapGateway(),
-		AuthorizationCode:     hubTestOAuthServerTest.GetAuthorizationCode(t, oauthServer.Host, httpClientCfg.GetRemoteProvisioning().GetDeviceOauthClient().GetClientId(), dev.Id, ""),
-		HubId:                 httpClientCfg.GetRemoteProvisioning().GetId(),
-		AuthorizationProvider: httpClientCfg.GetRemoteProvisioning().GetDeviceOauthClient().GetProviderName(),
+		CoapGatewayAddress:        httpClientCfg.GetRemoteProvisioning().GetCoapGateway(),
+		AuthorizationCode:         hubTestOAuthServerTest.GetAuthorizationCode(t, oauthServer.Host, httpClientCfg.GetRemoteProvisioning().GetDeviceOauthClient().GetClientId(), dev.Id, ""),
+		HubId:                     httpClientCfg.GetRemoteProvisioning().GetId(),
+		AuthorizationProviderName: httpClientCfg.GetRemoteProvisioning().GetDeviceOauthClient().GetProviderName(),
 	})).Host(test.CLIENT_APPLICATION_HTTP_HOST).AuthToken(token).DeviceId(dev.Id).Build()
 	resp = httpgwTest.HTTPDo(t, request)
 	_ = resp.Body.Close()

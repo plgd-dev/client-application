@@ -13,13 +13,9 @@ var defaultConfig = Config{
 	UserAgent: &pb.UserAgent{
 		CsrChallengeStateExpiration: time.Minute.Nanoseconds(),
 	},
-	JwtOwnerClaim:  "sub",
-	WebOauthClient: &pb.WebOauthClient{
-		//	Scopes: []string{},
-	},
-	DeviceOauthClient: &pb.DeviceOauthClient{
-		//	Scopes: []string{},
-	},
+	JwtOwnerClaim:     "sub",
+	WebOauthClient:    &pb.WebOauthClient{},
+	DeviceOauthClient: &pb.DeviceOauthClient{},
 }
 
 func DefaultConfig() *Config {

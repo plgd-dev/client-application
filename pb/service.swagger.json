@@ -288,7 +288,7 @@
     "/api/v1/devices/{deviceId}/offboard": {
       "post": {
         "summary": "Offboard the device.",
-        "description": "Disconnect device from the plgd hub(OCF Cloud).",
+        "description": "Disconnects device from the plgd hub.",
         "operationId": "ClientApplication_OffboardDevice",
         "responses": {
           "200": {
@@ -325,7 +325,7 @@
     "/api/v1/devices/{deviceId}/onboard": {
       "post": {
         "summary": "Onboard the device.",
-        "description": "Connects device to the plgd hub(OCF Cloud).",
+        "description": "Provisions device to the plgd hub.",
         "operationId": "ClientApplication_OnboardDevice",
         "responses": {
           "200": {
@@ -355,7 +355,7 @@
             "schema": {
               "type": "object",
               "properties": {
-                "coapGateway": {
+                "coapGatewayAddress": {
                   "type": "string",
                   "title": "endpoint in format \u003cscheme\u003e://\u003chost\u003e:\u003cport\u003e"
                 },
@@ -363,7 +363,7 @@
                   "type": "string",
                   "title": "authorization code from the hub"
                 },
-                "authorizationProvider": {
+                "authorizationProviderName": {
                   "type": "string",
                   "title": "authorization provider from the hub"
                 },
@@ -1356,12 +1356,9 @@
           "type": "string",
           "title": "certificate_authority in format https://host:port"
         },
-        "httpGatewayAddress": {
-          "type": "string",
-          "title": "http-gateway in format https://host:port"
-        },
         "webOauthClient": {
-          "$ref": "#/definitions/pbWebOAuthClient"
+          "$ref": "#/definitions/pbWebOAuthClient",
+          "title": "http-gateway in format https://host:port\nstring http_gateway_address = 10; // @gotags: yaml:\"-\""
         },
         "deviceOauthClient": {
           "$ref": "#/definitions/pbDeviceOAuthClient"
@@ -1371,6 +1368,12 @@
         },
         "userAgent": {
           "$ref": "#/definitions/pbUserAgent"
+        },
+        "caPool": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
       }
     },

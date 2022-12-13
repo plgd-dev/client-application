@@ -353,7 +353,7 @@ service ClientApplication {
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       tags: [ "Device" ]
       summary: "Onboard the device."
-      description: "Connects device to the plgd hub(OCF Cloud)."
+      description: "Provisions device to the plgd hub."
       security: {
         security_requirement: {
           key: "OAuth2";
@@ -369,7 +369,7 @@ service ClientApplication {
     option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
       tags: [ "Device" ]
       summary: "Offboard the device."
-      description: "Disconnect device from the plgd hub(OCF Cloud)."
+      description: "Disconnects device from the plgd hub."
       security: {
         security_requirement: {
           key: "OAuth2";
