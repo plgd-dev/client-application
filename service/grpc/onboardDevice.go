@@ -103,25 +103,32 @@ func validateOnboardDeviceRequest(req *pb.OnboardDeviceRequest) (uuid.UUID, erro
 	return devID, nil
 }
 
+func (s *ClientApplicationServer) getDeviceForSetupCloud(ctx context.Context, devID uuid.UUID) (*device, schema.ResourceLinks, error) {
+	dev, err := s.getDevice(devID)
+	if err != nil {
+		return nil, nil, err
+	}
+	links, err := dev.getResourceLinksAndRefreshCache(ctx)
+	if err != nil {
+		return nil, nil, err
+	}
+	cloudLinks := links.GetResourceLinks(cloud.ResourceType)
+	if len(cloudLinks) == 0 {
+		return nil, nil, status.Errorf(codes.NotFound, "cannot find cloud resource for device %v", devID)
+	}
+	if err = dev.checkAccess(cloudLinks[0]); err != nil {
+		return nil, nil, err
+	}
+	return dev, links, nil
+}
+
 func (s *ClientApplicationServer) OnboardDevice(ctx context.Context, req *pb.OnboardDeviceRequest) (resp *pb.OnboardDeviceResponse, err error) {
 	devID, err := validateOnboardDeviceRequest(req)
 	if err != nil {
 		return nil, err
 	}
-	dev, err := s.getDevice(devID)
+	dev, links, err := s.getDeviceForSetupCloud(ctx, devID)
 	if err != nil {
-		return nil, err
-	}
-	links, err := dev.getResourceLinksAndRefreshCache(ctx)
-	if err != nil {
-		return nil, err
-	}
-	cloudLinks := links.GetResourceLinks(cloud.ResourceType)
-	if len(cloudLinks) == 0 {
-		return nil, status.Errorf(codes.NotFound, "cannot find cloud resource for device %v", devID)
-	}
-	cloudLink := cloudLinks[0]
-	if err = dev.checkAccess(cloudLink); err != nil {
 		return nil, err
 	}
 	if err = dev.provision(ctx, links, func(ctx context.Context, pc *core.ProvisioningClient) error {

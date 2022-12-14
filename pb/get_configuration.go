@@ -128,43 +128,66 @@ func (c *RemoteProvisioning_Mode) UnmarshalYAML(value *yaml.Node) error {
 	return nil
 }
 
+func validateCA(path string) ([]byte, error) {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+	_, err = security.ParseX509FromPEM(data)
+	if err != nil {
+		return nil, err
+	}
+	return data, err
+}
+
+func validateCAPool(paths []string) ([]byte, error) {
+	if len(paths) == 0 {
+		return nil, nil
+	}
+	certificateAuthorities := make([]byte, 0, 512)
+	for i, ca := range paths {
+		data, err := validateCA(ca)
+		if err != nil {
+			return nil, fmt.Errorf("caPool[%v]('%v') - %w", i, paths, err)
+		}
+		certificateAuthorities = append(certificateAuthorities, data...)
+		if certificateAuthorities[len(certificateAuthorities)-1] != '\n' {
+			certificateAuthorities = append(certificateAuthorities, '\n')
+		}
+	}
+	return certificateAuthorities, nil
+}
+
+func (c *RemoteProvisioning) validateForUserAgent() error {
+	if err := ValidateWebOAuthClient(c.GetWebOauthClient()); err != nil {
+		return fmt.Errorf("webOAuthClient.%w", err)
+	}
+	if c.GetAuthority() == "" {
+		return fmt.Errorf("authority('%v')", c.GetAuthority())
+	}
+	if c.GetJwtOwnerClaim() == "" {
+		return fmt.Errorf("ownerClaim('%v')", c.GetJwtOwnerClaim())
+	}
+	if err := c.GetUserAgent().Validate(); err != nil {
+		return fmt.Errorf("userAgent.%w", err)
+	}
+	certificateAuthorities, err := validateCAPool(c.GetCaPool())
+	if err != nil {
+		return err
+	}
+	c.CertificateAuthorities = string(certificateAuthorities)
+	return nil
+}
+
 func (c *RemoteProvisioning) Validate() error {
 	if c == nil {
 		return nil
 	}
 	switch c.GetMode() {
 	case RemoteProvisioning_USER_AGENT:
-		if err := ValidateWebOAuthClient(c.GetWebOauthClient()); err != nil {
-			return fmt.Errorf("webOAuthClient.%w", err)
+		if err := c.validateForUserAgent(); err != nil {
+			return err
 		}
-		if c.GetAuthority() == "" {
-			return fmt.Errorf("authority('%v')", c.GetAuthority())
-		}
-		if c.GetJwtOwnerClaim() == "" {
-			return fmt.Errorf("ownerClaim('%v')", c.GetJwtOwnerClaim())
-		}
-		if err := c.GetUserAgent().Validate(); err != nil {
-			return fmt.Errorf("userAgent.%w", err)
-		}
-		if len(c.GetCaPool()) == 0 {
-			break
-		}
-		var certificateAuthorities string
-		for i, ca := range c.GetCaPool() {
-			data, err := os.ReadFile(ca)
-			if err != nil {
-				return fmt.Errorf("caPool[%v]('%v') - %w", i, c.GetCaPool(), err)
-			}
-			_, err = security.ParseX509FromPEM(data)
-			if err != nil {
-				return fmt.Errorf("caPool[%v]('%v') - %w", i, c.GetCaPool(), err)
-			}
-			certificateAuthorities += string(data)
-			if certificateAuthorities[len(certificateAuthorities)-1] != '\n' {
-				certificateAuthorities += "\n"
-			}
-		}
-		c.CertificateAuthorities = certificateAuthorities
 	case RemoteProvisioning_MODE_NONE:
 	}
 	return nil

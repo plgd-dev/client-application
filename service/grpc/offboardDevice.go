@@ -23,7 +23,6 @@ import (
 	"github.com/plgd-dev/client-application/pb"
 	"github.com/plgd-dev/device/v2/schema/cloud"
 	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 func (s *ClientApplicationServer) OffboardDevice(ctx context.Context, req *pb.OffboardDeviceRequest) (resp *pb.OffboardDeviceResponse, err error) {
@@ -31,19 +30,12 @@ func (s *ClientApplicationServer) OffboardDevice(ctx context.Context, req *pb.Of
 	if err != nil {
 		return nil, err
 	}
-	dev, err := s.getDevice(devID)
+	dev, links, err := s.getDeviceForSetupCloud(ctx, devID)
 	if err != nil {
 		return nil, err
 	}
-	links, err := dev.getResourceLinksAndRefreshCache(ctx)
-	if err != nil {
-		return nil, err
-	}
-	cloudLinks := links.GetResourceLinks(cloud.ResourceType)
-	if len(cloudLinks) == 0 {
-		return nil, status.Errorf(codes.NotFound, "cannot find cloud resource for device %v", devID)
-	}
-	cloudLink := cloudLinks[0]
+	// s.getDeviceForCloud already checks if cloud.ResourceType exists in links
+	cloudLink := links.GetResourceLinks(cloud.ResourceType)[0]
 	if err = dev.checkAccess(cloudLink); err != nil {
 		return nil, err
 	}
