@@ -122,9 +122,9 @@ export const ownDeviceApi = (deviceId: string) =>
             const state = result.data.identityCertificateChallenge.state
             //owning with csr
             // @ts-ignore
-            const { certificateAuthorityAddress } = security.getWebOAuthConfig()
+            const { certificateAuthority } = security.getWebOAuthConfig()
             signIdentityCsr(
-                certificateAuthorityAddress,
+                certificateAuthority,
                 result.data.identityCertificateChallenge.certificateSigningRequest
             ).then((result) => {
                 fetchApi(`${getConfig().httpGatewayAddress}${devicesApiEndpoints.DEVICES}/${deviceId}/own/${state}`, {

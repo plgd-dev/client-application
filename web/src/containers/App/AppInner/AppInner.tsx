@@ -47,9 +47,9 @@ const AppInner = (props: Props) => {
 
     if (wellKnownConfig && wellKnownConfig.remoteProvisioning) {
         security.setWebOAuthConfig({
-            authority: wellKnownConfig.remoteProvisioning.authorization.authority,
-            certificateAuthorityAddress: wellKnownConfig.remoteProvisioning.userAgent.certificateAuthorityAddress,
-            clientId: wellKnownConfig.remoteProvisioning.authorization.clientId,
+            authority: wellKnownConfig.remoteProvisioning.authority,
+            certificateAuthority: wellKnownConfig.remoteProvisioning.certificateAuthority,
+            clientId: wellKnownConfig.remoteProvisioning.webOauthClient.clientId,
             redirect_uri: window.location.origin,
         })
     }
@@ -66,7 +66,7 @@ const AppInner = (props: Props) => {
                 const parsedData = jwtDecode(userData.access_token)
                 const ownerId = get(
                     parsedData,
-                    newWellKnownConfig.remoteProvisioning?.authorization.ownerClaim as string,
+                    newWellKnownConfig.remoteProvisioning?.jwtOwnerClaim as string,
                     ''
                 )
 

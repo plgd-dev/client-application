@@ -23,8 +23,8 @@ export const initializeJwksData = (data: any) =>
         },
     })
 
-export const signIdentityCsr = (certificateAuthorityAddress: string, certificateSigningRequest: string) =>
-    fetchApi(`https://${certificateAuthorityAddress}/api/v1/sign/identity-csr`, {
+export const signIdentityCsr = (certificateAuthority: string, certificateSigningRequest: string) =>
+    fetchApi(`${certificateAuthority}/api/v1/sign/identity-csr`, {
         method: 'POST',
         body: {
             certificateSigningRequest,
