@@ -1,13 +1,25 @@
 import debounce from 'lodash/debounce'
-import { useStreamApi, useEmitter } from '@shared-ui/common/hooks'
+import { useStreamApi, useEmitter, WellKnownConfigType } from '@shared-ui/common/hooks'
 
-import { devicesApiEndpoints, DEVICES_STATUS_WS_KEY, resourceEventTypes, TIMEOUT_UNIT_PRECISION } from './constants'
-import { getResourceRegistrationNotificationKey } from './utils'
+import {
+    devicesApiEndpoints,
+    DEVICES_STATUS_WS_KEY,
+    resourceEventTypes,
+    TIMEOUT_UNIT_PRECISION,
+    DEVICE_PROVISION_STATUS_DELAY_MS,
+} from './constants'
+import {
+    getOnboardingEndpoint,
+    getResourceRegistrationNotificationKey,
+    hasOnboardingFeature,
+    loadResourceData,
+} from './utils'
 import { useSelector } from 'react-redux'
 import { getDevicesDiscoveryTimeout } from '@/containers/Devices/slice'
-import { StreamApiPropsType } from '@/containers/Devices/Devices.types'
+import { ResourcesType, StreamApiPropsType } from '@/containers/Devices/Devices.types'
 import { security } from '@shared-ui/common/services'
 import { SecurityConfig } from '@/containers/App/App.types'
+import { useEffect, useMemo, useState } from 'react'
 
 const getConfig = () => security.getGeneralConfig() as SecurityConfig
 
@@ -99,4 +111,44 @@ export const useDevicesResources = (deviceId: string) => {
     )
 
     return { data, updateData, ...rest }
+}
+
+export type useOnboardingButtonProps = {
+    deviceId: string
+    isOwned: boolean
+    resources: ResourcesType[]
+    wellKnowConfig?: WellKnownConfigType
+}
+
+export function useOnboardingButton({ resources, isOwned, deviceId }: useOnboardingButtonProps) {
+    const [onboardResourceLoading, setOnboardResourceLoading] = useState(false)
+    const [deviceOnboardingResourceData, setDeviceOnboardingResourceData] = useState<any>(undefined)
+
+    const deviceOnboardingEndpoint = useMemo(() => getOnboardingEndpoint(resources), [resources])
+    const incompleteOnboardingData = !hasOnboardingFeature()
+
+    useEffect(() => {
+        if (deviceOnboardingEndpoint && isOwned) {
+            setOnboardResourceLoading(true)
+            setTimeout(() => {
+                loadResourceData({
+                    href: deviceOnboardingEndpoint.href,
+                    deviceId,
+                    errorCallback: () => {
+                        setOnboardResourceLoading(false)
+                    },
+                }).then((rData) => {
+                    setDeviceOnboardingResourceData(rData)
+                    setOnboardResourceLoading(false)
+                })
+            }, DEVICE_PROVISION_STATUS_DELAY_MS)
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [deviceOnboardingEndpoint, isOwned])
+
+    // deviceOnboardingEndpoint - endpoint for onboarding
+    // incompleteOnboardingData - show modal after click on button ( data are incomplete )
+    // onboardResourceLoading - loading resource data
+    // deviceOnboardingResourceData - device resource data -> onboard / offboard
+    return [deviceOnboardingEndpoint, incompleteOnboardingData, onboardResourceLoading, deviceOnboardingResourceData]
 }

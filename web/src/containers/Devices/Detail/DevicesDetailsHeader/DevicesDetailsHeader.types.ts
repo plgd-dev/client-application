@@ -8,4 +8,7 @@ export type Props = {
     onOwnChange: () => void
     openDpsModal: () => void
     resources: ResourcesType[]
+    onboardResourceLoading: boolean
+    onboardButtonCallback?: () => void
+    deviceOnboardingResourceData: any
 }

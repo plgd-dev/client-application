@@ -12,4 +12,6 @@ export type Props = {
     isOwned: boolean
     resources: ResourcesType[]
     deviceId: string
+    onboardResourceLoading: boolean
+    deviceOnboardingResourceData: any
 }

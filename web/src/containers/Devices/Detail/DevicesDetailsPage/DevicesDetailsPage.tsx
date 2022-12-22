@@ -6,7 +6,7 @@ import { history } from '@/store'
 import ConfirmModal from '@shared-ui/components/new/ConfirmModal'
 import Layout from '@shared-ui/components/new/Layout'
 import NotFoundPage from '@/containers/NotFoundPage'
-import { useIsMounted } from '@shared-ui/common/hooks'
+import { useIsMounted, WellKnownConfigType } from '@shared-ui/common/hooks'
 import { messages as menuT } from '@shared-ui/components/new/Menu/Menu.i18n'
 import { showSuccessToast } from '@shared-ui/components/new/Toast/Toast'
 import DevicesDetails from '../DevicesDetails'
@@ -36,6 +36,8 @@ import {
     deleteDevicesResourceApi,
     ownDeviceApi,
     disownDeviceApi,
+    getDeviceAuthCode,
+    onboardDeviceApi,
 } from '../../rest'
 import { useDeviceDetails, useDevicesResources } from '../../hooks'
 import { messages as t } from '../../Devices.i18n'
@@ -46,6 +48,13 @@ import { BreadcrumbItem } from '@shared-ui/components/new/Breadcrumbs/Breadcrumb
 import omit from 'lodash/omit'
 import { DevicesDetailsResourceModalData } from '@/containers/Devices/Detail/DevicesDetailsPage/DevicesDetailsPage.types'
 import { DevicesResourcesModalParamsType } from '@/containers/Devices/Resources/DevicesResourcesModal/DevicesResourcesModal.types'
+import { useOnboardingButton } from '../../hooks'
+import IncompleteOnboardingDataModal from '@/containers/Devices/Detail/IncompleteOnboardingDataModal'
+import {
+    OnboardingDataType,
+    onboardingDataDefault,
+} from '../IncompleteOnboardingDataModal/IncompleteOnboardingDataModal.types'
+import { security } from '@shared-ui/common/services'
 
 const DevicesDetailsPage = () => {
     const { formatMessage: _ } = useIntl()
@@ -60,6 +69,8 @@ const DevicesDetailsPage = () => {
     const [loadingResource, setLoadingResource] = useState(false)
     const [savingResource, setSavingResource] = useState(false)
     const [showDpsModal, setShowDpsModal] = useState(false)
+    const [showIncompleteOnboardingModal, setShowIncompleteOnboardingModal] = useState(false)
+    const [onboardingData, setOnboardingData] = useState<OnboardingDataType>(onboardingDataDefault)
     const [deleteResourceHref, setDeleteResourceHref] = useState<string>('')
     const [ttlHasError] = useState(false)
     const isMounted = useIsMounted()
@@ -73,8 +84,21 @@ const DevicesDetailsPage = () => {
     const dispatch = useDispatch()
 
     const isOwned = useMemo(() => data?.ownershipStatus === devicesOwnerships.OWNED, [data])
+    const resources = useMemo(() => resourcesData?.resources || [], [resourcesData])
 
-    const resources = resourcesData?.resources || []
+    const [deviceOnboardingEndpoint, incompleteOnboardingData, onboardResourceLoading, deviceOnboardingResourceData] =
+        useOnboardingButton({
+            resources,
+            isOwned,
+            deviceId: id,
+        })
+
+    const wellKnowConfig = security.getWellKnowConfig() as WellKnownConfigType
+
+    console.log({ deviceOnboardingEndpoint })
+    console.log({ incompleteOnboardingData })
+    console.log({ onboardResourceLoading })
+    console.log({ deviceOnboardingResourceData })
 
     // Open the resource modal when href is present
     useEffect(
@@ -342,6 +366,43 @@ const DevicesDetailsPage = () => {
         }
     }
 
+    const handleOnboardCallback = () => {
+        console.log('handleOnboardCallback')
+        console.log({ incompleteOnboardingData })
+
+        // onboardDevice().then((r) => console.log('end'))
+
+        if (incompleteOnboardingData) {
+            setOnboardingData({
+                authority: wellKnowConfig.remoteProvisioning?.authority || '',
+                coapGateway: wellKnowConfig.remoteProvisioning?.coapGateway || '',
+                clientId: wellKnowConfig.remoteProvisioning?.deviceOauthClient.clientId || '',
+                providerName: wellKnowConfig.remoteProvisioning?.deviceOauthClient.providerName || '',
+                scopes: wellKnowConfig.remoteProvisioning?.deviceOauthClient.scopes?.join(',') || '',
+                id: wellKnowConfig.remoteProvisioning?.id || '',
+            })
+            setShowIncompleteOnboardingModal(true)
+        } else {
+            onboardDevice().then((r) => console.log('end'))
+        }
+    }
+
+    const onboardDevice = async () => {
+        try {
+            const code = await getDeviceAuthCode(id)
+
+            onboardDeviceApi(id, {
+                coapGatewayAddress: wellKnowConfig.remoteProvisioning?.coapGateway || '',
+                authorizationCode: code as string,
+                authorizationProviderName: wellKnowConfig.remoteProvisioning?.deviceOauthClient.providerName || '',
+                hubId: wellKnowConfig.remoteProvisioning?.id || '',
+                certificateAuthorities: wellKnowConfig.remoteProvisioning?.certificateAuthorities || '',
+            }).then((r) => console.log(r))
+        } catch (e) {
+            console.log(e)
+        }
+    }
+
     return (
         <Layout
             title={`${deviceName ? deviceName + ' | ' : ''}${_(menuT.devices)}`}
@@ -356,6 +417,9 @@ const DevicesDetailsPage = () => {
                     isUnregistered={isUnregistered}
                     resources={resources}
                     openDpsModal={() => setShowDpsModal(true)}
+                    deviceOnboardingResourceData={deviceOnboardingResourceData}
+                    onboardResourceLoading={onboardResourceLoading}
+                    onboardButtonCallback={handleOnboardCallback}
                 />
             }
         >
@@ -373,7 +437,16 @@ const DevicesDetailsPage = () => {
                 deviceId={id}
                 resources={resources}
             />
-            <DevicesDetails data={data} isOwned={isOwned} loading={loading} resources={resources} deviceId={id} />
+
+            <DevicesDetails
+                data={data}
+                isOwned={isOwned}
+                loading={loading}
+                resources={resources}
+                deviceId={id}
+                onboardResourceLoading={onboardResourceLoading}
+                deviceOnboardingResourceData={deviceOnboardingResourceData}
+            />
 
             <DevicesResources
                 data={resources}
@@ -423,6 +496,12 @@ const DevicesDetailsPage = () => {
                 onClose={() => setShowDpsModal(false)}
                 updateResource={updateResource}
                 resources={resources}
+            />
+
+            <IncompleteOnboardingDataModal
+                show={showIncompleteOnboardingModal}
+                onboardingData={onboardingData}
+                onClose={() => setShowIncompleteOnboardingModal(false)}
             />
         </Layout>
     )

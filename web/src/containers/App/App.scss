@@ -78,3 +78,14 @@ body {
     border: 1px solid $error_100;
     color: $error_100;
 }
+
+.iframeTestModal {
+    display: block;
+    opacity: 1;
+    width: 1000px;
+    height: 1000px;
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    z-index: 1000;
+}

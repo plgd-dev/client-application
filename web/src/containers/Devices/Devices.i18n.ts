@@ -97,6 +97,10 @@ export const messages = defineMessages({
         id: 'devices.ownershipStatus',
         defaultMessage: 'Ownership status',
     },
+    onboardingStatus: {
+        id: 'devices.onboardingStatus',
+        defaultMessage: 'Onboarding status',
+    },
     deviceNotFound: {
         id: 'devices.deviceNotFound',
         defaultMessage: 'device not found',
@@ -532,5 +536,41 @@ export const messages = defineMessages({
     notAvailable: {
         id: 'devices.notAvailable',
         defaultMessage: 'n/a',
+    },
+    onboardDevice: {
+        id: 'devices.onboardDevice',
+        defaultMessage: 'Onboard device',
+    },
+    offboardDevice: {
+        id: 'devices.offboardDevice',
+        defaultMessage: 'Offboard device',
+    },
+    onboardIncompleteModalTitle: {
+        id: 'devices.onboardIncompleteModalTitle',
+        defaultMessage: 'Incomplete data',
+    },
+    onboardingFieldAuthority: {
+        id: 'devices.onboardingFieldAuthority',
+        defaultMessage: 'Authority',
+    },
+    onboardingFieldCoapGateway: {
+        id: 'devices.onboardingFieldCoapGateway',
+        defaultMessage: 'CoapGateway',
+    },
+    onboardingFieldClientId: {
+        id: 'devices.onboardingFieldClientId',
+        defaultMessage: 'ClientId',
+    },
+    onboardingFieldProviderName: {
+        id: 'devices.onboardingFieldProviderName',
+        defaultMessage: 'ProviderName',
+    },
+    onboardingFieldScopes: {
+        id: 'devices.onboardingFieldScopes',
+        defaultMessage: 'Scopes',
+    },
+    onboardingFieldId: {
+        id: 'devices.onboardingFieldId',
+        defaultMessage: 'Id',
     },
 })

@@ -15,6 +15,9 @@ export const DevicesDetailsHeader: FC<Props> = ({
     isOwned,
     resources,
     openDpsModal,
+    onboardResourceLoading,
+    onboardButtonCallback,
+    deviceOnboardingResourceData,
 }) => {
     const { formatMessage: _ } = useIntl()
     const deviceNotificationKey = getDeviceNotificationKey(deviceId)
@@ -26,9 +29,22 @@ export const DevicesDetailsHeader: FC<Props> = ({
     })
 
     const hasDPS = useMemo(() => canSetDPSEndpoint(resources), [resources])
+    const onboardButton = deviceOnboardingResourceData?.content?.cps
 
     return (
         <div className={classNames('d-flex align-items-center', greyedOutClassName)}>
+            {onboardButton && (
+                <Button
+                    icon='fa-plus'
+                    variant='secondary'
+                    disabled={!isOwned || onboardResourceLoading}
+                    className='m-r-10'
+                    loading={onboardResourceLoading}
+                    onClick={onboardButtonCallback}
+                >
+                    {onboardButton === 'uninitialized' ? _(t.onboardDevice) : _(t.offboardDevice)}
+                </Button>
+            )}
             <Button
                 variant='secondary'
                 icon={isOwned ? 'fa-cloud-download-alt' : 'fa-cloud-upload-alt'}

@@ -19,6 +19,8 @@ const App = () => {
         httpGatewayAddress,
     })
 
+    security.setWellKnowConfig(wellKnownConfig)
+
     const setInitialize = (value = true) => {
         setWellKnownConfig({
             ...wellKnownConfig,
@@ -31,9 +33,21 @@ const App = () => {
     }
 
     const getOidcCommonSettings = () => ({
-        authority: wellKnownConfig.remoteProvisioning?.authority || '',
-        scope: wellKnownConfig.remoteProvisioning?.webOauthClient.scopes.join?.(' '),
+        authority: wellKnownConfig?.remoteProvisioning?.authority || '',
+        scope: wellKnownConfig?.remoteProvisioning?.webOauthClient.scopes.join?.(' '),
     })
+
+    const userManager = new UserManager({
+        ...getOidcCommonSettings(),
+        automaticSilentRenew: true,
+        client_id: wellKnownConfig?.remoteProvisioning?.webOauthClient.clientId,
+        redirect_uri: window.location.origin,
+        extraQueryParams: {
+            audience: wellKnownConfig?.remoteProvisioning?.webOauthClient.audience || false,
+        },
+    } as UserManagerSettings)
+
+    security.setUserManager(userManager)
 
     return (
         <ConditionalWrapper
@@ -41,24 +55,15 @@ const App = () => {
             wrapper={(child: any) => (
                 <AuthProvider
                     {...getOidcCommonSettings()}
+                    automaticSilentRenew={true}
                     clientId={wellKnownConfig?.remoteProvisioning?.webOauthClient.clientId || ''}
                     redirectUri={window.location.origin}
-                    onSignIn={async () => {
+                    onSignIn={async (userData) => {
                         // remove auth params
                         window.location.hash = ''
                         window.location.href = window.location.origin
                     }}
-                    automaticSilentRenew={true}
-                    userManager={
-                        new UserManager({
-                            ...getOidcCommonSettings(),
-                            client_id: wellKnownConfig?.remoteProvisioning?.webOauthClient.clientId,
-                            redirect_uri: window.location.origin,
-                            extraQueryParams: {
-                                audience: wellKnownConfig?.remoteProvisioning?.webOauthClient.audience || false,
-                            },
-                        } as UserManagerSettings)
-                    }
+                    userManager={userManager}
                 >
                     {child}
                 </AuthProvider>
