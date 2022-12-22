@@ -184,7 +184,7 @@ export const getDeviceAuthCode = (deviceId: string) => {
         console.log({ wellKnowConfig })
 
         const { clientId, scopes = [] } = wellKnowConfig.remoteProvisioning.deviceOauthClient
-        const { audience } = wellKnowConfig.remoteProvisioning.webOauthClient
+        const { audience } = wellKnowConfig.remoteProvisioning.deviceOauthClient
 
         const AuthUserManager = security.getUserManager()
 
