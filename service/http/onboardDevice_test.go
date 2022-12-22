@@ -143,6 +143,7 @@ func TestClientApplicationServerOnboardDeviceRemoteProvisioning(t *testing.T) {
 		AuthorizationCode:         hubTestOAuthServerTest.GetAuthorizationCode(t, oauthServer.Host, httpClientCfg.GetRemoteProvisioning().GetDeviceOauthClient().GetClientId(), dev.Id, ""),
 		HubId:                     httpClientCfg.GetRemoteProvisioning().GetId(),
 		AuthorizationProviderName: httpClientCfg.GetRemoteProvisioning().GetDeviceOauthClient().GetProviderName(),
+		CertificateAuthorities:    httpClientCfg.GetRemoteProvisioning().GetCertificateAuthorities(),
 	})).Host(test.CLIENT_APPLICATION_HTTP_HOST).AuthToken(token).DeviceId(dev.Id).Build()
 	resp = httpgwTest.HTTPDo(t, request)
 	_ = resp.Body.Close()

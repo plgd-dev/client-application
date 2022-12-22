@@ -77,30 +77,31 @@ func setACLForCloud(ctx context.Context, p *core.ProvisioningClient, cloudID str
 	return p.UpdateResource(ctx, link, cloudACL, nil)
 }
 
-func validateOnboardDeviceRequest(req *pb.OnboardDeviceRequest) (uuid.UUID, error) {
+func validateOnboardDeviceRequest(req *pb.OnboardDeviceRequest) (uuid.UUID, []*x509.Certificate, error) {
 	devID, err := strDeviceID2UUID(req.GetDeviceId())
 	if err != nil {
-		return uuid.UUID{}, err
+		return uuid.UUID{}, nil, err
 	}
 	if req.GetAuthorizationProviderName() == "" {
-		return uuid.UUID{}, status.Error(codes.InvalidArgument, "invalid authorizationProviderName")
+		return uuid.UUID{}, nil, status.Error(codes.InvalidArgument, "invalid authorizationProviderName")
 	}
 	if req.GetCoapGatewayAddress() == "" {
-		return uuid.UUID{}, status.Error(codes.InvalidArgument, "invalid coapGatewayAddress")
+		return uuid.UUID{}, nil, status.Error(codes.InvalidArgument, "invalid coapGatewayAddress")
 	}
 	if req.GetAuthorizationCode() == "" {
-		return uuid.UUID{}, status.Error(codes.InvalidArgument, "invalid authorizationCode")
+		return uuid.UUID{}, nil, status.Error(codes.InvalidArgument, "invalid authorizationCode")
 	}
 	if req.GetHubId() == "" {
-		return uuid.UUID{}, status.Error(codes.InvalidArgument, "invalid hubId")
+		return uuid.UUID{}, nil, status.Error(codes.InvalidArgument, "invalid hubId")
 	}
+	var certificateAuthorities []*x509.Certificate
 	if req.GetCertificateAuthorities() != "" {
-		_, err := security.ParseX509FromPEM([]byte(req.GetCertificateAuthorities()))
+		certificateAuthorities, err = security.ParseX509FromPEM([]byte(req.GetCertificateAuthorities()))
 		if err != nil {
-			return uuid.UUID{}, status.Errorf(codes.InvalidArgument, "invalid certificateAuthorities: %v", err)
+			return uuid.UUID{}, nil, status.Errorf(codes.InvalidArgument, "invalid certificateAuthorities: %v", err)
 		}
 	}
-	return devID, nil
+	return devID, certificateAuthorities, nil
 }
 
 func (s *ClientApplicationServer) getDeviceForSetupCloud(ctx context.Context, devID uuid.UUID) (*device, schema.ResourceLinks, error) {
@@ -123,7 +124,7 @@ func (s *ClientApplicationServer) getDeviceForSetupCloud(ctx context.Context, de
 }
 
 func (s *ClientApplicationServer) OnboardDevice(ctx context.Context, req *pb.OnboardDeviceRequest) (resp *pb.OnboardDeviceResponse, err error) {
-	devID, err := validateOnboardDeviceRequest(req)
+	devID, certificateAuthorities, err := validateOnboardDeviceRequest(req)
 	if err != nil {
 		return nil, err
 	}
@@ -135,10 +136,8 @@ func (s *ClientApplicationServer) OnboardDevice(ctx context.Context, req *pb.Onb
 		if errPro := setACLForCloud(ctx, pc, req.GetHubId(), links); errPro != nil {
 			return errPro
 		}
-		if req.GetCertificateAuthorities() != "" {
-			if errPro := pc.AddCertificateAuthority(ctx, req.GetHubId(), &x509.Certificate{
-				Raw: []byte(req.GetCertificateAuthorities()),
-			}); errPro != nil {
+		for _, ca := range certificateAuthorities {
+			if errPro := pc.AddCertificateAuthority(ctx, req.GetHubId(), ca); errPro != nil {
 				return errPro
 			}
 		}
