@@ -21,6 +21,7 @@ import {
     resourceModalTypes,
     NO_DEVICE_NAME,
     devicesOwnerships,
+    devicesOnboardingStatuses,
 } from '../../constants'
 import {
     handleCreateResourceErrors,
@@ -38,6 +39,7 @@ import {
     disownDeviceApi,
     getDeviceAuthCode,
     onboardDeviceApi,
+    offboardDeviceApi,
 } from '../../rest'
 import { useDeviceDetails, useDevicesResources } from '../../hooks'
 import { messages as t } from '../../Devices.i18n'
@@ -86,19 +88,33 @@ const DevicesDetailsPage = () => {
     const isOwned = useMemo(() => data?.ownershipStatus === devicesOwnerships.OWNED, [data])
     const resources = useMemo(() => resourcesData?.resources || [], [resourcesData])
 
-    const [deviceOnboardingEndpoint, incompleteOnboardingData, onboardResourceLoading, deviceOnboardingResourceData] =
-        useOnboardingButton({
-            resources,
-            isOwned,
-            deviceId: id,
-        })
+    const [
+        incompleteOnboardingData,
+        onboardResourceLoading,
+        deviceOnboardingResourceData,
+        refetchDeviceOnboardingData,
+    ] = useOnboardingButton({
+        resources,
+        isOwned,
+        deviceId: id,
+    })
 
     const wellKnowConfig = security.getWellKnowConfig() as WellKnownConfigType
 
-    console.log({ deviceOnboardingEndpoint })
-    console.log({ incompleteOnboardingData })
-    console.log({ onboardResourceLoading })
-    console.log({ deviceOnboardingResourceData })
+    // check onboarding status evert 1s if onboarding process running
+    useEffect(() => {
+        const { UNINITIALIZED, REGISTERED } = devicesOnboardingStatuses
+
+        if (
+            deviceOnboardingResourceData?.content?.cps &&
+            ![UNINITIALIZED, REGISTERED].includes(deviceOnboardingResourceData.content.cps)
+        ) {
+            const interval = setInterval(() => {
+                refetchDeviceOnboardingData()
+            }, 1000)
+            return () => clearInterval(interval)
+        }
+    }, [deviceOnboardingResourceData, refetchDeviceOnboardingData])
 
     // Open the resource modal when href is present
     useEffect(
@@ -367,39 +383,42 @@ const DevicesDetailsPage = () => {
     }
 
     const handleOnboardCallback = () => {
-        console.log('handleOnboardCallback')
-        console.log({ incompleteOnboardingData })
-
-        // onboardDevice().then((r) => console.log('end'))
-
-        if (incompleteOnboardingData) {
-            setOnboardingData({
-                authority: wellKnowConfig.remoteProvisioning?.authority || '',
-                coapGateway: wellKnowConfig.remoteProvisioning?.coapGateway || '',
-                clientId: wellKnowConfig.remoteProvisioning?.deviceOauthClient.clientId || '',
-                providerName: wellKnowConfig.remoteProvisioning?.deviceOauthClient.providerName || '',
-                scopes: wellKnowConfig.remoteProvisioning?.deviceOauthClient.scopes?.join(',') || '',
-                id: wellKnowConfig.remoteProvisioning?.id || '',
-            })
-            setShowIncompleteOnboardingModal(true)
+        if (deviceOnboardingResourceData.content.cps === devicesOnboardingStatuses.UNINITIALIZED) {
+            if (incompleteOnboardingData) {
+                setOnboardingData({
+                    authority: wellKnowConfig.remoteProvisioning?.authority || '',
+                    coapGateway: wellKnowConfig.remoteProvisioning?.coapGateway || '',
+                    clientId: wellKnowConfig.remoteProvisioning?.deviceOauthClient.clientId || '',
+                    providerName: wellKnowConfig.remoteProvisioning?.deviceOauthClient.providerName || '',
+                    scopes: wellKnowConfig.remoteProvisioning?.deviceOauthClient.scopes?.join(',') || '',
+                    id: wellKnowConfig.remoteProvisioning?.id || '',
+                })
+                setShowIncompleteOnboardingModal(true)
+            } else {
+                onboardDevice().then()
+            }
         } else {
-            onboardDevice().then((r) => console.log('end'))
+            offboardDeviceApi(id).then(() => {
+                refetchDeviceOnboardingData()
+            })
         }
     }
 
     const onboardDevice = async () => {
         try {
-            const code = await getDeviceAuthCode(id)
-
-            onboardDeviceApi(id, {
-                coapGatewayAddress: wellKnowConfig.remoteProvisioning?.coapGateway || '',
-                authorizationCode: code as string,
-                authorizationProviderName: wellKnowConfig.remoteProvisioning?.deviceOauthClient.providerName || '',
-                hubId: wellKnowConfig.remoteProvisioning?.id || '',
-                certificateAuthorities: wellKnowConfig.remoteProvisioning?.certificateAuthorities || '',
-            }).then((r) => console.log(r))
+            getDeviceAuthCode(id).then((code) => {
+                onboardDeviceApi(id, {
+                    coapGatewayAddress: wellKnowConfig.remoteProvisioning?.coapGateway || '',
+                    authorizationCode: code as string,
+                    authorizationProviderName: wellKnowConfig.remoteProvisioning?.deviceOauthClient.providerName || '',
+                    hubId: wellKnowConfig.remoteProvisioning?.id || '',
+                    certificateAuthorities: wellKnowConfig.remoteProvisioning?.certificateAuthorities || '',
+                }).then((r) => {
+                    refetchDeviceOnboardingData()
+                })
+            })
         } catch (e) {
-            console.log(e)
+            console.error(e)
         }
     }
 
@@ -501,7 +520,10 @@ const DevicesDetailsPage = () => {
             <IncompleteOnboardingDataModal
                 show={showIncompleteOnboardingModal}
                 onboardingData={onboardingData}
-                onClose={() => setShowIncompleteOnboardingModal(false)}
+                onClose={() => {
+                    setShowIncompleteOnboardingModal(false)
+                    onboardDevice().then()
+                }}
             />
         </Layout>
     )

@@ -7,6 +7,7 @@ import { canSetDPSEndpoint, getDeviceNotificationKey } from '../../utils'
 import { isNotificationActive } from '../../slice'
 import { messages as t } from '../../Devices.i18n'
 import { Props } from './DevicesDetailsHeader.types'
+import { devicesOnboardingStatuses } from '@/containers/Devices/constants'
 
 export const DevicesDetailsHeader: FC<Props> = ({
     deviceId,
@@ -42,7 +43,9 @@ export const DevicesDetailsHeader: FC<Props> = ({
                     loading={onboardResourceLoading}
                     onClick={onboardButtonCallback}
                 >
-                    {onboardButton === 'uninitialized' ? _(t.onboardDevice) : _(t.offboardDevice)}
+                    {onboardButton === devicesOnboardingStatuses.UNINITIALIZED
+                        ? _(t.onboardDevice)
+                        : _(t.offboardDevice)}
                 </Button>
             )}
             <Button

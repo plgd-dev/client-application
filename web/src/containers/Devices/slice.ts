@@ -7,7 +7,7 @@ import isEqual from 'lodash/isEqual'
 
 const { OWNED } = devicesOwnerships
 
-type Store = {
+export type Store = {
     devices: StoreType
 }
 
@@ -73,6 +73,14 @@ const { reducer, actions } = createSlice({
                 1
             )
         },
+        updateDevice(state, { payload }) {
+            const { attribute, id, value } = payload
+            const index = findIndex(state.devicesList, (device: any) => device.id === id)
+
+            if (index > -1 && payload && value) {
+                state.devicesList[index][attribute] = value
+            }
+        },
         setDiscoveryTimeout(state, { payload }) {
             state.discoveryTimeout = payload
         },
@@ -80,8 +88,16 @@ const { reducer, actions } = createSlice({
 })
 
 // Actions
-export const { setDevices, addDevice, flushDevices, ownDevice, disOwnDevice, updateDevices, setDiscoveryTimeout } =
-    actions
+export const {
+    setDevices,
+    addDevice,
+    flushDevices,
+    ownDevice,
+    disOwnDevice,
+    updateDevice,
+    updateDevices,
+    setDiscoveryTimeout,
+} = actions
 
 // Reducer
 export default reducer
@@ -90,5 +106,11 @@ export const isNotificationActive = (key: string) => (state: Store) =>
     state.devices.activeNotifications?.includes?.(key) || false
 
 export const getDevices = (state: Store) => state.devices.devicesList
+
+export const getDevice = (state: Store, id: string) => {
+    const index = findIndex(state.devices.devicesList, (device: any) => device.id === id)
+
+    return index > -1 ? state.devices.devicesList[index] : undefined
+}
 
 export const getDevicesDiscoveryTimeout = (state: Store) => state.devices.discoveryTimeout

@@ -175,41 +175,13 @@ export const getDeviceAuthCode = (deviceId: string) => {
     return new Promise((resolve, reject) => {
         const wellKnowConfig = security.getWellKnowConfig() as WellKnownConfigType
 
-        console.log('getDeviceAuthCode!!')
-
         if (!wellKnowConfig.remoteProvisioning) {
             return reject(new Error('remoteProvisioning is missing in wellKnowConfig'))
         }
 
-        console.log({ wellKnowConfig })
-
-        const { clientId, scopes = [] } = wellKnowConfig.remoteProvisioning.deviceOauthClient
-        const { audience } = wellKnowConfig.remoteProvisioning.webOauthClient
+        const { clientId, scopes = [], audience } = wellKnowConfig.remoteProvisioning.deviceOauthClient
 
         const AuthUserManager = security.getUserManager()
-
-        // AuthUserManager.signinPopup().then((u: User | null) => {
-        //     console.log(u)
-        //     console.log('signinRedirect done')
-        //
-
-        //
-        // window.localStorage.setItem(
-        //     `oidc.${state}`,
-        //     JSON.stringify({
-        //         authority: 'https://auth.plgd.cloud/realms/shared',
-        //         client_id: 'LXZ9OhKWWRYqf12W0B5OXduqt02q0zjS',
-        //         code_verifier:
-        //             '5901ae2aa82942a888cfe35ddaf3923d350440855a584ba79e134a1407eb3d62b53d431e609f4782b00b1ec0050b5306',
-        //         created: 1671655302,
-        //         extraTokenParams: { plgd: 1 },
-        //         id: state,
-        //         redirect_uri: 'http://localhost:3000',
-        //         request_type: 'si:s',
-        //         response_mode: 'query',
-        //         scope: 'openid',
-        //     })
-        // )
 
         AuthUserManager.metadataService.getAuthorizationEndpoint().then((authorizationEndpoint: string) => {
             let timeout: any = null
@@ -217,7 +189,7 @@ export const getDeviceAuthCode = (deviceId: string) => {
             const iframe = document.createElement('iframe')
             const audienceParam = audience ? `&audience=${audience}` : ''
             iframe.src = `${authorizationEndpoint}?response_type=code&client_id=${clientId}&scope=${scopes}${audienceParam}&redirect_uri=${window.location.origin}/devices&device_id=${deviceId}`
-            iframe.className = 'iframeTestModal'
+            iframe.className = 'iframeAuthModal'
 
             const destroyIframe = () => {
                 sessionStorage.removeItem(DEVICE_AUTH_CODE_SESSION_KEY)

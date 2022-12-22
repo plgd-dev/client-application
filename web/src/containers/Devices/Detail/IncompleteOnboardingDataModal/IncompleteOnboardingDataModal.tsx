@@ -25,8 +25,6 @@ const IncompleteOnboardingDataModal: FC<Props> = (props) => {
         setOnboardingData(onboardingDataProps)
     }, [onboardingDataProps])
 
-    console.log({ onboardingData })
-
     const handleInputChange = (e: any, key: string) => {
         const value = e.target.value
 
