@@ -125,6 +125,7 @@ export function useOnboardingButton({ resources, isOwned, deviceId }: useOnboard
     const [deviceOnboardingResourceData, setDeviceOnboardingResourceData] = useState<any>(undefined)
 
     const deviceOnboardingEndpoint = useMemo(() => getOnboardingEndpoint(resources), [resources])
+    // TODO check new params
     const incompleteOnboardingData = !hasOnboardingFeature()
 
     useEffect(() => {

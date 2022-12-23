@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useIntl } from 'react-intl'
 import { useParams } from 'react-router-dom'
 import classNames from 'classnames'
@@ -51,7 +51,9 @@ import omit from 'lodash/omit'
 import { DevicesDetailsResourceModalData } from '@/containers/Devices/Detail/DevicesDetailsPage/DevicesDetailsPage.types'
 import { DevicesResourcesModalParamsType } from '@/containers/Devices/Resources/DevicesResourcesModal/DevicesResourcesModal.types'
 import { useOnboardingButton } from '../../hooks'
-import IncompleteOnboardingDataModal from '@/containers/Devices/Detail/IncompleteOnboardingDataModal'
+import IncompleteOnboardingDataModal, {
+    getOnboardingDataFromConfig,
+} from '@/containers/Devices/Detail/IncompleteOnboardingDataModal'
 import {
     OnboardingDataType,
     onboardingDataDefault,
@@ -73,6 +75,7 @@ const DevicesDetailsPage = () => {
     const [showDpsModal, setShowDpsModal] = useState(false)
     const [showIncompleteOnboardingModal, setShowIncompleteOnboardingModal] = useState(false)
     const [onboardingData, setOnboardingData] = useState<OnboardingDataType>(onboardingDataDefault)
+    const [onboarding, setOnboarding] = useState(false)
     const [deleteResourceHref, setDeleteResourceHref] = useState<string>('')
     const [ttlHasError] = useState(false)
     const isMounted = useIsMounted()
@@ -100,6 +103,7 @@ const DevicesDetailsPage = () => {
     })
 
     const wellKnowConfig = security.getWellKnowConfig() as WellKnownConfigType
+    const parseOnboardingData = useCallback(() => getOnboardingDataFromConfig(wellKnowConfig), [wellKnowConfig])
 
     // check onboarding status evert 1s if onboarding process running
     useEffect(() => {
@@ -385,17 +389,9 @@ const DevicesDetailsPage = () => {
     const handleOnboardCallback = () => {
         if (deviceOnboardingResourceData.content.cps === devicesOnboardingStatuses.UNINITIALIZED) {
             if (incompleteOnboardingData) {
-                setOnboardingData({
-                    authority: wellKnowConfig.remoteProvisioning?.authority || '',
-                    coapGateway: wellKnowConfig.remoteProvisioning?.coapGateway || '',
-                    clientId: wellKnowConfig.remoteProvisioning?.deviceOauthClient.clientId || '',
-                    providerName: wellKnowConfig.remoteProvisioning?.deviceOauthClient.providerName || '',
-                    scopes: wellKnowConfig.remoteProvisioning?.deviceOauthClient.scopes?.join(',') || '',
-                    id: wellKnowConfig.remoteProvisioning?.id || '',
-                })
                 setShowIncompleteOnboardingModal(true)
             } else {
-                onboardDevice().then()
+                onboardDevice(parseOnboardingData()).then()
             }
         } else {
             offboardDeviceApi(id).then(() => {
@@ -404,18 +400,21 @@ const DevicesDetailsPage = () => {
         }
     }
 
-    const onboardDevice = async () => {
+    const onboardDevice = async (onboardingData: OnboardingDataType) => {
         try {
-            getDeviceAuthCode(id).then((code) => {
-                onboardDeviceApi(id, {
-                    coapGatewayAddress: wellKnowConfig.remoteProvisioning?.coapGateway || '',
-                    authorizationCode: code as string,
-                    authorizationProviderName: wellKnowConfig.remoteProvisioning?.deviceOauthClient.providerName || '',
-                    hubId: wellKnowConfig.remoteProvisioning?.id || '',
-                    certificateAuthorities: wellKnowConfig.remoteProvisioning?.certificateAuthorities || '',
-                }).then((r) => {
-                    refetchDeviceOnboardingData()
-                })
+            setOnboarding(true)
+            const code =
+                onboardingData.authorizationCode !== '' ? onboardingData.authorizationCode : await getDeviceAuthCode(id)
+
+            onboardDeviceApi(id, {
+                coapGatewayAddress: onboardingData.coapGateway || '',
+                authorizationCode: code as string,
+                authorizationProviderName: onboardingData.providerName || '',
+                hubId: onboardingData.id || '',
+                certificateAuthorities: onboardingData.certificateAuthority || '',
+            }).then((r) => {
+                setOnboarding(false)
+                refetchDeviceOnboardingData()
             })
         } catch (e) {
             console.error(e)
@@ -436,9 +435,12 @@ const DevicesDetailsPage = () => {
                     isUnregistered={isUnregistered}
                     resources={resources}
                     openDpsModal={() => setShowDpsModal(true)}
+                    onboarding={onboarding}
+                    incompleteOnboardingData={incompleteOnboardingData}
                     deviceOnboardingResourceData={deviceOnboardingResourceData}
                     onboardResourceLoading={onboardResourceLoading}
                     onboardButtonCallback={handleOnboardCallback}
+                    openOnboardingModal={() => setShowIncompleteOnboardingModal(true)}
                 />
             }
         >
@@ -522,7 +524,10 @@ const DevicesDetailsPage = () => {
                 onboardingData={onboardingData}
                 onClose={() => {
                     setShowIncompleteOnboardingModal(false)
-                    onboardDevice().then()
+                }}
+                onSubmit={(onboardingData) => {
+                    setOnboardingData(onboardingData)
+                    onboardDevice(onboardingData).then()
                 }}
             />
         </Layout>

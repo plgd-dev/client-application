@@ -1,25 +1,24 @@
 export type OnboardingDataType = {
-    authority?: string
+    authorizationCode?: string
+    certificateAuthority?: string
     coapGateway?: string
-    clientId?: string
-    providerName?: string
-    scopes?: string
     id?: string
+    providerName?: string
 }
 
 export type Props = {
     onClose?: () => void
+    onSubmit?: (onboardingData: OnboardingDataType) => void
     show: boolean
     onboardingData: OnboardingDataType
 }
 
 export const onboardingDataDefault = {
-    authority: '',
+    authorizationCode: '',
+    certificateAuthority: '',
     coapGateway: '',
-    clientId: '',
-    providerName: '',
-    scopes: '',
     id: '',
+    providerName: '',
 }
 
 export const defaultProps = {

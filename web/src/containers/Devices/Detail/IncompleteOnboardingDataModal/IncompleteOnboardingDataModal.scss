@@ -1,0 +1,19 @@
+.auth-code-box {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  overflow: hidden;
+  width: 400px;
+
+  @media (max-width: 767px) {
+    width: 100%;
+  }
+
+  span {
+    text-align: right;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    width: 100%;
+    overflow: hidden;
+  }
+}

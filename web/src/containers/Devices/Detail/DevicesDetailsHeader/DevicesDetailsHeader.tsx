@@ -8,6 +8,7 @@ import { isNotificationActive } from '../../slice'
 import { messages as t } from '../../Devices.i18n'
 import { Props } from './DevicesDetailsHeader.types'
 import { devicesOnboardingStatuses } from '@/containers/Devices/constants'
+import SplitButton from '@shared-ui/components/new/SplitButton'
 
 export const DevicesDetailsHeader: FC<Props> = ({
     deviceId,
@@ -19,6 +20,9 @@ export const DevicesDetailsHeader: FC<Props> = ({
     onboardResourceLoading,
     onboardButtonCallback,
     deviceOnboardingResourceData,
+    incompleteOnboardingData,
+    openOnboardingModal,
+    onboarding,
 }) => {
     const { formatMessage: _ } = useIntl()
     const deviceNotificationKey = getDeviceNotificationKey(deviceId)
@@ -34,11 +38,11 @@ export const DevicesDetailsHeader: FC<Props> = ({
 
     return (
         <div className={classNames('d-flex align-items-center', greyedOutClassName)}>
-            {onboardButton && (
+            {onboardButton && (incompleteOnboardingData || onboardButton !== devicesOnboardingStatuses.UNINITIALIZED) && (
                 <Button
                     icon='fa-plus'
                     variant='secondary'
-                    disabled={!isOwned || onboardResourceLoading}
+                    disabled={!isOwned || onboardResourceLoading || onboarding}
                     className='m-r-10'
                     loading={onboardResourceLoading}
                     onClick={onboardButtonCallback}
@@ -47,6 +51,27 @@ export const DevicesDetailsHeader: FC<Props> = ({
                         ? _(t.onboardDevice)
                         : _(t.offboardDevice)}
                 </Button>
+            )}
+            {onboardButton && !incompleteOnboardingData && onboardButton === devicesOnboardingStatuses.UNINITIALIZED && (
+                <div className='m-r-10'>
+                    <SplitButton
+                        disabled={onboardResourceLoading || onboarding}
+                        onClick={onboardButtonCallback}
+                        menuProps={{
+                            align: 'end',
+                        }}
+                        icon='fa-plus'
+                        items={[
+                            {
+                                onClick: openOnboardingModal,
+                                label: _(t.changeOnboardingData),
+                                icon: 'fa-pen',
+                            },
+                        ]}
+                    >
+                        {_(t.onboardDevice)}
+                    </SplitButton>
+                </div>
             )}
             <Button
                 variant='secondary'
