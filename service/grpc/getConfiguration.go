@@ -28,11 +28,9 @@ func (s *ClientApplicationServer) GetConfiguration(ctx context.Context, _ *pb.Ge
 	info.DeviceAuthenticationMode = s.serviceDevice.GetDeviceAuthenticationMode()
 	info.IsInitialized = s.serviceDevice.IsInitialized()
 	info.Owner = s.serviceDevice.GetOwner()
-	if info.DeviceAuthenticationMode == pb.GetConfigurationResponse_X509 {
-		remoteProvisioning := s.GetConfig().RemoteProvisioning
-		info.RemoteProvisioning = remoteProvisioning.Clone()
-		info.RemoteProvisioning.CurrentTime = time.Now().UnixNano()
-	}
+	remoteProvisioning := s.GetConfig().RemoteProvisioning
+	info.RemoteProvisioning = remoteProvisioning.Clone()
+	info.RemoteProvisioning.CurrentTime = time.Now().UnixNano()
 
 	return info, nil
 }
