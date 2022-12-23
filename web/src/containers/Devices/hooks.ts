@@ -130,25 +130,31 @@ export function useOnboardingButton({ resources, isOwned, deviceId }: useOnboard
     useEffect(() => {
         if (deviceOnboardingEndpoint && isOwned) {
             setOnboardResourceLoading(true)
-            setTimeout(() => {
-                loadResourceData({
-                    href: deviceOnboardingEndpoint.href,
-                    deviceId,
-                    errorCallback: () => {
-                        setOnboardResourceLoading(false)
-                    },
-                }).then((rData) => {
-                    setDeviceOnboardingResourceData(rData)
-                    setOnboardResourceLoading(false)
-                })
-            }, DEVICE_PROVISION_STATUS_DELAY_MS)
+            setTimeout(() => fetchDeviceOnboardingData(), DEVICE_PROVISION_STATUS_DELAY_MS)
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [deviceOnboardingEndpoint, isOwned])
 
-    // deviceOnboardingEndpoint - endpoint for onboarding
+    const refetchDeviceOnboardingData = () => fetchDeviceOnboardingData()
+
+    const fetchDeviceOnboardingData = () => {
+        if (deviceOnboardingEndpoint && isOwned) {
+            loadResourceData({
+                href: deviceOnboardingEndpoint.href,
+                deviceId,
+                errorCallback: () => {
+                    setOnboardResourceLoading(false)
+                },
+            }).then((rData) => {
+                setDeviceOnboardingResourceData(rData)
+                setOnboardResourceLoading(false)
+            })
+        }
+    }
+
     // incompleteOnboardingData - show modal after click on button ( data are incomplete )
     // onboardResourceLoading - loading resource data
     // deviceOnboardingResourceData - device resource data -> onboard / offboard
-    return [deviceOnboardingEndpoint, incompleteOnboardingData, onboardResourceLoading, deviceOnboardingResourceData]
+    // refetchDeviceOnboardingData
+    return [incompleteOnboardingData, onboardResourceLoading, deviceOnboardingResourceData, refetchDeviceOnboardingData]
 }

@@ -98,8 +98,8 @@ export const devicesStatusSeverities = {
 
 export const devicesOnboardingStatuses = {
     UNINITIALIZED: 'uninitialized',
-    INITIALIZED: 'initialized',
-    FAILURE: 'failure',
+    REGISTERED: 'registered',
+    FAILED: 'failed',
 }
 
 export const DEVICE_PROVISION_STATUS_DELAY_MS = 100 // ms

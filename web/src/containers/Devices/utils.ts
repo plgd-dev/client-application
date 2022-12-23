@@ -35,7 +35,7 @@ export const canCreateResource = (interfaces: string[]) => interfaces.includes(k
 export const canBeResourceEdited = (endpoints?: { endpoint: string }[]) =>
     endpoints &&
     endpoints.some(
-        (e: { endpoint: string }) => e.endpoint.indexOf('coap://') > -1 || e.endpoint.indexOf('coap+tcp://') > -1,
+        (e: { endpoint: string }) => e.endpoint.indexOf('coap://') > -1 || e.endpoint.indexOf('coap+tcp://') > -1
     )
 
 // Returns true if a device has a resource oic.wk.con which holds the device name property
@@ -57,7 +57,7 @@ export const getDeviceChangeResourceHref = (links: ResourcesType[]) =>
 export const handleUpdateResourceErrors = (
     error: any,
     { id: deviceId, href }: { id: string; href: string },
-    _: any,
+    _: any
 ) => {
     const errorMessage = getApiErrorMessage(error)
 
@@ -94,7 +94,7 @@ export const handleUpdateResourceErrors = (
 export const handleCreateResourceErrors = (
     error: any,
     { id: deviceId, href }: { id: string; href: string },
-    _: any,
+    _: any
 ) => {
     const errorMessage = getApiErrorMessage(error)
 
@@ -156,7 +156,7 @@ export const handleFetchResourceErrors = (error: any, _: any) =>
 export const handleDeleteResourceErrors = (
     error: any,
     { id: deviceId, href }: { id: string; href: string },
-    _: any,
+    _: any
 ) => {
     const errorMessage = getApiErrorMessage(error)
 
@@ -334,7 +334,7 @@ export const updateResourceMethod = async (
     { deviceId, href, currentInterface = '' }: { deviceId: string; href: string; currentInterface: string },
     resourceDataUpdate: any,
     successCallback: () => void,
-    errorCallback: (error: any) => void,
+    errorCallback: (error: any) => void
 ) => {
     try {
         await updateDevicesResourceApi({ deviceId, href, currentInterface }, resourceDataUpdate)
@@ -372,7 +372,7 @@ export const getColorByProvisionStatus = (provisionStatus: string) => {
 
 export const getOnboardingEndpoint = (resources: ResourcesType[]) => {
     const index = resources.findIndex((resource) =>
-        resource.resourceTypes.includes(knownResourceTypes.OIC_R_COAP_CLOUD_CONF_RES_URI),
+        resource.resourceTypes.includes(knownResourceTypes.OIC_R_COAP_CLOUD_CONF_RES_URI)
     )
     return index >= 0 ? resources[index] : null
 }
@@ -398,13 +398,14 @@ export const hasOnboardingFeature = () => {
 
 export const getColorByOnboardingStatus = (provisionStatus: string) => {
     switch (provisionStatus) {
-        case devicesOnboardingStatuses.INITIALIZED:
+        case devicesOnboardingStatuses.REGISTERED:
             return devicesStatusSeverities.SUCCESS
-        case devicesOnboardingStatuses.FAILURE:
+        case devicesOnboardingStatuses.FAILED:
             return devicesStatusSeverities.ERROR
         case devicesOnboardingStatuses.UNINITIALIZED:
-        default:
             return devicesStatusSeverities.GREY
+        default:
+            return devicesStatusSeverities.WARNING
     }
 }
 

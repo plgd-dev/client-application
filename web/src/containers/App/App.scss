@@ -79,13 +79,13 @@ body {
     color: $error_100;
 }
 
-.iframeTestModal {
+.iframeAuthModal {
     display: block;
-    opacity: 1;
-    width: 1000px;
-    height: 1000px;
+    opacity: 0;
+    width: 1px;
+    height: 1px;
     position: fixed;
     top: 10px;
     left: 10px;
-    z-index: 1000;
+    z-index: 0;
 }
