@@ -30,7 +30,8 @@ func (s *ClientApplicationServer) GetConfiguration(ctx context.Context, _ *pb.Ge
 	info.Owner = s.serviceDevice.GetOwner()
 	remoteProvisioning := s.GetConfig().RemoteProvisioning
 	info.RemoteProvisioning = remoteProvisioning.Clone()
-	info.RemoteProvisioning.CurrentTime = time.Now().UnixNano()
-
+	if info.RemoteProvisioning != nil {
+		info.RemoteProvisioning.CurrentTime = time.Now().UnixNano()
+	}
 	return info, nil
 }
