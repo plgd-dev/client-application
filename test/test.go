@@ -208,7 +208,7 @@ func MakeGrpcConfig() config.GRPCConfig {
 }
 
 func NewRemoteProvisioningConfig() *pb.RemoteProvisioning {
-	return &pb.RemoteProvisioning{
+	c := &pb.RemoteProvisioning{
 		Mode: pb.RemoteProvisioning_MODE_NONE,
 		UserAgent: &pb.UserAgent{
 			CsrChallengeStateExpiration: (time.Minute * 10).Nanoseconds(),
@@ -230,6 +230,10 @@ func NewRemoteProvisioningConfig() *pb.RemoteProvisioning {
 		Id:     testConfig.HubID(),
 		CaPool: []string{testConfig.CA_POOL},
 	}
+	if err := c.Validate(); err != nil {
+		panic(err)
+	}
+	return c
 }
 
 func NewHttpService(ctx context.Context, t *testing.T) (*http.Service, func()) {
