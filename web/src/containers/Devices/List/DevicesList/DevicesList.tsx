@@ -100,8 +100,6 @@ const DevicesList: FC<Props> = (props) => {
 
     const validData = (data: any) => (!data || data[0] === undefined ? [] : data)
 
-    console.log({ data })
-
     return (
         <Table
             className='with-selectable-rows'

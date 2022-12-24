@@ -64,11 +64,7 @@ const AppInner = (props: Props) => {
             if (authProviderRef) {
                 const userData: User = authProviderRef?.current?.getUserData()
                 const parsedData = jwtDecode(userData.access_token)
-                const ownerId = get(
-                    parsedData,
-                    newWellKnownConfig.remoteProvisioning?.jwtOwnerClaim as string,
-                    ''
-                )
+                const ownerId = get(parsedData, newWellKnownConfig.remoteProvisioning?.jwtOwnerClaim as string, '')
 
                 if (ownerId !== newWellKnownConfig?.owner) {
                     setInitializedByAnother(true)
@@ -126,7 +122,11 @@ const AppInner = (props: Props) => {
             >
                 <Container fluid id='app' className={classNames({ collapsed })}>
                     <StatusBar>
-                        {wellKnownConfig && wellKnownConfig.remoteProvisioning && <UserWidget logout={handleLogout} />}
+                        {wellKnownConfig &&
+                            wellKnownConfig.remoteProvisioning &&
+                            wellKnownConfig?.deviceAuthenticationMode === DEVICE_AUTH_MODE.X509 && (
+                                <UserWidget logout={handleLogout} />
+                            )}
                         {wellKnownConfig &&
                             wellKnownConfig?.deviceAuthenticationMode === DEVICE_AUTH_MODE.PRE_SHARED_KEY && (
                                 <Button className='m-l-15' onClick={handleLogout}>

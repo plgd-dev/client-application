@@ -549,28 +549,36 @@ export const messages = defineMessages({
         id: 'devices.onboardIncompleteModalTitle',
         defaultMessage: 'Incomplete data',
     },
-    onboardingFieldAuthority: {
-        id: 'devices.onboardingFieldAuthority',
-        defaultMessage: 'Authority',
+    onboardingFieldCertificateAuthority: {
+        id: 'devices.onboardingFieldCertificateAuthority',
+        defaultMessage: 'Certificate Authorities',
     },
-    onboardingFieldCoapGateway: {
-        id: 'devices.onboardingFieldCoapGateway',
-        defaultMessage: 'CoapGateway',
+    onboardingFieldDeviceEndpoint: {
+        id: 'devices.onboardingFieldDeviceEndpoint',
+        defaultMessage: 'Device Endpoint',
     },
     onboardingFieldClientId: {
         id: 'devices.onboardingFieldClientId',
         defaultMessage: 'ClientId',
     },
-    onboardingFieldProviderName: {
-        id: 'devices.onboardingFieldProviderName',
-        defaultMessage: 'ProviderName',
+    onboardingFieldAuthorizationProvider: {
+        id: 'devices.onboardingFieldAuthorizationProvider',
+        defaultMessage: 'Authorization Provider',
     },
-    onboardingFieldScopes: {
-        id: 'devices.onboardingFieldScopes',
-        defaultMessage: 'Scopes',
+    onboardingFieldAuthorizationCode: {
+        id: 'devices.onboardingFieldAuthorizationCode',
+        defaultMessage: 'Authorization Code',
     },
-    onboardingFieldId: {
-        id: 'devices.onboardingFieldId',
-        defaultMessage: 'Id',
+    onboardingFieldHubId: {
+        id: 'devices.onboardingFieldHubId',
+        defaultMessage: 'Hub ID',
+    },
+    changeOnboardingData: {
+        id: 'devices.changeOnboardingData',
+        defaultMessage: 'Change onboarding data',
+    },
+    edit: {
+        id: 'devices.edit',
+        defaultMessage: 'Edit',
     },
 })

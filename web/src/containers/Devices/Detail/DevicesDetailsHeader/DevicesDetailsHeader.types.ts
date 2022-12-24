@@ -3,12 +3,15 @@ import { ResourcesType } from '@/containers/Devices/Devices.types'
 export type Props = {
     deviceId: string
     deviceName: string
+    deviceOnboardingResourceData: any
+    incompleteOnboardingData: boolean
     isOwned: boolean
     isUnregistered: boolean
     onOwnChange: () => void
-    openDpsModal: () => void
-    resources: ResourcesType[]
-    onboardResourceLoading: boolean
     onboardButtonCallback?: () => void
-    deviceOnboardingResourceData: any
+    onboardResourceLoading: boolean
+    onboarding: boolean
+    openDpsModal: () => void
+    openOnboardingModal: () => void
+    resources: ResourcesType[]
 }
