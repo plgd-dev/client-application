@@ -1,5 +1,5 @@
-import React, { FC, useCallback, useEffect, useMemo, useState } from 'react'
-import { Props, defaultProps } from './IncompleteOnboardingDataModal.types'
+import React, { FC, useMemo, useState } from 'react'
+import { Props, defaultProps, onboardingDataDefault } from './IncompleteOnboardingDataModal.types'
 import Modal from '@shared-ui/components/new/Modal'
 import { messages as t } from '@/containers/Devices/Devices.i18n'
 import { useIntl } from 'react-intl'
@@ -9,7 +9,6 @@ import isFunction from 'lodash/isFunction'
 import TextField from '../../../../../shared-ui/src/components/new/TextField'
 import classNames from 'classnames'
 import Label from '../../../../../shared-ui/src/components/new/Label'
-import { security } from '@shared-ui/common/services'
 import { WellKnownConfigType } from '@shared-ui/common/hooks'
 import './IncompleteOnboardingDataModal.scss'
 import Tooltip from 'react-bootstrap/Tooltip'
@@ -123,7 +122,7 @@ export const getOnboardingDataFromConfig = (wellKnowConfig: WellKnownConfigType)
     coapGateway: wellKnowConfig?.remoteProvisioning?.coapGateway || '',
     providerName: wellKnowConfig?.remoteProvisioning?.deviceOauthClient.providerName || '',
     id: wellKnowConfig?.remoteProvisioning?.id || '',
-    certificateAuthority: wellKnowConfig?.remoteProvisioning?.certificateAuthority || '',
+    certificateAuthorities: wellKnowConfig?.remoteProvisioning?.certificateAuthorities || '',
     authorizationCode: '',
 })
 
@@ -132,16 +131,10 @@ const IncompleteOnboardingDataModal: FC<Props> = (props) => {
         ...defaultProps,
         ...props,
     }
-    const wellKnowConfig = security.getWellKnowConfig() as WellKnownConfigType
-    const parseOnboardingData = useCallback(() => getOnboardingDataFromConfig(wellKnowConfig), [wellKnowConfig])
 
-    const [onboardingData, setOnboardingData] = useState(parseOnboardingData())
+    const [onboardingData, setOnboardingData] = useState(onboardingDataDefault)
 
     const { formatMessage: _ } = useIntl()
-
-    useEffect(() => {
-        setOnboardingData(parseOnboardingData())
-    }, [wellKnowConfig, parseOnboardingData])
 
     const handleInputChange = (value: string, key: string) => {
         setOnboardingData({ ...onboardingData, [key]: value })
@@ -173,8 +166,8 @@ const IncompleteOnboardingDataModal: FC<Props> = (props) => {
                 />
                 <CopyEditableBlock
                     title={_(t.onboardingFieldCertificateAuthority)}
-                    data={onboardingData.certificateAuthority}
-                    onChange={(value: string) => handleInputChange(value, 'certificateAuthority')}
+                    data={onboardingData.certificateAuthorities}
+                    onChange={(value: string) => handleInputChange(value, 'certificateAuthorities')}
                 />
             </div>
         )
@@ -190,9 +183,9 @@ const IncompleteOnboardingDataModal: FC<Props> = (props) => {
     }
 
     const hasError = useMemo(() => {
-        const { coapGateway, providerName, id, authorizationCode, certificateAuthority } = onboardingData
+        const { coapGateway, providerName, id, authorizationCode, certificateAuthorities } = onboardingData
 
-        return !coapGateway || !providerName || !id || !isValidUUID(id) || !authorizationCode || !certificateAuthority
+        return !coapGateway || !providerName || !id || !isValidUUID(id) || !authorizationCode || !certificateAuthorities
     }, [onboardingData])
 
     const renderFooter = () => (
