@@ -3,6 +3,7 @@ import { devicesApiEndpoints } from './constants'
 import { interfaceGetParam } from './utils'
 import { signIdentityCsr } from '@/containers/App/AppRest'
 import { WellKnownConfigType } from '@shared-ui/common/hooks'
+import { DEVICE_AUTH_MODE } from '@/constants'
 
 type SecurityConfig = {
     httpGatewayAddress: string
@@ -173,13 +174,14 @@ export const DEVICE_AUTH_CODE_SESSION_KEY = 'tempDeviceAuthCode'
  */
 export const getDeviceAuthCode = (deviceId: string) => {
     return new Promise((resolve, reject) => {
-        const wellKnowConfig = security.getWellKnowConfig() as WellKnownConfigType
+        const wellKnownConfig = security.getWellKnowConfig() as WellKnownConfigType
 
-        if (!wellKnowConfig.remoteProvisioning) {
+        if (!wellKnownConfig.remoteProvisioning) {
             return reject(new Error('remoteProvisioning is missing in wellKnowConfig'))
         }
 
-        const { clientId, scopes = [], audience } = wellKnowConfig.remoteProvisioning.deviceOauthClient
+        const { clientId, scopes = [], audience } = wellKnownConfig.remoteProvisioning.deviceOauthClient
+        const IS_PRE_SHARED_KEY_MOD = wellKnownConfig?.deviceAuthenticationMode === DEVICE_AUTH_MODE.PRE_SHARED_KEY
 
         const AuthUserManager = security.getUserManager()
 
@@ -189,7 +191,7 @@ export const getDeviceAuthCode = (deviceId: string) => {
             const iframe = document.createElement('iframe')
             const audienceParam = audience ? `&audience=${audience}` : ''
             iframe.src = `${authorizationEndpoint}?response_type=code&client_id=${clientId}&scope=${scopes}${audienceParam}&redirect_uri=${window.location.origin}/devices&device_id=${deviceId}`
-            iframe.className = 'iframeAuthModal'
+            iframe.className = IS_PRE_SHARED_KEY_MOD ? 'iframeAuthModalVisible' : 'iframeAuthModal'
 
             const destroyIframe = () => {
                 sessionStorage.removeItem(DEVICE_AUTH_CODE_SESSION_KEY)
@@ -220,7 +222,7 @@ export const getDeviceAuthCode = (deviceId: string) => {
                         return doResolve(code)
                     }
 
-                    if (attempts > maxAttempts) {
+                    if (attempts > maxAttempts && !IS_PRE_SHARED_KEY_MOD) {
                         return doReject()
                     }
 

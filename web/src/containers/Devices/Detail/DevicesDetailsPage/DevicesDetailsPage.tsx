@@ -391,7 +391,7 @@ const DevicesDetailsPage = () => {
             if (incompleteOnboardingData) {
                 setShowIncompleteOnboardingModal(true)
             } else {
-                onboardDevice(parseOnboardingData()).then()
+                onboardDevice({ ...parseOnboardingData(), authorizationCode: '' }).then()
             }
         } else {
             offboardDeviceApi(id).then(() => {
@@ -411,7 +411,7 @@ const DevicesDetailsPage = () => {
                 authorizationCode: code as string,
                 authorizationProviderName: onboardingData.providerName || '',
                 hubId: onboardingData.id || '',
-                certificateAuthorities: onboardingData.certificateAuthority || '',
+                certificateAuthorities: onboardingData.certificateAuthorities || '',
             }).then((r) => {
                 setOnboarding(false)
                 refetchDeviceOnboardingData()

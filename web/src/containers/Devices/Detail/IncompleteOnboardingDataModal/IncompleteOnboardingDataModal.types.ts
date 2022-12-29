@@ -1,6 +1,6 @@
 export type OnboardingDataType = {
     authorizationCode?: string
-    certificateAuthority?: string
+    certificateAuthorities?: string
     coapGateway?: string
     id?: string
     providerName?: string
@@ -15,7 +15,7 @@ export type Props = {
 
 export const onboardingDataDefault = {
     authorizationCode: '',
-    certificateAuthority: '',
+    certificateAuthorities: '',
     coapGateway: '',
     id: '',
     providerName: '',
