@@ -1,4 +1,4 @@
-import React, { FC, useMemo, useState } from 'react'
+import React, { FC, useEffect, useMemo, useState } from 'react'
 import { Props, defaultProps, onboardingDataDefault } from './IncompleteOnboardingDataModal.types'
 import Modal from '@shared-ui/components/new/Modal'
 import { messages as t } from '@/containers/Devices/Devices.i18n'
@@ -127,12 +127,21 @@ export const getOnboardingDataFromConfig = (wellKnowConfig: WellKnownConfigType)
 })
 
 const IncompleteOnboardingDataModal: FC<Props> = (props) => {
-    const { show, onClose, onSubmit } = {
+    const {
+        show,
+        onClose,
+        onSubmit,
+        onboardingData: onboardingDataProps,
+    } = {
         ...defaultProps,
         ...props,
     }
 
-    const [onboardingData, setOnboardingData] = useState(onboardingDataDefault)
+    const [onboardingData, setOnboardingData] = useState(onboardingDataProps || onboardingDataDefault)
+
+    useEffect(() => {
+        setOnboardingData(onboardingDataProps)
+    }, [onboardingDataProps])
 
     const { formatMessage: _ } = useIntl()
 
@@ -145,14 +154,14 @@ const IncompleteOnboardingDataModal: FC<Props> = (props) => {
             <div>
                 <CopyEditableBlock
                     title={_(t.onboardingFieldHubId)}
-                    data={onboardingData.id}
-                    onChange={(value: string) => handleInputChange(value, 'id')}
+                    data={onboardingData.hubId}
+                    onChange={(value: string) => handleInputChange(value, 'hubId')}
                     validator={(d) => !isValidUUID(d)}
                 />
                 <CopyEditableBlock
                     title={_(t.onboardingFieldDeviceEndpoint)}
-                    data={onboardingData.coapGateway}
-                    onChange={(value: string) => handleInputChange(value, 'coapGateway')}
+                    data={onboardingData.coapGatewayAddress}
+                    onChange={(value: string) => handleInputChange(value, 'coapGatewayAddress')}
                 />
                 <CopyEditableBlock
                     title={_(t.onboardingFieldAuthorizationCode)}
@@ -161,8 +170,8 @@ const IncompleteOnboardingDataModal: FC<Props> = (props) => {
                 />
                 <CopyEditableBlock
                     title={_(t.onboardingFieldAuthorizationProvider)}
-                    data={onboardingData.providerName}
-                    onChange={(value: string) => handleInputChange(value, 'providerName')}
+                    data={onboardingData.authorizationProviderName}
+                    onChange={(value: string) => handleInputChange(value, 'authorizationProviderName')}
                 />
                 <CopyEditableBlock
                     title={_(t.onboardingFieldCertificateAuthority)}
@@ -183,9 +192,17 @@ const IncompleteOnboardingDataModal: FC<Props> = (props) => {
     }
 
     const hasError = useMemo(() => {
-        const { coapGateway, providerName, id, authorizationCode, certificateAuthorities } = onboardingData
+        const { coapGatewayAddress, authorizationProviderName, hubId, authorizationCode, certificateAuthorities } =
+            onboardingData
 
-        return !coapGateway || !providerName || !id || !isValidUUID(id) || !authorizationCode || !certificateAuthorities
+        return (
+            !coapGatewayAddress ||
+            !authorizationProviderName ||
+            !hubId ||
+            !isValidUUID(hubId) ||
+            !authorizationCode ||
+            !certificateAuthorities
+        )
     }, [onboardingData])
 
     const renderFooter = () => (
