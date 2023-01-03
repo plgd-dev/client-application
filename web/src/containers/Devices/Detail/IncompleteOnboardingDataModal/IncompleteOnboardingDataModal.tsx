@@ -36,12 +36,29 @@ const CopyEditableBlock = (props: CopyEditableBlockType) => {
         const validate = validator ? validator : (d: string) => d === ''
 
         if (editMode) {
+            const saveData = () => {
+                let dataForSave = data || ''
+
+                // cert copy format
+                if (dataForSave.at(0) === '"' && dataForSave.at(-1) === '"') {
+                    dataForSave = dataForSave.substring(1)
+                    dataForSave = dataForSave.substring(0, dataForSave.length - 1)
+                }
+
+                onChange(dataForSave)
+                setEditMode(false)
+            }
             return (
                 <>
                     <TextField
                         className={classNames({ error: validate(data || '') })}
                         value={data || ''}
                         onChange={(e) => setData(e.target.value)}
+                        onKeyPress={(e) => {
+                            if (e.key === 'Enter') {
+                                saveData()
+                            }
+                        }}
                     />
                     <div className='copy-box'>
                         <OverlayTrigger
@@ -52,13 +69,7 @@ const CopyEditableBlock = (props: CopyEditableBlockType) => {
                                 </Tooltip>
                             }
                         >
-                            <div
-                                className='box m-l-10'
-                                onClick={() => {
-                                    onChange(data || '')
-                                    setEditMode(false)
-                                }}
-                            >
+                            <div className='box m-l-10' onClick={saveData}>
                                 <i className='fa fa-check' />
                             </div>
                         </OverlayTrigger>
@@ -119,9 +130,9 @@ const CopyEditableBlock = (props: CopyEditableBlockType) => {
 }
 
 export const getOnboardingDataFromConfig = (wellKnowConfig: WellKnownConfigType) => ({
-    coapGateway: wellKnowConfig?.remoteProvisioning?.coapGateway || '',
-    providerName: wellKnowConfig?.remoteProvisioning?.deviceOauthClient.providerName || '',
-    id: wellKnowConfig?.remoteProvisioning?.id || '',
+    coapGatewayAddress: wellKnowConfig?.remoteProvisioning?.coapGateway || '',
+    authorizationProviderName: wellKnowConfig?.remoteProvisioning?.deviceOauthClient.providerName || '',
+    hubId: wellKnowConfig?.remoteProvisioning?.id || '',
     certificateAuthorities: wellKnowConfig?.remoteProvisioning?.certificateAuthorities || '',
     authorizationCode: '',
 })

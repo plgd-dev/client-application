@@ -38,41 +38,45 @@ export const DevicesDetailsHeader: FC<Props> = ({
 
     return (
         <div className={classNames('d-flex align-items-center', greyedOutClassName)}>
-            {onboardButton && (incompleteOnboardingData || onboardButton !== devicesOnboardingStatuses.UNINITIALIZED) && (
-                <Button
-                    icon='fa-plus'
-                    variant='secondary'
-                    disabled={!isOwned || onboardResourceLoading || onboarding}
-                    className='m-r-10'
-                    loading={onboardResourceLoading}
-                    onClick={onboardButtonCallback}
-                >
-                    {onboardButton === devicesOnboardingStatuses.UNINITIALIZED
-                        ? _(t.onboardDevice)
-                        : _(t.offboardDevice)}
-                </Button>
-            )}
-            {onboardButton && !incompleteOnboardingData && onboardButton === devicesOnboardingStatuses.UNINITIALIZED && (
-                <div className='m-r-10'>
-                    <SplitButton
-                        disabled={onboardResourceLoading || onboarding}
-                        onClick={onboardButtonCallback}
-                        menuProps={{
-                            align: 'end',
-                        }}
+            {onboardButton &&
+                (incompleteOnboardingData || onboardButton !== devicesOnboardingStatuses.UNINITIALIZED) && (
+                    <Button
                         icon='fa-plus'
-                        items={[
-                            {
-                                onClick: openOnboardingModal,
-                                label: _(t.changeOnboardingData),
-                                icon: 'fa-pen',
-                            },
-                        ]}
+                        variant='secondary'
+                        disabled={!isOwned || onboardResourceLoading || onboarding}
+                        className='m-r-10'
+                        loading={onboardResourceLoading || onboarding}
+                        onClick={onboardButtonCallback}
                     >
-                        {_(t.onboardDevice)}
-                    </SplitButton>
-                </div>
-            )}
+                        {onboardButton === devicesOnboardingStatuses.UNINITIALIZED
+                            ? _(t.onboardDevice)
+                            : _(t.offboardDevice)}
+                    </Button>
+                )}
+            {onboardButton &&
+                !incompleteOnboardingData &&
+                onboardButton === devicesOnboardingStatuses.UNINITIALIZED && (
+                    <div className='m-r-10'>
+                        <SplitButton
+                            disabled={onboardResourceLoading || onboarding}
+                            loading={onboardResourceLoading || onboarding}
+                            onClick={onboardButtonCallback}
+                            menuProps={{
+                                align: 'end',
+                            }}
+                            icon='fa-plus'
+                            items={[
+                                {
+                                    onClick: openOnboardingModal,
+                                    label: _(t.changeOnboardingData),
+                                    icon: 'fa-pen',
+                                },
+                            ]}
+                        >
+                            {_(t.onboardDevice)}
+                        </SplitButton>
+                    </div>
+                )}
             <Button
                 variant='secondary'
                 icon={isOwned ? 'fa-cloud-download-alt' : 'fa-cloud-upload-alt'}

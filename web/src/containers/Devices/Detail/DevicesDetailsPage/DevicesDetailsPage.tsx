@@ -406,12 +406,14 @@ const DevicesDetailsPage = () => {
             const code =
                 onboardingData.authorizationCode !== '' ? onboardingData.authorizationCode : await getDeviceAuthCode(id)
 
+            const cleanUpOnboardData = (d: string) => d.replace(/\\n/g, '\n')
+
             onboardDeviceApi(id, {
                 coapGatewayAddress: onboardingData.coapGatewayAddress || '',
                 authorizationCode: code as string,
                 authorizationProviderName: onboardingData.authorizationProviderName || '',
                 hubId: onboardingData.hubId || '',
-                certificateAuthorities: onboardingData.certificateAuthorities || '',
+                certificateAuthorities: cleanUpOnboardData(onboardingData.certificateAuthorities || ''),
             })
                 .then((r) => {
                     setOnboarding(false)
@@ -421,10 +423,12 @@ const DevicesDetailsPage = () => {
                     showErrorToast(JSON.parse(e?.request?.response)?.message || e.message)
                     setOnboardingData(onboardingData)
                     setShowIncompleteOnboardingModal(true)
+                    setOnboarding(false)
                 })
         } catch (e: any) {
             showErrorToast(e.message)
             console.error(e)
+            setOnboarding(false)
         }
     }
 
