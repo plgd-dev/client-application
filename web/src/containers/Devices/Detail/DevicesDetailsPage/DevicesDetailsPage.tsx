@@ -8,7 +8,7 @@ import Layout from '@shared-ui/components/new/Layout'
 import NotFoundPage from '@/containers/NotFoundPage'
 import { useIsMounted, WellKnownConfigType } from '@shared-ui/common/hooks'
 import { messages as menuT } from '@shared-ui/components/new/Menu/Menu.i18n'
-import { showSuccessToast } from '@shared-ui/components/new/Toast/Toast'
+import { showErrorToast, showSuccessToast } from '@shared-ui/components/new/Toast/Toast'
 import DevicesDetails from '../DevicesDetails'
 import DevicesResources from '../../Resources/DevicesResources'
 import DevicesDetailsHeader from '../DevicesDetailsHeader'
@@ -406,18 +406,29 @@ const DevicesDetailsPage = () => {
             const code =
                 onboardingData.authorizationCode !== '' ? onboardingData.authorizationCode : await getDeviceAuthCode(id)
 
+            const cleanUpOnboardData = (d: string) => d.replace(/\\n/g, '\n')
+
             onboardDeviceApi(id, {
-                coapGatewayAddress: onboardingData.coapGateway || '',
+                coapGatewayAddress: onboardingData.coapGatewayAddress || '',
                 authorizationCode: code as string,
-                authorizationProviderName: onboardingData.providerName || '',
-                hubId: onboardingData.id || '',
-                certificateAuthorities: onboardingData.certificateAuthorities || '',
-            }).then((r) => {
-                setOnboarding(false)
-                refetchDeviceOnboardingData()
+                authorizationProviderName: onboardingData.authorizationProviderName || '',
+                hubId: onboardingData.hubId || '',
+                certificateAuthorities: cleanUpOnboardData(onboardingData.certificateAuthorities || ''),
             })
-        } catch (e) {
+                .then((r) => {
+                    setOnboarding(false)
+                    refetchDeviceOnboardingData()
+                })
+                .catch((e) => {
+                    showErrorToast(JSON.parse(e?.request?.response)?.message || e.message)
+                    setOnboardingData(onboardingData)
+                    setShowIncompleteOnboardingModal(true)
+                    setOnboarding(false)
+                })
+        } catch (e: any) {
+            showErrorToast(e.message)
             console.error(e)
+            setOnboarding(false)
         }
     }
 
