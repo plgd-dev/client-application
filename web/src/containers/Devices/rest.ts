@@ -211,6 +211,8 @@ export const getDeviceAuthCode = (deviceId: string) => {
             overlayElement.className = 'iframeAuthModalOverlay'
 
             const destroyIframe = () => {
+                overlayElement.remove()
+                closeWrapper.remove()
                 sessionStorage.removeItem(DEVICE_AUTH_CODE_SESSION_KEY)
                 iframe?.parentNode?.removeChild(iframe)
             }
