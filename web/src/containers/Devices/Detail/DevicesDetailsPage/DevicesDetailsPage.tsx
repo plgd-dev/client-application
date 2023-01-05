@@ -107,11 +107,11 @@ const DevicesDetailsPage = () => {
 
     // check onboarding status evert 1s if onboarding process running
     useEffect(() => {
-        const { UNINITIALIZED, REGISTERED } = devicesOnboardingStatuses
+        const { UNINITIALIZED, REGISTERED, FAILED } = devicesOnboardingStatuses
 
         if (
             deviceOnboardingResourceData?.content?.cps &&
-            ![UNINITIALIZED, REGISTERED].includes(deviceOnboardingResourceData.content.cps)
+            ![UNINITIALIZED, REGISTERED, FAILED].includes(deviceOnboardingResourceData.content.cps)
         ) {
             const interval = setInterval(() => {
                 refetchDeviceOnboardingData()
@@ -395,6 +395,7 @@ const DevicesDetailsPage = () => {
             }
         } else {
             offboardDeviceApi(id).then(() => {
+                setOnboardingData({ ...onboardingData, authorizationCode: '' })
                 refetchDeviceOnboardingData()
             })
         }

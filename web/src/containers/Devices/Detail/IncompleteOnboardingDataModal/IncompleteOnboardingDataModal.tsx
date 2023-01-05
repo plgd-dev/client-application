@@ -11,123 +11,7 @@ import classNames from 'classnames'
 import Label from '../../../../../shared-ui/src/components/new/Label'
 import { WellKnownConfigType } from '@shared-ui/common/hooks'
 import './IncompleteOnboardingDataModal.scss'
-import Tooltip from 'react-bootstrap/Tooltip'
-import { v4 as uuidv4, validate as isValidUUID } from 'uuid'
-import OverlayTrigger from 'react-bootstrap/OverlayTrigger'
-
-type CopyEditableBlockType = {
-    title: string
-    data?: string
-    onChange: (value: string) => void
-    validator?: (data: string) => boolean
-}
-
-type EditBoxType = Omit<CopyEditableBlockType, 'title'>
-
-const CopyEditableBlock = (props: CopyEditableBlockType) => {
-    const { title, data, onChange, validator } = props
-    const { formatMessage: _ } = useIntl()
-    const validate = validator ? validator : (d: string) => d === ''
-    const [editMode, setEditMode] = useState(validate(data || ''))
-
-    const EditBox = (props: EditBoxType) => {
-        const { data: defaultData, validator } = props
-        const [data, setData] = useState(defaultData)
-        const validate = validator ? validator : (d: string) => d === ''
-
-        if (editMode) {
-            const saveData = () => {
-                let dataForSave = data || ''
-
-                // cert copy format
-                if (dataForSave.at(0) === '"' && dataForSave.at(-1) === '"') {
-                    dataForSave = dataForSave.substring(1)
-                    dataForSave = dataForSave.substring(0, dataForSave.length - 1)
-                }
-
-                onChange(dataForSave)
-                setEditMode(false)
-            }
-            return (
-                <>
-                    <TextField
-                        className={classNames({ error: validate(data || '') })}
-                        value={data || ''}
-                        onChange={(e) => setData(e.target.value)}
-                        onKeyPress={(e) => {
-                            if (e.key === 'Enter') {
-                                saveData()
-                            }
-                        }}
-                    />
-                    <div className='copy-box'>
-                        <OverlayTrigger
-                            placement='right'
-                            overlay={
-                                <Tooltip id={`menu-item-tooltip-${uuidv4()}`} className='plgd-tooltip'>
-                                    {_(t.save)}
-                                </Tooltip>
-                            }
-                        >
-                            <div className='box m-l-10' onClick={saveData}>
-                                <i className='fa fa-check' />
-                            </div>
-                        </OverlayTrigger>
-                    </div>
-                    <div className='copy-box'>
-                        <OverlayTrigger
-                            placement='right'
-                            overlay={
-                                <Tooltip id={`menu-item-tooltip-${uuidv4()}`} className='plgd-tooltip'>
-                                    {_(t.cancel)}
-                                </Tooltip>
-                            }
-                        >
-                            <div
-                                className='box m-l-10'
-                                onClick={() => {
-                                    setData(defaultData)
-                                    setEditMode(false)
-                                }}
-                            >
-                                <i className='fa fa-times' />
-                            </div>
-                        </OverlayTrigger>
-                    </div>
-                </>
-            )
-        }
-
-        return (
-            <>
-                <span>{data || '-'}</span>
-                <div className='copy-box'>
-                    <OverlayTrigger
-                        placement='right'
-                        overlay={
-                            <Tooltip id={`menu-item-tooltip-${uuidv4()}`} className='plgd-tooltip'>
-                                {_(t.edit)}
-                            </Tooltip>
-                        }
-                    >
-                        <div className='box m-l-10' onClick={() => setEditMode(true)}>
-                            <i className='fa fa-pen' />
-                        </div>
-                    </OverlayTrigger>
-                </div>
-                <CopyBox textToCopy={data} />
-            </>
-        )
-    }
-
-    return (
-        <Label title={title} inline>
-            <div className='auth-code-box'>
-                <EditBox data={data} onChange={onChange} validator={validator} />
-            </div>
-        </Label>
-    )
-}
+import { validate as isValidUUID } from 'uuid'
 
 export const getOnboardingDataFromConfig = (wellKnowConfig: WellKnownConfigType) => ({
     coapGatewayAddress: wellKnowConfig?.remoteProvisioning?.coapGateway || '',
@@ -157,38 +41,67 @@ const IncompleteOnboardingDataModal: FC<Props> = (props) => {
     const { formatMessage: _ } = useIntl()
 
     const handleInputChange = (value: string, key: string) => {
-        setOnboardingData({ ...onboardingData, [key]: value })
+        let dataForSave = value
+        if (dataForSave.at(0) === '"' && dataForSave.at(-1) === '"') {
+            dataForSave = dataForSave.substring(1)
+            dataForSave = dataForSave.substring(0, dataForSave.length - 1)
+        }
+        setOnboardingData({ ...onboardingData, [key]: dataForSave })
     }
 
     const renderBody = () => {
         return (
             <div>
-                <CopyEditableBlock
-                    title={_(t.onboardingFieldHubId)}
-                    data={onboardingData.hubId}
-                    onChange={(value: string) => handleInputChange(value, 'hubId')}
-                    validator={(d) => !isValidUUID(d)}
-                />
-                <CopyEditableBlock
-                    title={_(t.onboardingFieldDeviceEndpoint)}
-                    data={onboardingData.coapGatewayAddress}
-                    onChange={(value: string) => handleInputChange(value, 'coapGatewayAddress')}
-                />
-                <CopyEditableBlock
-                    title={_(t.onboardingFieldAuthorizationCode)}
-                    data={onboardingData.authorizationCode}
-                    onChange={(value: string) => handleInputChange(value, 'authorizationCode')}
-                />
-                <CopyEditableBlock
-                    title={_(t.onboardingFieldAuthorizationProvider)}
-                    data={onboardingData.authorizationProviderName}
-                    onChange={(value: string) => handleInputChange(value, 'authorizationProviderName')}
-                />
-                <CopyEditableBlock
-                    title={_(t.onboardingFieldCertificateAuthority)}
-                    data={onboardingData.certificateAuthorities}
-                    onChange={(value: string) => handleInputChange(value, 'certificateAuthorities')}
-                />
+                <Label title={_(t.onboardingFieldHubId)} inline>
+                    <div className='auth-code-box'>
+                        <TextField
+                            className={classNames({ error: !isValidUUID(onboardingData.hubId || '') })}
+                            value={onboardingData.hubId || ''}
+                            onChange={(e) => handleInputChange(e.target.value, 'hubId')}
+                        />
+                        <CopyBox textToCopy={onboardingData.hubId || ''} />
+                    </div>
+                </Label>
+                <Label title={_(t.onboardingFieldDeviceEndpoint)} inline>
+                    <div className='auth-code-box'>
+                        <TextField
+                            className={classNames({ error: onboardingData.coapGatewayAddress === '' })}
+                            value={onboardingData.coapGatewayAddress || ''}
+                            onChange={(e) => handleInputChange(e.target.value, 'coapGatewayAddress')}
+                        />
+                        <CopyBox textToCopy={onboardingData.coapGatewayAddress || ''} />
+                    </div>
+                </Label>
+                <Label title={_(t.onboardingFieldAuthorizationCode)} inline>
+                    <div className='auth-code-box'>
+                        <TextField
+                            className={classNames({ error: onboardingData.authorizationCode === '' })}
+                            value={onboardingData.authorizationCode || ''}
+                            onChange={(e) => handleInputChange(e.target.value, 'authorizationCode')}
+                        />
+                        <CopyBox textToCopy={onboardingData.authorizationCode || ''} />
+                    </div>
+                </Label>
+                <Label title={_(t.onboardingFieldAuthorizationProvider)} inline>
+                    <div className='auth-code-box'>
+                        <TextField
+                            className={classNames({ error: onboardingData.authorizationProviderName === '' })}
+                            value={onboardingData.authorizationProviderName || ''}
+                            onChange={(e) => handleInputChange(e.target.value, 'authorizationProviderName')}
+                        />
+                        <CopyBox textToCopy={onboardingData.authorizationProviderName || ''} />
+                    </div>
+                </Label>
+                <Label title={_(t.onboardingFieldCertificateAuthority)} inline>
+                    <div className='auth-code-box'>
+                        <TextField
+                            className={classNames({ error: onboardingData.certificateAuthorities === '' })}
+                            value={onboardingData.certificateAuthorities || ''}
+                            onChange={(e) => handleInputChange(e.target.value, 'certificateAuthorities')}
+                        />
+                        <CopyBox textToCopy={onboardingData.certificateAuthorities || ''} />
+                    </div>
+                </Label>
             </div>
         )
     }
