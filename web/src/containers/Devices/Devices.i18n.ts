@@ -569,6 +569,10 @@ export const messages = defineMessages({
         id: 'devices.onboardingFieldAuthorizationCode',
         defaultMessage: 'Authorization Code',
     },
+    onboardingFieldDeviceId: {
+        id: 'devices.onboardingFieldDeviceId',
+        defaultMessage: 'Device ID',
+    },
     onboardingFieldHubId: {
         id: 'devices.onboardingFieldHubId',
         defaultMessage: 'Hub ID',

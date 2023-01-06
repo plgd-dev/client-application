@@ -23,10 +23,11 @@ export const getOnboardingDataFromConfig = (wellKnowConfig: WellKnownConfigType)
 
 const IncompleteOnboardingDataModal: FC<Props> = (props) => {
     const {
-        show,
+        deviceId,
         onClose,
         onSubmit,
         onboardingData: onboardingDataProps,
+        show,
     } = {
         ...defaultProps,
         ...props,
@@ -52,6 +53,12 @@ const IncompleteOnboardingDataModal: FC<Props> = (props) => {
     const renderBody = () => {
         return (
             <div>
+                <Label title={_(t.onboardingFieldDeviceId)} inline>
+                    <div className='auth-code-box'>
+                        <TextField readOnly={true} value={deviceId} onChange={() => {}} />
+                        <CopyBox textToCopy={deviceId} />
+                    </div>
+                </Label>
                 <Label title={_(t.onboardingFieldHubId)} inline>
                     <div className='auth-code-box'>
                         <TextField

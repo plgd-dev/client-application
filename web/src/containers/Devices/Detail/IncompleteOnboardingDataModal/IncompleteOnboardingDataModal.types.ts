@@ -7,10 +7,11 @@ export type OnboardingDataType = {
 }
 
 export type Props = {
+    deviceId: string
     onClose?: () => void
     onSubmit?: (onboardingData: OnboardingDataType) => void
-    show: boolean
     onboardingData: OnboardingDataType
+    show: boolean
 }
 
 export const onboardingDataDefault = {

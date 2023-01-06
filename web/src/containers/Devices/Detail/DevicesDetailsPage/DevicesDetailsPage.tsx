@@ -427,8 +427,11 @@ const DevicesDetailsPage = () => {
                     setOnboarding(false)
                 })
         } catch (e: any) {
-            showErrorToast(e.message)
-            console.error(e)
+            if (e !== 'user-cancel') {
+                showErrorToast(e.message)
+                console.error(e)
+            }
+
             setOnboarding(false)
         }
     }
@@ -532,6 +535,7 @@ const DevicesDetailsPage = () => {
             />
 
             <IncompleteOnboardingDataModal
+                deviceId={id}
                 show={showIncompleteOnboardingModal}
                 onboardingData={onboardingData}
                 onClose={() => {

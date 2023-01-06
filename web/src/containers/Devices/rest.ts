@@ -200,9 +200,8 @@ export const getDeviceAuthCode = (deviceId: string) => {
             closeElement.innerHTML =
                 '<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" role="img"><path d="M16 29.333c7.333 0 13.333-6 13.333-13.334 0-7.333-6-13.333-13.333-13.333s-13.333 6-13.333 13.333c0 7.334 6 13.334 13.333 13.334ZM12.227 19.773l7.546-7.546M19.773 19.773l-7.546-7.546" stroke="currentcolor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>'
             closeElement.onclick = () => {
-                overlayElement.remove()
-                closeWrapper.remove()
-                doReject()
+                destroyIframe()
+                reject('user-cancel')
             }
 
             closeWrapper.appendChild(closeElement)
