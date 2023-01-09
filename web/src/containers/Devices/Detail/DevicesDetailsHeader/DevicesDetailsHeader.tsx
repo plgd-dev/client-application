@@ -41,7 +41,7 @@ export const DevicesDetailsHeader: FC<Props> = ({
             {onboardButton &&
                 (incompleteOnboardingData || onboardButton !== devicesOnboardingStatuses.UNINITIALIZED) && (
                     <Button
-                        icon='fa-plus'
+                        icon={onboardButton === devicesOnboardingStatuses.UNINITIALIZED ? 'fa-plus' : 'fa-minus'}
                         variant='secondary'
                         disabled={!isOwned || onboardResourceLoading || onboarding}
                         className='m-r-10'
