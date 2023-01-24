@@ -171,11 +171,6 @@ func (c *RemoteProvisioning) validateForUserAgent() error {
 	if err := c.GetUserAgent().Validate(); err != nil {
 		return fmt.Errorf("userAgent.%w", err)
 	}
-	certificateAuthorities, err := validateCAPool(c.GetCaPool())
-	if err != nil {
-		return err
-	}
-	c.CertificateAuthorities = string(certificateAuthorities)
 	return nil
 }
 
@@ -183,6 +178,11 @@ func (c *RemoteProvisioning) Validate() error {
 	if c == nil {
 		return nil
 	}
+	certificateAuthorities, err := validateCAPool(c.GetCaPool())
+	if err != nil {
+		return err
+	}
+	c.CertificateAuthorities = string(certificateAuthorities)
 	switch c.GetMode() {
 	case RemoteProvisioning_USER_AGENT:
 		if err := c.validateForUserAgent(); err != nil {

@@ -37,7 +37,11 @@ func TestClientApplicationServerGetConfiguration(t *testing.T) {
 
 	d1, err := s.GetConfiguration(ctx, &pb.GetConfigurationRequest{})
 	require.NoError(t, err)
-	require.Equal(t, test.NewServiceInformation(), d1)
+	d1.RemoteProvisioning.CurrentTime = 0
+	exp := test.NewServiceInformation()
+	exp.IsInitialized = true
+	exp.RemoteProvisioning = test.NewRemoteProvisioningConfig().Clone()
+	require.Equal(t, exp, d1)
 }
 
 func TestClientApplicationServerGetConfigurationX509UserAgent(t *testing.T) {
