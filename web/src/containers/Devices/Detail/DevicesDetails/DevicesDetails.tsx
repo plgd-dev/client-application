@@ -58,7 +58,7 @@ const DevicesDetails: FC<Props> = memo(
         }, [dpsEndpoint, isOwned, deviceResourceData])
 
         const provisionStatus = deviceResourceData?.content?.provisionStatus
-        const onboardingStatus = deviceOnboardingResourceData?.content?.cps
+        const onboardingStatus = deviceOnboardingResourceData?.content?.cps || 'n/a'
 
         return (
             <Row>

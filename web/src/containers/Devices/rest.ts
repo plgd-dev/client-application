@@ -167,6 +167,7 @@ export const offboardDeviceApi = (deviceId: string) =>
     })
 
 export const DEVICE_AUTH_CODE_SESSION_KEY = 'tempDeviceAuthCode'
+export const PLGD_BROWSER_USED = 'plgdBrowserUsed'
 
 /**
  * Returns an async function which resolves with a authorization code gathered from a rendered iframe, used for onboarding of a device.
