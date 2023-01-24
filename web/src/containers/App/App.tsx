@@ -50,25 +50,27 @@ const App: FC<Props> = (props) => {
 
     security.setUserManager(userManager)
 
+    const Wrapper = (child: any) => (
+        <AuthProvider
+            {...getOidcCommonSettings()}
+            automaticSilentRenew={true}
+            clientId={wellKnownConfig?.remoteProvisioning?.webOauthClient.clientId || ''}
+            redirectUri={window.location.origin}
+            onSignIn={async (userData) => {
+                // remove auth params
+                window.location.hash = ''
+                window.location.href = window.location.origin
+            }}
+            userManager={userManager}
+        >
+            {child}
+        </AuthProvider>
+    )
+
     return (
         <ConditionalWrapper
             condition={!props.mockApp && wellKnownConfig?.deviceAuthenticationMode === DEVICE_AUTH_MODE.X509}
-            wrapper={(child: any) => (
-                <AuthProvider
-                    {...getOidcCommonSettings()}
-                    automaticSilentRenew={true}
-                    clientId={wellKnownConfig?.remoteProvisioning?.webOauthClient.clientId || ''}
-                    redirectUri={window.location.origin}
-                    onSignIn={async (userData) => {
-                        // remove auth params
-                        window.location.hash = ''
-                        window.location.href = window.location.origin
-                    }}
-                    userManager={userManager}
-                >
-                    {child}
-                </AuthProvider>
-            )}
+            wrapper={Wrapper}
         >
             <AppInner
                 wellKnownConfig={wellKnownConfig}
