@@ -585,4 +585,16 @@ export const messages = defineMessages({
         id: 'devices.edit',
         defaultMessage: 'Edit',
     },
+    ok: {
+        id: 'devices.ok',
+        defaultMessage: 'Ok',
+    },
+    firstTimeTitle: {
+        id: 'devices.firstTimeTitle',
+        defaultMessage: 'Pop-up Authorization Required for Device Onboarding',
+    },
+    firstTimeDescription: {
+        id: 'devices.firstTimeDescription',
+        defaultMessage: 'Please allow pop-ups for this website in order to proceed with device onboarding.',
+    },
 })

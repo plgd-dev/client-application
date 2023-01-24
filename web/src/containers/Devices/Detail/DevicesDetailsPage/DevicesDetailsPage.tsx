@@ -40,6 +40,7 @@ import {
     getDeviceAuthCode,
     onboardDeviceApi,
     offboardDeviceApi,
+    PLGD_BROWSER_USED,
 } from '../../rest'
 import { useDeviceDetails, useDevicesResources } from '../../hooks'
 import { messages as t } from '../../Devices.i18n'
@@ -59,6 +60,7 @@ import {
     onboardingDataDefault,
 } from '../IncompleteOnboardingDataModal/IncompleteOnboardingDataModal.types'
 import { security } from '@shared-ui/common/services'
+import FirstTimeOnboardingModal from '@/containers/Devices/Detail/FirstTimeOnboardingModal/FirstTimeOnboardingModal'
 
 const DevicesDetailsPage = () => {
     const { formatMessage: _ } = useIntl()
@@ -74,6 +76,7 @@ const DevicesDetailsPage = () => {
     const [savingResource, setSavingResource] = useState(false)
     const [showDpsModal, setShowDpsModal] = useState(false)
     const [showIncompleteOnboardingModal, setShowIncompleteOnboardingModal] = useState(false)
+    const [showFirstTimeOnboardingModal, setShowFirstTimeOnboardingModal] = useState(false)
     const [onboardingData, setOnboardingData] = useState<OnboardingDataType>(onboardingDataDefault)
     const [onboarding, setOnboarding] = useState(false)
     const [deleteResourceHref, setDeleteResourceHref] = useState<string>('')
@@ -404,6 +407,14 @@ const DevicesDetailsPage = () => {
     const onboardDevice = async (onboardingData: OnboardingDataType) => {
         try {
             setOnboarding(true)
+
+            const wasBrowserUsed = localStorage.getItem(PLGD_BROWSER_USED)
+
+            if (!wasBrowserUsed) {
+                localStorage.setItem(PLGD_BROWSER_USED, '1')
+                setShowFirstTimeOnboardingModal(true)
+            }
+
             const code =
                 onboardingData.authorizationCode !== '' ? onboardingData.authorizationCode : await getDeviceAuthCode(id)
 
@@ -544,6 +555,16 @@ const DevicesDetailsPage = () => {
                 onSubmit={(onboardingData) => {
                     setOnboardingData(onboardingData)
                     onboardDevice(onboardingData).then()
+                }}
+            />
+
+            <FirstTimeOnboardingModal
+                show={showFirstTimeOnboardingModal}
+                onClose={() => {
+                    setShowFirstTimeOnboardingModal(false)
+                }}
+                onSubmit={() => {
+                    setShowFirstTimeOnboardingModal(false)
                 }}
             />
         </Layout>

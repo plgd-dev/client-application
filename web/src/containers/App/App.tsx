@@ -1,4 +1,4 @@
-import { useContext } from 'react'
+import { FC, useContext } from 'react'
 import AppContext from './AppContext'
 import './App.scss'
 import { AuthProvider, UserManager } from 'oidc-react'
@@ -9,8 +9,9 @@ import AppInner from '@/containers/App/AppInner/AppInner'
 import { security } from '@shared-ui/common/services'
 import { useWellKnownConfiguration, WellKnownConfigType } from '@shared-ui/common/hooks/useWellKnownConfiguration'
 import { UserManagerSettings } from 'oidc-client-ts'
+import { Props } from './App.types'
 
-const App = () => {
+const App: FC<Props> = (props) => {
     const httpGatewayAddress = process.env.REACT_APP_HTTP_GATEWAY_ADDRESS || window.location.origin
     const [wellKnownConfig, setWellKnownConfig, reFetchConfig, wellKnownConfigError] =
         useWellKnownConfiguration(httpGatewayAddress)
@@ -51,7 +52,7 @@ const App = () => {
 
     return (
         <ConditionalWrapper
-            condition={wellKnownConfig?.deviceAuthenticationMode === DEVICE_AUTH_MODE.X509}
+            condition={!props.mockApp && wellKnownConfig?.deviceAuthenticationMode === DEVICE_AUTH_MODE.X509}
             wrapper={(child: any) => (
                 <AuthProvider
                     {...getOidcCommonSettings()}

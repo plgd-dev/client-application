@@ -12,16 +12,16 @@ reportWebVitals()
 const BaseComponent = () => {
     const urlParams = new URLSearchParams(window.location.search)
     const code = urlParams.get('code')
-    if (window.location.pathname === '/devices' && code) {
+    const isMockApp = window.location.pathname === '/devices' && !!code
+    if (isMockApp) {
         localStorage.setItem(DEVICE_AUTH_CODE_SESSION_KEY, code)
         window.close()
-        return null
     }
 
     return (
         <Provider store={store}>
             <IntlProvider>
-                <App />
+                <App mockApp={isMockApp} />
             </IntlProvider>
         </Provider>
     )

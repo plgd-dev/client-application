@@ -97,6 +97,7 @@ export const devicesStatusSeverities = {
 }
 
 export const devicesOnboardingStatuses = {
+    NA: 'n/a',
     UNINITIALIZED: 'uninitialized',
     REGISTERED: 'registered',
     FAILED: 'failed',

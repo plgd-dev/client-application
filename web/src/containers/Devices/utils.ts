@@ -402,6 +402,7 @@ export const getColorByOnboardingStatus = (provisionStatus: string) => {
             return devicesStatusSeverities.SUCCESS
         case devicesOnboardingStatuses.FAILED:
             return devicesStatusSeverities.ERROR
+        case devicesOnboardingStatuses.NA:
         case devicesOnboardingStatuses.UNINITIALIZED:
             return devicesStatusSeverities.GREY
         default:
