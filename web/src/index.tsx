@@ -13,6 +13,7 @@ const BaseComponent = () => {
     const urlParams = new URLSearchParams(window.location.search)
     const code = urlParams.get('code')
     const isMockApp = window.location.pathname === '/devices' && !!code
+
     if (isMockApp) {
         localStorage.setItem(DEVICE_AUTH_CODE_SESSION_KEY, code)
         window.close()

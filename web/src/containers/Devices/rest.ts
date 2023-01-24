@@ -3,7 +3,7 @@ import { devicesApiEndpoints } from './constants'
 import { interfaceGetParam } from './utils'
 import { signIdentityCsr } from '@/containers/App/AppRest'
 import { WellKnownConfigType } from '@shared-ui/common/hooks'
-import { DEVICE_AUTH_MODE } from '@/constants'
+import { DEVICE_AUTH_MODE, DEVICE_AUTH_CODE_SESSION_KEY } from '@/constants'
 
 type SecurityConfig = {
     httpGatewayAddress: string
@@ -166,7 +166,6 @@ export const offboardDeviceApi = (deviceId: string) =>
         method: 'POST',
     })
 
-export const DEVICE_AUTH_CODE_SESSION_KEY = 'tempDeviceAuthCode'
 export const PLGD_BROWSER_USED = 'plgdBrowserUsed'
 
 /**
@@ -188,63 +187,34 @@ export const getDeviceAuthCode = (deviceId: string) => {
 
         AuthUserManager.metadataService.getAuthorizationEndpoint().then((authorizationEndpoint: string) => {
             let timeout: any = null
-
-            // const iframe = document.createElement('iframe')
             const audienceParam = audience ? `&audience=${audience}` : ''
-            window.open(
+
+            const win = window.open(
                 `${authorizationEndpoint}?response_type=code&client_id=${clientId}&scope=${scopes}${audienceParam}&redirect_uri=${window.location.origin}/devices&device_id=${deviceId}`,
-                '_blank'
+                'thePopUp',
+                ''
             )
-            // iframe.src = `${authorizationEndpoint}?response_type=code&client_id=${clientId}&scope=${scopes}${audienceParam}&redirect_uri=${window.location.origin}/devices&device_id=${deviceId}`
-            // iframe.className = IS_PRE_SHARED_KEY_MOD ? 'iframeAuthModalVisible' : 'iframeAuthModal'
-            // iframe.id = 'customIdSelector'
-            //
-            // const closeWrapper = document.createElement('div')
-            // closeWrapper.className = 'iframeAuthModalClose'
-            //
-            // const closeElement = document.createElement('a')
-            // closeElement.innerHTML =
-            //     '<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg" role="img"><path d="M16 29.333c7.333 0 13.333-6 13.333-13.334 0-7.333-6-13.333-13.333-13.333s-13.333 6-13.333 13.333c0 7.334 6 13.334 13.333 13.334ZM12.227 19.773l7.546-7.546M19.773 19.773l-7.546-7.546" stroke="currentcolor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg>'
-            // closeElement.onclick = () => {
-            //     destroyIframe()
-            //     reject('user-cancel')
-            // }
-            //
-            // closeWrapper.appendChild(closeElement)
-            //
-            // const overlayElement = document.createElement('div')
-            // overlayElement.className = 'iframeAuthModalOverlay'
-            //
-            // const destroyIframe = () => {
-            //     overlayElement.remove()
-            //     closeWrapper.remove()
-            //     sessionStorage.removeItem(DEVICE_AUTH_CODE_SESSION_KEY)
-            //     iframe?.parentNode?.removeChild(iframe)
-            // }
-            //
+            const pollTimer = window.setInterval(function () {
+                if (win && win.closed) {
+                    window.clearInterval(pollTimer)
+                    return reject('user-cancel')
+                }
+            }, 200)
+
             const doResolve = (value: any) => {
-                // destroyIframe()
                 clearTimeout(timeout)
                 resolve(value)
             }
-            //
+
             const doReject = () => {
-                // destroyIframe()
                 clearTimeout(timeout)
+
                 reject(new Error('Failed to get the device auth code.'))
             }
-            //
-            // iframe.onload = () => {
+
             let attempts = 0
             const maxAttempts = 60
-            //
-            //     if (IS_PRE_SHARED_KEY_MOD) {
-            //         document.body.appendChild(overlayElement)
-            //         document.body.appendChild(closeWrapper)
-            //         iframe.className = 'iframeAuthModalVisible iframeAuthModalVisibleShadow'
-            //     }
-            //
-            //
+
             const getCode = () => {
                 attempts += 1
                 const code = localStorage.getItem(DEVICE_AUTH_CODE_SESSION_KEY)
@@ -262,13 +232,6 @@ export const getDeviceAuthCode = (deviceId: string) => {
             }
 
             getCode()
-            // }
-            //
-            // iframe.onerror = () => {
-            //     doReject()
-            // }
-            //
-            // document.body.appendChild(iframe)
         })
     })
 }
