@@ -42,7 +42,7 @@ import {
     offboardDeviceApi,
     PLGD_BROWSER_USED,
 } from '../../rest'
-import { useDeviceDetails, useDevicesResources } from '../../hooks'
+import { useDeviceDetails, useDevicesResources, useOnboardingButton } from '../../hooks'
 import { messages as t } from '../../Devices.i18n'
 import './DevicesDetailsPage.scss'
 import { disOwnDevice, ownDevice } from '@/containers/Devices/slice'
@@ -51,7 +51,6 @@ import { BreadcrumbItem } from '@shared-ui/components/new/Breadcrumbs/Breadcrumb
 import omit from 'lodash/omit'
 import { DevicesDetailsResourceModalData } from '@/containers/Devices/Detail/DevicesDetailsPage/DevicesDetailsPage.types'
 import { DevicesResourcesModalParamsType } from '@/containers/Devices/Resources/DevicesResourcesModal/DevicesResourcesModal.types'
-import { useOnboardingButton } from '../../hooks'
 import IncompleteOnboardingDataModal, {
     getOnboardingDataFromConfig,
 } from '@/containers/Devices/Detail/IncompleteOnboardingDataModal'
@@ -105,8 +104,8 @@ const DevicesDetailsPage = () => {
         deviceId: id,
     })
 
-    const wellKnowConfig = security.getWellKnowConfig() as WellKnownConfigType
-    const parseOnboardingData = useCallback(() => getOnboardingDataFromConfig(wellKnowConfig), [wellKnowConfig])
+    const wellKnownConfig = security.getWellKnowConfig() as WellKnownConfigType
+    const parseOnboardingData = useCallback(() => getOnboardingDataFromConfig(wellKnownConfig), [wellKnownConfig])
 
     // check onboarding status evert 1s if onboarding process running
     useEffect(() => {
@@ -389,7 +388,7 @@ const DevicesDetailsPage = () => {
         }
     }
 
-    const handleOnboardCallback = () => {
+    function handleOnboardCallback() {
         if (deviceOnboardingResourceData.content.cps === devicesOnboardingStatuses.UNINITIALIZED) {
             if (incompleteOnboardingData) {
                 setShowIncompleteOnboardingModal(true)
@@ -434,7 +433,7 @@ const DevicesDetailsPage = () => {
                 .catch((e) => {
                     showErrorToast(JSON.parse(e?.request?.response)?.message || e.message)
                     setOnboardingData(onboardingData)
-                    setShowIncompleteOnboardingModal(true)
+                    toggleOnboardingModal(true)
                     setOnboarding(false)
                 })
         } catch (e: any) {
@@ -445,6 +444,10 @@ const DevicesDetailsPage = () => {
 
             setOnboarding(false)
         }
+    }
+
+    function toggleOnboardingModal(state = false) {
+        setShowIncompleteOnboardingModal(state)
     }
 
     return (
@@ -466,7 +469,7 @@ const DevicesDetailsPage = () => {
                     deviceOnboardingResourceData={deviceOnboardingResourceData}
                     onboardResourceLoading={onboardResourceLoading}
                     onboardButtonCallback={handleOnboardCallback}
-                    openOnboardingModal={() => setShowIncompleteOnboardingModal(true)}
+                    openOnboardingModal={() => toggleOnboardingModal(true)}
                 />
             }
         >
@@ -549,9 +552,7 @@ const DevicesDetailsPage = () => {
                 deviceId={id}
                 show={showIncompleteOnboardingModal}
                 onboardingData={onboardingData}
-                onClose={() => {
-                    setShowIncompleteOnboardingModal(false)
-                }}
+                onClose={toggleOnboardingModal}
                 onSubmit={(onboardingData) => {
                     setOnboardingData(onboardingData)
                     onboardDevice(onboardingData).then()

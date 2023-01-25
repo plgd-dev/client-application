@@ -73,6 +73,7 @@ const App: FC<Props> = (props) => {
             wrapper={Wrapper}
         >
             <AppInner
+                mockApp={props.mockApp}
                 wellKnownConfig={wellKnownConfig}
                 configError={wellKnownConfigError}
                 setInitialize={setInitialize}

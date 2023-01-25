@@ -88,6 +88,8 @@ const AppInner = (props: Props) => {
                             })
                         })
                     } else {
+                        // s remoteProvisioning vsetko nad
+                        // bez remoteProvisioning
                         signOut().then()
                     }
                 } else {
@@ -108,7 +110,7 @@ const AppInner = (props: Props) => {
 
         return (
             <ConditionalWrapper
-                condition={wellKnownConfig?.deviceAuthenticationMode === DEVICE_AUTH_MODE.X509}
+                condition={!props.mockApp && wellKnownConfig?.deviceAuthenticationMode === DEVICE_AUTH_MODE.X509}
                 wrapper={(child: ReactElement) => (
                     <AppAuthProvider
                         wellKnownConfig={wellKnownConfig}
@@ -122,7 +124,8 @@ const AppInner = (props: Props) => {
             >
                 <Container fluid id='app' className={classNames({ collapsed })}>
                     <StatusBar>
-                        {wellKnownConfig &&
+                        {!props.mockApp &&
+                            wellKnownConfig &&
                             wellKnownConfig.remoteProvisioning &&
                             wellKnownConfig?.deviceAuthenticationMode === DEVICE_AUTH_MODE.X509 && (
                                 <UserWidget logout={handleLogout} />

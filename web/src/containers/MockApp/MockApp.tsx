@@ -7,6 +7,8 @@ const MockApp = () => {
     const { formatMessage: _ } = useIntl()
     const wellKnowConfig = security.getWellKnowConfig() as WellKnownConfigType
 
+    console.log({ wellKnowConfig })
+
     return (
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
             <div style={{ fontSize: 16 }}>
