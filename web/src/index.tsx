@@ -15,12 +15,20 @@ const BaseComponent = () => {
     const isMockApp = window.location.pathname === '/devices' && !!code
 
     if (isMockApp) {
+        const { detect } = require('detect-browser')
+        const browser = detect()
+        browser && console.log(browser.name)
         localStorage.setItem(DEVICE_AUTH_CODE_SESSION_KEY, code)
 
         window.addEventListener('load', function () {
             setTimeout(() => {
                 if (localStorage.getItem(DEVICE_AUTH_CODE_SESSION_KEY)) {
-                    // window.close()
+                    // safari cant close window - show mocApp
+                    if (browser && browser.name === 'safari') {
+                        window.location.href = `${window.location.origin}/devices`
+                    } else {
+                        window.close()
+                    }
                 }
             }, 200)
         })
