@@ -17,18 +17,18 @@ const BaseComponent = () => {
     if (isMockApp) {
         const { detect } = require('detect-browser')
         const browser = detect()
-        browser && console.log(browser.name)
         localStorage.setItem(DEVICE_AUTH_CODE_SESSION_KEY, code)
 
         window.addEventListener('load', function () {
-            setTimeout(() => {
+            // safari cant close window, because it inserts localStorage to originTab
+            if (browser && browser.name === 'safari') {
+                window.location.hash = ''
+                window.location.href = `${window.location.origin}/devices`
+            }
+
+            setInterval(() => {
                 if (localStorage.getItem(DEVICE_AUTH_CODE_SESSION_KEY)) {
-                    // safari cant close window - show mocApp
-                    if (browser && browser.name === 'safari') {
-                        window.location.href = `${window.location.origin}/devices`
-                    } else {
-                        window.close()
-                    }
+                    window.close()
                 }
             }, 200)
         })
