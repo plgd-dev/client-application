@@ -74,7 +74,6 @@
     "start": "npm run generate-language-files && craco start",
     "build": "npm run generate-language-files && craco build",
     "test": "craco test",
-    "playwrite": "npx playwright test",
     "eject": "react-scripts eject",
     "generate-pot": "node ./scripts/generate-pot.js",
     "generate-language-files": "node ./scripts/generate-language-files.js"
