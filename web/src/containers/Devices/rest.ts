@@ -197,7 +197,15 @@ export const getDeviceAuthCode = (deviceId: string) => {
             const pollTimer = window.setInterval(function () {
                 if (win && win.closed) {
                     window.clearInterval(pollTimer)
-                    return reject('user-cancel')
+                    // find code after close
+                    const code = localStorage.getItem(DEVICE_AUTH_CODE_SESSION_KEY)
+
+                    if (code) {
+                        localStorage.removeItem(DEVICE_AUTH_CODE_SESSION_KEY)
+                        return doResolve(code)
+                    } else {
+                        return reject('user-cancel')
+                    }
                 }
             }, 200)
 
@@ -231,6 +239,7 @@ export const getDeviceAuthCode = (deviceId: string) => {
                 timeout = setTimeout(getCode, 500)
             }
 
+            // scan for the code
             getCode()
         })
     })
