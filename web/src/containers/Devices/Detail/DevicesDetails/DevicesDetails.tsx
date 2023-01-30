@@ -17,6 +17,7 @@ import {
 import omit from 'lodash/omit'
 import Display from '@shared-ui/components/new/Display'
 import { Props } from './DevicesDetails.types'
+import testId from '@/testId'
 
 const DevicesDetails: FC<Props> = memo(
     ({ data, loading, isOwned, resources, deviceId, onboardResourceLoading, deviceOnboardingResourceData }) => {
@@ -36,6 +37,7 @@ const DevicesDetails: FC<Props> = memo(
                 }),
             })
 
+        const { onboardTitleStatus } = testId.devices.detail
         const dpsEndpoint = useMemo(() => getDPSEndpoint(resources), [resources])
 
         useEffect(() => {
@@ -84,7 +86,12 @@ const DevicesDetails: FC<Props> = memo(
                         </Badge>
                     </LabelWithLoading>
                     <LabelWithLoading title={_(t.onboardingStatus)} loading={onboardResourceLoading}>
-                        <Badge className={getColorByOnboardingStatus(onboardingStatus)}>{onboardingStatus}</Badge>
+                        <Badge
+                            className={getColorByOnboardingStatus(onboardingStatus)}
+                            data-test-id={onboardTitleStatus}
+                        >
+                            {onboardingStatus}
+                        </Badge>
                     </LabelWithLoading>
                     <Display when={!!dpsEndpoint}>
                         <LabelWithLoading title={_(t.dpsStatus)} loading={resourceLoading}>

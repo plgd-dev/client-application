@@ -31,3 +31,4 @@ yarn-error.log*
 /playwright/test-results/
 /playwright/playwright-report/
 /playwright/.cache/
+/playwright/storageState.json

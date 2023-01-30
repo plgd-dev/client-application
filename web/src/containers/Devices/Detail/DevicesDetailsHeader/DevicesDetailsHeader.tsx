@@ -9,6 +9,7 @@ import { messages as t } from '../../Devices.i18n'
 import { Props } from './DevicesDetailsHeader.types'
 import { devicesOnboardingStatuses } from '@/containers/Devices/constants'
 import SplitButton from '@shared-ui/components/new/SplitButton'
+import testId from '@/testId'
 
 export const DevicesDetailsHeader: FC<Props> = ({
     deviceId,
@@ -34,28 +35,28 @@ export const DevicesDetailsHeader: FC<Props> = ({
     })
 
     const hasDPS = useMemo(() => canSetDPSEndpoint(resources), [resources])
-    const onboardButton = deviceOnboardingResourceData?.content?.cps
+    const hasOnboardButton = deviceOnboardingResourceData?.content?.cps
+    const isOnboarded = hasOnboardButton !== devicesOnboardingStatuses.UNINITIALIZED
+    const { offboardButton, onboardButton, onboardButtonDropdown } = testId.devices.detail
 
     return (
         <div className={classNames('d-flex align-items-center', greyedOutClassName)}>
-            {onboardButton &&
-                (incompleteOnboardingData || onboardButton !== devicesOnboardingStatuses.UNINITIALIZED) && (
-                    <Button
-                        icon={onboardButton === devicesOnboardingStatuses.UNINITIALIZED ? 'fa-plus' : 'fa-minus'}
-                        variant='secondary'
-                        disabled={!isOwned || onboardResourceLoading || onboarding}
-                        className='m-r-10'
-                        loading={onboardResourceLoading || onboarding}
-                        onClick={onboardButtonCallback}
-                    >
-                        {onboardButton === devicesOnboardingStatuses.UNINITIALIZED
-                            ? _(t.onboardDevice)
-                            : _(t.offboardDevice)}
-                    </Button>
-                )}
-            {onboardButton &&
+            {hasOnboardButton && (incompleteOnboardingData || isOnboarded) && (
+                <Button
+                    icon={isOnboarded ? 'fa-minus' : 'fa-plus'}
+                    variant='secondary'
+                    disabled={!isOwned || onboardResourceLoading || onboarding}
+                    className='m-r-10'
+                    loading={onboardResourceLoading || onboarding}
+                    onClick={onboardButtonCallback}
+                    dataTestId={isOnboarded ? offboardButton : onboardButton}
+                >
+                    {isOnboarded ? _(t.offboardDevice) : _(t.onboardDevice)}
+                </Button>
+            )}
+            {hasOnboardButton &&
                 !incompleteOnboardingData &&
-                onboardButton === devicesOnboardingStatuses.UNINITIALIZED && (
+                hasOnboardButton === devicesOnboardingStatuses.UNINITIALIZED && (
                     <div className='m-r-10'>
                         <SplitButton
                             disabled={onboardResourceLoading || onboarding}
@@ -72,6 +73,8 @@ export const DevicesDetailsHeader: FC<Props> = ({
                                     icon: 'fa-pen',
                                 },
                             ]}
+                            dataTestId={isOnboarded ? offboardButton : onboardButton}
+                            dataTestIdDropdown={onboardButtonDropdown}
                         >
                             {_(t.onboardDevice)}
                         </SplitButton>

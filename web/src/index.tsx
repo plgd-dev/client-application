@@ -12,20 +12,18 @@ reportWebVitals()
 const BaseComponent = () => {
     const urlParams = new URLSearchParams(window.location.search)
     const code = urlParams.get('code')
-    const isMockApp = window.location.pathname === '/devices' && !!code
+    const isMockApp = window.location.pathname === '/devices-code-redirect' && !!code
+
+    if (window.location.pathname === '/devices' && !!code) {
+        window.location.hash = ''
+        window.location.href = `${window.location.origin}/devices-code-redirect?code=${code}`
+        return null
+    }
 
     if (isMockApp) {
-        const { detect } = require('detect-browser')
-        const browser = detect()
         localStorage.setItem(DEVICE_AUTH_CODE_SESSION_KEY, code)
 
         window.addEventListener('load', function () {
-            // safari cant close window, because it inserts localStorage to originTab
-            if (browser && browser.name === 'safari') {
-                window.location.hash = ''
-                window.location.href = `${window.location.origin}/devices`
-            }
-
             setInterval(() => {
                 if (localStorage.getItem(DEVICE_AUTH_CODE_SESSION_KEY)) {
                     window.close()

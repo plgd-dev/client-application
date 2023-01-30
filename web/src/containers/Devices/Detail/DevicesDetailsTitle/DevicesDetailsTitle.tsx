@@ -11,6 +11,7 @@ import { updateDevicesResourceApi } from '../../rest'
 import { canChangeDeviceName, getDeviceChangeResourceHref } from '../../utils'
 import { messages as t } from '../../Devices.i18n'
 import { defaultProps, Props } from './DevicesDetailsTitle.types'
+import testId from '@/testId'
 
 const DevicesDetailsTitle: FC<Props> = ({
     className,
@@ -115,6 +116,7 @@ const DevicesDetailsTitle: FC<Props> = ({
                 'title-with-icon': canUpdate,
             })}
             onClick={canUpdate ? onEditClick : undefined}
+            data-test-id={testId.devices.detail.name}
         >
             <span className={canUpdate ? 'link reveal-icon-on-hover icon-visible' : undefined}>{deviceName}</span>
             {canUpdate && <i className='fas fa-pen' />}
