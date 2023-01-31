@@ -14,16 +14,12 @@ import { AppAuthProviderRefType, Props } from './AppAuthProvider.types'
 
 const AppAuthProvider = forwardRef<AppAuthProviderRefType, Props>((props, ref) => {
     const { wellKnownConfig, children, setAuthError, setInitialize } = props
-    const { isLoading, userData, signOutRedirect, userManager } = useAuth()
+    const { isLoading, userData, signOutRedirect } = useAuth()
     const userDataRef = useRef<User | null>(null)
 
     if (userData) {
         security.setAccessToken(userData.access_token)
         userDataRef.current = userData
-
-        if (userManager) {
-            security.setUserManager(userManager)
-        }
     }
 
     useImperativeHandle(ref, () => ({

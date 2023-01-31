@@ -97,6 +97,10 @@ export const messages = defineMessages({
         id: 'devices.ownershipStatus',
         defaultMessage: 'Ownership status',
     },
+    onboardingStatus: {
+        id: 'devices.onboardingStatus',
+        defaultMessage: 'Onboarding status',
+    },
     deviceNotFound: {
         id: 'devices.deviceNotFound',
         defaultMessage: 'device not found',
@@ -532,5 +536,65 @@ export const messages = defineMessages({
     notAvailable: {
         id: 'devices.notAvailable',
         defaultMessage: 'n/a',
+    },
+    onboardDevice: {
+        id: 'devices.onboardDevice',
+        defaultMessage: 'Onboard device',
+    },
+    offboardDevice: {
+        id: 'devices.offboardDevice',
+        defaultMessage: 'Offboard device',
+    },
+    onboardIncompleteModalTitle: {
+        id: 'devices.onboardIncompleteModalTitle',
+        defaultMessage: 'Incomplete data',
+    },
+    onboardingFieldCertificateAuthority: {
+        id: 'devices.onboardingFieldCertificateAuthority',
+        defaultMessage: 'Certificate Authorities',
+    },
+    onboardingFieldDeviceEndpoint: {
+        id: 'devices.onboardingFieldDeviceEndpoint',
+        defaultMessage: 'Device Endpoint',
+    },
+    onboardingFieldClientId: {
+        id: 'devices.onboardingFieldClientId',
+        defaultMessage: 'ClientId',
+    },
+    onboardingFieldAuthorizationProvider: {
+        id: 'devices.onboardingFieldAuthorizationProvider',
+        defaultMessage: 'Authorization Provider',
+    },
+    onboardingFieldAuthorizationCode: {
+        id: 'devices.onboardingFieldAuthorizationCode',
+        defaultMessage: 'Authorization Code',
+    },
+    onboardingFieldDeviceId: {
+        id: 'devices.onboardingFieldDeviceId',
+        defaultMessage: 'Device ID',
+    },
+    onboardingFieldHubId: {
+        id: 'devices.onboardingFieldHubId',
+        defaultMessage: 'Hub ID',
+    },
+    changeOnboardingData: {
+        id: 'devices.changeOnboardingData',
+        defaultMessage: 'Change onboarding data',
+    },
+    edit: {
+        id: 'devices.edit',
+        defaultMessage: 'Edit',
+    },
+    ok: {
+        id: 'devices.ok',
+        defaultMessage: 'Ok',
+    },
+    firstTimeTitle: {
+        id: 'devices.firstTimeTitle',
+        defaultMessage: 'Pop-up Authorization Required for Device Onboarding',
+    },
+    firstTimeDescription: {
+        id: 'devices.firstTimeDescription',
+        defaultMessage: 'Please allow pop-ups for this website in order to proceed with device onboarding.',
     },
 })

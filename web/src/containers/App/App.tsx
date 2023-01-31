@@ -1,4 +1,4 @@
-import { useContext } from 'react'
+import { FC, useContext } from 'react'
 import AppContext from './AppContext'
 import './App.scss'
 import { AuthProvider, UserManager } from 'oidc-react'
@@ -9,8 +9,9 @@ import AppInner from '@/containers/App/AppInner/AppInner'
 import { security } from '@shared-ui/common/services'
 import { useWellKnownConfiguration, WellKnownConfigType } from '@shared-ui/common/hooks/useWellKnownConfiguration'
 import { UserManagerSettings } from 'oidc-client-ts'
+import { Props } from './App.types'
 
-const App = () => {
+const App: FC<Props> = (props) => {
     const httpGatewayAddress = process.env.REACT_APP_HTTP_GATEWAY_ADDRESS || window.location.origin
     const [wellKnownConfig, setWellKnownConfig, reFetchConfig, wellKnownConfigError] =
         useWellKnownConfiguration(httpGatewayAddress)
@@ -18,6 +19,8 @@ const App = () => {
     security.setGeneralConfig({
         httpGatewayAddress,
     })
+
+    security.setWellKnowConfig(wellKnownConfig)
 
     const setInitialize = (value = true) => {
         setWellKnownConfig({
@@ -31,40 +34,46 @@ const App = () => {
     }
 
     const getOidcCommonSettings = () => ({
-        authority: wellKnownConfig.remoteProvisioning?.authority || '',
-        scope: wellKnownConfig.remoteProvisioning?.webOauthClient.scopes.join?.(' '),
+        authority: wellKnownConfig?.remoteProvisioning?.authority || '',
+        scope: wellKnownConfig?.remoteProvisioning?.webOauthClient.scopes.join?.(' '),
     })
+
+    const userManager = new UserManager({
+        ...getOidcCommonSettings(),
+        automaticSilentRenew: true,
+        client_id: wellKnownConfig?.remoteProvisioning?.webOauthClient.clientId,
+        redirect_uri: window.location.origin,
+        extraQueryParams: {
+            audience: wellKnownConfig?.remoteProvisioning?.webOauthClient.audience || false,
+        },
+    } as UserManagerSettings)
+
+    security.setUserManager(userManager)
+
+    const Wrapper = (child: any) => (
+        <AuthProvider
+            {...getOidcCommonSettings()}
+            automaticSilentRenew={true}
+            clientId={wellKnownConfig?.remoteProvisioning?.webOauthClient.clientId || ''}
+            redirectUri={window.location.origin}
+            onSignIn={async (userData) => {
+                // remove auth params
+                window.location.hash = ''
+                window.location.href = window.location.origin
+            }}
+            userManager={userManager}
+        >
+            {child}
+        </AuthProvider>
+    )
 
     return (
         <ConditionalWrapper
-            condition={wellKnownConfig?.deviceAuthenticationMode === DEVICE_AUTH_MODE.X509}
-            wrapper={(child: any) => (
-                <AuthProvider
-                    {...getOidcCommonSettings()}
-                    clientId={wellKnownConfig?.remoteProvisioning?.webOauthClient.clientId || ''}
-                    redirectUri={window.location.origin}
-                    onSignIn={async () => {
-                        // remove auth params
-                        window.location.hash = ''
-                        window.location.href = window.location.origin
-                    }}
-                    automaticSilentRenew={true}
-                    userManager={
-                        new UserManager({
-                            ...getOidcCommonSettings(),
-                            client_id: wellKnownConfig?.remoteProvisioning?.webOauthClient.clientId,
-                            redirect_uri: window.location.origin,
-                            extraQueryParams: {
-                                audience: wellKnownConfig?.remoteProvisioning?.webOauthClient.audience || false,
-                            },
-                        } as UserManagerSettings)
-                    }
-                >
-                    {child}
-                </AuthProvider>
-            )}
+            condition={!props.mockApp && wellKnownConfig?.deviceAuthenticationMode === DEVICE_AUTH_MODE.X509}
+            wrapper={Wrapper}
         >
             <AppInner
+                mockApp={props.mockApp}
                 wellKnownConfig={wellKnownConfig}
                 configError={wellKnownConfigError}
                 setInitialize={setInitialize}
