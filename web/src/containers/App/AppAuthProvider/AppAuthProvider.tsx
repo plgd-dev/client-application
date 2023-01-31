@@ -14,16 +14,12 @@ import { AppAuthProviderRefType, Props } from './AppAuthProvider.types'
 
 const AppAuthProvider = forwardRef<AppAuthProviderRefType, Props>((props, ref) => {
     const { wellKnownConfig, children, setAuthError, setInitialize } = props
-    const { isLoading, userData, signOutRedirect, userManager } = useAuth()
+    const { isLoading, userData, signOutRedirect } = useAuth()
     const userDataRef = useRef<User | null>(null)
 
     if (userData) {
         security.setAccessToken(userData.access_token)
         userDataRef.current = userData
-
-        if (userManager) {
-            security.setUserManager(userManager)
-        }
     }
 
     useImperativeHandle(ref, () => ({
@@ -42,13 +38,13 @@ const AppAuthProvider = forwardRef<AppAuthProviderRefType, Props>((props, ref) =
             wellKnownConfig.remoteProvisioning?.mode === REMOTE_PROVISIONING_MODE.USER_AGENT
         ) {
             try {
-                getOpenIdConfiguration(wellKnownConfig.remoteProvisioning?.authorization.authority).then((result) => {
+                getOpenIdConfiguration(wellKnownConfig.remoteProvisioning?.authority).then((result) => {
                     getJwksData(result.data.jwks_uri).then((result) => {
                         initializeJwksData(result.data).then((result) => {
                             const state = result.data.identityCertificateChallenge.state
 
                             signIdentityCsr(
-                                wellKnownConfig.remoteProvisioning?.userAgent.certificateAuthorityAddress as string,
+                                wellKnownConfig.remoteProvisioning?.certificateAuthority as string,
                                 result.data.identityCertificateChallenge.certificateSigningRequest
                             ).then((result) => {
                                 initializeFinal(state, result.data.certificate).then(() => {

@@ -34,7 +34,6 @@ import (
 	configDevice "github.com/plgd-dev/client-application/service/config/device"
 	configGrpc "github.com/plgd-dev/client-application/service/config/grpc"
 	configHttp "github.com/plgd-dev/client-application/service/config/http"
-	"github.com/plgd-dev/client-application/service/config/remoteProvisioning"
 	serviceDevice "github.com/plgd-dev/client-application/service/device"
 	serviceGrpc "github.com/plgd-dev/client-application/service/grpc"
 	"github.com/plgd-dev/client-application/service/http"
@@ -87,7 +86,7 @@ func MakeConfig2() (config.Config, error) {
 	cfg.APIs.HTTP = MakeHttpConfig()
 	cfg.APIs.GRPC = MakeGrpcConfig()
 	cfg.Clients.Device = MakeDeviceConfig()
-	cfg.RemoteProvisioning = MakeRemoteProvisioningConfig()
+	cfg.RemoteProvisioning = NewRemoteProvisioningConfig()
 
 	err := cfg.Validate()
 	if err != nil {
@@ -208,19 +207,33 @@ func MakeGrpcConfig() config.GRPCConfig {
 	}
 }
 
-func MakeRemoteProvisioningConfig() remoteProvisioning.Config {
-	return remoteProvisioning.Config{
-		Mode: remoteProvisioning.Mode_None,
-		UserAgentConfig: remoteProvisioning.UserAgentConfig{
-			CSRChallengeStateExpiration: time.Minute * 10,
-			CertificateAuthorityAddress: testConfig.CERTIFICATE_AUTHORITY_HOST,
+func NewRemoteProvisioningConfig() *pb.RemoteProvisioning {
+	c := &pb.RemoteProvisioning{
+		Mode: pb.RemoteProvisioning_MODE_NONE,
+		UserAgent: &pb.UserAgent{
+			CsrChallengeStateExpiration: (time.Minute * 10).Nanoseconds(),
 		},
-		Authorization: remoteProvisioning.AuthorizationConfig{
-			OwnerClaim: testConfig.OWNER_CLAIM,
-			Authority:  testConfig.OAUTH_SERVER_HOST,
-			ClientID:   testConfig.OAUTH_MANAGER_CLIENT_ID,
+		CertificateAuthority: "https://" + testConfig.CERTIFICATE_AUTHORITY_HOST,
+		WebOauthClient: &pb.WebOauthClient{
+			ClientId: testConfig.OAUTH_MANAGER_CLIENT_ID,
+			Scopes:   []string{"openid"},
 		},
+		JwtOwnerClaim: testConfig.OWNER_CLAIM,
+		Authority:     "https://" + testConfig.OAUTH_SERVER_HOST,
+		CoapGateway:   testConfig.ACTIVE_COAP_SCHEME + "://" + testConfig.COAP_GW_HOST,
+		DeviceOauthClient: &pb.DeviceOauthClient{
+			ClientId:     testConfig.OAUTH_MANAGER_CLIENT_ID,
+			ProviderName: testConfig.DEVICE_PROVIDER,
+			Audience:     "http://" + CLIENT_APPLICATION_HTTP_HOST,
+			Scopes:       []string{"offline"},
+		},
+		Id:     testConfig.HubID(),
+		CaPool: []string{testConfig.CA_POOL},
 	}
+	if err := c.Validate(); err != nil {
+		panic(err)
+	}
+	return c
 }
 
 func NewHttpService(ctx context.Context, t *testing.T) (*http.Service, func()) {
@@ -265,7 +278,7 @@ func NewServiceInformation() *configGrpc.ServiceInformation {
 
 type ClientApplicationServerCfg struct {
 	Cfg                   configDevice.Config
-	RemoteProvisioningCfg remoteProvisioning.Config
+	RemoteProvisioningCfg *pb.RemoteProvisioning
 }
 
 type ClientApplicationServerOpt = func(c *ClientApplicationServerCfg)
@@ -276,7 +289,7 @@ func WithDeviceConfig(cfg configDevice.Config) ClientApplicationServerOpt {
 	}
 }
 
-func WithRemoteProvisioningConfig(cfg remoteProvisioning.Config) ClientApplicationServerOpt {
+func WithRemoteProvisioningConfig(cfg *pb.RemoteProvisioning) ClientApplicationServerOpt {
 	return func(c *ClientApplicationServerCfg) {
 		c.RemoteProvisioningCfg = cfg
 	}
@@ -289,7 +302,7 @@ func NewClientApplicationServer(ctx context.Context, opts ...ClientApplicationSe
 	}
 	updateCfg := ClientApplicationServerCfg{
 		Cfg:                   MakeDeviceConfig(),
-		RemoteProvisioningCfg: MakeRemoteProvisioningConfig(),
+		RemoteProvisioningCfg: NewRemoteProvisioningConfig(),
 	}
 	for _, o := range opts {
 		o(&updateCfg)

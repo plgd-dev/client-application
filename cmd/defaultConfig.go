@@ -24,6 +24,7 @@ import (
 	"github.com/plgd-dev/client-application/service/config"
 )
 
+// resolveDefaultConfig creates default config file if it doesn't exist and sets --config argument.
 func resolveDefaultConfig(configPath string) error {
 	configPathWasSet := true
 	if configPath == "" {

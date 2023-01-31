@@ -21,7 +21,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/lestrrat-go/jwx/jwk"
-	"github.com/plgd-dev/client-application/service/config/remoteProvisioning"
+	"github.com/plgd-dev/client-application/pb"
 	"github.com/plgd-dev/hub/v2/identity-store/events"
 	"github.com/plgd-dev/hub/v2/pkg/net/grpc"
 	plgdJwt "github.com/plgd-dev/hub/v2/pkg/security/jwt"
@@ -48,6 +48,7 @@ func (s *ClientApplicationServer) getOwnerForUpdateJSONWebKeys(ctx context.Conte
 		return "", status.Errorf(codes.Unauthenticated, "cannot get token: %v", err)
 	}
 	owner := ""
+	cfg := s.GetConfig()
 	if s.jwksCache.Load() != nil {
 		scopedClaims := plgdJwt.NewScopeClaims()
 		err = s.ParseWithClaims(token, scopedClaims)
@@ -55,12 +56,12 @@ func (s *ClientApplicationServer) getOwnerForUpdateJSONWebKeys(ctx context.Conte
 			return "", status.Errorf(codes.Unauthenticated, "cannot parse token: %v", err)
 		}
 		claims := plgdJwt.Claims(*scopedClaims)
-		owner = claims.Owner(s.GetConfig().RemoteProvisioning.Authorization.OwnerClaim)
+		owner = claims.Owner(cfg.RemoteProvisioning.GetJwtOwnerClaim())
 		if owner == "" {
-			return "", status.Errorf(codes.Unauthenticated, "cannot get owner from token: claim %v is not set", s.GetConfig().RemoteProvisioning.Authorization.OwnerClaim)
+			return "", status.Errorf(codes.Unauthenticated, "cannot get owner from token: claim %v is not set", cfg.RemoteProvisioning.GetJwtOwnerClaim())
 		}
 	} else {
-		owner, err = grpc.OwnerFromTokenMD(ctx, s.GetConfig().RemoteProvisioning.Authorization.OwnerClaim)
+		owner, err = grpc.OwnerFromTokenMD(ctx, cfg.RemoteProvisioning.GetJwtOwnerClaim())
 		if err != nil {
 			return "", status.Errorf(codes.Unauthenticated, "cannot get owner from token: %v", err)
 		}
@@ -69,7 +70,7 @@ func (s *ClientApplicationServer) getOwnerForUpdateJSONWebKeys(ctx context.Conte
 }
 
 func (s *ClientApplicationServer) UpdateJSONWebKeys(ctx context.Context, jwksReq *structpb.Struct) error {
-	if s.GetConfig().RemoteProvisioning.Mode != remoteProvisioning.Mode_UserAgent {
+	if s.GetConfig().RemoteProvisioning.GetMode() != pb.RemoteProvisioning_USER_AGENT {
 		return status.Errorf(codes.Unimplemented, "not supported")
 	}
 

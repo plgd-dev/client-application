@@ -37,6 +37,8 @@ import "pb/get_identity_certificate.proto";
 import "pb/get_json_web_keys.proto";
 import "pb/initialize.proto";
 import "pb/reset.proto";
+import "pb/onboard_device.proto";
+import "pb/offboard_device.proto";
 
 import "grpc-gateway/pb/devices.proto";
 import "resource-aggregate/pb/events.proto";
@@ -343,4 +345,36 @@ service ClientApplication {
     };
   }
 
+  rpc OnboardDevice(OnboardDeviceRequest) returns (OnboardDeviceResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/devices/{device_id}/onboard"
+      body: "*"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: [ "Device" ]
+      summary: "Onboard the device."
+      description: "Provisions device to the plgd hub."
+      security: {
+        security_requirement: {
+          key: "OAuth2";
+        }
+      }
+    };
+  }
+
+  rpc OffboardDevice(OffboardDeviceRequest) returns (OffboardDeviceResponse) {
+    option (google.api.http) = {
+      post: "/api/v1/devices/{device_id}/offboard"
+    };
+    option (grpc.gateway.protoc_gen_openapiv2.options.openapiv2_operation) = {
+      tags: [ "Device" ]
+      summary: "Offboard the device."
+      description: "Disconnects device from the plgd hub."
+      security: {
+        security_requirement: {
+          key: "OAuth2";
+        }
+      }
+    };
+  }
 }

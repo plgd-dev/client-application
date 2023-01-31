@@ -34,7 +34,7 @@ const DevicesList: FC<Props> = (props) => {
                 Cell: ({ value, row }: { value: any; row: any }) => {
                     const deviceName = value || NO_DEVICE_NAME
                     return (
-                        <Link to={`/devices/${row.original?.id}`}>
+                        <Link to={`/devices/${row.original?.id}`} data-test-id={deviceName}>
                             <span className='no-wrap-text'>{deviceName}</span>
                         </Link>
                     )

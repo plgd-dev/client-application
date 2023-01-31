@@ -39,6 +39,8 @@ const (
 	DeviceResource      = DeviceResources + "/{" + ResourceHrefKey + "}"
 	OwnDevice           = Device + "/own"
 	DisownDevice        = Device + "/disown"
+	OnboardDevice       = Device + "/onboard"
+	OffboardDevice      = Device + "/offboard"
 
 	Initialize             = ApiV1 + "/initialize"
 	Reset                  = ApiV1 + "/reset"

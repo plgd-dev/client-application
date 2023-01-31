@@ -38,6 +38,8 @@ type ClientApplicationClient interface {
 	Initialize(ctx context.Context, in *InitializeRequest, opts ...grpc.CallOption) (*InitializeResponse, error)
 	FinishInitialize(ctx context.Context, in *FinishInitializeRequest, opts ...grpc.CallOption) (*FinishInitializeResponse, error)
 	Reset(ctx context.Context, in *ResetRequest, opts ...grpc.CallOption) (*ResetResponse, error)
+	OnboardDevice(ctx context.Context, in *OnboardDeviceRequest, opts ...grpc.CallOption) (*OnboardDeviceResponse, error)
+	OffboardDevice(ctx context.Context, in *OffboardDeviceRequest, opts ...grpc.CallOption) (*OffboardDeviceResponse, error)
 }
 
 type clientApplicationClient struct {
@@ -224,6 +226,24 @@ func (c *clientApplicationClient) Reset(ctx context.Context, in *ResetRequest, o
 	return out, nil
 }
 
+func (c *clientApplicationClient) OnboardDevice(ctx context.Context, in *OnboardDeviceRequest, opts ...grpc.CallOption) (*OnboardDeviceResponse, error) {
+	out := new(OnboardDeviceResponse)
+	err := c.cc.Invoke(ctx, "/service.pb.ClientApplication/OnboardDevice", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *clientApplicationClient) OffboardDevice(ctx context.Context, in *OffboardDeviceRequest, opts ...grpc.CallOption) (*OffboardDeviceResponse, error) {
+	out := new(OffboardDeviceResponse)
+	err := c.cc.Invoke(ctx, "/service.pb.ClientApplication/OffboardDevice", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ClientApplicationServer is the server API for ClientApplication service.
 // All implementations must embed UnimplementedClientApplicationServer
 // for forward compatibility
@@ -245,6 +265,8 @@ type ClientApplicationServer interface {
 	Initialize(context.Context, *InitializeRequest) (*InitializeResponse, error)
 	FinishInitialize(context.Context, *FinishInitializeRequest) (*FinishInitializeResponse, error)
 	Reset(context.Context, *ResetRequest) (*ResetResponse, error)
+	OnboardDevice(context.Context, *OnboardDeviceRequest) (*OnboardDeviceResponse, error)
+	OffboardDevice(context.Context, *OffboardDeviceRequest) (*OffboardDeviceResponse, error)
 	mustEmbedUnimplementedClientApplicationServer()
 }
 
@@ -302,6 +324,12 @@ func (UnimplementedClientApplicationServer) FinishInitialize(context.Context, *F
 }
 func (UnimplementedClientApplicationServer) Reset(context.Context, *ResetRequest) (*ResetResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Reset not implemented")
+}
+func (UnimplementedClientApplicationServer) OnboardDevice(context.Context, *OnboardDeviceRequest) (*OnboardDeviceResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method OnboardDevice not implemented")
+}
+func (UnimplementedClientApplicationServer) OffboardDevice(context.Context, *OffboardDeviceRequest) (*OffboardDeviceResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method OffboardDevice not implemented")
 }
 func (UnimplementedClientApplicationServer) mustEmbedUnimplementedClientApplicationServer() {}
 
@@ -625,6 +653,42 @@ func _ClientApplication_Reset_Handler(srv interface{}, ctx context.Context, dec 
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ClientApplication_OnboardDevice_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(OnboardDeviceRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ClientApplicationServer).OnboardDevice(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/service.pb.ClientApplication/OnboardDevice",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ClientApplicationServer).OnboardDevice(ctx, req.(*OnboardDeviceRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _ClientApplication_OffboardDevice_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(OffboardDeviceRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ClientApplicationServer).OffboardDevice(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/service.pb.ClientApplication/OffboardDevice",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ClientApplicationServer).OffboardDevice(ctx, req.(*OffboardDeviceRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // ClientApplication_ServiceDesc is the grpc.ServiceDesc for ClientApplication service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -695,6 +759,14 @@ var ClientApplication_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Reset",
 			Handler:    _ClientApplication_Reset_Handler,
+		},
+		{
+			MethodName: "OnboardDevice",
+			Handler:    _ClientApplication_OnboardDevice_Handler,
+		},
+		{
+			MethodName: "OffboardDevice",
+			Handler:    _ClientApplication_OffboardDevice_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

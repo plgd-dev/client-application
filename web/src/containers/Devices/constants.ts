@@ -48,6 +48,7 @@ export const knownInterfaces = {
 export const knownResourceTypes = {
     OIC_WK_CON: 'oic.wk.con', // contains device name
     X_PLGD_DPS_CONF: 'x.plgd.dps.conf',
+    OIC_R_COAP_CLOUD_CONF_RES_URI: 'oic.r.coapcloudconf',
 }
 
 export const shadowSynchronizationStates = {
@@ -93,6 +94,13 @@ export const devicesStatusSeverities = {
     SUCCESS: 'success',
     WARNING: 'warning',
     ERROR: 'error',
+}
+
+export const devicesOnboardingStatuses = {
+    NA: 'n/a',
+    UNINITIALIZED: 'uninitialized',
+    REGISTERED: 'registered',
+    FAILED: 'failed',
 }
 
 export const DEVICE_PROVISION_STATUS_DELAY_MS = 100 // ms

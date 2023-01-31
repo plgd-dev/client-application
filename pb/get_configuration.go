@@ -15,42 +15,46 @@
 // ************************************************************************
 package pb
 
-func (r *UserAgent) Clone() *UserAgent {
-	if r == nil {
+import (
+	"fmt"
+	"os"
+	"time"
+
+	pb "github.com/plgd-dev/hub/v2/grpc-gateway/pb"
+	"github.com/plgd-dev/kit/v2/security"
+	"gopkg.in/yaml.v3"
+)
+
+type (
+	WebOauthClient    = pb.WebOAuthClient
+	DeviceOauthClient = pb.DeviceOAuthClient
+)
+
+func (c *UserAgent) Clone() *UserAgent {
+	if c == nil {
 		return nil
 	}
 	return &UserAgent{
-		CertificateAuthorityAddress: r.CertificateAuthorityAddress,
-		CsrChallengeStateExpiration: r.CsrChallengeStateExpiration,
+		CsrChallengeStateExpiration: c.CsrChallengeStateExpiration,
 	}
 }
 
-func (r *Authorization) Clone() *Authorization {
-	if r == nil {
-		return nil
-	}
-	var scopes []string
-	if len(r.Scopes) > 0 {
-		scopes = make([]string, len(r.Scopes))
-		copy(scopes, r.Scopes)
-	}
-	return &Authorization{
-		ClientId:   r.ClientId,
-		Audience:   r.Audience,
-		Scopes:     scopes,
-		OwnerClaim: r.OwnerClaim,
-		Authority:  r.Authority,
-	}
-}
-
-func (r *RemoteProvisioning) Clone() *RemoteProvisioning {
-	if r == nil {
+func (c *RemoteProvisioning) Clone() *RemoteProvisioning {
+	if c == nil {
 		return nil
 	}
 	return &RemoteProvisioning{
-		Mode:          r.Mode,
-		UserAgent:     r.UserAgent.Clone(),
-		Authorization: r.Authorization.Clone(),
+		CurrentTime:            c.GetCurrentTime(),
+		Mode:                   c.GetMode(),
+		UserAgent:              c.GetUserAgent().Clone(),
+		WebOauthClient:         c.GetWebOauthClient().Clone(),
+		JwtOwnerClaim:          c.GetJwtOwnerClaim(),
+		Id:                     c.GetId(),
+		CoapGateway:            c.GetCoapGateway(),
+		CertificateAuthorities: c.GetCertificateAuthorities(),
+		Authority:              c.GetAuthority(),
+		DeviceOauthClient:      c.GetDeviceOauthClient().Clone(),
+		CertificateAuthority:   c.GetCertificateAuthority(),
 	}
 }
 
@@ -66,4 +70,125 @@ func (r *GetConfigurationResponse) Clone() *GetConfigurationResponse {
 		ReleaseUrl:         r.ReleaseUrl,
 		RemoteProvisioning: r.RemoteProvisioning.Clone(),
 	}
+}
+
+func ValidateWebOAuthClient(c *pb.WebOAuthClient) error {
+	if c.GetClientId() == "" {
+		return fmt.Errorf("clientID('%v')", c.GetClientId())
+	}
+	return nil
+}
+
+func (c *UserAgent) Validate() error {
+	if c.GetCsrChallengeStateExpiration() == 0 {
+		return fmt.Errorf("csrChallengeStateExpiration('%v')", c.GetCsrChallengeStateExpiration())
+	}
+	return nil
+}
+
+func (c *UserAgent) UnmarshalYAML(value *yaml.Node) error {
+	var v struct {
+		CsrChallengeStateExpiration time.Duration `yaml:"csrChallengeStateExpiration"`
+	}
+	if err := value.Decode(&v); err != nil {
+		return fmt.Errorf("csrChallengeStateExpiration('%v') - %w", c.GetCsrChallengeStateExpiration(), err)
+	}
+	c.CsrChallengeStateExpiration = v.CsrChallengeStateExpiration.Nanoseconds()
+	return nil
+}
+
+func (c *UserAgent) MarshalYAML() (interface{}, error) {
+	var v struct {
+		CsrChallengeStateExpiration time.Duration `yaml:"csrChallengeStateExpiration"`
+	}
+	v.CsrChallengeStateExpiration = time.Nanosecond * time.Duration(c.GetCsrChallengeStateExpiration())
+	return v, nil
+}
+
+func (c RemoteProvisioning_Mode) MarshalYAML() (interface{}, error) {
+	switch c {
+	case RemoteProvisioning_USER_AGENT:
+		return "userAgent", nil
+	case RemoteProvisioning_MODE_NONE:
+		return "", nil
+	}
+	return "", nil
+}
+
+func (c *RemoteProvisioning_Mode) UnmarshalYAML(value *yaml.Node) error {
+	var v string
+	if err := value.Decode(&v); err != nil {
+		return err
+	}
+	if v == "userAgent" {
+		*c = RemoteProvisioning_USER_AGENT
+		return nil
+	}
+	*c = RemoteProvisioning_MODE_NONE
+	return nil
+}
+
+func validateCA(path string) ([]byte, error) {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		return nil, err
+	}
+	_, err = security.ParseX509FromPEM(data)
+	if err != nil {
+		return nil, err
+	}
+	return data, err
+}
+
+func validateCAPool(paths []string) ([]byte, error) {
+	if len(paths) == 0 {
+		return nil, nil
+	}
+	certificateAuthorities := make([]byte, 0, 512)
+	for i, ca := range paths {
+		data, err := validateCA(ca)
+		if err != nil {
+			return nil, fmt.Errorf("caPool[%v]('%v') - %w", i, paths, err)
+		}
+		certificateAuthorities = append(certificateAuthorities, data...)
+		if certificateAuthorities[len(certificateAuthorities)-1] != '\n' {
+			certificateAuthorities = append(certificateAuthorities, '\n')
+		}
+	}
+	return certificateAuthorities, nil
+}
+
+func (c *RemoteProvisioning) validateForUserAgent() error {
+	if err := ValidateWebOAuthClient(c.GetWebOauthClient()); err != nil {
+		return fmt.Errorf("webOAuthClient.%w", err)
+	}
+	if c.GetAuthority() == "" {
+		return fmt.Errorf("authority('%v')", c.GetAuthority())
+	}
+	if c.GetJwtOwnerClaim() == "" {
+		return fmt.Errorf("ownerClaim('%v')", c.GetJwtOwnerClaim())
+	}
+	if err := c.GetUserAgent().Validate(); err != nil {
+		return fmt.Errorf("userAgent.%w", err)
+	}
+	return nil
+}
+
+func (c *RemoteProvisioning) Validate() error {
+	if c == nil {
+		return nil
+	}
+	certificateAuthorities, err := validateCAPool(c.GetCaPool())
+	if err != nil {
+		return err
+	}
+	c.CertificateAuthorities = string(certificateAuthorities)
+	switch c.GetMode() {
+	case RemoteProvisioning_USER_AGENT:
+		if err := c.validateForUserAgent(); err != nil {
+			return err
+		}
+	case RemoteProvisioning_MODE_NONE:
+	}
+	return nil
 }

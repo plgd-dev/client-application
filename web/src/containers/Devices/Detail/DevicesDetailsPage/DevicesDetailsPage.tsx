@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useIntl } from 'react-intl'
 import { useParams } from 'react-router-dom'
 import classNames from 'classnames'
@@ -6,9 +6,9 @@ import { history } from '@/store'
 import ConfirmModal from '@shared-ui/components/new/ConfirmModal'
 import Layout from '@shared-ui/components/new/Layout'
 import NotFoundPage from '@/containers/NotFoundPage'
-import { useIsMounted } from '@shared-ui/common/hooks'
+import { useIsMounted, WellKnownConfigType } from '@shared-ui/common/hooks'
 import { messages as menuT } from '@shared-ui/components/new/Menu/Menu.i18n'
-import { showSuccessToast } from '@shared-ui/components/new/Toast/Toast'
+import { showErrorToast, showSuccessToast } from '@shared-ui/components/new/Toast/Toast'
 import DevicesDetails from '../DevicesDetails'
 import DevicesResources from '../../Resources/DevicesResources'
 import DevicesDetailsHeader from '../DevicesDetailsHeader'
@@ -21,6 +21,7 @@ import {
     resourceModalTypes,
     NO_DEVICE_NAME,
     devicesOwnerships,
+    devicesOnboardingStatuses,
 } from '../../constants'
 import {
     handleCreateResourceErrors,
@@ -36,8 +37,12 @@ import {
     deleteDevicesResourceApi,
     ownDeviceApi,
     disownDeviceApi,
+    getDeviceAuthCode,
+    onboardDeviceApi,
+    offboardDeviceApi,
+    PLGD_BROWSER_USED,
 } from '../../rest'
-import { useDeviceDetails, useDevicesResources } from '../../hooks'
+import { useDeviceDetails, useDevicesResources, useOnboardingButton } from '../../hooks'
 import { messages as t } from '../../Devices.i18n'
 import './DevicesDetailsPage.scss'
 import { disOwnDevice, ownDevice } from '@/containers/Devices/slice'
@@ -46,6 +51,15 @@ import { BreadcrumbItem } from '@shared-ui/components/new/Breadcrumbs/Breadcrumb
 import omit from 'lodash/omit'
 import { DevicesDetailsResourceModalData } from '@/containers/Devices/Detail/DevicesDetailsPage/DevicesDetailsPage.types'
 import { DevicesResourcesModalParamsType } from '@/containers/Devices/Resources/DevicesResourcesModal/DevicesResourcesModal.types'
+import IncompleteOnboardingDataModal, {
+    getOnboardingDataFromConfig,
+} from '@/containers/Devices/Detail/IncompleteOnboardingDataModal'
+import {
+    OnboardingDataType,
+    onboardingDataDefault,
+} from '../IncompleteOnboardingDataModal/IncompleteOnboardingDataModal.types'
+import { security } from '@shared-ui/common/services'
+import FirstTimeOnboardingModal from '@/containers/Devices/Detail/FirstTimeOnboardingModal/FirstTimeOnboardingModal'
 
 const DevicesDetailsPage = () => {
     const { formatMessage: _ } = useIntl()
@@ -60,6 +74,10 @@ const DevicesDetailsPage = () => {
     const [loadingResource, setLoadingResource] = useState(false)
     const [savingResource, setSavingResource] = useState(false)
     const [showDpsModal, setShowDpsModal] = useState(false)
+    const [showIncompleteOnboardingModal, setShowIncompleteOnboardingModal] = useState(false)
+    const [showFirstTimeOnboardingModal, setShowFirstTimeOnboardingModal] = useState(false)
+    const [onboardingData, setOnboardingData] = useState<OnboardingDataType>(onboardingDataDefault)
+    const [onboarding, setOnboarding] = useState(false)
     const [deleteResourceHref, setDeleteResourceHref] = useState<string>('')
     const [ttlHasError] = useState(false)
     const isMounted = useIsMounted()
@@ -73,8 +91,36 @@ const DevicesDetailsPage = () => {
     const dispatch = useDispatch()
 
     const isOwned = useMemo(() => data?.ownershipStatus === devicesOwnerships.OWNED, [data])
+    const resources = useMemo(() => resourcesData?.resources || [], [resourcesData])
 
-    const resources = resourcesData?.resources || []
+    const [
+        incompleteOnboardingData,
+        onboardResourceLoading,
+        deviceOnboardingResourceData,
+        refetchDeviceOnboardingData,
+    ] = useOnboardingButton({
+        resources,
+        isOwned,
+        deviceId: id,
+    })
+
+    const wellKnownConfig = security.getWellKnowConfig() as WellKnownConfigType
+    const parseOnboardingData = useCallback(() => getOnboardingDataFromConfig(wellKnownConfig), [wellKnownConfig])
+
+    // check onboarding status evert 1s if onboarding process running
+    useEffect(() => {
+        const { UNINITIALIZED, REGISTERED, FAILED } = devicesOnboardingStatuses
+
+        if (
+            deviceOnboardingResourceData?.content?.cps &&
+            ![UNINITIALIZED, REGISTERED, FAILED].includes(deviceOnboardingResourceData.content.cps)
+        ) {
+            const interval = setInterval(() => {
+                refetchDeviceOnboardingData()
+            }, 1000)
+            return () => clearInterval(interval)
+        }
+    }, [deviceOnboardingResourceData, refetchDeviceOnboardingData])
 
     // Open the resource modal when href is present
     useEffect(
@@ -342,6 +388,68 @@ const DevicesDetailsPage = () => {
         }
     }
 
+    function handleOnboardCallback() {
+        if (deviceOnboardingResourceData.content.cps === devicesOnboardingStatuses.UNINITIALIZED) {
+            if (incompleteOnboardingData) {
+                setShowIncompleteOnboardingModal(true)
+            } else {
+                onboardDevice({ ...parseOnboardingData(), authorizationCode: '' }).then()
+            }
+        } else {
+            offboardDeviceApi(id).then(() => {
+                setOnboardingData({ ...onboardingData, authorizationCode: '' })
+                refetchDeviceOnboardingData()
+            })
+        }
+    }
+
+    const onboardDevice = async (onboardingData: OnboardingDataType) => {
+        try {
+            setOnboarding(true)
+
+            const wasBrowserUsed = localStorage.getItem(PLGD_BROWSER_USED)
+
+            if (!wasBrowserUsed) {
+                localStorage.setItem(PLGD_BROWSER_USED, '1')
+                setShowFirstTimeOnboardingModal(true)
+            }
+
+            const code =
+                onboardingData.authorizationCode !== '' ? onboardingData.authorizationCode : await getDeviceAuthCode(id)
+
+            const cleanUpOnboardData = (d: string) => d.replace(/\\n/g, '\n')
+
+            onboardDeviceApi(id, {
+                coapGatewayAddress: onboardingData.coapGatewayAddress || '',
+                authorizationCode: code as string,
+                authorizationProviderName: onboardingData.authorizationProviderName || '',
+                hubId: onboardingData.hubId || '',
+                certificateAuthorities: cleanUpOnboardData(onboardingData.certificateAuthorities || ''),
+            })
+                .then((r) => {
+                    setOnboarding(false)
+                    refetchDeviceOnboardingData()
+                })
+                .catch((e) => {
+                    showErrorToast(JSON.parse(e?.request?.response)?.message || e.message)
+                    setOnboardingData(onboardingData)
+                    toggleOnboardingModal(true)
+                    setOnboarding(false)
+                })
+        } catch (e: any) {
+            if (e !== 'user-cancel') {
+                showErrorToast(e.message)
+                console.error(e)
+            }
+
+            setOnboarding(false)
+        }
+    }
+
+    function toggleOnboardingModal(state = false) {
+        setShowIncompleteOnboardingModal(state)
+    }
+
     return (
         <Layout
             title={`${deviceName ? deviceName + ' | ' : ''}${_(menuT.devices)}`}
@@ -356,6 +464,12 @@ const DevicesDetailsPage = () => {
                     isUnregistered={isUnregistered}
                     resources={resources}
                     openDpsModal={() => setShowDpsModal(true)}
+                    onboarding={onboarding}
+                    incompleteOnboardingData={incompleteOnboardingData}
+                    deviceOnboardingResourceData={deviceOnboardingResourceData}
+                    onboardResourceLoading={onboardResourceLoading}
+                    onboardButtonCallback={handleOnboardCallback}
+                    openOnboardingModal={() => toggleOnboardingModal(true)}
                 />
             }
         >
@@ -373,7 +487,16 @@ const DevicesDetailsPage = () => {
                 deviceId={id}
                 resources={resources}
             />
-            <DevicesDetails data={data} isOwned={isOwned} loading={loading} resources={resources} deviceId={id} />
+
+            <DevicesDetails
+                data={data}
+                isOwned={isOwned}
+                loading={loading}
+                resources={resources}
+                deviceId={id}
+                onboardResourceLoading={onboardResourceLoading}
+                deviceOnboardingResourceData={deviceOnboardingResourceData}
+            />
 
             <DevicesResources
                 data={resources}
@@ -423,6 +546,27 @@ const DevicesDetailsPage = () => {
                 onClose={() => setShowDpsModal(false)}
                 updateResource={updateResource}
                 resources={resources}
+            />
+
+            <IncompleteOnboardingDataModal
+                deviceId={id}
+                show={showIncompleteOnboardingModal}
+                onboardingData={onboardingData}
+                onClose={toggleOnboardingModal}
+                onSubmit={(onboardingData) => {
+                    setOnboardingData(onboardingData)
+                    onboardDevice(onboardingData).then()
+                }}
+            />
+
+            <FirstTimeOnboardingModal
+                show={showFirstTimeOnboardingModal}
+                onClose={() => {
+                    setShowFirstTimeOnboardingModal(false)
+                }}
+                onSubmit={() => {
+                    setShowFirstTimeOnboardingModal(false)
+                }}
             />
         </Layout>
     )

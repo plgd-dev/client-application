@@ -285,6 +285,110 @@
         ]
       }
     },
+    "/api/v1/devices/{deviceId}/offboard": {
+      "post": {
+        "summary": "Offboard the device.",
+        "description": "Disconnects device from the plgd hub.",
+        "operationId": "ClientApplication_OffboardDevice",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbOffboardDeviceResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "deviceId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "Device"
+        ],
+        "security": [
+          {
+            "OAuth2": []
+          }
+        ]
+      }
+    },
+    "/api/v1/devices/{deviceId}/onboard": {
+      "post": {
+        "summary": "Onboard the device.",
+        "description": "Provisions device to the plgd hub.",
+        "operationId": "ClientApplication_OnboardDevice",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/pbOnboardDeviceResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/googlerpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "deviceId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          },
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "type": "object",
+              "properties": {
+                "coapGatewayAddress": {
+                  "type": "string",
+                  "title": "endpoint in format \u003cscheme\u003e://\u003chost\u003e:\u003cport\u003e"
+                },
+                "authorizationCode": {
+                  "type": "string",
+                  "title": "authorization code from the hub"
+                },
+                "authorizationProviderName": {
+                  "type": "string",
+                  "title": "authorization provider from the hub"
+                },
+                "hubId": {
+                  "type": "string",
+                  "title": "hub id in uuid format to allow hub access to device"
+                },
+                "certificateAuthorities": {
+                  "type": "string",
+                  "title": "list of hub certificate authorities in PEM format to verify the hub certificate"
+                }
+              }
+            }
+          }
+        ],
+        "tags": [
+          "Device"
+        ],
+        "security": [
+          {
+            "OAuth2": []
+          }
+        ]
+      }
+    },
     "/api/v1/devices/{deviceId}/own": {
       "post": {
         "summary": "Own the device.",
@@ -782,6 +886,18 @@
     }
   },
   "definitions": {
+    "ConnectionProtocol": {
+      "type": "string",
+      "enum": [
+        "UNKNOWN",
+        "COAP",
+        "COAPS",
+        "COAP_TCP",
+        "COAPS_TCP",
+        "C2C"
+      ],
+      "default": "UNKNOWN"
+    },
     "DeviceMetadata": {
       "type": "object",
       "properties": {
@@ -929,29 +1045,6 @@
         }
       }
     },
-    "pbAuthorization": {
-      "type": "object",
-      "properties": {
-        "clientId": {
-          "type": "string"
-        },
-        "audience": {
-          "type": "string"
-        },
-        "scopes": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "ownerClaim": {
-          "type": "string"
-        },
-        "authority": {
-          "type": "string"
-        }
-      }
-    },
     "pbClearCacheResponse": {
       "type": "object"
     },
@@ -983,6 +1076,9 @@
         "connectedAt": {
           "type": "string",
           "format": "int64"
+        },
+        "protocol": {
+          "$ref": "#/definitions/ConnectionProtocol"
         }
       }
     },
@@ -1043,6 +1139,26 @@
             "type": "string"
           },
           "title": "endpoints with schemas which are hosted by the device"
+        }
+      }
+    },
+    "pbDeviceOAuthClient": {
+      "type": "object",
+      "properties": {
+        "clientId": {
+          "type": "string"
+        },
+        "audience": {
+          "type": "string"
+        },
+        "scopes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "providerName": {
+          "type": "string"
         }
       }
     },
@@ -1186,6 +1302,12 @@
         }
       }
     },
+    "pbOffboardDeviceResponse": {
+      "type": "object"
+    },
+    "pbOnboardDeviceResponse": {
+      "type": "object"
+    },
     "pbOwnDeviceResponse": {
       "type": "object",
       "properties": {
@@ -1207,14 +1329,51 @@
     "pbRemoteProvisioning": {
       "type": "object",
       "properties": {
+        "currentTime": {
+          "type": "string",
+          "format": "int64"
+        },
+        "jwtOwnerClaim": {
+          "type": "string"
+        },
+        "id": {
+          "type": "string",
+          "title": "Hub ID"
+        },
+        "coapGateway": {
+          "type": "string",
+          "title": "coap-gateway in format coaps+tcp://host:port"
+        },
+        "certificateAuthorities": {
+          "type": "string",
+          "title": "certificate_authorities in format PEM - can contain multiple certificates"
+        },
+        "authority": {
+          "type": "string",
+          "title": "authority in format https://host:port"
+        },
+        "certificateAuthority": {
+          "type": "string",
+          "title": "certificate_authority in format https://host:port"
+        },
+        "webOauthClient": {
+          "$ref": "#/definitions/pbWebOAuthClient",
+          "title": "http-gateway in format https://host:port\nstring http_gateway_address = 10; // @gotags: yaml:\"-\""
+        },
+        "deviceOauthClient": {
+          "$ref": "#/definitions/pbDeviceOAuthClient"
+        },
         "mode": {
           "$ref": "#/definitions/RemoteProvisioningMode"
         },
         "userAgent": {
           "$ref": "#/definitions/pbUserAgent"
         },
-        "authorization": {
-          "$ref": "#/definitions/pbAuthorization"
+        "caPool": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
       }
     },
@@ -1393,12 +1552,27 @@
     "pbUserAgent": {
       "type": "object",
       "properties": {
-        "certificateAuthorityAddress": {
-          "type": "string"
-        },
         "csrChallengeStateExpiration": {
           "type": "string",
-          "format": "int64"
+          "format": "int64",
+          "title": "in nanoseconds"
+        }
+      }
+    },
+    "pbWebOAuthClient": {
+      "type": "object",
+      "properties": {
+        "clientId": {
+          "type": "string"
+        },
+        "audience": {
+          "type": "string"
+        },
+        "scopes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         }
       }
     },

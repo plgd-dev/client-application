@@ -21,6 +21,7 @@ import (
 	"fmt"
 	"sort"
 	"sync"
+	"time"
 
 	"github.com/google/uuid"
 	serviceDevice "github.com/plgd-dev/client-application/service/device"
@@ -207,4 +208,26 @@ func (d *device) update(data *device) {
 	d.private.ResourceTypes = data.private.ResourceTypes
 	d.private.OwnershipStatus = data.private.OwnershipStatus
 	d.updateEndpointsLocked(data.private.Endpoints)
+}
+
+func (d *device) provision(ctx context.Context, links schema.ResourceLinks, action func(context.Context, *core.ProvisioningClient) error) (err error) {
+	var p *core.ProvisioningClient
+	p, err = d.Provision(ctx, links)
+	if err != nil {
+		return err
+	}
+	defer func() {
+		deadline, ok := ctx.Deadline()
+		if ctx.Err() != nil || !ok || time.Until(deadline) < time.Second {
+			ctx1, cancel := context.WithTimeout(context.Background(), time.Second)
+			defer cancel()
+			ctx = ctx1
+		}
+		pErr := p.Close(ctx)
+		if err == nil {
+			err = pErr
+		}
+	}()
+	err = action(ctx, p)
+	return
 }

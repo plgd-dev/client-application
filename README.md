@@ -66,7 +66,7 @@ HTTP API of the client application service as defined [swagger](./pb/service.swa
 | `apis.http.ui.enabled` | bool | `Set to true if you would like to run the web UI.` | `false` |
 | `apis.http.ui.directory` | string | `A path to the directory with web UI files. When it is not present, it creates <client_application_binary>/www with default ui.` | `""` |
 | `apis.http.tls.enabled` | bool | `Enable HTTPS.` | `false` |
-| `apis.http.tls.caPool` | string | `File path to the root certificate in PEM format which might contain multiple certificates in a single file.` |  `""` |
+| `apis.http.tls.caPool` | []string | `File path to the root certificate in PEM format which might contain multiple certificates in a single file.` |  `""` |
 | `apis.http.tls.keyFile` | string | `File path to private key in PEM format.` | `""` |
 | `apis.http.tls.certFile` | string | `File path to certificate in PEM format.` | `""` |
 | `apis.http.tls.clientCertificateRequired` | bool | `If true, require client certificate.` | `true` |
@@ -86,7 +86,7 @@ gRPC API of the client application service as defined [service](./pb/service.pro
 | `apis.grpc.keepAlive.maxConnectionAgeGrace` | string | `An additive period after MaxConnectionAge after which the connection will be forcibly closed. 0s means infinity.` | `0s` |
 | `apis.grpc.keepAlive.time` | string | `After a duration of this time if the server doesn't see any activity it pings the client to see if the transport is still alive.` | `2h` |
 | `apis.grpc.keepAlive.timeout` | string | `After having pinged for keepalive check, the client waits for a duration of Timeout and if no activity is seen even after that the connection is closed.` | `20s` |
-| `apis.grpc.tls.caPool` | string | `File path to the root certificate in PEM format which might contain multiple certificates in a single file.` |  `""` |
+| `apis.grpc.tls.caPool` | []string | `File path to the root certificate in PEM format which might contain multiple certificates in a single file.` |  `""` |
 | `apis.grpc.tls.enabled` | bool | `Enable TLS for grpc.` | `false` |
 | `apis.grpc.tls.keyFile` | string | `File path to private key in PEM format.` | `""` |
 | `apis.grpc.tls.certFile` | string | `File path to certificate in PEM format.` | `""` |
@@ -121,12 +121,19 @@ Supported modes:
 | Property | Type | Description | Default |
 | ---------- | -------- | -------------- | ------- |
 | `remoteProvisioning.mode` | string | `Provides remote provisioning mode. In "userAgent" mode all signing certificates goes through the user agent (browser,cli). "" means none. The supported values are: "", "userAgent"` | `""` |
-| `remoteProvisioning.userAgent.certificateAuthorityAddress` | string | `Certificate authority server address in format {DNS}:{PORT}` | `""` |
+| `remoteProvisioning.certificateAuthority` | string | `Certificate authority server address in format {SCHEME}://{DNS}:{PORT}` | `""` |
 | `remoteProvisioning.userAgent.csrChallengeStateExpiration` | string | `Defines how long is valid csr challenge.` | `"1m"` |
-| `remoteProvisioning.authorization.authority` | string | `Authority is the address of the token-issuing authentication server.` | `""` |
-| `remoteProvisioning.authorization.clientId` | string | `Client ID to exchange an authorization code for an access token.` | `""` |
-| `remoteProvisioning.authorization.audience` | string | `Identifier of the API configured in your OAuth provider.` | `""` |
-| `remoteProvisioning.authorization.scopes` | []string | `List of required scopes.` | `[]` |
-| `remoteProvisioning.authorization.ownerClaim` | string | `Claim used to identify owner of the device.` | `"sub"` |
+| `remoteProvisioning.authority` | string | `Authority is the address of the token-issuing authentication server.` | `""` |
+| `remoteProvisioning.webOAuthClient.clientID` | string | `Client ID to exchange an authorization code for an access token.` | `""` |
+| `remoteProvisioning.webOAuthClient.audience` | string | `Identifier of the API configured in your OAuth provider.` | `""` |
+| `remoteProvisioning.webOAuthClient.scopes` | []string | `List of required scopes.` | `[]` |
+| `remoteProvisioning.ownerClaim` | string | `Claim used to identify owner of the device.` | `"sub"` |
+| `remoteProvisioning.hubID` | string | `Plgd hub id.` | `""` |
+| `remoteProvisioning.coapGateway` | string | `CoAP gateway for onboard device.` | `""` |
+| `remoteProvisioning.caPool` | []string | `File paths to root CAs which was used to sign coap-gw certificate.` | `""` |
+| `remoteProvisioning.deviceOAuthClient.clientID` | string | `Client ID to exchange an authorization code for an access token.` | `""` |
+| `remoteProvisioning.deviceOAuthClient.audience` | string | `Identifier of the API configured in your OAuth provider.` | `""` |
+| `remoteProvisioning.deviceOAuthClient.scopes` | []string | `List of required scopes.` | `[]` |
+| `remoteProvisioning.deviceOAuthClient.providerName` | string | `Name of provider, which needs to be set to cloud resource during cloud provisioning.` | `""` |
 
 > Note that the string type related to time (i.e. timeout, idleConnTimeout, expirationTime) is decimal numbers, each with optional fraction and a unit suffix, such as "300ms", "1.5h" or "2h45m". Valid time units are "ns", "us", "ms", "s", "m", "h".

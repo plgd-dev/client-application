@@ -18,6 +18,7 @@ package grpc
 
 import (
 	"context"
+	"time"
 
 	"github.com/plgd-dev/client-application/pb"
 )
@@ -27,10 +28,10 @@ func (s *ClientApplicationServer) GetConfiguration(ctx context.Context, _ *pb.Ge
 	info.DeviceAuthenticationMode = s.serviceDevice.GetDeviceAuthenticationMode()
 	info.IsInitialized = s.serviceDevice.IsInitialized()
 	info.Owner = s.serviceDevice.GetOwner()
-	if info.DeviceAuthenticationMode == pb.GetConfigurationResponse_X509 {
-		remoteProvisioning := s.GetConfig().RemoteProvisioning
-		info.RemoteProvisioning = remoteProvisioning.ToProto()
+	remoteProvisioning := s.GetConfig().RemoteProvisioning
+	info.RemoteProvisioning = remoteProvisioning.Clone()
+	if info.RemoteProvisioning != nil {
+		info.RemoteProvisioning.CurrentTime = time.Now().UnixNano()
 	}
-
 	return info, nil
 }

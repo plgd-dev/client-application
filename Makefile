@@ -31,11 +31,37 @@ certificates:
 	docker pull $(CERT_TOOL_IMAGE)
 	docker run --rm --user $(USER_ID):$(GROUP_ID) -v $(CERT_PATH):/out $(CERT_TOOL_IMAGE) --outCert=/out/rootcacrt.pem --outKey=/out/rootcakey.pem --cert.subject.cn="ca" --cmd.generateRootCA
 	docker run --rm --user $(USER_ID):$(GROUP_ID) -v $(CERT_PATH):/out $(CERT_TOOL_IMAGE) --signerCert=/out/rootcacrt.pem --signerKey=/out/rootcakey.pem --outCert=/out/httpcrt.pem --outKey=/out/httpkey.pem --cert.san.domain=localhost --cert.san.ip=127.0.0.1 --cert.subject.cn="http-server" --cmd.generateCertificate
+	docker run --rm --user $(USER_ID):$(GROUP_ID) -v $(CERT_PATH):/out $(CERT_TOOL_IMAGE) --signerCert=/out/rootcacrt.pem --signerKey=/out/rootcakey.pem --outCert=/out/coap.crt --outKey=/out/coap.key --cmd.generateIdentityCertificate=$(CLOUD_SID)  --cert.san.domain=localhost
+	cat $(WORKING_DIRECTORY)/.tmp/certs/httpcrt.pem > $(WORKING_DIRECTORY)/.tmp/certs/mongo.key
+	cat $(WORKING_DIRECTORY)/.tmp/certs/httpkey.pem >> $(WORKING_DIRECTORY)/.tmp/certs/mongo.key
 	mkdir -p $(MFG_CERT_PATH)
 	docker run --rm --user $(USER_ID):$(GROUP_ID) -v $(MFG_CERT_PATH):/out $(CERT_TOOL_IMAGE) --outCert=/out/cloudca.pem --outKey=/out/cloudcakey.pem --cert.subject.cn=MfgRootCA --cmd.generateRootCA
 	docker run --rm --user $(USER_ID):$(GROUP_ID) -v $(MFG_CERT_PATH):/out $(CERT_TOOL_IMAGE) --signerCert=/out/cloudca.pem --signerKey=/out/cloudcakey.pem --outCert=/out/mfgcrt.pem --outKey=/out/mfgkey.pem --cert.subject.cn="mfg-device-cert" --cmd.generateCertificate
 	docker run --rm --user $(USER_ID):$(GROUP_ID) -v $(MFG_CERT_PATH):/out $(CERT_TOOL_IMAGE) --signerCert=/out/cloudca.pem --signerKey=/out/cloudcakey.pem --outCert=/out/mfgclientapplicationcrt.pem --outKey=/out/mfgclientapplicationkey.pem --cert.subject.cn="mfg-client-application-cert" --cmd.generateCertificate
 .PHONY: certificates
+
+nats:
+	mkdir -p $(WORKING_DIRECTORY)/.tmp/jetstream/cloud
+	docker run \
+	    -d \
+		--network=host \
+		--name=nats \
+		-v $(WORKING_DIRECTORY)/.tmp/certs:/certs \
+		-v $(WORKING_DIRECTORY)/.tmp/jetstream/cloud:/data \
+		--user $(USER_ID):$(GROUP_ID) \
+		nats --jetstream --store_dir /data --tls --tlsverify --tlscert=/certs/httpcrt.pem --tlskey=/certs/httpkey.pem --tlscacert=/certs/rootcacrt.pem
+.PHONY: nats
+
+mongo: certificates
+	mkdir -p $(WORKING_DIRECTORY)/.tmp/mongo
+	docker run \
+		-d \
+		--network=host \
+		--name=mongo \
+		-v $(WORKING_DIRECTORY)/.tmp/mongo:/data/db \
+		-v $(WORKING_DIRECTORY)/.tmp/certs:/certs --user $(USER_ID):$(GROUP_ID) \
+		mongo --tlsMode requireTLS --tlsCAFile /certs/rootcacrt.pem --tlsCertificateKeyFile /certs/mongo.key
+.PHONY: mongo
 
 privateKeys:
 	mkdir -p $(OAUTH_SERVER_PATH)
@@ -43,7 +69,7 @@ privateKeys:
 	openssl ecparam -name prime256v1 -genkey -noout -out $(OAUTH_SERVER_ACCESS_TOKEN_PRIVATE_KEY)
 .PHONY: privateKeys
 
-env: clean certificates privateKeys
+env: clean certificates privateKeys nats mongo
 	mkdir -p $(DEVSIM_PATH)
 	docker pull $(DEVSIM_IMAGE)
 	docker run -d \
@@ -56,8 +82,10 @@ env: clean certificates privateKeys
 .PHONY: env
 
 clean:
+	docker rm -f mongo || true
+	docker rm -f nats || true
 	docker rm -f devsim || true
-	rm -rf $(TMP_PATH) || true
+	sudo rm -rf $(TMP_PATH) || true
 .PHONY: clean
 
 
@@ -92,6 +120,8 @@ test: env
 	export TEST_OAUTH_SERVER_ACCESS_TOKEN_PRIVATE_KEY=$(OAUTH_SERVER_ACCESS_TOKEN_PRIVATE_KEY); \
 	export TEST_ROOT_CA_KEY=$(WORKING_DIRECTORY)/.tmp/certs/rootcakey.pem; \
 	export TEST_ROOT_CA_CERT=$(WORKING_DIRECTORY)/.tmp/certs/rootcacrt.pem; \
+	export TEST_COAP_GW_CERT_FILE=$(WORKING_DIRECTORY)/.tmp/certs/coap.crt; \
+	export TEST_COAP_GW_KEY_FILE=$(WORKING_DIRECTORY)/.tmp/certs/coap.key; \
 	export TEST_CLOUD_SID=$(CLOUD_SID); \
 	if [ -n "$${JSON_REPORT}" ]; then \
 		go test -v --race -p 1 -covermode=atomic -coverpkg=./... -coverprofile=$${COVERAGE_FILE} -json ./... > "$${JSON_REPORT_FILE}" ; \
@@ -121,10 +151,13 @@ proto/generate:
 	protoc -I=. -I=$(GOPATH)/src -I=$(PLGDHUB_MODULE_PATH) --go_out=$(GOPATH)/src $(WORKING_DIRECTORY)/pb/disown_device.proto
 	protoc -I=. -I=$(GOPATH)/src -I=$(PLGDHUB_MODULE_PATH) --go_out=$(GOPATH)/src $(WORKING_DIRECTORY)/pb/clear_cache.proto
 	protoc -I=. -I=$(GOPATH)/src -I=$(PLGDHUB_MODULE_PATH) --go_out=$(GOPATH)/src $(WORKING_DIRECTORY)/pb/get_configuration.proto
+	protoc-go-inject-tag -input=$(WORKING_DIRECTORY)/pb/get_configuration.pb.go
 	protoc -I=. -I=$(GOPATH)/src -I=$(PLGDHUB_MODULE_PATH) --go_out=$(GOPATH)/src $(WORKING_DIRECTORY)/pb/get_identity_certificate.proto
 	protoc -I=. -I=$(GOPATH)/src -I=$(PLGDHUB_MODULE_PATH) --go_out=$(GOPATH)/src $(WORKING_DIRECTORY)/pb/get_json_web_keys.proto
 	protoc -I=. -I=$(GOPATH)/src -I=$(PLGDHUB_MODULE_PATH) --go_out=$(GOPATH)/src $(WORKING_DIRECTORY)/pb/initialize.proto
 	protoc -I=. -I=$(GOPATH)/src -I=$(PLGDHUB_MODULE_PATH) --go_out=$(GOPATH)/src $(WORKING_DIRECTORY)/pb/reset.proto
+	protoc -I=. -I=$(GOPATH)/src -I=$(PLGDHUB_MODULE_PATH) --go_out=$(GOPATH)/src $(WORKING_DIRECTORY)/pb/onboard_device.proto
+	protoc -I=. -I=$(GOPATH)/src -I=$(PLGDHUB_MODULE_PATH) --go_out=$(GOPATH)/src $(WORKING_DIRECTORY)/pb/offboard_device.proto
 
 	protoc -I=. -I=$(GOPATH)/src -I=$(PLGDHUB_MODULE_PATH) -I=$(GOOGLEAPIS_PATH) -I=$(GRPCGATEWAY_MODULE_PATH) --go-grpc_out=$(GOPATH)/src $(WORKING_DIRECTORY)/pb/service.proto
 	protoc -I=. -I=$(GOPATH)/src -I=$(PLGDHUB_MODULE_PATH) -I=$(GOOGLEAPIS_PATH) -I=$(GRPCGATEWAY_MODULE_PATH) --openapiv2_out=$(GOPATH)/src \
