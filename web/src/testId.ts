@@ -7,6 +7,9 @@ const testId = {
             offboardButton: 'device-detail-offboard-button',
             firstTimeModalButton: 'device-detail-firsttime-modal-button',
             onboardTitleStatus: 'device-detail-onboard-title-status',
+            ownTitleStatus: 'device-detail-own-title-status',
+            ownButton: 'device-detail-own-button',
+            disownButton: 'device-detail-disown-button',
         },
     },
 }

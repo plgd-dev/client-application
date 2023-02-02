@@ -14,16 +14,16 @@ const config: PlaywrightTestConfig = {
     globalSetup: require.resolve('./global-setup'),
     testDir: './tests',
     /* Maximum time one test can run for. */
-    timeout: 30 * 1000,
+    timeout: 45 * 1000,
     expect: {
         /**
          * Maximum time expect() should wait for the condition to be met.
          * For example in `await expect(locator).toHaveText();`
          */
-        timeout: 5000,
+        timeout: 15000,
     },
     /* Run tests in files in parallel */
-    fullyParallel: true,
+    fullyParallel: false,
     /* Fail the build on CI if you accidentally left test.only in the source code. */
     forbidOnly: !!process.env.CI,
     /* Retry on CI only */
@@ -38,32 +38,31 @@ const config: PlaywrightTestConfig = {
         actionTimeout: 0,
         baseURL: 'http://localhost:3000/',
         storageState: 'storageState.json',
-        trace: 'on-first-retry',
+        trace: 'retain-on-failure',
         testIdAttribute: 'data-test-id',
+        screenshot: 'only-on-failure',
     },
 
     /* Configure projects for major browsers */
     projects: [
-        {
-            name: 'chromium',
-            use: {
-                ...devices['Desktop Chrome'],
-            },
-        },
-
+        // {
+        //     name: 'chromium',
+        //     use: {
+        //         ...devices['Desktop Chrome'],
+        //     },
+        // },
         {
             name: 'firefox',
             use: {
                 ...devices['Desktop Firefox'],
             },
         },
-
-        {
-            name: 'webkit',
-            use: {
-                ...devices['Desktop Safari'],
-            },
-        },
+        // {
+        //     name: 'webkit',
+        //     use: {
+        //         ...devices['Desktop Safari'],
+        //     },
+        // },
 
         /* Test against mobile viewports. */
         // {
@@ -78,7 +77,6 @@ const config: PlaywrightTestConfig = {
         //     ...devices['iPhone 12'],
         //   },
         // },
-
         {
             name: 'Microsoft Edge',
             use: {

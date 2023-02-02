@@ -37,7 +37,7 @@ const DevicesDetails: FC<Props> = memo(
                 }),
             })
 
-        const { onboardTitleStatus } = testId.devices.detail
+        const { onboardTitleStatus, ownTitleStatus } = testId.devices.detail
         const dpsEndpoint = useMemo(() => getDPSEndpoint(resources), [resources])
 
         useEffect(() => {
@@ -81,14 +81,15 @@ const DevicesDetails: FC<Props> = memo(
                                 green: isOwned,
                                 red: !isOwned,
                             })}
+                            data-test-id={ownTitleStatus}
                         >
-                            {isOwned ? _(t.owned) : _(t.unowned)}
+                            {isOwned ? _(t.owned).toLowerCase() : _(t.unowned).toLowerCase()}
                         </Badge>
                     </LabelWithLoading>
                     <LabelWithLoading title={_(t.onboardingStatus)} loading={onboardResourceLoading}>
                         <Badge
                             className={getColorByOnboardingStatus(onboardingStatus)}
-                            data-test-id={onboardTitleStatus}
+                            data-test-id={onboardResourceLoading ? undefined : onboardTitleStatus}
                         >
                             {onboardingStatus}
                         </Badge>

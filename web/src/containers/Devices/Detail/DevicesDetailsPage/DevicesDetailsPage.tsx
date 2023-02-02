@@ -112,15 +112,16 @@ const DevicesDetailsPage = () => {
         const { UNINITIALIZED, REGISTERED, FAILED } = devicesOnboardingStatuses
 
         if (
-            deviceOnboardingResourceData?.content?.cps &&
-            ![UNINITIALIZED, REGISTERED, FAILED].includes(deviceOnboardingResourceData.content.cps)
+            !deviceOnboardingResourceData ||
+            (deviceOnboardingResourceData?.content?.cps &&
+                ![UNINITIALIZED, REGISTERED, FAILED].includes(deviceOnboardingResourceData.content.cps))
         ) {
             const interval = setInterval(() => {
                 refetchDeviceOnboardingData()
             }, 1000)
             return () => clearInterval(interval)
         }
-    }, [deviceOnboardingResourceData, refetchDeviceOnboardingData])
+    }, [deviceOnboardingResourceData, refetchDeviceOnboardingData, isOwned])
 
     // Open the resource modal when href is present
     useEffect(

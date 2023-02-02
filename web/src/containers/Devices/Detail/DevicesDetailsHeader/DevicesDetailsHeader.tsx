@@ -37,7 +37,7 @@ export const DevicesDetailsHeader: FC<Props> = ({
     const hasDPS = useMemo(() => canSetDPSEndpoint(resources), [resources])
     const hasOnboardButton = deviceOnboardingResourceData?.content?.cps
     const isOnboarded = hasOnboardButton !== devicesOnboardingStatuses.UNINITIALIZED
-    const { offboardButton, onboardButton, onboardButtonDropdown } = testId.devices.detail
+    const { offboardButton, onboardButton, onboardButtonDropdown, ownButton, disownButton } = testId.devices.detail
 
     return (
         <div className={classNames('d-flex align-items-center', greyedOutClassName)}>
@@ -85,6 +85,7 @@ export const DevicesDetailsHeader: FC<Props> = ({
                 icon={isOwned ? 'fa-cloud-download-alt' : 'fa-cloud-upload-alt'}
                 onClick={onOwnChange}
                 disabled={isUnregistered}
+                dataTestId={isOwned ? disownButton : ownButton}
             >
                 {isOwned ? _(t.disOwnDevice) : _(t.ownDevice)}
             </Button>
