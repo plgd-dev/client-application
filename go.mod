@@ -15,7 +15,7 @@ require (
 	github.com/jellydator/ttlcache/v3 v3.0.0
 	github.com/jessevdk/go-flags v1.5.0
 	github.com/lestrrat-go/jwx v1.2.25
-	github.com/pion/dtls/v2 v2.1.6-0.20221001075407-984d41b9981a
+	github.com/pion/dtls/v2 v2.1.6-0.20230203144459-0473adf7692f
 	github.com/plgd-dev/device/v2 v2.0.2-0.20221202214050-f9f57f7c9a61
 	github.com/plgd-dev/go-coap/v3 v3.0.2-0.20221201101543-2e2c858a13f2
 	github.com/plgd-dev/hub/v2 v2.7.4-0.20221213114839-98df2c84d8eb
@@ -166,7 +166,8 @@ require (
 	github.com/panjf2000/ants/v2 v2.6.0 // indirect
 	github.com/pion/logging v0.2.2 // indirect
 	github.com/pion/transport v0.14.1 // indirect
-	github.com/pion/udp v0.1.2-0.20221011090648-2589407f52c9 // indirect
+	github.com/pion/transport/v2 v2.0.0 // indirect
+	github.com/pion/udp v0.1.2 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
@@ -199,13 +200,13 @@ require (
 	go.opentelemetry.io/proto/otlp v0.19.0 // indirect
 	go.uber.org/multierr v1.8.0 // indirect
 	gocloud.dev v0.24.0 // indirect
-	golang.org/x/crypto v0.3.0 // indirect
+	golang.org/x/crypto v0.5.0 // indirect
 	golang.org/x/exp v0.0.0-20221204150635-6dcec336b2bb // indirect
-	golang.org/x/net v0.2.0 // indirect
+	golang.org/x/net v0.5.0 // indirect
 	golang.org/x/oauth2 v0.2.0 // indirect
 	golang.org/x/sync v0.1.0 // indirect
-	golang.org/x/sys v0.3.0 // indirect
-	golang.org/x/text v0.5.0 // indirect
+	golang.org/x/sys v0.4.0 // indirect
+	golang.org/x/text v0.6.0 // indirect
 	golang.org/x/time v0.0.0-20210723032227-1f47c861a9ac // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
 	google.golang.org/appengine v1.6.7 // indirect
