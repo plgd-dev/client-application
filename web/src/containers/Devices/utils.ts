@@ -389,9 +389,9 @@ export const hasOnboardingFeature = () => {
     return !!(
         authority &&
         coapGateway &&
-        deviceOauthClient.clientId &&
-        deviceOauthClient.providerName &&
-        deviceOauthClient.scopes &&
+        deviceOauthClient?.clientId &&
+        deviceOauthClient?.providerName &&
+        deviceOauthClient?.scopes &&
         id
     )
 }
