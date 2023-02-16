@@ -49,7 +49,7 @@ const AppInner = (props: Props) => {
         security.setWebOAuthConfig({
             authority: wellKnownConfig.remoteProvisioning.authority,
             certificateAuthority: wellKnownConfig.remoteProvisioning.certificateAuthority,
-            clientId: wellKnownConfig.remoteProvisioning.webOauthClient.clientId,
+            clientId: wellKnownConfig.remoteProvisioning.webOauthClient?.clientId,
             redirect_uri: window.location.origin,
         })
     }

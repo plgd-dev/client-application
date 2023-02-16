@@ -35,16 +35,16 @@ const App: FC<Props> = (props) => {
 
     const getOidcCommonSettings = () => ({
         authority: wellKnownConfig?.remoteProvisioning?.authority || '',
-        scope: wellKnownConfig?.remoteProvisioning?.webOauthClient.scopes.join?.(' '),
+        scope: wellKnownConfig?.remoteProvisioning?.webOauthClient?.scopes?.join?.(' ') || '',
     })
 
     const userManager = new UserManager({
         ...getOidcCommonSettings(),
         automaticSilentRenew: true,
-        client_id: wellKnownConfig?.remoteProvisioning?.webOauthClient.clientId,
+        client_id: wellKnownConfig?.remoteProvisioning?.webOauthClient?.clientId || '',
         redirect_uri: window.location.origin,
         extraQueryParams: {
-            audience: wellKnownConfig?.remoteProvisioning?.webOauthClient.audience || false,
+            audience: wellKnownConfig?.remoteProvisioning?.webOauthClient?.audience || false,
         },
     } as UserManagerSettings)
 
@@ -54,7 +54,7 @@ const App: FC<Props> = (props) => {
         <AuthProvider
             {...getOidcCommonSettings()}
             automaticSilentRenew={true}
-            clientId={wellKnownConfig?.remoteProvisioning?.webOauthClient.clientId || ''}
+            clientId={wellKnownConfig?.remoteProvisioning?.webOauthClient?.clientId || ''}
             redirectUri={window.location.origin}
             onSignIn={async (userData) => {
                 // remove auth params
