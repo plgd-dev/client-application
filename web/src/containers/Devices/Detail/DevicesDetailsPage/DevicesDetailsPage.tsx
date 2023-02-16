@@ -552,7 +552,7 @@ const DevicesDetailsPage = () => {
                 deviceId={id}
                 show={showIncompleteOnboardingModal}
                 onboardingData={onboardingData}
-                onClose={toggleOnboardingModal}
+                onClose={() => toggleOnboardingModal(false)}
                 onSubmit={(onboardingData) => {
                     setOnboardingData(onboardingData)
                     onboardDevice(onboardingData).then()
