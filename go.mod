@@ -15,7 +15,7 @@ require (
 	github.com/jellydator/ttlcache/v3 v3.0.0
 	github.com/jessevdk/go-flags v1.5.0
 	github.com/lestrrat-go/jwx v1.2.25
-	github.com/pion/dtls/v2 v2.1.6-0.20230201184248-11ea8c257a48
+	github.com/pion/dtls/v2 v2.2.4
 	github.com/plgd-dev/device/v2 v2.0.6-0.20230207123337-38ef68052803
 	github.com/plgd-dev/go-coap/v3 v3.1.2-0.20230202152709-d4fc0ce1262e
 	github.com/plgd-dev/hub/v2 v2.7.12-0.20230211114617-ae5c9bac7b22
@@ -167,7 +167,7 @@ require (
 	github.com/pion/logging v0.2.2 // indirect
 	github.com/pion/transport v0.14.1 // indirect
 	github.com/pion/transport/v2 v2.0.0 // indirect
-	github.com/pion/udp v0.1.2 // indirect
+	github.com/pion/udp v0.1.4 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/russross/blackfriday/v2 v2.1.0 // indirect
