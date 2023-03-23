@@ -9,7 +9,11 @@ COPY . .
 RUN make build BUILD_UI=false UI_FILE=${UI_FILE}
 
 FROM ghcr.io/iotivity/iotivity-lite/cloud-server-discovery-resource-observable:latest AS service
-COPY ./docker/run.sh /plgd/run.sh
-COPY --from=builder /go/src/github.com/plgd-dev/client-application/.tmp/dist/*/client-application /plgd/client-application
+COPY ./docker/run.sh /usr/local/bin/run.sh
+COPY --from=builder /go/src/github.com/plgd-dev/client-application/.tmp/dist/*/client-application /usr/local/bin/client-application
+RUN addgroup -S nonroot \
+    && adduser -S nonroot -G nonroot
+RUN mkdir -p /plgd && chown -R nonroot:nonroot /plgd
+USER nonroot
 WORKDIR /plgd
-ENTRYPOINT [ "/plgd/run.sh" ]
+ENTRYPOINT [ "/usr/local/bin/run.sh" ]

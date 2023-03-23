@@ -11,7 +11,7 @@ for ((i=0;i<$NUM_DEVICES;i++)); do
     pids+=($!)
 done
 
-/plgd/client-application $@ > /tmp/client-application.log 2>&1 &
+/usr/local/bin/client-application --config /plgd/config.yaml $@ > /tmp/client-application.log 2>&1 &
 pids+=($!)
 
 terminate()
