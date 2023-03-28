@@ -22,6 +22,7 @@ import (
 
 	"github.com/plgd-dev/client-application/pb"
 	"github.com/plgd-dev/client-application/pkg/rawcodec"
+	pkgCoap "github.com/plgd-dev/device/v2/pkg/net/coap"
 	"github.com/plgd-dev/go-coap/v3/message"
 	grpcgwPb "github.com/plgd-dev/hub/v2/grpc-gateway/pb"
 	"github.com/plgd-dev/hub/v2/resource-aggregate/commands"
@@ -63,7 +64,11 @@ func (s *ClientApplicationServer) UpdateResource(ctx context.Context, req *pb.Up
 		return nil, err
 	}
 	var response []byte
-	err = dev.UpdateResourceWithCodec(ctx, link, rawcodec.GetRawCodec(message.AppOcfCbor), updateData, &response)
+	var options []func(message.Options) message.Options
+	if req.GetResourceInterface() != "" {
+		options = append(options, pkgCoap.WithInterface(req.GetResourceInterface()))
+	}
+	err = dev.UpdateResourceWithCodec(ctx, link, rawcodec.GetRawCodec(message.AppOcfCbor), updateData, &response, options...)
 	if err != nil {
 		return nil, convErrToGrpcStatus(codes.Unavailable, fmt.Errorf("cannot update resource %v for device %v: %w", req.GetResourceId().GetHref(), dev.ID, err)).Err()
 	}
