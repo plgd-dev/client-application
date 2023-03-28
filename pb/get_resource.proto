@@ -24,4 +24,5 @@ option go_package = "github.com/plgd-dev/client-application/pb;pb";
 
 message GetResourceRequest {
   resourceaggregate.pb.ResourceId resource_id = 1;
+  string resource_interface = 2;
 }
