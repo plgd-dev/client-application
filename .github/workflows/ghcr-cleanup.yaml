@@ -29,9 +29,9 @@ jobs:
         uses: snok/container-retention-policy@v1
         with:
           image-names: client-application
-          cut-off: A hour ago UTC
+          cut-off: One month ago UTC
           account-type: org
           org-name: plgd-dev
           filter-tags: vnext-*
-          skip-tags: vnext-pr*
+          skip-tags: vnext-pr*, main
           token: ${{ secrets.GHCR_CLEANUP_PAT }}
