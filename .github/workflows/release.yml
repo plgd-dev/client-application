@@ -29,6 +29,11 @@ jobs:
         uses: actions/setup-go@v2
         with:
           go-version: 1.18
+    
+      - name: Set ui_file
+        id: vars
+        run: |
+          echo "::set-output name=ui_file::$(pwd)/.tmp/ui.tar.gz"
       -
         name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v2
@@ -40,5 +45,6 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           UI_SEPARATOR: "--------UI--------"
+          UI_FILE: ${{ steps.vars.outputs.ui_file }}
           # Your GoReleaser Pro key, if you are using the 'goreleaser-pro' distribution
           # GORELEASER_KEY: ${{ secrets.GORELEASER_KEY }}

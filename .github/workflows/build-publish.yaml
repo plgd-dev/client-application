@@ -1,0 +1,63 @@
+name: Build and publish image
+on:
+  push:
+    tags:
+      - "*"
+  pull_request:
+    branches:
+      - main
+
+env:
+  REGISTRY: ghcr.io
+
+
+jobs:
+  build-and-publish-image:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+          submodules: recursive
+      - name: build-web
+        run: |
+          mkdir -p `pwd`/.tmp
+          make build-web UI_FILE=`pwd`/.tmp/ui.tar.gz
+      - uses: docker/setup-qemu-action@v2
+      - uses: docker/setup-buildx-action@v2
+      - uses: docker/login-action@v2
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Extract metadata (tags, labels) for docker image
+        id: meta
+        uses: docker/metadata-action@v4
+        with:
+          images: ${{ env.REGISTRY }}/${{ github.repository }}
+          tags: |
+            type=raw,enable={{is_default_branch}},value=vnext
+            type=sha,enable={{is_default_branch}},prefix=vnext-,format=short
+            type=ref,event=pr,prefix=vnext-pr,suffix=-{{sha}}
+            type=ref,event=pr,prefix=vnext-pr
+            type=ref,enable={{is_default_branch}},event=branch
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+      - name: Build and publish image
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          file: ./docker/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          builder: ${{ steps.buildx.outputs.name }}
+          build-args: |
+            UI_FILE=.tmp/ui.tar.gz
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+      - name: Clean up
+        if: ${{ always() }}
+        run: |
+          shopt -s dotglob
+          sudo rm -r *
