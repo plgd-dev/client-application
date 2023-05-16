@@ -1,17 +1,19 @@
 import React, { FC, useEffect, useMemo, useState } from 'react'
 import { Props, defaultProps, onboardingDataDefault } from './IncompleteOnboardingDataModal.types'
-import Modal from '@shared-ui/components/new/Modal'
-import { messages as t } from '@/containers/Devices/Devices.i18n'
 import { useIntl } from 'react-intl'
+import isFunction from 'lodash/isFunction'
+import classNames from 'classnames'
+import { validate as isValidUUID } from 'uuid'
+
+import Modal from '@shared-ui/components/new/Modal'
 import Button from '@shared-ui/components/new/Button'
 import CopyBox from '@shared-ui/components/new/CopyBox'
-import isFunction from 'lodash/isFunction'
-import TextField from '../../../../../shared-ui/src/components/new/TextField'
-import classNames from 'classnames'
-import Label from '../../../../../shared-ui/src/components/new/Label'
+import Label from '@shared-ui/components/new/Label'
 import { WellKnownConfigType } from '@shared-ui/common/hooks'
+import TextField from '@shared-ui/components/new/TextField'
+
+import { messages as t } from '@/containers/Devices/Devices.i18n'
 import './IncompleteOnboardingDataModal.scss'
-import { validate as isValidUUID } from 'uuid'
 
 export const getOnboardingDataFromConfig = (wellKnowConfig: WellKnownConfigType) => ({
     coapGatewayAddress: wellKnowConfig?.remoteProvisioning?.coapGateway || '',
@@ -53,58 +55,58 @@ const IncompleteOnboardingDataModal: FC<Props> = (props) => {
     const renderBody = () => {
         return (
             <div>
-                <Label title={_(t.onboardingFieldDeviceId)} inline>
+                <Label inline title={_(t.onboardingFieldDeviceId)}>
                     <div className='auth-code-box'>
-                        <TextField readOnly={true} value={deviceId} onChange={() => {}} />
+                        <TextField onChange={() => {}} readOnly={true} value={deviceId} />
                         <CopyBox textToCopy={deviceId} />
                     </div>
                 </Label>
-                <Label title={_(t.onboardingFieldHubId)} inline>
+                <Label inline title={_(t.onboardingFieldHubId)}>
                     <div className='auth-code-box'>
                         <TextField
                             className={classNames({ error: !isValidUUID(onboardingData.hubId || '') })}
-                            value={onboardingData.hubId || ''}
                             onChange={(e) => handleInputChange(e.target.value, 'hubId')}
+                            value={onboardingData.hubId || ''}
                         />
                         <CopyBox textToCopy={onboardingData.hubId || ''} />
                     </div>
                 </Label>
-                <Label title={_(t.onboardingFieldDeviceEndpoint)} inline>
+                <Label inline title={_(t.onboardingFieldDeviceEndpoint)}>
                     <div className='auth-code-box'>
                         <TextField
                             className={classNames({ error: onboardingData.coapGatewayAddress === '' })}
-                            value={onboardingData.coapGatewayAddress || ''}
                             onChange={(e) => handleInputChange(e.target.value, 'coapGatewayAddress')}
+                            value={onboardingData.coapGatewayAddress || ''}
                         />
                         <CopyBox textToCopy={onboardingData.coapGatewayAddress || ''} />
                     </div>
                 </Label>
-                <Label title={_(t.onboardingFieldAuthorizationCode)} inline>
+                <Label inline title={_(t.onboardingFieldAuthorizationCode)}>
                     <div className='auth-code-box'>
                         <TextField
                             className={classNames({ error: onboardingData.authorizationCode === '' })}
-                            value={onboardingData.authorizationCode || ''}
                             onChange={(e) => handleInputChange(e.target.value, 'authorizationCode')}
+                            value={onboardingData.authorizationCode || ''}
                         />
                         <CopyBox textToCopy={onboardingData.authorizationCode || ''} />
                     </div>
                 </Label>
-                <Label title={_(t.onboardingFieldAuthorizationProvider)} inline>
+                <Label inline title={_(t.onboardingFieldAuthorizationProvider)}>
                     <div className='auth-code-box'>
                         <TextField
                             className={classNames({ error: onboardingData.authorizationProviderName === '' })}
-                            value={onboardingData.authorizationProviderName || ''}
                             onChange={(e) => handleInputChange(e.target.value, 'authorizationProviderName')}
+                            value={onboardingData.authorizationProviderName || ''}
                         />
                         <CopyBox textToCopy={onboardingData.authorizationProviderName || ''} />
                     </div>
                 </Label>
-                <Label title={_(t.onboardingFieldCertificateAuthority)} inline>
+                <Label inline title={_(t.onboardingFieldCertificateAuthority)}>
                     <div className='auth-code-box'>
                         <TextField
                             className={classNames({ error: onboardingData.certificateAuthorities === '' })}
-                            value={onboardingData.certificateAuthorities || ''}
                             onChange={(e) => handleInputChange(e.target.value, 'certificateAuthorities')}
+                            value={onboardingData.certificateAuthorities || ''}
                         />
                         <CopyBox textToCopy={onboardingData.certificateAuthorities || ''} />
                     </div>
@@ -138,11 +140,11 @@ const IncompleteOnboardingDataModal: FC<Props> = (props) => {
 
     const renderFooter = () => (
         <div className='w-100 d-flex justify-content-end'>
-            <Button variant='secondary' onClick={handleClose}>
+            <Button onClick={handleClose} variant='secondary'>
                 {_(t.cancel)}
             </Button>
 
-            <Button variant='primary' onClick={handleSubmit} disabled={hasError}>
+            <Button disabled={hasError} onClick={handleSubmit} variant='primary'>
                 {_(t.onboardDevice)}
             </Button>
         </div>
@@ -150,11 +152,11 @@ const IncompleteOnboardingDataModal: FC<Props> = (props) => {
 
     return (
         <Modal
-            show={show}
             onClose={onClose}
-            title={_(t.onboardIncompleteModalTitle)}
             renderBody={renderBody}
             renderFooter={renderFooter}
+            show={show}
+            title={_(t.onboardIncompleteModalTitle)}
         />
     )
 }

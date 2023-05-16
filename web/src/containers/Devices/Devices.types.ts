@@ -1,7 +1,9 @@
-import {
-    DevicesDetailMetaDataStatusShadowSynchronizationType,
-    DevicesDetailMetaDataStatusValueType,
-} from '@/containers/Devices/Detail/DevicesDetails/DevicesDetails.types'
+import { devicesStatuses, shadowSynchronizationStates } from './constants'
+
+export type DevicesDetailMetaDataStatusValueType = typeof devicesStatuses[keyof typeof devicesStatuses]
+
+export type DevicesDetailMetaDataStatusShadowSynchronizationType =
+    typeof shadowSynchronizationStates[keyof typeof shadowSynchronizationStates]
 
 export type ResourcesType = {
     deviceId: string

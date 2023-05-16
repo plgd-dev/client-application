@@ -1,55 +1,68 @@
-import { FC, useMemo, useRef } from 'react'
+import { FC, memo, useMemo, useRef } from 'react'
 import { useIntl } from 'react-intl'
 import { useSelector } from 'react-redux'
-import classNames from 'classnames'
+
+import SplitButton from '@shared-ui/components/new/SplitButton'
 import Button from '@shared-ui/components/new/Button'
-import { canSetDPSEndpoint, getDeviceNotificationKey } from '../../utils'
+import { Icon } from '@shared-ui/components/new/Icon'
+
+import { canChangeDeviceName, canSetDPSEndpoint, getDeviceNotificationKey } from '../../utils'
 import { isNotificationActive } from '../../slice'
 import { messages as t } from '../../Devices.i18n'
 import { Props } from './DevicesDetailsHeader.types'
 import { devicesOnboardingStatuses } from '@/containers/Devices/constants'
-import SplitButton from '@shared-ui/components/new/SplitButton'
 import testId from '@/testId'
+import * as styles from './DevicesDetailsHeader.styles'
 
-export const DevicesDetailsHeader: FC<Props> = ({
-    deviceId,
-    isUnregistered,
-    onOwnChange,
-    isOwned,
-    resources,
-    openDpsModal,
-    onboardResourceLoading,
-    onboardButtonCallback,
-    deviceOnboardingResourceData,
-    incompleteOnboardingData,
-    openOnboardingModal,
-    onboarding,
-}) => {
+export const DevicesDetailsHeader: FC<Props> = memo((props) => {
+    const {
+        deviceId,
+        isUnregistered,
+        onOwnChange,
+        isOwned,
+        resources,
+        openDpsModal,
+        onboardResourceLoading,
+        onboardButtonCallback,
+        deviceOnboardingResourceData,
+        incompleteOnboardingData,
+        openOnboardingModal,
+        onboarding,
+        handleOpenEditDeviceNameModal,
+    } = props
     const { formatMessage: _ } = useIntl()
     const deviceNotificationKey = getDeviceNotificationKey(deviceId)
     const notificationsEnabled = useRef(false)
     notificationsEnabled.current = useSelector(isNotificationActive(deviceNotificationKey))
 
-    const greyedOutClassName = classNames({
-        'grayed-out': isUnregistered,
-    })
-
     const hasDPS = useMemo(() => canSetDPSEndpoint(resources), [resources])
+    const canUpdate = useMemo(() => canChangeDeviceName(resources) && isOwned, [resources, isOwned])
+
     const hasOnboardButton = deviceOnboardingResourceData?.content?.cps
     const isOnboarded = hasOnboardButton !== devicesOnboardingStatuses.UNINITIALIZED
     const { offboardButton, onboardButton, onboardButtonDropdown } = testId.devices.detail
 
     return (
-        <div className={classNames('d-flex align-items-center', greyedOutClassName)}>
+        <div css={styles.header}>
+            {canUpdate && (
+                <Button
+                    disabled={isUnregistered}
+                    icon={<Icon icon='edit' />}
+                    onClick={handleOpenEditDeviceNameModal}
+                    style={{ marginLeft: 8 }}
+                    variant='tertiary'
+                >
+                    {_(t.editName)}
+                </Button>
+            )}
             {hasOnboardButton && (incompleteOnboardingData || isOnboarded) && (
                 <Button
-                    icon={isOnboarded ? 'fa-minus' : 'fa-plus'}
-                    variant='secondary'
+                    dataTestId={isOnboarded ? offboardButton : onboardButton}
                     disabled={!isOwned || onboardResourceLoading || onboarding}
-                    className='m-r-10'
+                    icon={<Icon icon={isOnboarded ? 'close' : 'plus'} />}
                     loading={onboardResourceLoading || onboarding}
                     onClick={onboardButtonCallback}
-                    dataTestId={isOnboarded ? offboardButton : onboardButton}
+                    variant='tertiary'
                 >
                     {isOnboarded ? _(t.offboardDevice) : _(t.onboardDevice)}
                 </Button>
@@ -59,49 +72,50 @@ export const DevicesDetailsHeader: FC<Props> = ({
                 hasOnboardButton === devicesOnboardingStatuses.UNINITIALIZED && (
                     <div className='m-r-10'>
                         <SplitButton
+                            dataTestId={isOnboarded ? offboardButton : onboardButton}
+                            dataTestIdDropdown={onboardButtonDropdown}
                             disabled={onboardResourceLoading || onboarding}
-                            loading={onboardResourceLoading || onboarding}
-                            onClick={onboardButtonCallback}
-                            menuProps={{
-                                align: 'end',
-                            }}
                             icon='fa-plus'
                             items={[
                                 {
                                     onClick: openOnboardingModal,
                                     label: _(t.changeOnboardingData),
-                                    icon: 'fa-pen',
+                                    icon: 'edit',
                                 },
                             ]}
-                            dataTestId={isOnboarded ? offboardButton : onboardButton}
-                            dataTestIdDropdown={onboardButtonDropdown}
+                            loading={onboardResourceLoading || onboarding}
+                            menuProps={{
+                                placement: 'bottom-end',
+                            }}
+                            onClick={onboardButtonCallback}
+                            variant='tertiary'
                         >
                             {_(t.onboardDevice)}
                         </SplitButton>
                     </div>
                 )}
             <Button
-                variant='secondary'
-                icon={isOwned ? 'fa-cloud-download-alt' : 'fa-cloud-upload-alt'}
-                onClick={onOwnChange}
                 disabled={isUnregistered}
+                icon={<Icon icon={isOwned ? 'close' : 'plus'} />}
+                onClick={onOwnChange}
+                variant='tertiary'
             >
                 {isOwned ? _(t.disOwnDevice) : _(t.ownDevice)}
             </Button>
             {hasDPS && (
                 <Button
-                    icon='fa-bacon'
-                    variant='secondary'
-                    disabled={!isOwned}
                     className='m-l-10'
+                    disabled={!isOwned}
+                    icon={<Icon icon='network' />}
                     onClick={openDpsModal}
+                    variant='tertiary'
                 >
                     {_(t.setDpsEndpoint)}
                 </Button>
             )}
         </div>
     )
-}
+})
 
 DevicesDetailsHeader.displayName = 'DevicesDetailsHeader'
 

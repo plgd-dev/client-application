@@ -8,18 +8,14 @@
 @import '@shared-ui/common/styles/form.scss';
 @import '@shared-ui/components/new/PageLoader/PageLoader.scss';
 @import '@shared-ui/components/new/Breadcrumbs/Breadcrumbs.scss';
-@import '@shared-ui/components/new/Layout/Layout.scss';
 @import '@shared-ui/components/new/Table/Table.scss';
 @import '@shared-ui/components/new/Table/Pagination.scss';
 @import '@shared-ui/components/new/Badge/Badge.scss';
 @import '@shared-ui/components/new/Label/Label.scss';
-@import '@shared-ui/components/new/Modal/Modal.scss';
 @import '@shared-ui/components/new/Button/Button.scss';
-@import '@shared-ui/components/new/Select/Select.scss';
+//@import '@shared-ui/components/new/Select/Select.scss';
 @import '@shared-ui/components/new/Editor/Editor.scss';
 @import '@shared-ui/components/new/Toast/Toast.scss';
-@import '@shared-ui/components/new/Switch/Switch.scss';
-@import '@shared-ui/components/new/ActionButton/ActionButton.scss';
 @import '@shared-ui/components/new/Checkbox/Checkbox.scss';
 @import '@shared-ui/components/new/TextField/TextField.scss';
 @import '@shared-ui/components/new/TreeExpander/TreeExpander.scss';
@@ -36,8 +32,13 @@ body {
 
 #root {
   height: 100%;
-  display: flex;
-  flex-direction: column;
+  min-height: 100vh;
+  //display: flex;
+  //flex-direction: column;
+
+  & > div:first-child{
+    min-height: 100vh;
+  }
 }
 
 #app {
@@ -49,20 +50,11 @@ body {
   overflow: hidden;
 }
 
-#content {
-  box-sizing: border-box;
-  width: 100%;
-  position: relative;
-  margin-left: $left_panel_expanded;
-  padding: 80px 40px 90px 40px;
-  min-height: 100vh;
-  overflow: auto;
-}
 
 // Collapsed menu state
 #app.collapsed {
   #content {
-    margin-left: $left_panel_collapsed;
+    //margin-left: $left_panel_collapsed;
   }
 }
 

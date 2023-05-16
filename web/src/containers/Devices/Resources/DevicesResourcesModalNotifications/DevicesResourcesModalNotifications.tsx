@@ -47,10 +47,10 @@ const DevicesResourcesModalNotifications: FC<Props> = ({ deviceId, deviceName, h
 
     return (
         <Switch
+            checked={notificationsEnabled}
             disabled={isUnregistered}
             id='resource-update-notifications'
             label={_(t.notifications)}
-            checked={notificationsEnabled}
             onChange={toggleNotifications}
         />
     )

@@ -1,4 +1,4 @@
-import { DevicesResourcesModalType } from '../../Resources/DevicesResourcesModal/DevicesResourcesModal.types'
+import { DevicesResourcesModalType } from '@shared-ui/components/organisms/DevicesResourcesModal/DevicesResourcesModal.types'
 
 export type DevicesDetailsResourceModalData = {
     data: {

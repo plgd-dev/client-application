@@ -1,11 +1,14 @@
+import { FC, memo } from 'react'
 import { useIntl } from 'react-intl'
+
+import { Icon } from '@shared-ui/components/new/Icon'
+import SplitButton from '@shared-ui/components/new/SplitButton'
+
 import FindNewDeviceByIp from '../FindNewDeviceByIp'
 import { messages as t } from '../../Devices.i18n'
-import SplitButton from '@shared-ui/components/new/SplitButton'
-import { FC } from 'react'
 import { Props } from './DevicesListHeader.types'
 
-const DevicesListHeader: FC<Props> = ({ loading, refresh, openTimeoutModal }) => {
+const DevicesListHeader: FC<Props> = memo(({ loading, refresh, openTimeoutModal }) => {
     const { formatMessage: _ } = useIntl()
 
     return (
@@ -13,21 +16,21 @@ const DevicesListHeader: FC<Props> = ({ loading, refresh, openTimeoutModal }) =>
             <FindNewDeviceByIp disabled={loading} />
             <SplitButton
                 disabled={loading}
-                onClick={refresh}
-                icon='fa-sync'
+                icon={<Icon icon='refresh' />}
                 items={[
                     {
                         onClick: openTimeoutModal,
                         label: _(t.changeTimeout),
-                        icon: 'fa-pen',
+                        icon: 'edit',
                     },
                 ]}
+                onClick={refresh}
             >
-                {`${_(t.discovery)}`}
+                {_(t.discovery)}
             </SplitButton>
         </div>
     )
-}
+})
 
 DevicesListHeader.displayName = 'DevicesListHeader'
 

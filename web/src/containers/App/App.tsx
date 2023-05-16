@@ -1,15 +1,17 @@
 import { FC, useContext } from 'react'
-import AppContext from './AppContext'
-import './App.scss'
+import { UserManagerSettings } from 'oidc-client-ts'
 import { AuthProvider, UserManager } from 'oidc-react'
-import { DEVICE_AUTH_MODE } from '@/constants'
+
 import ConditionalWrapper from '@shared-ui/components/new/ConditionalWrapper'
+import { useWellKnownConfiguration, WellKnownConfigType } from '@shared-ui/common/hooks/useWellKnownConfiguration'
+import { security } from '@shared-ui/common/services'
+
+import AppContext from './AppContext'
+import { DEVICE_AUTH_MODE } from '@/constants'
 import AppLoader from '@/containers/App/AppLoader/AppLoader'
 import AppInner from '@/containers/App/AppInner/AppInner'
-import { security } from '@shared-ui/common/services'
-import { useWellKnownConfiguration, WellKnownConfigType } from '@shared-ui/common/hooks/useWellKnownConfiguration'
-import { UserManagerSettings } from 'oidc-client-ts'
 import { Props } from './App.types'
+import './App.scss'
 
 const App: FC<Props> = (props) => {
     const httpGatewayAddress = process.env.REACT_APP_HTTP_GATEWAY_ADDRESS || window.location.origin
@@ -55,12 +57,12 @@ const App: FC<Props> = (props) => {
             {...getOidcCommonSettings()}
             automaticSilentRenew={true}
             clientId={wellKnownConfig?.remoteProvisioning?.webOauthClient?.clientId || ''}
-            redirectUri={window.location.origin}
             onSignIn={async (userData) => {
                 // remove auth params
                 window.location.hash = ''
                 window.location.href = window.location.origin
             }}
+            redirectUri={window.location.origin}
             userManager={userManager}
         >
             {child}
@@ -73,11 +75,11 @@ const App: FC<Props> = (props) => {
             wrapper={Wrapper}
         >
             <AppInner
-                mockApp={props.mockApp}
-                wellKnownConfig={wellKnownConfig}
                 configError={wellKnownConfigError}
-                setInitialize={setInitialize}
+                mockApp={props.mockApp}
                 reFetchConfig={reFetchConfig}
+                setInitialize={setInitialize}
+                wellKnownConfig={wellKnownConfig}
             />
         </ConditionalWrapper>
     )

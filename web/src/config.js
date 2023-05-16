@@ -1,5 +1,5 @@
 module.exports = {
-    appName: 'plgd Dashboard',
+    appName: 'plgd Client app',
     defaultLanguage: 'en',
     supportedLanguages: ['en'],
 }

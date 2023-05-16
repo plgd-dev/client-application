@@ -165,6 +165,10 @@ export const messages = defineMessages({
         id: 'devices.delete',
         defaultMessage: 'Delete',
     },
+    view: {
+        id: 'devices.view',
+        defaultMessage: 'View',
+    },
     flushCache: {
         id: 'devices.flushCache',
         defaultMessage: 'Flush Cache',
@@ -189,9 +193,13 @@ export const messages = defineMessages({
         id: 'devices.actions',
         defaultMessage: 'Actions',
     },
+    deleteResourceMessageSubtitle: {
+        id: 'devices.deleteResourceMessageSubtitle',
+        defaultMessage: 'This action cannot be undone.',
+    },
     deleteResourceMessage: {
         id: 'devices.deleteResourceMessage',
-        defaultMessage: 'Are you sure you want to delete this Resource? This action cannot be undone.',
+        defaultMessage: 'Are you sure you want to delete this Resource?',
     },
     deleteDeviceMessage: {
         id: 'devices.deleteDeviceMessage',
@@ -405,6 +413,10 @@ export const messages = defineMessages({
         id: 'devices.minimalValueIs',
         defaultMessage: 'Minimal value is {minimalValue}.',
     },
+    minimalValueIs2: {
+        id: 'devices.minimalValueIs',
+        defaultMessage: 'Minimal value is',
+    },
     devicesDeleted: {
         id: 'devices.devicesDeleted',
         defaultMessage: 'Devices deleted',
@@ -589,6 +601,14 @@ export const messages = defineMessages({
         id: 'devices.ok',
         defaultMessage: 'Ok',
     },
+    on: {
+        id: 'devices.on',
+        defaultMessage: 'On',
+    },
+    off: {
+        id: 'devices.off',
+        defaultMessage: 'Off',
+    },
     firstTimeTitle: {
         id: 'devices.firstTimeTitle',
         defaultMessage: 'Pop-up Authorization Required for Device Onboarding',
@@ -596,5 +616,53 @@ export const messages = defineMessages({
     firstTimeDescription: {
         id: 'devices.firstTimeDescription',
         defaultMessage: 'Please allow pop-ups for this website in order to proceed with device onboarding.',
+    },
+    recentTasks: {
+        id: 'pendingCommands.recentTasks',
+        defaultMessage: 'Recent tasks',
+    },
+    search: {
+        id: 'devices.search',
+        defaultMessage: 'Search',
+    },
+    editName: {
+        id: 'devices.editName',
+        defaultMessage: 'Edit name',
+    },
+    deviceName: {
+        id: 'devices.deviceName',
+        defaultMessage: 'Device Name',
+    },
+    reset: {
+        id: 'devices.reset',
+        defaultMessage: 'Reset',
+    },
+    saveChange: {
+        id: 'devices.saveChange',
+        defaultMessage: 'Save change',
+    },
+    savingChanges: {
+        id: 'devices.savingChanges',
+        defaultMessage: 'Saving change',
+    },
+    deviceInformation: {
+        id: 'devices.deviceInformation',
+        defaultMessage: 'Device information',
+    },
+    id: {
+        id: 'devices.id',
+        defaultMessage: 'ID',
+    },
+    duration: {
+        id: 'devices.duration',
+        defaultMessage: 'duration',
+    },
+    placeholder: {
+        id: 'devices.placeholder',
+        defaultMessage: 'placeholder',
+    },
+    unit: {
+        id: 'devices.unit',
+        defaultMessage: 'ID',
     },
 })

@@ -19,17 +19,20 @@ import { getDevicesDiscoveryTimeout } from '@/containers/Devices/slice'
 import { ResourcesType, StreamApiPropsType } from '@/containers/Devices/Devices.types'
 import { security } from '@shared-ui/common/services'
 import { SecurityConfig } from '@/containers/App/App.types'
-import { useEffect, useMemo, useState } from 'react'
+import { useContext, useEffect, useMemo, useState } from 'react'
+import AppContext from '../App/AppContext'
 
 const getConfig = () => security.getGeneralConfig() as SecurityConfig
 
 export const useDevicesList = () => {
     const discoveryTimeout = useSelector(getDevicesDiscoveryTimeout)
+    const { unauthorizedCallback } = useContext(AppContext)
 
     // Fetch the data
     const { data, updateData, ...rest } = useStreamApi(
         `${getConfig().httpGatewayAddress}${devicesApiEndpoints.DEVICES}`,
         {
+            unauthorizedCallback,
             shadowQueryParameter: `?timeout=${discoveryTimeout / TIMEOUT_UNIT_PRECISION}`,
         }
     )
@@ -46,10 +49,11 @@ export const useDevicesList = () => {
 }
 
 export const useDeviceDetails = (deviceId: string) => {
+    const { unauthorizedCallback } = useContext(AppContext)
     // Fetch the data
     const { data, updateData, ...rest }: StreamApiPropsType = useStreamApi(
         `${getConfig().httpGatewayAddress}${devicesApiEndpoints.DEVICES}/${deviceId}`,
-        { streamApi: false }
+        { streamApi: false, unauthorizedCallback }
     )
 
     // Update the metadata when a WS event is emitted
@@ -76,12 +80,13 @@ export const useDeviceDetails = (deviceId: string) => {
 }
 
 export const useDevicesResources = (deviceId: string) => {
+    const { unauthorizedCallback } = useContext(AppContext)
     // Fetch the data
     const { data, updateData, ...rest }: StreamApiPropsType = useStreamApi(
         `${getConfig().httpGatewayAddress}${devicesApiEndpoints.DEVICES}/${deviceId}/${
             devicesApiEndpoints.DEVICES_RESOURCES_SUFFIX
         }`,
-        { parseResult: 'json' }
+        { parseResult: 'json', unauthorizedCallback }
     )
 
     useEmitter(

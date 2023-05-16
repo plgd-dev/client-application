@@ -7,7 +7,7 @@ const AppLoader = () => {
 
     return (
         <>
-            <PageLoader className='auth-loader' loading />
+            <PageLoader loading className='auth-loader' />
             <div className='page-loading-text'>{`${_(t.loading)}...`}</div>
         </>
     )

@@ -4,6 +4,7 @@ export type Props = {
     deviceId: string
     deviceName: string
     deviceOnboardingResourceData: any
+    handleOpenEditDeviceNameModal: () => void
     incompleteOnboardingData: boolean
     isOwned: boolean
     isUnregistered: boolean

@@ -11,6 +11,7 @@ import { useIsMounted } from '@shared-ui/common/hooks'
 import { addDevice } from '@/containers/Devices/slice'
 import { useDispatch } from 'react-redux'
 import { Props } from './FindNewDeviceByIp.types'
+import { Icon } from '@shared-ui/components/new/Icon'
 
 const FindNewDeviceByIp: FC<Props> = ({ disabled }) => {
     const [fetching, setFetching] = useState<boolean>(false)
@@ -42,14 +43,14 @@ const FindNewDeviceByIp: FC<Props> = ({ disabled }) => {
     }
 
     const renderBody = () => (
-        <Label title={_(t.deviceIp)} required={true} errorMessage={error ? _(t.invalidIp) : undefined}>
+        <Label errorMessage={error ? _(t.invalidIp) : undefined} required={true} title={_(t.deviceIp)}>
             <TextField
-                value={deviceIp}
-                onChange={(e) => setDeviceIp(e.target.value.trim())}
-                placeholder={_(t.enterDeviceIp) as string}
                 disabled={fetching}
                 inputRef={baseInputRef}
+                onChange={(e) => setDeviceIp(e.target.value.trim())}
                 onKeyPress={(e) => (e.charCode === 13 ? handleFetch() : undefined)}
+                placeholder={_(t.enterDeviceIp) as string}
+                value={deviceIp}
             />
         </Label>
     )
@@ -88,15 +89,15 @@ const FindNewDeviceByIp: FC<Props> = ({ disabled }) => {
     const renderFooter = () => {
         return (
             <div className='w-100 d-flex justify-content-end align-items-center'>
-                <Button variant='secondary' onClick={onClose} disabled={fetching}>
+                <Button disabled={fetching} onClick={onClose} variant='secondary'>
                     {_(t.cancel)}
                 </Button>
 
                 <Button
-                    variant='primary'
-                    onClick={handleFetch}
-                    loading={fetching}
                     disabled={fetching || error || deviceIp === ''}
+                    loading={fetching}
+                    onClick={handleFetch}
+                    variant='primary'
                 >
                     {_(t.addDevice)}
                 </Button>
@@ -106,17 +107,22 @@ const FindNewDeviceByIp: FC<Props> = ({ disabled }) => {
 
     return (
         <>
-            <Button onClick={() => setShow(true)} className='m-r-10' icon='fa-plus' disabled={disabled}>
+            <Button
+                className='m-r-10'
+                disabled={disabled}
+                icon={<Icon icon='plus' size={20} />}
+                onClick={() => setShow(true)}
+            >
                 {_(t.deviceByIp)}
             </Button>
 
             <Modal
-                show={show}
+                closeButton={!fetching}
                 onClose={onClose}
-                title={_(t.findDeviceByIp)}
                 renderBody={renderBody}
                 renderFooter={renderFooter}
-                closeButton={!fetching}
+                show={show}
+                title={_(t.findDeviceByIp)}
             />
         </>
     )

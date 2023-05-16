@@ -1,5 +1,5 @@
 // @ts-ignore
-import { time } from 'units-converter'
+import * as converter from 'units-converter/dist/es/index'
 import { getApiErrorMessage } from '@shared-ui/common/utils'
 import { showErrorToast, showWarningToast } from '@shared-ui/components/new/Toast/Toast'
 import { compareIgnoreCase } from '@shared-ui/components/new/Table/Utils'
@@ -23,6 +23,7 @@ import { ResourcesType } from '@/containers/Devices/Devices.types'
 import { security } from '@shared-ui/common/services'
 import { WellKnownConfigType } from '@shared-ui/common/hooks'
 
+const time = converter.time
 const { INFINITE, NS, MS, S, M, H } = commandTimeoutUnits
 
 // Returns the extension for resources API for the selected interface

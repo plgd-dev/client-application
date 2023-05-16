@@ -19,7 +19,7 @@ const FirstTimeOnboardingModal: FC<Props> = (props) => {
 
     const renderFooter = () => (
         <div className='w-100 d-flex justify-content-end'>
-            <Button variant='primary' onClick={handleSubmit} dataTestId={firstTimeModalButton}>
+            <Button dataTestId={firstTimeModalButton} onClick={handleSubmit} variant='primary'>
                 {_(t.ok)}
             </Button>
         </div>
@@ -27,11 +27,11 @@ const FirstTimeOnboardingModal: FC<Props> = (props) => {
 
     return (
         <Modal
-            show={show}
             onClose={onClose}
-            title={_(t.firstTimeTitle)}
             renderBody={() => <div>{_(t.firstTimeDescription)}</div>}
             renderFooter={renderFooter}
+            show={show}
+            title={_(t.firstTimeTitle)}
         />
     )
 }
