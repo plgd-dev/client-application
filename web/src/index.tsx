@@ -3,9 +3,12 @@ import { createRoot } from 'react-dom/client'
 import { Provider } from 'react-redux'
 import { store } from '@/store'
 import { App } from '@/containers/App'
-import IntlProvider from '@shared-ui/components/new/IntlProvider'
+import IntlProvider from '@shared-ui/components/Atomic/IntlProvider'
 import reportWebVitals from './reportWebVitals'
 import { DEVICE_AUTH_CODE_SESSION_KEY } from '@/constants'
+// @ts-ignore
+import languages from './languages/languages.json'
+import appConfig from '@/config'
 
 reportWebVitals()
 
@@ -34,7 +37,7 @@ const BaseComponent = () => {
 
     return (
         <Provider store={store}>
-            <IntlProvider>
+            <IntlProvider defaultLanguage={appConfig.defaultLanguage} languages={languages}>
                 <App mockApp={isMockApp} />
             </IntlProvider>
         </Provider>

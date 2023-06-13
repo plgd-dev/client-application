@@ -2,15 +2,19 @@ import { FC, memo, useCallback, useContext, useEffect, useMemo, useState } from 
 import { useIntl } from 'react-intl'
 import { toast } from 'react-toastify'
 import { useDispatch, useSelector } from 'react-redux'
+import { Link, useHistory } from 'react-router-dom'
 
-import { showSuccessToast } from '@shared-ui/components/new/Toast/Toast'
-import ConfirmModal from '@shared-ui/components/new/ConfirmModal'
-import PageLayout from '@shared-ui/components/new/PageLayout'
+import Notification from '@shared-ui/components/Atomic/Notification/Toast'
+import ConfirmModal from '@shared-ui/components/Atomic/ConfirmModal'
+import PageLayout from '@shared-ui/components/Atomic/PageLayout'
 import { useIsMounted } from '@shared-ui/common/hooks'
-import { messages as menuT } from '@shared-ui/components/new/Menu/Menu.i18n'
+import { messages as menuT } from '@shared-ui/components/Atomic/Menu/Menu.i18n'
 import { getApiErrorMessage } from '@shared-ui/common/utils'
-import Footer from '@shared-ui/components/new/Layout/Footer'
-import DevicesList from '@shared-ui/components/organisms/DevicesList/DevicesList'
+import Footer from '@shared-ui/components/Layout/Footer'
+import DevicesList from '@shared-ui/components/Organisms/DevicesList/DevicesList'
+import { DevicesResourcesModalParamsType } from '@shared-ui/components/Organisms/DevicesResourcesModal/DevicesResourcesModal.types'
+import Badge from '@shared-ui/components/Atomic/Badge'
+import Tag from '@shared-ui/components/Atomic/Tag'
 
 import { useDevicesList } from '../../hooks'
 import DevicesListHeader from '../DevicesListHeader'
@@ -28,13 +32,7 @@ import DevicesTimeoutModal from '../DevicesTimeoutModal'
 import DevicesDPSModal from '../../DevicesDPSModal'
 import { DeviceDataType, ResourcesType } from '@/containers/Devices/Devices.types'
 import { DpsDataType } from '@/containers/Devices/List/DevicesListPage/DevicesListPage.types'
-import { DevicesResourcesModalParamsType } from '@shared-ui/components/organisms/DevicesResourcesModal/DevicesResourcesModal.types'
-import Button from '@plgd/shared-ui/src/components/new/Button'
-import Icon from '@shared-ui/components/new/Icon'
 import { DEVICE_TYPE_OIC_WK_D, devicesOwnerships, NO_DEVICE_NAME } from '@/containers/Devices/constants'
-import { Link, useHistory } from 'react-router-dom'
-import Tag from '@shared-ui/components/new/Tag'
-import Badge from '@plgd/shared-ui/src/components/new/Badge'
 import DevicesListActionButton from '@/containers/Devices/List/DevicesListActionButton'
 import AppContext from '@/containers/App/AppContext'
 
@@ -47,17 +45,6 @@ type DeleteButtonProps = {
     }
     loading: boolean
 }
-
-const DeleteButton: FC<DeleteButtonProps> = memo((props) => {
-    const { loading, handleCloseDeleteModal, i18n } = props
-    return (
-        <div>
-            <Button disabled={loading} icon={<Icon icon='trash' />} onClick={handleCloseDeleteModal} variant='tertiary'>
-                {i18n.flushCache}
-            </Button>
-        </div>
-    )
-})
 
 const DevicesListPage = () => {
     const { formatMessage: _ } = useIntl()
@@ -118,7 +105,7 @@ const DevicesListPage = () => {
             await sleep(200)
 
             if (isMounted.current) {
-                showSuccessToast({
+                Notification.success({
                     title: _(t.devicesDeleted),
                     message: _(t.devicesDeletedMessage),
                 })
@@ -142,7 +129,7 @@ const DevicesListPage = () => {
             isOwned ? await disownDeviceApi(deviceId) : await ownDeviceApi(deviceId)
 
             if (isMounted.current) {
-                showSuccessToast({
+                Notification.success({
                     title: isOwned ? _(t.deviceDisOwned) : _(t.deviceOwned),
                     message: isOwned
                         ? _(t.deviceWasDisOwned, { name: deviceName })
@@ -176,7 +163,7 @@ const DevicesListPage = () => {
             { deviceId: dpsData.deviceId, href, currentInterface },
             resourceDataUpdate,
             () => {
-                showSuccessToast({
+                Notification.success({
                     title: _(t.resourceUpdateSuccess),
                     message: _(t.resourceWasUpdated),
                 })
@@ -187,6 +174,11 @@ const DevicesListPage = () => {
                 handleUpdateResourceErrors(error, { id: dpsData.deviceId, href }, _)
             }
         )
+    }
+
+    const handleFlashDevices = () => {
+        // @ts-ignore
+        dispatch(flushDevices())
     }
 
     const loadingOrOwning = useMemo(() => loading || owning, [loading, owning])
@@ -287,6 +279,10 @@ const DevicesListPage = () => {
             footer={<Footer footerExpanded={false} paginationComponent={<div id='paginationPortalTarget'></div>} />}
             header={
                 <DevicesListHeader
+                    handleFlashDevices={handleFlashDevices}
+                    i18n={{
+                        flushCache: _(t.flushCache),
+                    }}
                     loading={loadingOrOwning}
                     openTimeoutModal={handleOpenTimeoutModal}
                     refresh={handleRefresh}
@@ -298,15 +294,6 @@ const DevicesListPage = () => {
             <DevicesList
                 collapsed={collapsed ?? false}
                 columns={columns}
-                customContent={
-                    <DeleteButton
-                        handleCloseDeleteModal={handleCloseDeleteModal}
-                        i18n={{
-                            flushCache: _(t.flushCache),
-                        }}
-                        loading={loading}
-                    />
-                }
                 data={dataToDisplay}
                 i18n={{
                     delete: _(t.delete),

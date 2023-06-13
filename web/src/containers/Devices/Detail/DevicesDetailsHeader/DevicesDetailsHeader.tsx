@@ -2,9 +2,9 @@ import { FC, memo, useMemo, useRef } from 'react'
 import { useIntl } from 'react-intl'
 import { useSelector } from 'react-redux'
 
-import SplitButton from '@shared-ui/components/new/SplitButton'
-import Button from '@shared-ui/components/new/Button'
-import { Icon } from '@shared-ui/components/new/Icon'
+import SplitButton from '@shared-ui/components/Atomic/SplitButton'
+import Button from '@shared-ui/components/Atomic/Button'
+import { IconClose, IconEdit, IconNetwork, IconPlus } from '@shared-ui/components/Atomic/Icon'
 
 import { canChangeDeviceName, canSetDPSEndpoint, getDeviceNotificationKey } from '../../utils'
 import { isNotificationActive } from '../../slice'
@@ -47,7 +47,7 @@ export const DevicesDetailsHeader: FC<Props> = memo((props) => {
             {canUpdate && (
                 <Button
                     disabled={isUnregistered}
-                    icon={<Icon icon='edit' />}
+                    icon={<IconEdit />}
                     onClick={handleOpenEditDeviceNameModal}
                     style={{ marginLeft: 8 }}
                     variant='tertiary'
@@ -59,7 +59,7 @@ export const DevicesDetailsHeader: FC<Props> = memo((props) => {
                 <Button
                     dataTestId={isOnboarded ? offboardButton : onboardButton}
                     disabled={!isOwned || onboardResourceLoading || onboarding}
-                    icon={<Icon icon={isOnboarded ? 'close' : 'plus'} />}
+                    icon={isOnboarded ? <IconClose /> : <IconPlus />}
                     loading={onboardResourceLoading || onboarding}
                     onClick={onboardButtonCallback}
                     variant='tertiary'
@@ -75,7 +75,7 @@ export const DevicesDetailsHeader: FC<Props> = memo((props) => {
                             dataTestId={isOnboarded ? offboardButton : onboardButton}
                             dataTestIdDropdown={onboardButtonDropdown}
                             disabled={onboardResourceLoading || onboarding}
-                            icon='fa-plus'
+                            icon={<IconPlus />}
                             items={[
                                 {
                                     onClick: openOnboardingModal,
@@ -96,7 +96,7 @@ export const DevicesDetailsHeader: FC<Props> = memo((props) => {
                 )}
             <Button
                 disabled={isUnregistered}
-                icon={<Icon icon={isOwned ? 'close' : 'plus'} />}
+                icon={isOwned ? <IconClose /> : <IconPlus />}
                 onClick={onOwnChange}
                 variant='tertiary'
             >
@@ -106,7 +106,7 @@ export const DevicesDetailsHeader: FC<Props> = memo((props) => {
                 <Button
                     className='m-l-10'
                     disabled={!isOwned}
-                    icon={<Icon icon='network' />}
+                    icon={<IconNetwork />}
                     onClick={openDpsModal}
                     variant='tertiary'
                 >

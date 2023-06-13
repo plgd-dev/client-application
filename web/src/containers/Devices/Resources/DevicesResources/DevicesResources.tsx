@@ -1,19 +1,19 @@
+import { FC, useMemo } from 'react'
 import { useIntl } from 'react-intl'
 import classNames from 'classnames'
 
-import Switch from '@shared-ui/components/new/Switch'
+import Switch from '@shared-ui/components/Atomic/Switch'
 import { useLocalStorage } from '@shared-ui/common/hooks'
-import DevicesResourcesList from '@shared-ui/components/organisms/DevicesResourcesList'
-import TableActionButton from '@shared-ui/components/organisms/TableActionButton'
-import DevicesResourcesTree from '@shared-ui/components/organisms/DevicesResourcesTree'
+import DevicesResourcesList from '@shared-ui/components/Organisms/DevicesResourcesList'
+import TableActionButton from '@shared-ui/components/Organisms/TableActionButton'
+import DevicesResourcesTree from '@shared-ui/components/Organisms/DevicesResourcesTree'
+import TreeExpander from '@shared-ui/components/Atomic/TreeExpander'
+import Badge from '@shared-ui/components/Atomic/Badge'
 
 import { devicesStatuses, RESOURCE_TREE_DEPTH_SIZE } from '../../constants'
 import { messages as t } from '../../Devices.i18n'
-import { FC, useMemo } from 'react'
 import { Props } from './DevicesResources.types'
 import { canBeResourceEdited, canCreateResource, getLastPartOfAResourceHref } from '@/containers/Devices/utils'
-import TreeExpander from '@plgd/shared-ui/src/components/new/TreeExpander'
-import Badge from '@plgd/shared-ui/src/components/new/Badge'
 
 export const DevicesResources: FC<Props> = ({
     data,

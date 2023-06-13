@@ -4,18 +4,18 @@ import { useIntl } from 'react-intl'
 import { useParams } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
 
-import Footer from '@shared-ui/components/new/Layout/Footer'
-import NotFoundPage from '@shared-ui/components/templates/NotFoundPage'
-import PageLayout from '@shared-ui/components/new/PageLayout'
+import Footer from '@shared-ui/components/Layout/Footer'
+import NotFoundPage from '@shared-ui/components/Templates/NotFoundPage'
+import PageLayout from '@shared-ui/components/Atomic/PageLayout'
 import { useIsMounted, WellKnownConfigType } from '@shared-ui/common/hooks'
-import { messages as menuT } from '@shared-ui/components/new/Menu/Menu.i18n'
-import { showErrorToast, showSuccessToast } from '@shared-ui/components/new/Toast/Toast'
-import { BreadcrumbItem } from '@shared-ui/components/new/Breadcrumbs/Breadcrumbs.types'
+import { messages as menuT } from '@shared-ui/components/Atomic/Menu/Menu.i18n'
+import Notification from '@shared-ui/components/Atomic/Notification/Toast'
+import { BreadcrumbItem } from '@shared-ui/components/Layout/Header/Breadcrumbs/Breadcrumbs.types'
 import { security } from '@shared-ui/common/services'
-import StatusTag from '@shared-ui/components/new/StatusTag'
-import Breadcrumbs from '@shared-ui/components/new/Layout/Header/Breadcrumbs'
-import EditDeviceNameModal from '@shared-ui/components/organisms/EditDeviceNameModal'
-import Tabs from '@shared-ui/components/new/Tabs'
+import StatusTag from '@shared-ui/components/Atomic/StatusTag'
+import Breadcrumbs from '@shared-ui/components/Layout/Header/Breadcrumbs'
+import EditDeviceNameModal from '@shared-ui/components/Organisms/EditDeviceNameModal'
+import Tabs from '@shared-ui/components/Atomic/Tabs'
 import { getApiErrorMessage } from '@shared-ui/common/utils'
 
 import { history } from '@/store'
@@ -139,7 +139,7 @@ const DevicesDetailsPage = () => {
                         dispatch(disOwnDevice(id))
                         history.push('/')
 
-                        showSuccessToast({
+                        Notification.success({
                             title: _(t.deviceDisOwned),
                             message: _(t.deviceWasDisOwned, { name: deviceName }),
                         })
@@ -151,7 +151,7 @@ const DevicesDetailsPage = () => {
                         // @ts-ignore
                         dispatch(ownDevice(id))
 
-                        showSuccessToast({
+                        Notification.success({
                             title: _(t.deviceOwned),
                             message: _(t.deviceWasOwned, { name: deviceName }),
                         })
@@ -184,7 +184,7 @@ const DevicesDetailsPage = () => {
 
     const breadcrumbs: BreadcrumbItem[] = [
         {
-            to: '/',
+            link: '/',
             label: _(menuT.devices),
         },
     ]
@@ -235,14 +235,14 @@ const DevicesDetailsPage = () => {
                     refetchDeviceOnboardingData()
                 })
                 .catch((e) => {
-                    showErrorToast(JSON.parse(e?.request?.response)?.message || e.message)
+                    Notification.error(JSON.parse(e?.request?.response)?.message || e.message)
                     setOnboardingData(onboardingData)
                     toggleOnboardingModal(true)
                     setOnboarding(false)
                 })
         } catch (e: any) {
             if (e !== 'user-cancel') {
-                showErrorToast(e.message)
+                Notification.error(e.message)
                 console.error(e)
             }
 
@@ -274,7 +274,7 @@ const DevicesDetailsPage = () => {
                 }
             } catch (error) {
                 if (error && isMounted.current) {
-                    showErrorToast({
+                    Notification.error({
                         title: _(t.deviceNameChangeFailed),
                         message: getApiErrorMessage(error),
                     })

@@ -2,7 +2,7 @@ import { FC, useContext } from 'react'
 import { UserManagerSettings } from 'oidc-client-ts'
 import { AuthProvider, UserManager } from 'oidc-react'
 
-import ConditionalWrapper from '@shared-ui/components/new/ConditionalWrapper'
+import ConditionalWrapper from '@shared-ui/components/Atomic/ConditionalWrapper'
 import { useWellKnownConfiguration, WellKnownConfigType } from '@shared-ui/common/hooks/useWellKnownConfiguration'
 import { security } from '@shared-ui/common/services'
 

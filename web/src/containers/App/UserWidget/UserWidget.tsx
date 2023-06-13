@@ -2,7 +2,7 @@ import { FC, memo } from 'react'
 import { useAuth } from 'oidc-react'
 import { useIntl } from 'react-intl'
 
-import UserWidgetShared from '@shared-ui/components/new/Layout/Header/UserWidget'
+import UserWidgetShared from '@shared-ui/components/Layout/Header/UserWidget'
 
 import { messages as t } from '@/containers/App/App.i18n'
 

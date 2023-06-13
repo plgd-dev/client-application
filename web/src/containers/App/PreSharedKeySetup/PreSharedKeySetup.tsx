@@ -1,17 +1,20 @@
-import './PreSharedKeySetup.scss'
-import LogoPlgd from './LogoPlgd'
-import Label from '@shared-ui/components/new/Label'
-import TextField from '@shared-ui/components/new/TextField'
+import { ChangeEvent, useState } from 'react'
 import classNames from 'classnames'
 import { useIntl } from 'react-intl'
-import { messages as t } from './PreSharedKeySetup.i18n'
-import { ChangeEvent, useState } from 'react'
-import Button from '@shared-ui/components/new/Button'
 import Form from 'react-bootstrap/Form'
+
+import Label from '@shared-ui/components/Atomic/Label'
+import TextField from '@shared-ui/components/Atomic/TextField'
+import { copyToClipboard } from '@shared-ui/common/utils'
+import Notification from '@shared-ui/components/Atomic/Notification/Toast'
+import Button from '@shared-ui/components/Atomic/Button'
+
+import './PreSharedKeySetup.scss'
+import LogoPlgd from './LogoPlgd'
+import { messages as t } from './PreSharedKeySetup.i18n'
 import { initializedByPreShared } from '@/containers/App/AppRest'
 import { Props } from './PreSharedKeySetup.types'
-import { copyToClipboard } from '@shared-ui/common/utils'
-import { showSuccessToast, showErrorToast } from '@shared-ui/components/new/Toast'
+
 const validate = require('validate.js')
 
 type ValidationResult = {
@@ -48,7 +51,7 @@ const PreSharedKeySetup = (props: Props) => {
                     }
                 })
                 .catch((e) => {
-                    showErrorToast({
+                    Notification.error({
                         title: _(t.error),
                         message: e.response.data.message,
                     })
@@ -60,7 +63,7 @@ const PreSharedKeySetup = (props: Props) => {
 
     const handleCopy = (data: string) => {
         copyToClipboard(data)
-        showSuccessToast({
+        Notification.success({
             title: _(t.done),
             message: _(t.copied),
         })

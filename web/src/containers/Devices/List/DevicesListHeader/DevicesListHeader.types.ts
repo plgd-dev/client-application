@@ -1,5 +1,9 @@
 export type Props = {
+    handleFlashDevices: () => void
+    i18n: {
+        flushCache: string
+    }
     loading: boolean
-    refresh: () => void
     openTimeoutModal: () => void
+    refresh: () => void
 }

@@ -1,7 +1,8 @@
 import { useIntl } from 'react-intl'
-import { messages as t } from '@/containers/App/App.i18n'
 import { security } from '@shared-ui/common/services'
 import { WellKnownConfigType } from '@shared-ui/common/hooks'
+
+import { messages as t } from '@/containers/App/App.i18n'
 
 const MockApp = () => {
     const { formatMessage: _ } = useIntl()

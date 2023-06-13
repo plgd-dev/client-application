@@ -2,8 +2,8 @@ import { FC, memo, useState } from 'react'
 import { useIntl } from 'react-intl'
 import isFunction from 'lodash/isFunction'
 
-import TableActionButton from '@shared-ui/components/organisms/TableActionButton'
-import { ItemType } from '@shared-ui/components/organisms/TableActionButton/TableActionButton.types'
+import TableActionButton from '@shared-ui/components/Organisms/TableActionButton'
+import { ItemType } from '@shared-ui/components/Organisms/TableActionButton/TableActionButton.types'
 
 import { messages as t } from '../../Devices.i18n'
 import { getDevicesResourcesAllApi } from '@/containers/Devices/rest'

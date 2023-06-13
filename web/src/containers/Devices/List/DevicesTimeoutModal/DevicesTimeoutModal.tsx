@@ -3,10 +3,10 @@ import { useIntl } from 'react-intl'
 import { useDispatch, useSelector } from 'react-redux'
 import isFunction from 'lodash/isFunction'
 
-import Modal, { ModalStrippedLine } from '@shared-ui/components/new/Modal'
+import Modal, { ModalStrippedLine } from '@shared-ui/components/Atomic/Modal'
 import { messages as t } from '@/containers/Devices/Devices.i18n'
-import Button from '@shared-ui/components/new/Button'
-import TimeoutControl from '@shared-ui/components/new/TimeoutControl'
+import Button from '@shared-ui/components/Atomic/Button'
+import TimeoutControl from '@shared-ui/components/Atomic/TimeoutControl'
 // import DeviceCommandTimeoutControl from '@shared-ui/components/organisms/DeviceCommandTimeoutControl'
 
 import { DISCOVERY_DEFAULT_TIMEOUT } from '@/containers/Devices/constants'

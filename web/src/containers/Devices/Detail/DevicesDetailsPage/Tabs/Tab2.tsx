@@ -5,10 +5,10 @@ import { useIntl } from 'react-intl'
 import omit from 'lodash/omit'
 
 import { useIsMounted } from '@shared-ui/common/hooks'
-import DevicesResourcesModal from '@shared-ui/components/organisms/DevicesResourcesModal'
-import { showSuccessToast } from '@shared-ui/components/new'
-import { DevicesResourcesModalParamsType } from '@shared-ui/components/organisms/DevicesResourcesModal/DevicesResourcesModal.types'
-import DeleteModal from '@shared-ui/components/new/Modal/components/DeleteModal'
+import DevicesResourcesModal from '@shared-ui/components/Organisms/DevicesResourcesModal'
+import Notification from '@shared-ui/components/Atomic/Notification/Toast'
+import { DevicesResourcesModalParamsType } from '@shared-ui/components/Organisms/DevicesResourcesModal/DevicesResourcesModal.types'
+import DeleteModal from '@shared-ui/components/Atomic/Modal/components/DeleteModal'
 
 import DevicesResources from '@/containers/Devices/Resources/DevicesResources'
 import { Props } from './Tab2.types'
@@ -124,7 +124,7 @@ const Tab2: FC<Props> = (props) => {
             await createDevicesResourceApi({ deviceId: id, href, currentInterface }, resourceDataCreate)
 
             if (isMounted.current) {
-                showSuccessToast({
+                Notification.success({
                     title: _(t.resourceCreateSuccess),
                     message: _(t.resourceWasCreated),
                 })
@@ -152,7 +152,7 @@ const Tab2: FC<Props> = (props) => {
             { deviceId: id, href, currentInterface },
             resourceDataUpdate,
             () => {
-                showSuccessToast({
+                Notification.success({
                     title: _(t.resourceUpdateSuccess),
                     message: _(t.resourceWasUpdated),
                 })
@@ -229,7 +229,7 @@ const Tab2: FC<Props> = (props) => {
             })
 
             if (isMounted.current) {
-                showSuccessToast({
+                Notification.success({
                     title: _(t.resourceDeleteSuccess),
                     message: _(t.resourceWasDeleted),
                 })

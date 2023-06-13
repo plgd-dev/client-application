@@ -3,7 +3,8 @@ import { useIntl } from 'react-intl'
 import { useSelector } from 'react-redux'
 
 import { WebSocketEventClient, eventFilters } from '@shared-ui/common/services'
-import Switch from '@shared-ui/components/new/Switch'
+import Switch from '@shared-ui/components/Atomic/Switch'
+
 import { getResourceUpdateNotificationKey } from '../../utils'
 import { isNotificationActive } from '../../slice'
 import { deviceResourceUpdateListener } from '../../websockets'

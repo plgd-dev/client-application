@@ -1,17 +1,18 @@
 import React, { FC, useEffect, useRef, useState } from 'react'
 import { useIntl } from 'react-intl'
-import Button from '@shared-ui/components/new/Button'
-import Modal from '@shared-ui/components/new/Modal'
-import TextField from '@shared-ui/components/new/TextField'
-import Label from '@shared-ui/components/new/Label'
-import { showErrorToast, showSuccessToast } from '@shared-ui/components/new/Toast/Toast'
+import Button from '@shared-ui/components/Atomic/Button'
+import Modal from '@shared-ui/components/Atomic/Modal'
+import TextField from '@shared-ui/components/Atomic/TextField'
+import Label from '@shared-ui/components/Atomic/Label'
+import Notification from '@shared-ui/components/Atomic/Notification/Toast'
+import { convertSize, Icon, IconPlus } from '@shared-ui/components/Atomic/Icon'
+
 import { addDeviceByIp } from '../../rest'
 import { messages as t } from '../../Devices.i18n'
 import { useIsMounted } from '@shared-ui/common/hooks'
 import { addDevice } from '@/containers/Devices/slice'
 import { useDispatch } from 'react-redux'
 import { Props } from './FindNewDeviceByIp.types'
-import { Icon } from '@shared-ui/components/new/Icon'
 
 const FindNewDeviceByIp: FC<Props> = ({ disabled }) => {
     const [fetching, setFetching] = useState<boolean>(false)
@@ -67,7 +68,7 @@ const FindNewDeviceByIp: FC<Props> = ({ disabled }) => {
 
                     dispatch(addDevice(deviceData))
 
-                    showSuccessToast({
+                    Notification.success({
                         title: _(t.deviceAddByIpSuccess),
                         message: deviceData.data.content.n,
                     })
@@ -77,7 +78,7 @@ const FindNewDeviceByIp: FC<Props> = ({ disabled }) => {
                 }
             })
         } catch (e: any) {
-            showErrorToast({
+            Notification.error({
                 title: _(t.deviceAddByIpError),
                 message: e.message,
             })
@@ -110,7 +111,7 @@ const FindNewDeviceByIp: FC<Props> = ({ disabled }) => {
             <Button
                 className='m-r-10'
                 disabled={disabled}
-                icon={<Icon icon='plus' size={20} />}
+                icon={<IconPlus {...convertSize(20)} />}
                 onClick={() => setShow(true)}
             >
                 {_(t.deviceByIp)}

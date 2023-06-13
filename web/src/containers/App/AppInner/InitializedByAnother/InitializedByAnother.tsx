@@ -1,9 +1,11 @@
 import { FC } from 'react'
+import { useIntl } from 'react-intl'
+
+import Button from '@shared-ui/components/Atomic/Button'
+
 import { Props } from './InitializedByAnother.types'
 import './InitializedByAnother.scss'
-import { useIntl } from 'react-intl'
 import { messages as t } from './InitializedByAnother.i18n'
-import Button from '@shared-ui/components/new/Button'
 
 const InitializedByAnother: FC<Props> = (props) => {
     const { show, logout } = props

@@ -2,10 +2,10 @@ import { FC, useEffect, useMemo, useState } from 'react'
 import { useIntl } from 'react-intl'
 import classNames from 'classnames'
 
-import SimpleStripTable from '@shared-ui/components/new/SimpleStripTable'
-import TagGroup from '@shared-ui/components/new/TagGroup'
-import Tag from '@shared-ui/components/new/Tag'
-import Badge from '@shared-ui/components/new/Badge'
+import SimpleStripTable from '@shared-ui/components/Atomic/SimpleStripTable'
+import TagGroup from '@shared-ui/components/Atomic/TagGroup'
+import Tag from '@shared-ui/components/Atomic/Tag'
+import Badge from '@shared-ui/components/Atomic/Badge'
 
 import { messages as t } from '@/containers/Devices/Devices.i18n'
 import { Props } from './Tab1.types'
@@ -17,7 +17,7 @@ import {
 } from '@/containers/Devices/utils'
 import testId from '@/testId'
 import { DEVICE_PROVISION_STATUS_DELAY_MS } from '@/containers/Devices/constants'
-import { IconLoader } from '@shared-ui/components/new/Loader'
+import { IconLoader } from '@shared-ui/components/Atomic/Loader'
 
 const Tab1: FC<Props> = (props) => {
     const { data, deviceId, deviceOnboardingResourceData, isOwned, resources, onboardResourceLoading } = props

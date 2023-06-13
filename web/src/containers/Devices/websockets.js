@@ -1,6 +1,6 @@
 import { store, history } from '@/store'
 import { Emitter } from '@shared-ui/common/services/emitter'
-import { showInfoToast } from '@shared-ui/components/new/Toast/Toast'
+import { showInfoToast } from '@shared-ui/components/Atomic/Toast/Toast'
 import {
     devicesStatuses,
     resourceEventTypes,

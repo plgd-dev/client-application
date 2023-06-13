@@ -6,10 +6,11 @@ import jwtDecode from 'jwt-decode'
 import get from 'lodash/get'
 import { ThemeProvider } from '@emotion/react'
 
-import { BrowserNotificationsContainer, ToastContainer } from '@shared-ui/components/new'
+import { ToastContainer } from '@shared-ui/components/Atomic/Notification'
+import { BrowserNotificationsContainer } from '@shared-ui/components/Atomic/Toast'
 import { useLocalStorage, WellKnownConfigType } from '@shared-ui/common/hooks'
 import { security } from '@shared-ui/common/services'
-import light from '@shared-ui/components/new/_theme/light'
+import light from '@shared-ui/components/Atomic/_theme/light'
 
 import AppContext from '@/containers/App/AppContext'
 import { history } from '@/store'
