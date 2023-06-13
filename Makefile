@@ -10,6 +10,7 @@ WWW_PATH=$(TMP_PATH)/www
 CLIENT_APPLICATION_VERSION_PATH_VARIABLE = main.Version
 CLIENT_APPLICATION_UI_SEPARATOR_PATH_VARIABLE = main.UISeparator
 CLIENT_APPLICATION_BINARY_PATH ?= 
+UI_FILE ?= $(TMP_PATH)/ui.tar.gz
 
 CERT_TOOL_IMAGE ?= ghcr.io/plgd-dev/hub/cert-tool:vnext
 DEVSIM_IMAGE ?= ghcr.io/iotivity/iotivity-lite/cloud-server-discovery-resource-observable-debug:master
@@ -93,17 +94,17 @@ build-web:
 	mkdir -p $(WWW_PATH)
 	docker build --tag build-web:latest --target build-web -f ./web/Dockerfile ./web
 	CONTAINER_ID=`docker create build-web:latest` && docker cp $$CONTAINER_ID:/web/build/ $(WWW_PATH)/ && docker rm -f $$CONTAINER_ID
-	cd $(WWW_PATH)/build && tar -czf $(TMP_PATH)/ui.tar.gz .
+	cd $(WWW_PATH)/build && tar -czf $(UI_FILE) .
 .PHONY: build-web
 
 inject-web: $(CLIENT_APPLICATION_BINARY_PATH)
 	printf "\n$(UI_SEPARATOR)\n" >> $(CLIENT_APPLICATION_BINARY_PATH)
 	wc -c $(CLIENT_APPLICATION_BINARY_PATH)
-	cat $(TMP_PATH)/ui.tar.gz >> $(CLIENT_APPLICATION_BINARY_PATH)
+	cat $(UI_FILE) >> $(CLIENT_APPLICATION_BINARY_PATH)
 .PHONY: inject-web
 
-build: clean
-	UI_SEPARATOR=$(UI_SEPARATOR) goreleaser build --rm-dist
+build:
+	UI_FILE=$(UI_FILE) UI_SEPARATOR=$(UI_SEPARATOR) goreleaser build --rm-dist --single-target --skip-validate
 .PHONY: build
 
 test: env

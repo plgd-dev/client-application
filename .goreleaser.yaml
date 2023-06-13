@@ -2,7 +2,7 @@
 # Make sure to check the documentation at https://goreleaser.com
 before:
   hooks:
-   - make build-web
+   - bash -c "test -f {{.Env.UI_FILE}} || make build-web UI_FILE={{.Env.UI_FILE}}"
 dist: .tmp/dist
 builds:
   - binary: client-application
@@ -33,7 +33,7 @@ builds:
     hooks:
       post:
         - bash -c "test {{.Os}} == "windows" || test {{.Os}} == "darwin" || upx --best --lzma {{.Path}}"
-        - make inject-web CLIENT_APPLICATION_BINARY_PATH={{.Path}} UI_SEPARATOR={{.Env.UI_SEPARATOR}}
+        - make inject-web CLIENT_APPLICATION_BINARY_PATH={{.Path}} UI_SEPARATOR={{.Env.UI_SEPARATOR}} UI_FILE={{.Env.UI_FILE}}
 archives:
   - replacements:
       darwin: macOS

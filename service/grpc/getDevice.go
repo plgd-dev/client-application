@@ -43,7 +43,7 @@ func (s *ClientApplicationServer) GetDevice(ctx context.Context, req *pb.GetDevi
 	if len(devLinks) == 0 {
 		return nil, status.Errorf(codes.NotFound, "cannot find device resource %v at device %v", plgdDevice.ResourceType, req.GetDeviceId())
 	}
-	_, err = getResourceAndRefreshCache(ctx, dev, devLinks[0])
+	_, err = getResourceAndRefreshCache(ctx, dev, devLinks[0], "")
 	if err != nil {
 		return nil, err
 	}

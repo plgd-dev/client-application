@@ -32,6 +32,16 @@ git tag -f v0.0.1-myversion
 make build
 ```
 
+## Docker
+
+You can run the client application in a docker container by executing the following command.
+
+```sh
+docker run --rm -it -e NUM_DEVICES=1 -p 8080:8080 ghcr.io/plgd-dev/client-application:latest
+```
+
+Via environment variable NUM_DEVICES you can specify the number of devices simulators. The default value is 1. The client application will be available at [http://locahost:8080](http://locahost:8080).
+
 ## YAML Configuration
 
 A configuration template is available on [config.yaml](./config.yaml).

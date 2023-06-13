@@ -22,6 +22,7 @@ import (
 
 	"github.com/plgd-dev/client-application/pb"
 	"github.com/plgd-dev/client-application/pkg/rawcodec"
+	pkgCoap "github.com/plgd-dev/device/v2/pkg/net/coap"
 	"github.com/plgd-dev/device/v2/schema"
 	plgdDevice "github.com/plgd-dev/device/v2/schema/device"
 	"github.com/plgd-dev/go-coap/v3/message"
@@ -32,15 +33,19 @@ import (
 	"google.golang.org/grpc/codes"
 )
 
-func getResourceAndRefreshCache(ctx context.Context, dev *device, link schema.ResourceLink) (*commands.Content, error) {
+func getResourceAndRefreshCache(ctx context.Context, dev *device, link schema.ResourceLink, resourceInterface string) (*commands.Content, error) {
 	var response []byte
-	err := dev.GetResourceWithCodec(ctx, link, rawcodec.GetRawCodec(message.AppOcfCbor), &response)
+	var options []func(message.Options) message.Options
+	if resourceInterface != "" {
+		options = append(options, pkgCoap.WithInterface(resourceInterface))
+	}
+	err := dev.GetResourceWithCodec(ctx, link, rawcodec.GetRawCodec(message.AppOcfCbor), &response, options...)
 	if err != nil {
 		return nil, convErrToGrpcStatus(codes.Unavailable, fmt.Errorf("cannot get resource %v for device %v: %w", link.Href, dev.ID, err)).Err()
 	}
 	content := responseToData(response)
 	// we update device resource body only for device resource
-	if strings.Contains(link.ResourceTypes, plgdDevice.ResourceType) {
+	if strings.Contains(link.ResourceTypes, plgdDevice.ResourceType) && resourceInterface == "" {
 		dev.updateDeviceResourceBody(content)
 	}
 	return content, nil
@@ -70,7 +75,7 @@ func (s *ClientApplicationServer) GetResource(ctx context.Context, req *pb.GetRe
 	if err != nil {
 		return nil, err
 	}
-	content, err := getResourceAndRefreshCache(ctx, dev, link)
+	content, err := getResourceAndRefreshCache(ctx, dev, link, req.GetResourceInterface())
 	if err != nil {
 		return nil, err
 	}

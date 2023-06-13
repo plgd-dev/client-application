@@ -74,7 +74,7 @@ def find_and_validate_yaml_files(dir = ROOT_DIRECTORY):
   """Find all yaml files in directory and validate them."""
 
   valid = True
-  exclude_dirs = set(["dependency", "templates"])
+  exclude_dirs = set(["dependency", "templates", ".github"])
   exclude_filenames = set(["swagger.yaml"])
   for root, dirnames, filenames in os.walk(dir, topdown=True):
     dirnames[:] = [d for d in dirnames if d not in exclude_dirs]
