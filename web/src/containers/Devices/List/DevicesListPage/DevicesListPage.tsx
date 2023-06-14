@@ -1,4 +1,4 @@
-import { FC, memo, useCallback, useContext, useEffect, useMemo, useState } from 'react'
+import { useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { useIntl } from 'react-intl'
 import { toast } from 'react-toastify'
 import { useDispatch, useSelector } from 'react-redux'
@@ -37,14 +37,6 @@ import DevicesListActionButton from '@/containers/Devices/List/DevicesListAction
 import AppContext from '@/containers/App/AppContext'
 
 const { OWNED } = devicesOwnerships
-
-type DeleteButtonProps = {
-    handleCloseDeleteModal: () => void
-    i18n: {
-        flushCache: string
-    }
-    loading: boolean
-}
 
 const DevicesListPage = () => {
     const { formatMessage: _ } = useIntl()

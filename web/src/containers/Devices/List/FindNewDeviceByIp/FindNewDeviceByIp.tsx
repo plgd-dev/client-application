@@ -5,7 +5,7 @@ import Modal from '@shared-ui/components/Atomic/Modal'
 import TextField from '@shared-ui/components/Atomic/TextField'
 import Label from '@shared-ui/components/Atomic/Label'
 import Notification from '@shared-ui/components/Atomic/Notification/Toast'
-import { convertSize, Icon, IconPlus } from '@shared-ui/components/Atomic/Icon'
+import { convertSize, IconPlus } from '@shared-ui/components/Atomic/Icon'
 
 import { addDeviceByIp } from '../../rest'
 import { messages as t } from '../../Devices.i18n'

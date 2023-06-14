@@ -43,7 +43,7 @@
     "react-bootstrap": "^2.7.2",
     "react-dom": "^18.2.0",
     "react-helmet": "^6.1.0",
-    "react-intl": "^6.3.2",
+    "react-intl": "^5.25.1",
     "react-intl-po": "^2.2.2",
     "react-redux": "^7.2.9",
     "react-resize-detector": "^9.1.0",

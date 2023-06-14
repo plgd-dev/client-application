@@ -45,7 +45,7 @@ const AppLayout: FC<Props> = (props) => {
         e.preventDefault()
 
         setActiveItem(item.id)
-        history.push(item.link)
+        item.link && history.push(item.link)
     }
 
     const handleLogout = () => {
