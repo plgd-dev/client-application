@@ -90,7 +90,7 @@ const FindNewDeviceByIp: FC<Props> = ({ disabled }) => {
     const renderFooter = () => {
         return (
             <div className='w-100 d-flex justify-content-end align-items-center'>
-                <Button disabled={fetching} onClick={onClose} variant='secondary'>
+                <Button className='m-r-10' disabled={fetching} onClick={onClose} variant='secondary'>
                     {_(t.cancel)}
                 </Button>
 

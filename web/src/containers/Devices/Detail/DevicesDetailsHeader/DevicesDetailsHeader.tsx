@@ -80,7 +80,7 @@ export const DevicesDetailsHeader: FC<Props> = memo((props) => {
                                 {
                                     onClick: openOnboardingModal,
                                     label: _(t.changeOnboardingData),
-                                    icon: 'edit',
+                                    icon: <IconEdit />,
                                 },
                             ]}
                             loading={onboardResourceLoading || onboarding}

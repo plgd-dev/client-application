@@ -9,6 +9,7 @@ import TableActionButton from '@shared-ui/components/Organisms/TableActionButton
 import DevicesResourcesTree from '@shared-ui/components/Organisms/DevicesResourcesTree'
 import TreeExpander from '@shared-ui/components/Atomic/TreeExpander'
 import Badge from '@shared-ui/components/Atomic/Badge'
+import { IconEdit, IconPlus, IconTrash } from '@shared-ui/components/Atomic/Icon'
 
 import { devicesStatuses, RESOURCE_TREE_DEPTH_SIZE } from '../../constants'
 import { messages as t } from '../../Devices.i18n'
@@ -88,19 +89,19 @@ export const DevicesResources: FC<Props> = ({
                                 {
                                     onClick: () => onCreate(href),
                                     label: _(t.create),
-                                    icon: 'plus',
+                                    icon: <IconPlus />,
                                     hidden: !create,
                                 },
                                 {
                                     onClick: () => onUpdate({ deviceId, href }),
                                     label: _(t.update),
-                                    icon: 'edit',
+                                    icon: <IconEdit />,
                                     hidden: !edit,
                                 },
                                 {
                                     onClick: () => onDelete(href),
                                     label: _(t.delete),
-                                    icon: 'trash',
+                                    icon: <IconTrash />,
                                     hidden: !edit,
                                 },
                             ]}
@@ -209,19 +210,19 @@ export const DevicesResources: FC<Props> = ({
                                 {
                                     onClick: () => onCreate(cleanHref),
                                     label: _(t.create),
-                                    icon: 'fa-plus',
+                                    icon: <IconPlus />,
                                     hidden: !create,
                                 },
                                 {
                                     onClick: () => onUpdate({ deviceId, href: cleanHref }),
                                     label: _(t.update),
-                                    icon: 'fa-pen',
+                                    icon: <IconEdit />,
                                     hidden: !edit,
                                 },
                                 {
                                     onClick: () => onDelete(cleanHref),
                                     label: _(t.delete),
-                                    icon: 'fa-trash-alt',
+                                    icon: <IconTrash />,
                                     hidden: !edit,
                                 },
                             ]}

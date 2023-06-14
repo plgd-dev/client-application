@@ -1,7 +1,7 @@
 import { FC, memo } from 'react'
 import { useIntl } from 'react-intl'
 
-import { IconRefresh, IconTrash } from '@shared-ui/components/Atomic/Icon'
+import { IconEdit, IconRefresh, IconTrash } from '@shared-ui/components/Atomic/Icon'
 import SplitButton from '@shared-ui/components/Atomic/SplitButton'
 import Button from '@shared-ui/components/Atomic/Button'
 
@@ -23,7 +23,7 @@ const DevicesListHeader: FC<Props> = memo((props) => {
                     {
                         onClick: openTimeoutModal,
                         label: _(t.changeTimeout),
-                        icon: 'edit',
+                        icon: <IconEdit />,
                     },
                 ]}
                 onClick={refresh}

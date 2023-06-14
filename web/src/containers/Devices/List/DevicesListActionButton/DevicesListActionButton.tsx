@@ -4,6 +4,7 @@ import isFunction from 'lodash/isFunction'
 
 import TableActionButton from '@shared-ui/components/Organisms/TableActionButton'
 import { ItemType } from '@shared-ui/components/Organisms/TableActionButton/TableActionButton.types'
+import { IconClose, IconNetwork, IconPlus, IconShowPassword, IconTrash } from '@shared-ui/components/Atomic/Icon'
 
 import { messages as t } from '../../Devices.i18n'
 import { getDevicesResourcesAllApi } from '@/containers/Devices/rest'
@@ -18,19 +19,19 @@ const DevicesListActionButton: FC<Props> = memo(
                     id: 'detail',
                     onClick: () => onView(deviceId),
                     label: _(t.details),
-                    icon: 'icon-show-password',
+                    icon: <IconShowPassword />,
                 },
                 {
                     id: 'delete',
                     onClick: () => onView(deviceId),
                     label: _(t.delete),
-                    icon: 'trash',
+                    icon: <IconTrash />,
                 },
                 {
                     id: 'own',
                     onClick: () => onOwnChange(),
                     label: isOwned ? _(t.disOwnDevice) : _(t.ownDevice),
-                    icon: isOwned ? 'close' : 'plus',
+                    icon: isOwned ? <IconClose /> : <IconPlus />,
                 },
             ]
 
@@ -39,7 +40,7 @@ const DevicesListActionButton: FC<Props> = memo(
                     id: 'dps',
                     onClick: () => showDpsModal(deviceId),
                     label: _(t.setDpsEndpoint),
-                    icon: 'network',
+                    icon: <IconNetwork />,
                     loading: true,
                 })
             }
