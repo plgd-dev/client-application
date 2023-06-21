@@ -61,7 +61,7 @@ const DevicesDetailsPage = () => {
     const [showEditNameModal, setShowEditNameModal] = useState(false)
     const [domReady, setDomReady] = useState(false)
     const [deviceNameLoading, setDeviceNameLoading] = useState(false)
-    const [activeTabItem, setActiveTabItem] = useState(0)
+    const [activeTabItem, setActiveTabItem] = useState(1)
 
     const isMounted = useIsMounted()
     const { data, updateData, loading, error: deviceError } = useDeviceDetails(id)
@@ -325,6 +325,7 @@ const DevicesDetailsPage = () => {
                 )}
 
             <Tabs
+                activeItem={activeTabItem}
                 fullHeight={true}
                 onItemChange={(i) => setActiveTabItem(i)}
                 tabs={[

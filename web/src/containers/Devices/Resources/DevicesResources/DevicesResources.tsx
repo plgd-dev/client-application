@@ -8,8 +8,10 @@ import DevicesResourcesList from '@shared-ui/components/Organisms/DevicesResourc
 import TableActionButton from '@shared-ui/components/Organisms/TableActionButton'
 import DevicesResourcesTree from '@shared-ui/components/Organisms/DevicesResourcesTree'
 import TreeExpander from '@shared-ui/components/Atomic/TreeExpander'
-import Badge from '@shared-ui/components/Atomic/Badge'
 import { IconEdit, IconPlus, IconTrash } from '@shared-ui/components/Atomic/Icon'
+import { tagVariants } from '@shared-ui/components/Atomic/Tag/constants'
+import TagGroup from '@shared-ui/components/Atomic/TagGroup'
+import Tag from '@shared-ui/components/Atomic/Tag'
 
 import { devicesStatuses, RESOURCE_TREE_DEPTH_SIZE } from '../../constants'
 import { messages as t } from '../../Devices.i18n'
@@ -158,9 +160,17 @@ export const DevicesResources: FC<Props> = ({
                         <div
                             className='tree-expander-container'
                             style={{
-                                marginLeft: `${row.depth === 0 ? 0 : (row.depth + 1) * RESOURCE_TREE_DEPTH_SIZE}px`,
+                                marginLeft: `${row.depth === 0 ? 0 : row.depth * RESOURCE_TREE_DEPTH_SIZE}px`,
                             }}
                         >
+                            {row.depth > 0 && (
+                                <span
+                                    style={{
+                                        display: 'block',
+                                        width: 15,
+                                    }}
+                                ></span>
+                            )}
                             <span className='link reveal-icon-on-hover' onClick={() => onLinkClick}>
                                 {`/${lastValue}`}
                             </span>
@@ -168,7 +178,7 @@ export const DevicesResources: FC<Props> = ({
                         </div>
                     )
                 },
-                style: { width: '100%' },
+                style: { width: '40%' },
             },
             {
                 Header: _(t.types),
@@ -179,11 +189,13 @@ export const DevicesResources: FC<Props> = ({
                     }
 
                     return (
-                        <div className='badges-box-horizontal'>
+                        <TagGroup>
                             {value?.map?.((type: string) => (
-                                <Badge key={type}>{type}</Badge>
+                                <Tag key={type} variant={tagVariants.WHITE}>
+                                    {type}
+                                </Tag>
                             ))}
-                        </div>
+                        </TagGroup>
                     )
                 },
             },
@@ -191,6 +203,7 @@ export const DevicesResources: FC<Props> = ({
                 Header: _(t.actions),
                 accessor: 'actions',
                 disableSortBy: true,
+                className: 'actions',
                 Cell: ({ row }: { row: any }) => {
                     if (row.canExpand) {
                         return null

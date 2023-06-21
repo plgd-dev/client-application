@@ -255,6 +255,8 @@ const Tab2: FC<Props> = (props) => {
         setDeleteResourceHref('')
     }
 
+    console.log(resources)
+
     return (
         <div
             ref={ref}
