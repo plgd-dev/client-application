@@ -91,6 +91,7 @@ const DevicesDetailsPage = () => {
     const dispatch = useDispatch()
 
     const isOwned = useMemo(() => data?.ownershipStatus === devicesOwnerships.OWNED, [data])
+    const isUnsupported = useMemo(() => data?.ownershipStatus === devicesOwnerships.UNSUPPORTED, [data])
     const resources = useMemo(() => resourcesData?.resources || [], [resourcesData])
 
     const [
@@ -101,7 +102,8 @@ const DevicesDetailsPage = () => {
     ] = useOnboardingButton({
         resources,
         isOwned,
-        deviceId: id,
+        isUnsupported,
+        deviceId: id
     })
 
     const wellKnownConfig = security.getWellKnowConfig() as WellKnownConfigType
