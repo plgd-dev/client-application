@@ -64,7 +64,8 @@ func (s *ClientApplicationServer) UpdateResource(ctx context.Context, req *pb.Up
 		return nil, err
 	}
 	var response []byte
-	var options []func(message.Options) message.Options
+	options := make([]func(message.Options) message.Options, 0, 2)
+	options = append(options, pkgCoap.WithDeviceID(dev.DeviceID()))
 	if req.GetResourceInterface() != "" {
 		options = append(options, pkgCoap.WithInterface(req.GetResourceInterface()))
 	}

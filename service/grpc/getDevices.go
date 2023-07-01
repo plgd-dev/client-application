@@ -49,8 +49,6 @@ import (
 	pkgNet "github.com/plgd-dev/kit/v2/net"
 	kitStrings "github.com/plgd-dev/kit/v2/strings"
 	"go.uber.org/atomic"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 const (
@@ -129,7 +127,38 @@ func (d *device) updateEndpointsLocked(endpoints schema.Endpoints) {
 	d.private.Endpoints = newEndpoints
 }
 
-func processDiscoveryResourceResponse(serviceDevice *serviceDevice.Service, logger log.Logger, remoteAddr net.Addr, resp *pool.Message) (*device, error) {
+type deviceInfo struct {
+	deviceID        string
+	endpoints       schema.Endpoints
+	resourceTypes   []string
+	ownershipStatus grpcgwPb.Device_OwnershipStatus
+	deviceURI       string
+}
+
+func getDeviceInfoFromLinks(links schema.ResourceLinks) map[string]*deviceInfo {
+	devices := make(map[string]*deviceInfo)
+	for _, l := range links {
+		d := devices[l.GetDeviceID()]
+		if d == nil {
+			d = &deviceInfo{
+				deviceID:        l.GetDeviceID(),
+				ownershipStatus: grpcgwPb.Device_UNSUPPORTED,
+			}
+			devices[l.GetDeviceID()] = d
+		}
+		if pkgStrings.Contains(l.ResourceTypes, plgdDevice.ResourceType) {
+			d.endpoints = l.Endpoints
+			d.resourceTypes = l.ResourceTypes
+			d.deviceURI = l.Href
+		}
+		if pkgStrings.Contains(l.ResourceTypes, doxm.ResourceType) {
+			d.ownershipStatus = getOwnershipStatus(l)
+		}
+	}
+	return devices
+}
+
+func processDiscoveryResourceResponse(serviceDevice *serviceDevice.Service, logger log.Logger, remoteAddr net.Addr, resp *pool.Message) (map[uuid.UUID]*device, error) {
 	if resp.Code() != coapCodes.Content {
 		return nil, fmt.Errorf("unexpected response code: %d", resp.Code())
 	}
@@ -150,41 +179,40 @@ func processDiscoveryResourceResponse(serviceDevice *serviceDevice.Service, logg
 		return nil, err
 	}
 	links = links.PatchEndpoint(addr, schema.Endpoints{})
-
-	var deviceID string
-	var endpoints schema.Endpoints
-	var resourceTypes []string
-	ownershipStatus := getOwnershipStatus(links)
-	for _, l := range links {
-		deviceID = l.GetDeviceID()
-		if pkgStrings.Contains(l.ResourceTypes, plgdDevice.ResourceType) {
-			endpoints = l.Endpoints
-			resourceTypes = l.ResourceTypes
+	deviceInfos := getDeviceInfoFromLinks(links)
+	devices := make(map[uuid.UUID]*device, len(deviceInfos))
+	for _, d := range deviceInfos {
+		devID, err := uuid.Parse(d.deviceID)
+		if err != nil {
+			return nil, fmt.Errorf("cannot parse device ID('%v'): %w", devID, err)
 		}
+		device := newDevice(devID, serviceDevice, logger)
+		device.private.ResourceTypes = d.resourceTypes
+		device.updateEndpointsLocked(d.endpoints)
+		device.private.OwnershipStatus = d.ownershipStatus
+		device.private.DeviceURI = d.deviceURI
+		devices[devID] = device
 	}
-	devID, err := uuid.Parse(deviceID)
-	if err != nil {
-		return nil, fmt.Errorf("cannot parse device ID('%v'): %w", devID, err)
-	}
-	device := newDevice(devID, serviceDevice, logger)
-	device.private.ResourceTypes = resourceTypes
-	device.updateEndpointsLocked(endpoints)
-	device.private.OwnershipStatus = ownershipStatus
 
-	return device, nil
+	return devices, nil
 }
 
-func onDiscoveryResourceResponse(serviceDevice *serviceDevice.Service, logger log.Logger, remoteAddr net.Addr, resp *pool.Message, devices *coapSync.Map[uuid.UUID, *device]) error {
-	dev, err := processDiscoveryResourceResponse(serviceDevice, logger, remoteAddr, resp)
+func onDiscoveryResourceResponse(ctx context.Context, conn *client.Conn, serviceDevice *serviceDevice.Service, logger log.Logger, resp *pool.Message, devices *coapSync.Map[uuid.UUID, *device]) error {
+	discoveredDevices, err := processDiscoveryResourceResponse(serviceDevice, logger, conn.RemoteAddr(), resp)
 	if err != nil {
 		return err
 	}
-	d, loaded := devices.LoadOrStore(dev.ID, dev)
-	if !loaded {
-		return nil
+	for _, discoveredDevice := range discoveredDevices {
+		fmt.Printf("discovered URI: %v\n", discoveredDevice.private.DeviceURI)
+		d, loaded := devices.LoadOrStore(discoveredDevice.ID, discoveredDevice)
+		if !loaded {
+			d.updateDeviceMetadata(discoveredDevice.private.ResourceTypes, discoveredDevice.private.Endpoints, discoveredDevice.private.OwnershipStatus)
+		}
+		err := getDeviceResourceContent(ctx, discoveredDevice.private.DeviceURI, serviceDevice, logger, d)
+		if err != nil {
+			d.ErrorFunc(fmt.Errorf("cannot get device resource content: %w", err))
+		}
 	}
-	d.updateDeviceMetadata(dev.private.ResourceTypes, dev.private.Endpoints, dev.private.OwnershipStatus)
-
 	return nil
 }
 
@@ -249,34 +277,6 @@ func processDeviceResourceResponse(serviceDevice *serviceDevice.Service, logger 
 	return device, nil
 }
 
-func onDeviceResourceResponse(serviceDevice *serviceDevice.Service, logger log.Logger, resp *pool.Message, devices *coapSync.Map[uuid.UUID, *device]) error {
-	dev, err := processDeviceResourceResponse(serviceDevice, logger, resp)
-	if err != nil {
-		return err
-	}
-	d, loaded := devices.LoadOrStore(dev.ID, dev)
-	if !loaded {
-		return nil
-	}
-	d.updateDeviceResourceBody(dev.private.DeviceResourceBody)
-
-	return nil
-}
-
-func discoverDeviceResource(ctx context.Context, discoveryCfg core.DiscoveryConfiguration, onResponse func(conn *client.Conn, resp *pool.Message)) error {
-	discoveryClients, err := core.DialDiscoveryAddresses(ctx, discoveryCfg, func(err error) {})
-	if err != nil {
-		return status.Error(codes.Internal, err.Error())
-	}
-	defer func() {
-		for _, c := range discoveryClients {
-			_ = c.Close()
-		}
-	}()
-
-	return core.Discover(ctx, discoveryClients, plgdDevice.ResourceURI, onResponse)
-}
-
 func toDiscoveryConfiguration(ipVersionFilter ipVersionFilter) core.DiscoveryConfiguration {
 	discoveryCfg := core.DefaultDiscoveryConfiguration()
 	if ipVersionFilter&ipv4 == 0 {
@@ -288,27 +288,10 @@ func toDiscoveryConfiguration(ipVersionFilter ipVersionFilter) core.DiscoveryCon
 	return discoveryCfg
 }
 
-func getDevicesByMulticast(ctx context.Context, discoveryCfg core.DiscoveryConfiguration, onDeviceResourceResponse, onDiscoveryResourceResponse func(conn *client.Conn, resp *pool.Message)) {
-	var wg sync.WaitGroup
-	wg.Add(1)
-
-	errChan := make(chan error, 1)
-	go func() {
-		defer wg.Done()
-		err := discoverDeviceResource(ctx, discoveryCfg, onDeviceResourceResponse)
-		if err != nil {
-			errChan <- err
-		}
-	}()
+func getDevicesByMulticast(ctx context.Context, discoveryCfg core.DiscoveryConfiguration, onDiscoveryResourceResponse func(conn *client.Conn, resp *pool.Message)) {
 	err := discoverDiscoveryResources(ctx, discoveryCfg, onDiscoveryResourceResponse)
 	if err != nil {
 		log.Errorf("failed to discover device resources: %w", err)
-	}
-	wg.Wait()
-	select {
-	case err = <-errChan:
-		log.Errorf("failed to discover endpoints and ownership status: %w", err)
-	default:
 	}
 }
 
@@ -339,29 +322,59 @@ func getDeviceByMulticastAddress(ctx context.Context, serviceDevice *serviceDevi
 		discoveryConfiguration.MulticastAddressUDP4 = multicastAddr
 		discoveryConfiguration.MulticastAddressUDP6 = nil
 	}
-	deviceResource := atomic.NewBool(false)
 	discoveryResource := atomic.NewBool(false)
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 	getDevicesByMulticast(ctx, discoveryConfiguration, func(conn *client.Conn, resp *pool.Message) {
-		_ = conn.Close()
-		err := onDeviceResourceResponse(serviceDevice, logger, resp, devices)
+		defer func() {
+			_ = conn.Close()
+		}()
+		err := onDiscoveryResourceResponse(ctx, conn, serviceDevice, logger, resp, devices)
 		if err != nil {
 			return
 		}
-		if deviceResource.CompareAndSwap(false, true) && discoveryResource.Load() {
-			cancel()
-		}
-	}, func(conn *client.Conn, resp *pool.Message) {
-		_ = conn.Close()
-		err := onDiscoveryResourceResponse(serviceDevice, logger, conn.RemoteAddr(), resp, devices)
-		if err != nil {
-			return
-		}
-		if discoveryResource.CompareAndSwap(false, true) && deviceResource.Load() {
+		if discoveryResource.CompareAndSwap(false, true) {
 			cancel()
 		}
 	})
+	return nil
+}
+
+type deviceResponseCodec struct{}
+
+func (c deviceResponseCodec) ContentFormat() message.MediaType {
+	return message.AppOcfCbor
+}
+
+func (c deviceResponseCodec) Encode(v interface{}) ([]byte, error) {
+	return cbor.Encode(v)
+}
+
+func (c deviceResponseCodec) Decode(m *pool.Message, v interface{}) error {
+	if r, ok := v.(**pool.Message); ok {
+		*r = m
+		return nil
+	}
+	return fmt.Errorf("cannot decode to %T, only **pool.Message is supported", v)
+}
+
+func getDeviceResourceContent(ctx context.Context, uri string, serviceDevice *serviceDevice.Service, logger log.Logger, d *device) error {
+	if d.hasDeviceResourceBody() {
+		return nil
+	}
+	var response *pool.Message
+	err := d.GetResourceWithCodec(ctx, schema.ResourceLink{
+		Href:      uri,
+		Endpoints: d.GetEndpoints().FilterUnsecureEndpoints(),
+	}, deviceResponseCodec{}, &response, coap.WithDeviceID(d.ID.String()))
+	if err != nil {
+		return err
+	}
+	deviceRes, err := processDeviceResourceResponse(serviceDevice, logger, response)
+	if err != nil {
+		return err
+	}
+	d.updateDeviceResourceBody(deviceRes.private.DeviceResourceBody)
 	return nil
 }
 
@@ -381,18 +394,10 @@ func getDeviceByAddress(ctx context.Context, serviceDevice *serviceDevice.Servic
 	defer func() {
 		_ = client.Close()
 	}()
-	resp, err := client.Get(ctx, plgdDevice.ResourceURI)
-	if err != nil {
-		return err
-	}
-	deviceRes, err := processDeviceResourceResponse(serviceDevice, logger, resp)
-	if err != nil {
-		return err
-	}
 	opts := make(message.Options, 0, 2)
 	coap.WithResourceType(plgdDevice.ResourceType)(opts)
 	coap.WithResourceType(doxm.ResourceType)(opts)
-	resp, err = client.Get(ctx, resources.ResourceURI, opts...)
+	resp, err := client.Get(ctx, resources.ResourceURI, opts...)
 	if err != nil {
 		return err
 	}
@@ -400,11 +405,15 @@ func getDeviceByAddress(ctx context.Context, serviceDevice *serviceDevice.Servic
 	if err != nil {
 		return err
 	}
-	d, loaded := devices.LoadOrStore(deviceRes.ID, deviceRes)
-	if loaded {
-		d.updateDeviceResourceBody(deviceRes.private.DeviceResourceBody)
+	for _, discoveredDevice := range discoveryRes {
+		newDevice := newDevice(discoveredDevice.ID, serviceDevice, logger)
+		d, _ := devices.LoadOrStore(discoveredDevice.ID, newDevice)
+		d.updateDeviceMetadata(discoveredDevice.private.ResourceTypes, discoveredDevice.private.Endpoints, discoveredDevice.private.OwnershipStatus)
+		err := getDeviceResourceContent(ctx, discoveredDevice.private.DeviceURI, serviceDevice, logger, d)
+		if err != nil {
+			d.ErrorFunc(fmt.Errorf("cannot get device resource content: %w", err))
+		}
 	}
-	d.updateDeviceMetadata(discoveryRes.private.ResourceTypes, discoveryRes.private.Endpoints, discoveryRes.private.OwnershipStatus)
 	return nil
 }
 
@@ -560,11 +569,10 @@ func (s *ClientApplicationServer) GetDevices(req *pb.GetDevicesRequest, srv pb.C
 	if len(req.GetUseMulticast()) > 0 {
 		toCall = append(toCall, func() {
 			getDevicesByMulticast(discoveryCtx, toDiscoveryConfiguration(toUseMulticastFilter(req.GetUseMulticast())), func(conn *client.Conn, resp *pool.Message) {
-				_ = conn.Close()
-				_ = onDeviceResourceResponse(s.serviceDevice, s.logger, resp, discoveredDevices)
-			}, func(conn *client.Conn, resp *pool.Message) {
-				_ = conn.Close()
-				_ = onDiscoveryResourceResponse(s.serviceDevice, s.logger, conn.RemoteAddr(), resp, discoveredDevices)
+				defer func() {
+					_ = conn.Close()
+				}()
+				_ = onDiscoveryResourceResponse(discoveryCtx, conn, s.serviceDevice, s.logger, resp, discoveredDevices)
 			})
 		},
 		)

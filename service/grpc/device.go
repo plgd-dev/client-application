@@ -26,6 +26,7 @@ import (
 	"github.com/google/uuid"
 	serviceDevice "github.com/plgd-dev/client-application/service/device"
 	"github.com/plgd-dev/device/v2/client/core"
+	"github.com/plgd-dev/device/v2/pkg/net/coap"
 	"github.com/plgd-dev/device/v2/schema"
 	plgdDevice "github.com/plgd-dev/device/v2/schema/device"
 	"github.com/plgd-dev/device/v2/schema/doxm"
@@ -52,6 +53,7 @@ type device struct {
 	private struct {
 		mutex              sync.RWMutex
 		ResourceTypes      []string
+		DeviceURI          string
 		Endpoints          schema.Endpoints
 		OwnershipStatus    grpcgwPb.Device_OwnershipStatus
 		DeviceResourceBody *commands.Content
@@ -73,6 +75,12 @@ func newDevice(deviceID uuid.UUID, serviceDevice *serviceDevice.Service, logger 
 
 func (d *device) ErrorFunc(err error) {
 	d.logger.Debug(err)
+}
+
+func (d *device) hasDeviceResourceBody() bool {
+	d.private.mutex.Lock()
+	defer d.private.mutex.Unlock()
+	return d.private.DeviceResourceBody != nil
 }
 
 func (d *device) ToProto() *grpcgwPb.Device {
@@ -118,27 +126,30 @@ func normalizeHref(href string) string {
 	return "/" + href
 }
 
-func getOwnershipStatus(links schema.ResourceLinks) grpcgwPb.Device_OwnershipStatus {
-	doxmRes := links.GetResourceLinks(doxm.ResourceType)
-	if len(doxmRes) == 0 {
-		return grpcgwPb.Device_UNSUPPORTED
-	}
-	l := doxmRes[0]
+func getOwnershipStatus(l schema.ResourceLink) grpcgwPb.Device_OwnershipStatus {
 	if len(l.Endpoints.FilterUnsecureEndpoints()) == 0 {
 		return grpcgwPb.Device_OWNED
 	}
 	return grpcgwPb.Device_UNOWNED
 }
 
+func getOwnershipStatusLinks(links schema.ResourceLinks) grpcgwPb.Device_OwnershipStatus {
+	doxmRes := links.GetResourceLinks(doxm.ResourceType)
+	if len(doxmRes) == 0 {
+		return grpcgwPb.Device_UNSUPPORTED
+	}
+	return getOwnershipStatus(doxmRes[0])
+}
+
 func (d *device) getResourceLinksAndRefreshCache(ctx context.Context) (schema.ResourceLinks, error) {
 	if d.Device == nil {
 		return nil, status.Error(codes.Internal, "device is not initialized")
 	}
-	links, err := d.GetResourceLinks(ctx, d.GetEndpoints())
+	links, err := d.GetResourceLinks(ctx, d.GetEndpoints(), coap.WithDeviceID(d.DeviceID()))
 	if err != nil {
 		return nil, convErrToGrpcStatus(codes.Unavailable, fmt.Errorf("cannot get resource links for device %v: %w", d.ID, err)).Err()
 	}
-	d.updateOwnershipStatus(getOwnershipStatus(links))
+	d.updateOwnershipStatus(getOwnershipStatusLinks(links))
 	devLinks := links.GetResourceLinks(plgdDevice.ResourceType)
 	if len(devLinks) > 0 {
 		d.updateResourceTypes(devLinks[0].ResourceTypes)
