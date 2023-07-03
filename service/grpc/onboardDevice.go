@@ -171,6 +171,7 @@ func onboardInsecureDevice(ctx context.Context, dev *device, links schema.Resour
 	if link.Href == "" {
 		return fmt.Errorf("could not resolve cloud resource link of device %s", dev.DeviceID())
 	}
+	link.Endpoints = link.Endpoints.FilterUnsecureEndpoints()
 	err := dev.UpdateResource(ctx, link, cloud.ConfigurationUpdateRequest{
 		AuthorizationProvider: req.GetAuthorizationProviderName(),
 		AuthorizationCode:     req.GetAuthorizationCode(),
