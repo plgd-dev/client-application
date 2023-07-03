@@ -149,7 +149,7 @@ func TestClientApplicationServerOnboardDeviceRemoteProvisioning(t *testing.T) {
 	_ = resp.Body.Close()
 	require.Equal(t, http.StatusOK, resp.StatusCode)
 
-	hubTest.WaitForDevice(ctx, t, subClient, dev.Id, expectedEvent.GetSubscriptionId(), expectedEvent.GetCorrelationId(), hubTest.GetAllBackendResourceLinks())
+	hubTest.WaitForDevice(t, subClient, dev.Id, expectedEvent.GetSubscriptionId(), expectedEvent.GetCorrelationId(), hubTest.GetAllBackendResourceLinks())
 
 	// offboard
 	request = httpgwTest.NewRequest(http.MethodPost, serviceHttp.OffboardDevice, nil).Host(test.CLIENT_APPLICATION_HTTP_HOST).AuthToken(token).DeviceId(dev.Id).Build()
