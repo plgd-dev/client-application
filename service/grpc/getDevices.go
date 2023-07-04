@@ -203,7 +203,6 @@ func onDiscoveryResourceResponse(ctx context.Context, conn *client.Conn, service
 		return err
 	}
 	for _, discoveredDevice := range discoveredDevices {
-		fmt.Printf("discovered URI: %v\n", discoveredDevice.private.DeviceURI)
 		d, loaded := devices.LoadOrStore(discoveredDevice.ID, discoveredDevice)
 		if !loaded {
 			d.updateDeviceMetadata(discoveredDevice.private.ResourceTypes, discoveredDevice.private.Endpoints, discoveredDevice.private.OwnershipStatus)

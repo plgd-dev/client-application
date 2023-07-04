@@ -78,8 +78,8 @@ func (d *device) ErrorFunc(err error) {
 }
 
 func (d *device) hasDeviceResourceBody() bool {
-	d.private.mutex.Lock()
-	defer d.private.mutex.Unlock()
+	d.private.mutex.RLock()
+	defer d.private.mutex.RUnlock()
 	return d.private.DeviceResourceBody != nil
 }
 
