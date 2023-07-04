@@ -59,7 +59,9 @@ func (s *ClientApplicationServer) CreateResource(ctx context.Context, req *pb.Cr
 		return nil, err
 	}
 	var response []byte
-	err = dev.UpdateResourceWithCodec(ctx, link, rawcodec.GetRawCodec(message.AppOcfCbor), createData, &response, coap.WithInterface(interfaces.OC_IF_CREATE))
+	options := make([]func(message.Options) message.Options, 0, 2)
+	options = append(options, coap.WithDeviceID(dev.DeviceID()), coap.WithInterface(interfaces.OC_IF_CREATE))
+	err = dev.UpdateResourceWithCodec(ctx, link, rawcodec.GetRawCodec(message.AppOcfCbor), createData, &response, options...)
 	if err != nil {
 		return nil, convErrToGrpcStatus(codes.Unavailable, fmt.Errorf("cannot create resource %v for device %v: %w", link.Href, dev.ID, err)).Err()
 	}

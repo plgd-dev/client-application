@@ -11,20 +11,20 @@ import { devicesOnboardingStatuses } from '@/containers/Devices/constants'
 import SplitButton from '@shared-ui/components/new/SplitButton'
 import testId from '@/testId'
 
-export const DevicesDetailsHeader: FC<Props> = ({
-    deviceId,
-    isUnregistered,
-    onOwnChange,
-    isOwned,
-    resources,
-    openDpsModal,
-    onboardResourceLoading,
-    onboardButtonCallback,
-    deviceOnboardingResourceData,
-    incompleteOnboardingData,
-    openOnboardingModal,
-    onboarding,
-}) => {
+export const DevicesDetailsHeader: FC<Props> = (props) => {
+    const {
+        deviceId,
+        isUnregistered,
+        onOwnChange,
+        isOwned,
+        resources,
+        openDpsModal,
+        onboardResourceLoading,
+        onboardButtonCallback,
+        deviceOnboardingResourceData,
+        incompleteOnboardingData,
+        openOnboardingModal,
+    } = props
     const { formatMessage: _ } = useIntl()
     const deviceNotificationKey = getDeviceNotificationKey(deviceId)
     const notificationsEnabled = useRef(false)
@@ -45,9 +45,9 @@ export const DevicesDetailsHeader: FC<Props> = ({
                 <Button
                     icon={isOnboarded ? 'fa-minus' : 'fa-plus'}
                     variant='secondary'
-                    disabled={!isOwned || onboardResourceLoading || onboarding}
+                    disabled={onboardResourceLoading}
                     className='m-r-10'
-                    loading={onboardResourceLoading || onboarding}
+                    loading={onboardResourceLoading}
                     onClick={onboardButtonCallback}
                     dataTestId={isOnboarded ? offboardButton : onboardButton}
                 >
@@ -59,8 +59,8 @@ export const DevicesDetailsHeader: FC<Props> = ({
                 hasOnboardButton === devicesOnboardingStatuses.UNINITIALIZED && (
                     <div className='m-r-10'>
                         <SplitButton
-                            disabled={onboardResourceLoading || onboarding}
-                            loading={onboardResourceLoading || onboarding}
+                            disabled={onboardResourceLoading}
+                            loading={onboardResourceLoading}
                             onClick={onboardButtonCallback}
                             menuProps={{
                                 align: 'end',

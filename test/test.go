@@ -117,7 +117,7 @@ func New(t *testing.T, cfg config.Config) func() {
 	cfg.SetConfigPath(configPath)
 	require.NoError(t, cfg.Validate())
 
-	fileWatcher, err := fsnotify.NewWatcher()
+	fileWatcher, err := fsnotify.NewWatcher(logger)
 	require.NoError(t, err)
 	s, err := service.New(ctx, cfg, NewServiceInformation(), fileWatcher, logger)
 	require.NoError(t, err)
@@ -243,7 +243,7 @@ func NewHttpService(ctx context.Context, t *testing.T) (*http.Service, func()) {
 	clientApplicationServer, tearDown, err := NewClientApplicationServer(ctx)
 	require.NoError(t, err)
 
-	fileWatcher, err := fsnotify.NewWatcher()
+	fileWatcher, err := fsnotify.NewWatcher(logger)
 	require.NoError(t, err)
 	s, err := http.New(ctx, "client-application-http", cfg.APIs.HTTP.Config, clientApplicationServer, fileWatcher, logger, trace.NewNoopTracerProvider())
 	require.NoError(t, err)

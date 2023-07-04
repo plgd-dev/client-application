@@ -21,6 +21,7 @@ import (
 	"fmt"
 
 	"github.com/plgd-dev/client-application/pb"
+	"github.com/plgd-dev/device/v2/pkg/net/coap"
 	"github.com/plgd-dev/device/v2/schema/cloud"
 	"google.golang.org/grpc/codes"
 )
@@ -39,7 +40,7 @@ func (s *ClientApplicationServer) OffboardDevice(ctx context.Context, req *pb.Of
 	if err = dev.checkAccess(cloudLink); err != nil {
 		return nil, err
 	}
-	err = dev.UpdateResource(ctx, cloudLink, cloud.ConfigurationUpdateRequest{}, nil)
+	err = dev.UpdateResource(ctx, cloudLink, cloud.ConfigurationUpdateRequest{}, nil, coap.WithDeviceID(dev.DeviceID()))
 	if err != nil {
 		return nil, convErrToGrpcStatus(codes.Unavailable, fmt.Errorf("cannot update resource %v for device %v: %w", cloudLink.Href, dev.ID, err)).Err()
 	}

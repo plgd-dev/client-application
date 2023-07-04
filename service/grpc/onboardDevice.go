@@ -24,12 +24,14 @@ import (
 	"github.com/google/uuid"
 	"github.com/plgd-dev/client-application/pb"
 	"github.com/plgd-dev/device/v2/client/core"
+	"github.com/plgd-dev/device/v2/pkg/net/coap"
 	"github.com/plgd-dev/device/v2/schema"
 	"github.com/plgd-dev/device/v2/schema/acl"
 	"github.com/plgd-dev/device/v2/schema/cloud"
 	"github.com/plgd-dev/device/v2/schema/maintenance"
 	"github.com/plgd-dev/device/v2/schema/softwareupdate"
 	"github.com/plgd-dev/kit/v2/security"
+	"github.com/plgd-dev/kit/v2/strings"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -130,16 +132,8 @@ func (s *ClientApplicationServer) getDeviceForSetupCloud(ctx context.Context, de
 	return dev, links, nil
 }
 
-func (s *ClientApplicationServer) OnboardDevice(ctx context.Context, req *pb.OnboardDeviceRequest) (resp *pb.OnboardDeviceResponse, err error) {
-	devID, certificateAuthorities, err := validateOnboardDeviceRequest(req)
-	if err != nil {
-		return nil, err
-	}
-	dev, links, err := s.getDeviceForSetupCloud(ctx, devID)
-	if err != nil {
-		return nil, err
-	}
-	if err = dev.provision(ctx, links, func(ctx context.Context, pc *core.ProvisioningClient) error {
+func onboardSecureDevice(ctx context.Context, dev *device, links schema.ResourceLinks, req *pb.OnboardDeviceRequest, certificateAuthorities []*x509.Certificate) error {
+	return dev.provision(ctx, links, func(ctx context.Context, pc *core.ProvisioningClient) error {
 		if errPro := setACLForCloud(ctx, pc, req.GetHubId(), links); errPro != nil {
 			return errPro
 		}
@@ -154,7 +148,57 @@ func (s *ClientApplicationServer) OnboardDevice(ctx context.Context, req *pb.Onb
 			URL:                   req.GetCoapGatewayAddress(),
 			CloudID:               req.GetHubId(),
 		})
-	}); err != nil {
+	})
+}
+
+func onboardInsecureDevice(ctx context.Context, dev *device, links schema.ResourceLinks, req *pb.OnboardDeviceRequest) error {
+	switch {
+	case req.GetAuthorizationProviderName() == "":
+		return fmt.Errorf("invalid AuthorizationProvider")
+	case req.GetAuthorizationCode() == "":
+		return fmt.Errorf("invalid AuthorizationCode")
+	case req.GetCoapGatewayAddress() == "":
+		return fmt.Errorf("invalid URL")
+	}
+	var link schema.ResourceLink
+
+	for _, l := range links {
+		if strings.SliceContains(l.ResourceTypes, cloud.ResourceType) {
+			link = l
+			break
+		}
+	}
+	if link.Href == "" {
+		return fmt.Errorf("could not resolve cloud resource link of device %s", dev.DeviceID())
+	}
+	link.Endpoints = link.Endpoints.FilterUnsecureEndpoints()
+	err := dev.UpdateResource(ctx, link, cloud.ConfigurationUpdateRequest{
+		AuthorizationProvider: req.GetAuthorizationProviderName(),
+		AuthorizationCode:     req.GetAuthorizationCode(),
+		URL:                   req.GetCoapGatewayAddress(),
+		CloudID:               req.GetHubId(),
+	}, nil, coap.WithDeviceID(dev.DeviceID()))
+	if err != nil {
+		return fmt.Errorf("could not set cloud resource of device %s: %w", dev.DeviceID(), err)
+	}
+	return nil
+}
+
+func (s *ClientApplicationServer) OnboardDevice(ctx context.Context, req *pb.OnboardDeviceRequest) (resp *pb.OnboardDeviceResponse, err error) {
+	devID, certificateAuthorities, err := validateOnboardDeviceRequest(req)
+	if err != nil {
+		return nil, err
+	}
+	dev, links, err := s.getDeviceForSetupCloud(ctx, devID)
+	if err != nil {
+		return nil, err
+	}
+	if dev.IsSecured() {
+		err = onboardSecureDevice(ctx, dev, links, req, certificateAuthorities)
+	} else {
+		err = onboardInsecureDevice(ctx, dev, links, req)
+	}
+	if err != nil {
 		return nil, convErrToGrpcStatus(codes.Unavailable, fmt.Errorf("cannot provision onboard configuration for device %v: %w", dev.ID, err)).Err()
 	}
 	return &pb.OnboardDeviceResponse{}, nil

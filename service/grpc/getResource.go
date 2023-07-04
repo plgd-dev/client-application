@@ -35,10 +35,12 @@ import (
 
 func getResourceAndRefreshCache(ctx context.Context, dev *device, link schema.ResourceLink, resourceInterface string) (*commands.Content, error) {
 	var response []byte
-	var options []func(message.Options) message.Options
+	options := make([]func(message.Options) message.Options, 0, 2)
+	options = append(options, pkgCoap.WithDeviceID(dev.DeviceID()))
 	if resourceInterface != "" {
 		options = append(options, pkgCoap.WithInterface(resourceInterface))
 	}
+
 	err := dev.GetResourceWithCodec(ctx, link, rawcodec.GetRawCodec(message.AppOcfCbor), &response, options...)
 	if err != nil {
 		return nil, convErrToGrpcStatus(codes.Unavailable, fmt.Errorf("cannot get resource %v for device %v: %w", link.Href, dev.ID, err)).Err()

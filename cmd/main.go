@@ -63,7 +63,9 @@ func main() {
 			log.Errorf("cannot extract UI: %v", err)
 		}
 	}
-	fileWatcher, err := fsnotify.NewWatcher()
+	logger := log.NewLogger(cfg.Log)
+	log.Set(logger)
+	fileWatcher, err := fsnotify.NewWatcher(logger)
 	if err != nil {
 		log.Errorf("cannot create file fileWatcher: %v", err)
 		return
@@ -71,8 +73,6 @@ func main() {
 	defer func() {
 		_ = fileWatcher.Close()
 	}()
-	logger := log.NewLogger(cfg.Log)
-	log.Set(logger)
 	log.Debugf("version: %v, buildDate: %v, buildRevision %v", Version, BuildDate, CommitHash)
 	log.Debugf("config:\n%v", cfg.String())
 	info := grpc.ServiceInformation{

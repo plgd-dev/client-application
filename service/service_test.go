@@ -43,7 +43,7 @@ func TestServiceFailSetup(t *testing.T) {
 	logger := log.NewLogger(cfg.Log)
 	require.NoError(t, cfg.Validate())
 
-	fileWatcher, err := fsnotify.NewWatcher()
+	fileWatcher, err := fsnotify.NewWatcher(logger)
 	require.NoError(t, err)
 	defer func() {
 		_ = fileWatcher.Close()
