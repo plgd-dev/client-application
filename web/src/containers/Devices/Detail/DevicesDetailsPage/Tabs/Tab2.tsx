@@ -1,6 +1,6 @@
 import { FC, useEffect, useMemo, useState } from 'react'
 import { useResizeDetector } from 'react-resize-detector'
-import { useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { useIntl } from 'react-intl'
 import omit from 'lodash/omit'
 
@@ -25,7 +25,6 @@ import {
     updateResourceMethod,
 } from '@/containers/Devices/utils'
 import DevicesDPSModal from '@/containers/Devices/DevicesDPSModal'
-import { history } from '@/store'
 import { defaultNewResource, resourceModalTypes } from '@/containers/Devices/constants'
 
 const Tab2: FC<Props> = (props) => {
@@ -42,17 +41,14 @@ const Tab2: FC<Props> = (props) => {
         refreshResources,
         showDpsModal,
     } = props
-    const {
-        id,
-        href: hrefParam,
-    }: {
-        id: string
-        href: string
-    } = useParams()
+    const { id: routerId, ...others } = useParams()
+    const id = routerId || ''
+    const hrefParam = others['*'] || ''
 
     const { formatMessage: _ } = useIntl()
     const { ref, width, height } = useResizeDetector()
     const isMounted = useIsMounted()
+    const navigate = useNavigate()
 
     const [resourceModalData, setResourceModalData] = useState<DevicesDetailsResourceModalData | undefined>(undefined)
     const [loadingResource, setLoadingResource] = useState(false)
@@ -215,7 +211,7 @@ const Tab2: FC<Props> = (props) => {
 
         if (hrefParam) {
             // Remove the href from the URL when the update modal is closed
-            history.replace(window.location.pathname.replace(`/${hrefParam}`, ''))
+            navigate(`/devices/${id}/resources`, { replace: true })
         }
     }
 
@@ -254,8 +250,6 @@ const Tab2: FC<Props> = (props) => {
     const closeDeleteModal = () => {
         setDeleteResourceHref('')
     }
-
-    console.log(resources)
 
     return (
         <div

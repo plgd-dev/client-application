@@ -52,17 +52,17 @@ const App: FC<Props> = (props) => {
 
     security.setUserManager(userManager)
 
+    const onSignIn = async () => {
+        window.location.href = window.location.href.split('?')[0]
+    }
+
     const Wrapper = (child: any) => (
         <AuthProvider
             {...getOidcCommonSettings()}
             automaticSilentRenew={true}
             clientId={wellKnownConfig?.remoteProvisioning?.webOauthClient?.clientId || ''}
-            onSignIn={async (userData) => {
-                // remove auth params
-                window.location.hash = ''
-                window.location.href = window.location.origin
-            }}
-            redirectUri={window.location.origin}
+            onSignIn={onSignIn}
+            redirectUri={window.location.href}
             userManager={userManager}
         >
             {child}

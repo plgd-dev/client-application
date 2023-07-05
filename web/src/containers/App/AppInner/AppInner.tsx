@@ -1,6 +1,6 @@
 import { useRef, useState, useMemo, useCallback } from 'react'
 import { Helmet } from 'react-helmet'
-import { Router } from 'react-router-dom'
+import { BrowserRouter } from 'react-router-dom'
 import { User } from 'oidc-react'
 import jwtDecode from 'jwt-decode'
 import get from 'lodash/get'
@@ -13,7 +13,6 @@ import { security } from '@shared-ui/common/services'
 import light from '@shared-ui/components/Atomic/_theme/light'
 
 import AppContext from '@/containers/App/AppContext'
-import { history } from '@/store'
 import appConfig from '@/config'
 import { Props } from './AppInner.types'
 import { AppAuthProviderRefType } from '@/containers/App/AppAuthProvider/AppAuthProvider.types'
@@ -30,6 +29,7 @@ const getBuildInformation = (wellKnownConfig: WellKnownConfigType) => ({
 const AppInner = (props: Props) => {
     const { wellKnownConfig, configError, reFetchConfig, setInitialize } = props
     const buildInformation = getBuildInformation(wellKnownConfig)
+
     const authProviderRef = useRef<AppAuthProviderRefType | null>(null)
 
     if (wellKnownConfig && wellKnownConfig.remoteProvisioning) {
@@ -81,7 +81,7 @@ const AppInner = (props: Props) => {
     return (
         <AppContext.Provider value={contextValue}>
             <ThemeProvider theme={light}>
-                <Router history={history}>
+                <BrowserRouter>
                     <Helmet defaultTitle={appConfig.appName} titleTemplate={`%s | ${appConfig.appName}`} />
                     <AppLayout
                         initializedByAnother={initializedByAnother}
@@ -92,7 +92,7 @@ const AppInner = (props: Props) => {
                     />
                     <ToastContainer />
                     <BrowserNotificationsContainer />
-                </Router>
+                </BrowserRouter>
             </ThemeProvider>
         </AppContext.Provider>
     )

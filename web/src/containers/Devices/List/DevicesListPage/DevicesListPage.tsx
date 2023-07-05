@@ -2,7 +2,7 @@ import { useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { useIntl } from 'react-intl'
 import { toast } from 'react-toastify'
 import { useDispatch, useSelector } from 'react-redux'
-import { Link, useHistory } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 
 import Notification from '@shared-ui/components/Atomic/Notification/Toast'
 import ConfirmModal from '@shared-ui/components/Atomic/ConfirmModal'
@@ -55,7 +55,7 @@ const DevicesListPage = () => {
     })
     const isMounted = useIsMounted()
     const dispatch = useDispatch()
-    const history = useHistory()
+    const navigate = useNavigate()
     const dataToDisplay: DeviceDataType = useSelector(getDevices)
     const { collapsed } = useContext(AppContext)
 
@@ -241,7 +241,7 @@ const DevicesListPage = () => {
                             isOwned={isOwned}
                             onDelete={handleCloseDeleteModal}
                             onOwnChange={() => handleOwnDevice(isOwned, id, data.content.name)}
-                            onView={(deviceId) => history.push(`/devices/${deviceId}`)}
+                            onView={(deviceId) => navigate(`/devices/${deviceId}`)}
                             resourcesLoadedCallback={(resources) => {
                                 setDpsData((prevData: DpsDataType) => ({
                                     ...prevData,

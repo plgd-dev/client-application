@@ -1,7 +1,7 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { FC, useCallback, useEffect, useMemo, useState } from 'react'
 import ReactDOM from 'react-dom'
 import { useIntl } from 'react-intl'
-import { useParams } from 'react-router-dom'
+import { useNavigate, useParams } from 'react-router-dom'
 import { useDispatch } from 'react-redux'
 
 import Footer from '@shared-ui/components/Layout/Footer'
@@ -18,7 +18,6 @@ import EditDeviceNameModal from '@shared-ui/components/Organisms/EditDeviceNameM
 import Tabs from '@shared-ui/components/Atomic/Tabs'
 import { getApiErrorMessage } from '@shared-ui/common/utils'
 
-import { history } from '@/store'
 import { devicesStatuses, NO_DEVICE_NAME, devicesOwnerships, devicesOnboardingStatuses } from '../../constants'
 import { handleDeleteDevicesErrors, getDeviceChangeResourceHref } from '../../utils'
 import {
@@ -45,14 +44,14 @@ import {
 import FirstTimeOnboardingModal from '@/containers/Devices/Detail/FirstTimeOnboardingModal/FirstTimeOnboardingModal'
 import Tab1 from './Tabs/Tab1'
 import Tab2 from './Tabs/Tab2'
+import { Props } from './DevicesDetailsPage.types'
 
-const DevicesDetailsPage = () => {
+const DevicesDetailsPage: FC<Props> = (props) => {
+    const { defaultActiveTab } = props
     const { formatMessage: _ } = useIntl()
-    const {
-        id,
-    }: {
-        id: string
-    } = useParams()
+    const { id: routerId } = useParams()
+    const id = routerId || ''
+
     const [showDpsModal, setShowDpsModal] = useState(false)
     const [showIncompleteOnboardingModal, setShowIncompleteOnboardingModal] = useState(false)
     const [showFirstTimeOnboardingModal, setShowFirstTimeOnboardingModal] = useState(false)
@@ -61,7 +60,7 @@ const DevicesDetailsPage = () => {
     const [showEditNameModal, setShowEditNameModal] = useState(false)
     const [domReady, setDomReady] = useState(false)
     const [deviceNameLoading, setDeviceNameLoading] = useState(false)
-    const [activeTabItem, setActiveTabItem] = useState(1)
+    const [activeTabItem, setActiveTabItem] = useState(defaultActiveTab ?? 0)
 
     const isMounted = useIsMounted()
     const { data, updateData, loading, error: deviceError } = useDeviceDetails(id)
@@ -72,6 +71,7 @@ const DevicesDetailsPage = () => {
         refresh: refreshResources,
     } = useDevicesResources(id)
     const dispatch = useDispatch()
+    const navigate = useNavigate()
 
     const isOwned = useMemo(() => data?.ownershipStatus === devicesOwnerships.OWNED, [data])
     const resources = useMemo(() => resourcesData?.resources || [], [resourcesData])
@@ -137,7 +137,7 @@ const DevicesDetailsPage = () => {
                     if (isMounted.current) {
                         // @ts-ignore
                         dispatch(disOwnDevice(id))
-                        history.push('/')
+                        navigate('/')
 
                         Notification.success({
                             title: _(t.deviceDisOwned),
@@ -166,6 +166,13 @@ const DevicesDetailsPage = () => {
 
     const openOnboardingModal = useCallback(() => {
         toggleOnboardingModal(true)
+    }, [])
+
+    const handleTabChange = useCallback((i: number) => {
+        setActiveTabItem(i)
+
+        navigate(`/devices/${id}${i === 1 ? '/resources' : ''}`, { replace: true })
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     if (deviceError) {
@@ -327,9 +334,10 @@ const DevicesDetailsPage = () => {
             <Tabs
                 activeItem={activeTabItem}
                 fullHeight={true}
-                onItemChange={(i) => setActiveTabItem(i)}
+                onItemChange={handleTabChange}
                 tabs={[
                     {
+                        id: 0,
                         name: _(t.deviceInformation),
                         content: (
                             <Tab1
@@ -344,6 +352,7 @@ const DevicesDetailsPage = () => {
                         ),
                     },
                     {
+                        id: 1,
                         name: _(t.resources),
                         content: (
                             <Tab2

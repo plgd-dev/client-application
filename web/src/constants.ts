@@ -8,3 +8,5 @@ export const DEVICE_AUTH_MODE = {
 export const REMOTE_PROVISIONING_MODE = {
     USER_AGENT: 'USER_AGENT',
 }
+
+export const GITHUB_VERSION_URL = 'https://api.github.com/repos/plgd-dev/client-application/releases/latest'

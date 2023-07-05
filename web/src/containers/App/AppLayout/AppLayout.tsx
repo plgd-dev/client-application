@@ -1,51 +1,103 @@
-import { FC, memo, ReactElement, SyntheticEvent, useContext, useRef, useState } from 'react'
+import {
+    FC,
+    memo,
+    ReactElement,
+    SyntheticEvent,
+    useCallback,
+    useContext,
+    useEffect,
+    useMemo,
+    useRef,
+    useState,
+} from 'react'
 import { useIntl } from 'react-intl'
+import { useNavigate, useLocation } from 'react-router-dom'
 
 import ConditionalWrapper from '@shared-ui/components/Atomic/ConditionalWrapper'
 import Layout from '@shared-ui/components/Layout'
 import Header from '@shared-ui/components/Layout/Header'
 import LeftPanel, { parseActiveItem } from '@shared-ui/components/Layout/LeftPanel'
-import VersionMark from '@shared-ui/components/Atomic/VersionMark'
-import { severities } from '@shared-ui/components/Atomic/VersionMark/constants'
+import VersionMark, { getVersionMarkData } from '@shared-ui/components/Atomic/VersionMark'
 import UserWidget from '@/containers/App/UserWidget/UserWidget'
 import Button from '@shared-ui/components/Atomic/Button'
-import { WellKnownConfigType } from '@shared-ui/common/hooks'
 import { MenuItem } from '@shared-ui/components/Layout/LeftPanel/LeftPanel.types'
 
-import { DEVICE_AUTH_MODE } from '@/constants'
+import { DEVICE_AUTH_MODE, GITHUB_VERSION_URL } from '@/constants'
 import AppAuthProvider from '@/containers/App/AppAuthProvider/AppAuthProvider'
 import InitializedByAnother from '@/containers/App/AppInner/InitializedByAnother/InitializedByAnother'
 import { mather, menu, Routes } from '@/routes'
-import { reset } from '@/containers/App/AppRest'
+import { getVersionNumberFromGithub, reset } from '@/containers/App/AppRest'
 import { AppAuthProviderRefType } from '@/containers/App/AppAuthProvider/AppAuthProvider.types'
-import { history } from '@/store'
 import { messages as t } from '../App.i18n'
+import { Props } from './AppLayout.types'
 import AppContext from '@/containers/App/AppContext'
-
-type Props = {
-    initializedByAnother: boolean
-    suspectedUnauthorized: boolean
-    mockApp: boolean
-    setInitialize: (isInitialize?: boolean) => void
-    wellKnownConfig?: WellKnownConfigType
-}
+import { useDispatch, useSelector } from 'react-redux'
+import { CombinedStoreType } from '@/store/store'
+import { setVersion } from '@/containers/App/slice'
+import { getMinutesBetweenDates } from '@shared-ui/common/utils'
+import { severities } from '@shared-ui/components/Atomic/VersionMark/constants'
 
 const AppLayout: FC<Props> = (props) => {
     const { mockApp, wellKnownConfig, setInitialize, initializedByAnother, suspectedUnauthorized } = props
     const { formatMessage: _ } = useIntl()
+    const location = useLocation()
+    const dispatch = useDispatch()
+    const navigate = useNavigate()
 
     const [authError, setAuthError] = useState<string | undefined>(undefined)
-    const [activeItem, setActiveItem] = useState(parseActiveItem(history.location.pathname, menu, mather))
+    const [activeItem, setActiveItem] = useState(parseActiveItem(location.pathname, menu, mather))
 
     const authProviderRef = useRef<AppAuthProviderRefType | null>(null)
 
     const { collapsed, setCollapsed } = useContext(AppContext)
 
+    const appStore = useSelector((state: CombinedStoreType) => state.app)
+
+    const requestVersion = useCallback((now: Date) => {
+        getVersionNumberFromGithub().then((ret) => {
+            dispatch(
+                setVersion({
+                    requestedDatetime: now,
+                    latest: ret.data.tag_name.replace('v', ''),
+                })
+            )
+        })
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
+
+    useEffect(() => {
+        const now: Date = new Date()
+
+        if (
+            !appStore.version.requestedDatetime ||
+            getMinutesBetweenDates(new Date(appStore.version.requestedDatetime), now) > 30
+        ) {
+            requestVersion(now)
+        }
+
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
+
+    const versionMarkData = useMemo(
+        () =>
+            getVersionMarkData({
+                buildVersion: wellKnownConfig?.version || '',
+                githubVersion: appStore.version.latest || '',
+                i18n: {
+                    version: _(t.version),
+                    newUpdateIsAvailable: _(t.newUpdateIsAvailable),
+                },
+            }),
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        [appStore.version.latest, wellKnownConfig]
+    )
+
     const handleItemClick = (item: MenuItem, e: SyntheticEvent) => {
         e.preventDefault()
 
         setActiveItem(item.id)
-        item.link && history.push(item.link)
+        item.link && navigate(item.link)
     }
 
     const handleLogout = () => {
@@ -129,7 +181,25 @@ const AppLayout: FC<Props> = (props) => {
                         menu={menu}
                         onItemClick={handleItemClick}
                         setCollapsed={setCollapsed}
-                        versionMark={<VersionMark severity={severities.SUCCESS} versionText='Version 2.02' />}
+                        versionMark={
+                            wellKnownConfig && (
+                                <VersionMark
+                                    severity={versionMarkData.severity}
+                                    update={
+                                        wellKnownConfig && versionMarkData.severity !== severities.SUCCESS
+                                            ? {
+                                                  text: _(t.clickHere),
+                                                  onClick: (e) => {
+                                                      e.preventDefault()
+                                                      window.open(GITHUB_VERSION_URL, '_blank')
+                                                  },
+                                              }
+                                            : undefined
+                                    }
+                                    versionText={versionMarkData.text}
+                                />
+                            )
+                        }
                     />
                 }
             />

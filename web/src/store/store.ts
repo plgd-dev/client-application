@@ -1,9 +1,36 @@
 import { configureStore } from '@reduxjs/toolkit'
+import { setupListeners } from '@reduxjs/toolkit/query'
+import { persistReducer } from 'redux-persist'
+import storage from 'redux-persist/lib/storage'
 
 import { createRootReducer } from './reducers'
+import { StoreType as DeviceStoreType } from '../containers/Devices/slice'
+import { StoreType as AppStoreType } from '../containers/App/slice'
+
+export type CombinedStoreType = {
+    activeNotifications: DeviceStoreType
+    app: AppStoreType
+}
+
+const persistConfig = {
+    key: 'root',
+    storage: storage,
+    blacklist: [],
+}
+
+const rootReducer = createRootReducer()
+
+const persistedReducer = persistReducer(persistConfig, rootReducer)
 
 const store = configureStore({
-    reducer: createRootReducer(),
+    reducer: persistedReducer,
+    middleware: (getDefaultMiddleware) =>
+        getDefaultMiddleware({
+            serializableCheck: false,
+            immutableCheck: false,
+        }),
 })
+
+setupListeners(store.dispatch)
 
 export default store

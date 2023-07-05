@@ -30,4 +30,16 @@ export const messages = defineMessages({
         id: 'app.logOut',
         defaultMessage: 'Log Out',
     },
+    version: {
+        id: 'app.version',
+        defaultMessage: 'Version',
+    },
+    newUpdateIsAvailable: {
+        id: 'app.newUpdateIsAvailable',
+        defaultMessage: 'New update is available.',
+    },
+    clickHere: {
+        id: 'app.clickHere',
+        defaultMessage: 'Click here!',
+    },
 })
