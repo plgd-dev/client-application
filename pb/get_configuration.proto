@@ -61,20 +61,33 @@ message RemoteProvisioning {
     //int64 default_command_time_to_live = 8;
 }
 
+message BuildInfo {
+    // version of the service
+    string version = 1; 
+    // build date of the service
+    string build_date = 2;
+    // commit hash of the service
+    string commit_hash = 3;
+    // commit date of the service
+    string commit_date = 4;
+    // release url of the service
+    string release_url = 5;
+}
 
 message GetConfigurationResponse {
     enum DeviceAuthenticationMode {
         PRE_SHARED_KEY = 0;
         X509 = 1;
     };
-    string version = 1;
-    string build_date = 2;
-    string commit_hash = 3;
-    string commit_date = 4;
-    string release_url = 5;
+    string version = 1; // deprecated, use build_info.version
+    string build_date = 2; // deprecated, use build_info.build_date
+    string commit_hash = 3; // deprecated, use build_info.commit_hash
+    string commit_date = 4; // deprecated, use build_info.commit_date
+    string release_url = 5; // deprecated, use build_info.release_url
     // user don't need to call initialize endpoint
     bool is_initialized = 6;
     DeviceAuthenticationMode device_authentication_mode = 7;
     RemoteProvisioning remote_provisioning = 8;
     string owner = 9;
+    BuildInfo build_info = 10;
 }

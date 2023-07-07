@@ -976,7 +976,8 @@
         "SYNCING",
         "IN_SYNC"
       ],
-      "default": "OUT_OF_SYNC"
+      "default": "OUT_OF_SYNC",
+      "description": " - OUT_OF_SYNC: As soon as it connects after it was offline or when it goes errorless offline or when twin enabled has been changed to true.\n - DISABLED: As soon as twin enabled is set to false.\n - SYNCING: As soon as device connects, successfully signs in and batch observe is called on device from the cloud.\n - IN_SYNC: As soon as current device resources values are received and applied to twin database. Twin was successfully reconciled after device reconnect and is kept up to date using an active subscription to device resource changes."
     },
     "googlerpcStatus": {
       "type": "object",
@@ -991,6 +992,7 @@
         "details": {
           "type": "array",
           "items": {
+            "type": "object",
             "$ref": "#/definitions/protobufAny"
           }
         }
@@ -1057,6 +1059,31 @@
         }
       }
     },
+    "pbBuildInfo": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "type": "string",
+          "title": "version of the service"
+        },
+        "buildDate": {
+          "type": "string",
+          "title": "build date of the service"
+        },
+        "commitHash": {
+          "type": "string",
+          "title": "commit hash of the service"
+        },
+        "commitDate": {
+          "type": "string",
+          "title": "commit date of the service"
+        },
+        "releaseUrl": {
+          "type": "string",
+          "title": "release url of the service"
+        }
+      }
+    },
     "pbClearCacheResponse": {
       "type": "object"
     },
@@ -1083,14 +1110,17 @@
           "format": "int64"
         },
         "id": {
-          "type": "string"
+          "type": "string",
+          "description": "when status is ONLINE, this field contains the connection id. To update state offline, this field must be same as the one in the previous message."
         },
         "connectedAt": {
           "type": "string",
-          "format": "int64"
+          "format": "int64",
+          "title": "timestamp when the device was connected"
         },
         "protocol": {
-          "$ref": "#/definitions/ConnectionProtocol"
+          "$ref": "#/definitions/ConnectionProtocol",
+          "description": "application protocol. It need to be set when the status is ONLINE."
         }
       }
     },
@@ -1123,6 +1153,7 @@
         "manufacturerName": {
           "type": "array",
           "items": {
+            "type": "object",
             "$ref": "#/definitions/pbLocalizedString"
           }
         },
@@ -1158,7 +1189,8 @@
       "type": "object",
       "properties": {
         "clientId": {
-          "type": "string"
+          "type": "string",
+          "title": "@gotags: yaml:\"clientID\""
         },
         "audience": {
           "type": "string"
@@ -1170,7 +1202,8 @@
           }
         },
         "providerName": {
-          "type": "string"
+          "type": "string",
+          "title": "@gotags: yaml:\"providerName\""
         }
       }
     },
@@ -1205,7 +1238,8 @@
         },
         "sequence": {
           "type": "string",
-          "format": "uint64"
+          "format": "uint64",
+          "title": "sequence number within the same connection_id; the ResourceChanged event uses the value to skip old events, other event types might not fill the value"
         }
       }
     },
@@ -1219,19 +1253,24 @@
       "type": "object",
       "properties": {
         "version": {
-          "type": "string"
+          "type": "string",
+          "title": "deprecated, use build_info.version"
         },
         "buildDate": {
-          "type": "string"
+          "type": "string",
+          "title": "deprecated, use build_info.build_date"
         },
         "commitHash": {
-          "type": "string"
+          "type": "string",
+          "title": "deprecated, use build_info.commit_hash"
         },
         "commitDate": {
-          "type": "string"
+          "type": "string",
+          "title": "deprecated, use build_info.commit_date"
         },
         "releaseUrl": {
-          "type": "string"
+          "type": "string",
+          "title": "deprecated, use build_info.release_url"
         },
         "isInitialized": {
           "type": "boolean",
@@ -1245,6 +1284,9 @@
         },
         "owner": {
           "type": "string"
+        },
+        "buildInfo": {
+          "$ref": "#/definitions/pbBuildInfo"
         }
       }
     },
@@ -1253,7 +1295,8 @@
       "properties": {
         "certificate": {
           "type": "string",
-          "format": "byte"
+          "format": "byte",
+          "title": "PEM format"
         }
       }
     },
@@ -1262,10 +1305,12 @@
       "properties": {
         "certificateSigningRequest": {
           "type": "string",
-          "format": "byte"
+          "format": "byte",
+          "title": "in PEM format"
         },
         "state": {
-          "type": "string"
+          "type": "string",
+          "title": "for pairing calls"
         }
       }
     },
@@ -1343,49 +1388,61 @@
       "properties": {
         "currentTime": {
           "type": "string",
-          "format": "int64"
+          "format": "int64",
+          "title": "@gotags: yaml:\"-\""
         },
         "jwtOwnerClaim": {
-          "type": "string"
+          "type": "string",
+          "title": "@gotags: yaml:\"ownerClaim\""
         },
         "id": {
           "type": "string",
+          "description": "@gotags: yaml:\"hubID\"",
           "title": "Hub ID"
         },
         "coapGateway": {
           "type": "string",
+          "description": "@gotags: yaml:\"coapGateway\"",
           "title": "coap-gateway in format coaps+tcp://host:port"
         },
         "certificateAuthorities": {
           "type": "string",
+          "description": "@gotags: yaml:\"-\"",
           "title": "certificate_authorities in format PEM - can contain multiple certificates"
         },
         "authority": {
           "type": "string",
+          "description": "@gotags: yaml:\"authority\"",
           "title": "authority in format https://host:port"
         },
         "certificateAuthority": {
           "type": "string",
+          "description": "@gotags: yaml:\"certificateAuthority\"",
           "title": "certificate_authority in format https://host:port"
         },
         "webOauthClient": {
           "$ref": "#/definitions/pbWebOAuthClient",
+          "description": "@gotags: yaml:\"webOAuthClient\"",
           "title": "http-gateway in format https://host:port\nstring http_gateway_address = 10; // @gotags: yaml:\"-\""
         },
         "deviceOauthClient": {
-          "$ref": "#/definitions/pbDeviceOAuthClient"
+          "$ref": "#/definitions/pbDeviceOAuthClient",
+          "title": "@gotags: yaml:\"deviceOAuthClient\""
         },
         "mode": {
-          "$ref": "#/definitions/RemoteProvisioningMode"
+          "$ref": "#/definitions/RemoteProvisioningMode",
+          "title": "@gotags: yaml:\"mode\""
         },
         "userAgent": {
-          "$ref": "#/definitions/pbUserAgent"
+          "$ref": "#/definitions/pbUserAgent",
+          "title": "@gotags: yaml:\"userAgent\""
         },
         "caPool": {
           "type": "array",
           "items": {
             "type": "string"
-          }
+          },
+          "title": "@gotags: yaml:\"caPool\""
         }
       }
     },
@@ -1496,6 +1553,7 @@
         "resources": {
           "type": "array",
           "items": {
+            "type": "object",
             "$ref": "#/definitions/resourceaggregatepbResource"
           }
         },
@@ -1550,14 +1608,17 @@
         },
         "syncingAt": {
           "type": "string",
-          "format": "int64"
+          "format": "int64",
+          "description": "unix timestamp in nanoseconds (https://golang.org/pkg/time/#Time.UnixNano) when synchronization started."
         },
         "inSyncAt": {
           "type": "string",
-          "format": "int64"
+          "format": "int64",
+          "description": "unix timestamp in nanoseconds (https://golang.org/pkg/time/#Time.UnixNano) when synchronization finished."
         },
         "commandMetadata": {
-          "$ref": "#/definitions/pbCommandMetadata"
+          "$ref": "#/definitions/pbCommandMetadata",
+          "description": "when status is SYNCING, this field contains the connection id. To update state to IN_SYNC, this field must be same as the one in the previous message."
         }
       }
     },
@@ -1567,6 +1628,7 @@
         "csrChallengeStateExpiration": {
           "type": "string",
           "format": "int64",
+          "description": "@gotags: yaml:\"csrChallengeStateExpiration\"",
           "title": "in nanoseconds"
         }
       }
@@ -1575,7 +1637,8 @@
       "type": "object",
       "properties": {
         "clientId": {
-          "type": "string"
+          "type": "string",
+          "title": "@gotags: yaml:\"clientID\""
         },
         "audience": {
           "type": "string"
@@ -1617,7 +1680,8 @@
         },
         "coapContentFormat": {
           "type": "integer",
-          "format": "int32"
+          "format": "int32",
+          "title": "-1 means content-format was not provided"
         }
       }
     },
@@ -1664,6 +1728,7 @@
         "endpointInformations": {
           "type": "array",
           "items": {
+            "type": "object",
             "$ref": "#/definitions/pbEndpointInformation"
           }
         }
@@ -1687,7 +1752,8 @@
         "CREATED",
         "CANCELED"
       ],
-      "default": "UNKNOWN"
+      "default": "UNKNOWN",
+      "description": " - CANCELED: Canceled indicates the operation was canceled (typically by the user)."
     }
   },
   "securityDefinitions": {

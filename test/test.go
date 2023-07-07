@@ -119,7 +119,7 @@ func New(t *testing.T, cfg config.Config) func() {
 
 	fileWatcher, err := fsnotify.NewWatcher(logger)
 	require.NoError(t, err)
-	s, err := service.New(ctx, cfg, NewServiceInformation(), fileWatcher, logger)
+	s, err := service.New(ctx, cfg, NewServiceInformation().GetBuildInfo(), fileWatcher, logger)
 	require.NoError(t, err)
 
 	var wg sync.WaitGroup
@@ -265,14 +265,19 @@ func NewHttpService(ctx context.Context, t *testing.T) (*http.Service, func()) {
 	return s, cleanUp
 }
 
-func NewServiceInformation() *configGrpc.ServiceInformation {
-	return &configGrpc.ServiceInformation{
+func NewServiceInformation() *pb.GetConfigurationResponse {
+	return &pb.GetConfigurationResponse{
 		Version:                  VERSION,
 		BuildDate:                BUILD_DATE,
 		CommitHash:               COMMIT_HASH,
 		IsInitialized:            true,
 		DeviceAuthenticationMode: pb.GetConfigurationResponse_PRE_SHARED_KEY,
 		Owner:                    PSK_OWNER,
+		BuildInfo: &pb.BuildInfo{
+			Version:    VERSION,
+			BuildDate:  BUILD_DATE,
+			CommitHash: COMMIT_HASH,
+		},
 	}
 }
 
@@ -330,7 +335,7 @@ func NewClientApplicationServer(ctx context.Context, opts ...ClientApplicationSe
 	}()
 	cfg.RemoteProvisioning = remoteProvisioningCfg
 	cfg.Clients.Device = deviceCfg
-	clientApplicationServer := serviceGrpc.NewClientApplicationServer(atomic.NewPointer(&cfg), d, NewServiceInformation(), logger)
+	clientApplicationServer := serviceGrpc.NewClientApplicationServer(atomic.NewPointer(&cfg), d, NewServiceInformation().GetBuildInfo(), logger)
 	return clientApplicationServer, func() {
 		_ = d.Close()
 		clientApplicationServer.Close()
