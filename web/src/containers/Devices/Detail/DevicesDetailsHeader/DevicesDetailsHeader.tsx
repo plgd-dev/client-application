@@ -27,7 +27,6 @@ export const DevicesDetailsHeader: FC<Props> = memo((props) => {
         deviceOnboardingResourceData,
         incompleteOnboardingData,
         openOnboardingModal,
-        onboarding,
         handleOpenEditDeviceNameModal,
     } = props
     const { formatMessage: _ } = useIntl()
@@ -58,9 +57,9 @@ export const DevicesDetailsHeader: FC<Props> = memo((props) => {
             {hasOnboardButton && (incompleteOnboardingData || isOnboarded) && (
                 <Button
                     dataTestId={isOnboarded ? offboardButton : onboardButton}
-                    disabled={!isOwned || onboardResourceLoading || onboarding}
+                    disabled={onboardResourceLoading}
                     icon={isOnboarded ? <IconClose /> : <IconPlus />}
-                    loading={onboardResourceLoading || onboarding}
+                    loading={onboardResourceLoading}
                     onClick={onboardButtonCallback}
                     variant='tertiary'
                 >
@@ -74,7 +73,7 @@ export const DevicesDetailsHeader: FC<Props> = memo((props) => {
                         <SplitButton
                             dataTestId={isOnboarded ? offboardButton : onboardButton}
                             dataTestIdDropdown={onboardButtonDropdown}
-                            disabled={onboardResourceLoading || onboarding}
+                            disabled={onboardResourceLoading}
                             icon={<IconPlus />}
                             items={[
                                 {
@@ -83,7 +82,7 @@ export const DevicesDetailsHeader: FC<Props> = memo((props) => {
                                     icon: <IconEdit />,
                                 },
                             ]}
-                            loading={onboardResourceLoading || onboarding}
+                            loading={onboardResourceLoading}
                             menuProps={{
                                 placement: 'bottom-end',
                             }}

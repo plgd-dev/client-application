@@ -35,12 +35,7 @@ builds:
         - bash -c "test {{.Os}} == "windows" || test {{.Os}} == "darwin" || upx --best --lzma {{.Path}}"
         - make inject-web CLIENT_APPLICATION_BINARY_PATH={{.Path}} UI_SEPARATOR={{.Env.UI_SEPARATOR}} UI_FILE={{.Env.UI_FILE}}
 archives:
-  - replacements:
-      darwin: macOS
-      linux: linux
-      windows: windows
-      386: i386
-      amd64: amd64
+  - name_template: '{{ .ProjectName }}_{{ .Version }}_{{ if eq .Os "darwin" }}macOS{{ else }}{{.Os}}{{ end }}_{{ if eq .Arch "386"}}i{{ end }}{{ .Arch }}'
     wrap_in_directory: true
     format_overrides:
       - goos: windows

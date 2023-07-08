@@ -74,6 +74,7 @@ const DevicesDetailsPage: FC<Props> = (props) => {
     const navigate = useNavigate()
 
     const isOwned = useMemo(() => data?.ownershipStatus === devicesOwnerships.OWNED, [data])
+    const isUnsupported = useMemo(() => data?.ownershipStatus === devicesOwnerships.UNSUPPORTED, [data])
     const resources = useMemo(() => resourcesData?.resources || [], [resourcesData])
 
     const [
@@ -84,7 +85,8 @@ const DevicesDetailsPage: FC<Props> = (props) => {
     ] = useOnboardingButton({
         resources,
         isOwned,
-        deviceId: id,
+        isUnsupported,
+        deviceId: id
     })
 
     const wellKnownConfig = security.getWellKnowConfig() as WellKnownConfigType

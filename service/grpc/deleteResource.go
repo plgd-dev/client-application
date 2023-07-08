@@ -22,6 +22,7 @@ import (
 
 	"github.com/plgd-dev/client-application/pb"
 	"github.com/plgd-dev/client-application/pkg/rawcodec"
+	pkgCoap "github.com/plgd-dev/device/v2/pkg/net/coap"
 	"github.com/plgd-dev/go-coap/v3/message"
 	grpcgwPb "github.com/plgd-dev/hub/v2/grpc-gateway/pb"
 	"github.com/plgd-dev/hub/v2/resource-aggregate/commands"
@@ -43,7 +44,9 @@ func (s *ClientApplicationServer) DeleteResource(ctx context.Context, req *pb.De
 		return nil, err
 	}
 	var response []byte
-	err = dev.DeleteResourceWithCodec(ctx, link, rawcodec.GetRawCodec(message.AppOcfCbor), &response)
+	options := make([]func(message.Options) message.Options, 0, 2)
+	options = append(options, pkgCoap.WithDeviceID(dev.DeviceID()))
+	err = dev.DeleteResourceWithCodec(ctx, link, rawcodec.GetRawCodec(message.AppOcfCbor), &response, options...)
 	if err != nil {
 		return nil, convErrToGrpcStatus(codes.Unavailable, fmt.Errorf("cannot delete resource %v for device %v: %w", link.Href, dev.ID, err)).Err()
 	}

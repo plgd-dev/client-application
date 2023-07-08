@@ -8,6 +8,7 @@ export const devicesStatuses = {
 export const devicesOwnerships = {
     OWNED: 'OWNED',
     UNOWNED: 'UNOWNED',
+    UNSUPPORTED: 'UNSUPPORTED',
 }
 
 export const DEVICE_TYPE_OIC_WK_D = 'oic.wk.d'

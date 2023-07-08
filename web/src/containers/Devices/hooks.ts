@@ -123,9 +123,10 @@ export type useOnboardingButtonProps = {
     isOwned: boolean
     resources: ResourcesType[]
     wellKnowConfig?: WellKnownConfigType
+    isUnsupported: boolean
 }
 
-export function useOnboardingButton({ resources, isOwned, deviceId }: useOnboardingButtonProps) {
+export function useOnboardingButton({ resources, isOwned, deviceId, isUnsupported }: useOnboardingButtonProps) {
     const [onboardResourceLoading, setOnboardResourceLoading] = useState(false)
     const [deviceOnboardingResourceData, setDeviceOnboardingResourceData] = useState<any>(undefined)
 
@@ -133,7 +134,7 @@ export function useOnboardingButton({ resources, isOwned, deviceId }: useOnboard
     const incompleteOnboardingData = !hasOnboardingFeature()
 
     useEffect(() => {
-        if (deviceOnboardingEndpoint && isOwned) {
+        if (deviceOnboardingEndpoint && (isOwned || isUnsupported)) {
             setOnboardResourceLoading(true)
             setTimeout(() => fetchDeviceOnboardingData(), DEVICE_PROVISION_STATUS_DELAY_MS)
         }
@@ -143,7 +144,7 @@ export function useOnboardingButton({ resources, isOwned, deviceId }: useOnboard
     const refetchDeviceOnboardingData = () => fetchDeviceOnboardingData()
 
     const fetchDeviceOnboardingData = () => {
-        if (deviceOnboardingEndpoint && isOwned) {
+        if (deviceOnboardingEndpoint && (isOwned || isUnsupported)) {
             loadResourceData({
                 href: deviceOnboardingEndpoint.href,
                 deviceId,
