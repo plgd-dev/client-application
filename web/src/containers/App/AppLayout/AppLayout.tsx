@@ -21,8 +21,10 @@ import VersionMark, { getVersionMarkData } from '@shared-ui/components/Atomic/Ve
 import UserWidget from '@/containers/App/UserWidget/UserWidget'
 import Button from '@shared-ui/components/Atomic/Button'
 import { MenuItem } from '@shared-ui/components/Layout/LeftPanel/LeftPanel.types'
+import { getMinutesBetweenDates } from '@shared-ui/common/utils'
+import { severities } from '@shared-ui/components/Atomic/VersionMark/constants'
 
-import { DEVICE_AUTH_MODE, GITHUB_VERSION_URL } from '@/constants'
+import { DEVICE_AUTH_MODE, GITHUB_VERSION_REQUEST_INTERVAL } from '@/constants'
 import AppAuthProvider from '@/containers/App/AppAuthProvider/AppAuthProvider'
 import InitializedByAnother from '@/containers/App/AppInner/InitializedByAnother/InitializedByAnother'
 import { mather, menu, Routes } from '@/routes'
@@ -34,8 +36,6 @@ import AppContext from '@/containers/App/AppContext'
 import { useDispatch, useSelector } from 'react-redux'
 import { CombinedStoreType } from '@/store/store'
 import { setVersion } from '@/containers/App/slice'
-import { getMinutesBetweenDates } from '@shared-ui/common/utils'
-import { severities } from '@shared-ui/components/Atomic/VersionMark/constants'
 
 const AppLayout: FC<Props> = (props) => {
     const { mockApp, wellKnownConfig, setInitialize, initializedByAnother, suspectedUnauthorized } = props
@@ -59,6 +59,7 @@ const AppLayout: FC<Props> = (props) => {
                 setVersion({
                     requestedDatetime: now,
                     latest: ret.data.tag_name.replace('v', ''),
+                    latest_url: ret.data.html_url,
                 })
             )
         })
@@ -71,7 +72,7 @@ const AppLayout: FC<Props> = (props) => {
 
         if (
             !appStore.version.requestedDatetime ||
-            getMinutesBetweenDates(new Date(appStore.version.requestedDatetime), now) > 30
+            getMinutesBetweenDates(new Date(appStore.version.requestedDatetime), now) > GITHUB_VERSION_REQUEST_INTERVAL
         ) {
             requestVersion(now)
         }
@@ -186,12 +187,14 @@ const AppLayout: FC<Props> = (props) => {
                                 <VersionMark
                                     severity={versionMarkData.severity}
                                     update={
-                                        wellKnownConfig && versionMarkData.severity !== severities.SUCCESS
+                                        wellKnownConfig &&
+                                        versionMarkData.severity !== severities.SUCCESS &&
+                                        appStore.version.latest_url
                                             ? {
                                                   text: _(t.clickHere),
                                                   onClick: (e) => {
                                                       e.preventDefault()
-                                                      window.open(GITHUB_VERSION_URL, '_blank')
+                                                      window.open(appStore.version.latest_url, '_blank')
                                                   },
                                               }
                                             : undefined
