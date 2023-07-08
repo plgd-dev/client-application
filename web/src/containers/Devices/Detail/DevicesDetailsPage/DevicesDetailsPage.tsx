@@ -86,7 +86,7 @@ const DevicesDetailsPage: FC<Props> = (props) => {
         resources,
         isOwned,
         isUnsupported,
-        deviceId: id
+        deviceId: id,
     })
 
     const wellKnownConfig = security.getWellKnowConfig() as WellKnownConfigType
