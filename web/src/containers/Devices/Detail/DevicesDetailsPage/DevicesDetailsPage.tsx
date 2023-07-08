@@ -271,7 +271,7 @@ const DevicesDetailsPage: FC<Props> = (props) => {
 
             try {
                 const { data } = await updateDevicesResourceApi(
-                    { deviceId: id, href: href! },
+                    { deviceId: id, href },
                     {
                         n: name,
                     }

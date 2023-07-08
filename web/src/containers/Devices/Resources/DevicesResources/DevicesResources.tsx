@@ -151,7 +151,7 @@ export const DevicesResources: FC<Props> = ({
                                 >
                                     {`/${lastValue}/`}
                                 </span>
-                                {!row.canExpand && <i className='fas fa-pen' />}
+                                {!row.canExpand && <IconEdit />}
                             </div>
                         )
                     }
@@ -174,7 +174,7 @@ export const DevicesResources: FC<Props> = ({
                             <span className='link reveal-icon-on-hover' onClick={() => onLinkClick}>
                                 {`/${lastValue}`}
                             </span>
-                            <i className='fas fa-pen' />
+                            <IconEdit />
                         </div>
                     )
                 },

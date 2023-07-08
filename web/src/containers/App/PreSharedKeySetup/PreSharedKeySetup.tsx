@@ -8,6 +8,7 @@ import TextField from '@shared-ui/components/Atomic/TextField'
 import { copyToClipboard } from '@shared-ui/common/utils'
 import Notification from '@shared-ui/components/Atomic/Notification/Toast'
 import Button from '@shared-ui/components/Atomic/Button'
+import { IconCopy, IconHidePassword, IconShowPassword } from '@shared-ui/components/Atomic/Icon'
 
 import './PreSharedKeySetup.scss'
 import LogoPlgd from './LogoPlgd'
@@ -98,7 +99,7 @@ const PreSharedKeySetup = (props: Props) => {
                                     value={uuid}
                                 />
                                 <span className='copy' onClick={() => handleCopy(uuid)}>
-                                    <i className='fas fa-copy' />
+                                    <IconCopy />
                                 </span>
                             </Label>
                             {validationResult?.subjectId && (
@@ -113,13 +114,13 @@ const PreSharedKeySetup = (props: Props) => {
                                     value={key}
                                 />
                                 <span className='copy' onClick={() => handleCopy(key)}>
-                                    <i className='fas fa-copy' />
+                                    <IconCopy />
                                 </span>
                                 <span
                                     className='show-password'
                                     onClick={() => setPasswordType(passwordType === 'password' ? 'text' : 'password')}
                                 >
-                                    <i className={`fas ${passwordType === 'password' ? 'edit' : 'edit'}`} />
+                                    {passwordType === 'password' ? <IconShowPassword /> : <IconHidePassword />}
                                 </span>
                             </Label>
                             <div className='buttons-wrapper'>

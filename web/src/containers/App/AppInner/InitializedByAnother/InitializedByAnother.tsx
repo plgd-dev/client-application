@@ -2,6 +2,7 @@ import { FC } from 'react'
 import { useIntl } from 'react-intl'
 
 import Button from '@shared-ui/components/Atomic/Button'
+import { IconInfo } from '@shared-ui/components/Atomic'
 
 import { Props } from './InitializedByAnother.types'
 import './InitializedByAnother.scss'
@@ -19,7 +20,7 @@ const InitializedByAnother: FC<Props> = (props) => {
         <div className='initialized-by-another'>
             <div className='info-box'>
                 <div className='icon'>
-                    <i className='fas fa-info-circle'></i>
+                    <IconInfo />
                 </div>
                 <h1>{_(t.headline)}</h1>
                 <div className='description'>{_(t.description)}</div>
