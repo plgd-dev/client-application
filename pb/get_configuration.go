@@ -72,10 +72,14 @@ func (c *BuildInfo) Clone() *BuildInfo {
 }
 
 func NewGetConfigurationResponse(info *BuildInfo) *GetConfigurationResponse {
-	v := &GetConfigurationResponse{
-		BuildInfo: info,
+	return &GetConfigurationResponse{
+		BuildInfo:  info,
+		Version:    info.GetVersion(),
+		BuildDate:  info.GetBuildDate(),
+		CommitHash: info.GetCommitHash(),
+		CommitDate: info.GetCommitDate(),
+		ReleaseUrl: info.GetReleaseUrl(),
 	}
-	return v.Clone()
 }
 
 func (r *GetConfigurationResponse) Clone() *GetConfigurationResponse {
