@@ -18,7 +18,7 @@ syntax = "proto3";
 
 package service.pb;
 
-import "resource-aggregate/pb/commands.proto";
+import "resource-aggregate/pb/resources.proto";
 option go_package = "github.com/plgd-dev/client-application/pb;pb";
 
 

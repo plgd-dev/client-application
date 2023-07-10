@@ -26,7 +26,7 @@ import (
 
 type Config = server.Config
 
-type ServiceInformation = pb.GetConfigurationResponse
+type ServiceInformation = pb.BuildInfo
 
 var defaultConfig = Config{
 	Addr: ":8081",

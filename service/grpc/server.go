@@ -37,7 +37,7 @@ type ClientApplicationServer struct {
 	pb.UnimplementedClientApplicationServer
 
 	serviceDevice      *serviceDevice.Service
-	info               *configGrpc.ServiceInformation
+	info               *pb.GetConfigurationResponse
 	logger             log.Logger
 	devices            *coapSync.Map[uuid.UUID, *device]
 	csrCache           *ttlcache.Cache[uuid.UUID, bool]
@@ -53,7 +53,7 @@ func NewClientApplicationServer(cfg *atomic.Pointer[config.Config], serviceDevic
 	go csrCache.Start()
 	return &ClientApplicationServer{
 		serviceDevice:      serviceDevice,
-		info:               info,
+		info:               pb.NewGetConfigurationResponse(info),
 		logger:             logger,
 		csrCache:           csrCache,
 		config:             cfg,
