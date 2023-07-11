@@ -58,17 +58,42 @@ func (c *RemoteProvisioning) Clone() *RemoteProvisioning {
 	}
 }
 
+func (c *BuildInfo) Clone() *BuildInfo {
+	if c == nil {
+		return nil
+	}
+	return &BuildInfo{
+		Version:    c.GetVersion(),
+		BuildDate:  c.GetBuildDate(),
+		CommitHash: c.GetCommitHash(),
+		CommitDate: c.GetCommitDate(),
+		ReleaseUrl: c.GetReleaseUrl(),
+	}
+}
+
+func NewGetConfigurationResponse(info *BuildInfo) *GetConfigurationResponse {
+	return &GetConfigurationResponse{
+		BuildInfo:  info,
+		Version:    info.GetVersion(),
+		BuildDate:  info.GetBuildDate(),
+		CommitHash: info.GetCommitHash(),
+		CommitDate: info.GetCommitDate(),
+		ReleaseUrl: info.GetReleaseUrl(),
+	}
+}
+
 func (r *GetConfigurationResponse) Clone() *GetConfigurationResponse {
 	if r == nil {
 		return nil
 	}
 	return &GetConfigurationResponse{
-		Version:            r.Version,
-		BuildDate:          r.BuildDate,
-		CommitHash:         r.CommitHash,
-		CommitDate:         r.CommitDate,
-		ReleaseUrl:         r.ReleaseUrl,
+		Version:            r.GetBuildInfo().GetVersion(),
+		BuildDate:          r.GetBuildInfo().GetBuildDate(),
+		CommitHash:         r.GetBuildInfo().GetCommitHash(),
+		CommitDate:         r.GetBuildInfo().GetCommitDate(),
+		ReleaseUrl:         r.GetBuildInfo().GetReleaseUrl(),
 		RemoteProvisioning: r.RemoteProvisioning.Clone(),
+		BuildInfo:          r.GetBuildInfo().Clone(),
 	}
 }
 

@@ -48,6 +48,6 @@ func TestServiceFailSetup(t *testing.T) {
 	defer func() {
 		_ = fileWatcher.Close()
 	}()
-	_, err = service.New(ctx, cfg, test.NewServiceInformation(), fileWatcher, logger)
+	_, err = service.New(ctx, cfg, test.NewServiceInformation().GetBuildInfo(), fileWatcher, logger)
 	require.Error(t, err)
 }
