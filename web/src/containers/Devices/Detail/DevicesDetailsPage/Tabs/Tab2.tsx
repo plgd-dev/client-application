@@ -197,21 +197,14 @@ const Tab2: FC<Props> = (props) => {
                     resourceData,
                 })
                 setResourceModal(true)
+                navigate(`/devices/${id}/resources${href}`, { replace: true })
             }
         } catch (error) {
             if (error && isMounted.current) {
                 setLoadingResource(false)
                 handleFetchResourceErrors(error, _)
+                navigate(`/devices/${id}/resources`, { replace: true })
             }
-        }
-    }
-
-    const handleCloseUpdateModal = () => {
-        setResourceModalData(undefined)
-
-        if (hrefParam) {
-            // Remove the href from the URL when the update modal is closed
-            navigate(`/devices/${id}/resources`, { replace: true })
         }
     }
 
@@ -249,6 +242,13 @@ const Tab2: FC<Props> = (props) => {
 
     const closeDeleteModal = () => {
         setDeleteResourceHref('')
+        navigate(`/devices/${id}/resources`, { replace: true })
+    }
+
+    const handleCloseUpdateModal = () => {
+        setResourceModal(false)
+
+        navigate(`/devices/${id}/resources`, { replace: true })
     }
 
     return (
@@ -300,7 +300,7 @@ const Tab2: FC<Props> = (props) => {
                 isNotificationActive={isNotificationActive}
                 isUnregistered={isUnregistered}
                 loading={savingResource}
-                onClose={() => setResourceModal(false)}
+                onClose={handleCloseUpdateModal}
                 retrieving={loadingResource}
                 show={resourceModal}
                 updateResource={updateResource}

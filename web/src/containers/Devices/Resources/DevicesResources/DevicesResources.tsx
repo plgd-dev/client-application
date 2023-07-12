@@ -127,7 +127,9 @@ export const DevicesResources: FC<Props> = ({
                     } = row
 
                     const lastValue = getLastPartOfAResourceHref(value)
-                    const onLinkClick = deviceId ? () => onUpdate({ deviceId, href: href.replace(/\/$/, '') }) : null
+                    const onLinkClick = deviceId
+                        ? () => onUpdate({ deviceId, href: href.replace(/\/$/, '') })
+                        : undefined
 
                     const edit = canBeResourceEdited(endpointInformations) || isOwned
 
@@ -147,11 +149,10 @@ export const DevicesResources: FC<Props> = ({
                                 />
                                 <span
                                     className={!row.canExpand ? 'link reveal-icon-on-hover' : ''}
-                                    onClick={() => onLinkClick}
+                                    onClick={onLinkClick}
                                 >
                                     {`/${lastValue}/`}
                                 </span>
-                                {!row.canExpand && <IconEdit />}
                             </div>
                         )
                     }
@@ -171,10 +172,9 @@ export const DevicesResources: FC<Props> = ({
                                     }}
                                 ></span>
                             )}
-                            <span className='link reveal-icon-on-hover' onClick={() => onLinkClick}>
+                            <span className='link reveal-icon-on-hover' onClick={onLinkClick}>
                                 {`/${lastValue}`}
                             </span>
-                            <IconEdit />
                         </div>
                     )
                 },

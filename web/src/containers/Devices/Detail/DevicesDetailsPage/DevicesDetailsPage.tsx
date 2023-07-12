@@ -320,9 +320,7 @@ const DevicesDetailsPage: FC<Props> = (props) => {
                 />
             }
             headlineStatusTag={
-                <StatusTag variant={isOwned ? 'success' : 'error'}>
-                    {isOwned ? _(t.owned) : _(t.disOwnDevice)}
-                </StatusTag>
+                <StatusTag variant={isOwned ? 'success' : 'error'}>{isOwned ? _(t.owned) : _(t.unowned)}</StatusTag>
             }
             loading={loading}
             title={deviceName || ''}

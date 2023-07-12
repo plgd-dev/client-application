@@ -239,7 +239,7 @@ const DevicesListPage = () => {
                         <DevicesListActionButton
                             deviceId={id}
                             isOwned={isOwned}
-                            onDelete={handleCloseDeleteModal}
+                            onDelete={deleteDevices}
                             onOwnChange={() => handleOwnDevice(isOwned, id, data.content.name)}
                             onView={(deviceId) => navigate(`/devices/${deviceId}`)}
                             resourcesLoadedCallback={(resources) => {

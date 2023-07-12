@@ -4,7 +4,7 @@ import isFunction from 'lodash/isFunction'
 
 import TableActionButton from '@shared-ui/components/Organisms/TableActionButton'
 import { ItemType } from '@shared-ui/components/Organisms/TableActionButton/TableActionButton.types'
-import { IconClose, IconNetwork, IconPlus, IconShowPassword, IconTrash } from '@shared-ui/components/Atomic/Icon'
+import { IconClose, IconNetwork, IconPlus, IconShowPassword } from '@shared-ui/components/Atomic/Icon'
 
 import { messages as t } from '../../Devices.i18n'
 import { getDevicesResourcesAllApi } from '@/containers/Devices/rest'
@@ -12,7 +12,7 @@ import { canSetDPSEndpoint } from '@/containers/Devices/utils'
 import { Props } from './DevicesListActionButton.types'
 
 const DevicesListActionButton: FC<Props> = memo(
-    ({ deviceId, onView, isOwned, onOwnChange, showDpsModal, resourcesLoadedCallback }) => {
+    ({ deviceId, onView, onDelete, isOwned, onOwnChange, showDpsModal, resourcesLoadedCallback }) => {
         const getDefaultItems = () => {
             const defaultItems: ItemType[] = [
                 {
@@ -20,12 +20,6 @@ const DevicesListActionButton: FC<Props> = memo(
                     onClick: () => onView(deviceId),
                     label: _(t.details),
                     icon: <IconShowPassword />,
-                },
-                {
-                    id: 'delete',
-                    onClick: () => onView(deviceId),
-                    label: _(t.delete),
-                    icon: <IconTrash />,
                 },
                 {
                     id: 'own',
