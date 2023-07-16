@@ -61,6 +61,7 @@ const DevicesDetailsPage: FC<Props> = (props) => {
     const [domReady, setDomReady] = useState(false)
     const [deviceNameLoading, setDeviceNameLoading] = useState(false)
     const [activeTabItem, setActiveTabItem] = useState(defaultActiveTab ?? 0)
+    const [ownLoading, setOwnLoading] = useState(false)
 
     const isMounted = useIsMounted()
     const { data, updateData, loading, error: deviceError } = useDeviceDetails(id)
@@ -134,22 +135,35 @@ const DevicesDetailsPage: FC<Props> = (props) => {
 
     const handleOwnChange = useCallback(() => {
         try {
+            setOwnLoading(true)
             if (isOwned) {
                 disownDeviceApi(id).then(() => {
                     if (isMounted.current) {
+                        updateData({
+                            ...data,
+                            ownershipStatus: devicesOwnerships.UNOWNED,
+                        })
+
                         // @ts-ignore
                         dispatch(disOwnDevice(id))
-                        navigate('/')
 
                         Notification.success({
                             title: _(t.deviceDisOwned),
                             message: _(t.deviceWasDisOwned, { name: deviceName }),
                         })
+
+                        setOwnLoading(false)
+                        navigate('/')
                     }
                 })
             } else {
                 ownDeviceApi(id).then(() => {
                     if (isMounted.current) {
+                        updateData({
+                            ...data,
+                            ownershipStatus: devicesOwnerships.OWNED,
+                        })
+
                         // @ts-ignore
                         dispatch(ownDevice(id))
 
@@ -157,6 +171,8 @@ const DevicesDetailsPage: FC<Props> = (props) => {
                             title: _(t.deviceOwned),
                             message: _(t.deviceWasOwned, { name: deviceName }),
                         })
+
+                        setOwnLoading(false)
                     }
                 })
             }
@@ -303,6 +319,7 @@ const DevicesDetailsPage: FC<Props> = (props) => {
             footer={<Footer footerExpanded={false} paginationComponent={<div id='paginationPortalTarget'></div>} />}
             header={
                 <DevicesDetailsHeader
+                    buttonsLoading={ownLoading}
                     deviceId={id}
                     deviceName={deviceName}
                     deviceOnboardingResourceData={deviceOnboardingResourceData}

@@ -16,6 +16,7 @@ import * as styles from './DevicesDetailsHeader.styles'
 
 export const DevicesDetailsHeader: FC<Props> = memo((props) => {
     const {
+        buttonsLoading,
         deviceId,
         isUnregistered,
         onOwnChange,
@@ -47,6 +48,7 @@ export const DevicesDetailsHeader: FC<Props> = memo((props) => {
                 <Button
                     disabled={isUnregistered}
                     icon={<IconEdit />}
+                    loading={buttonsLoading}
                     onClick={handleOpenEditDeviceNameModal}
                     style={{ marginLeft: 8 }}
                     variant='tertiary'
@@ -59,7 +61,7 @@ export const DevicesDetailsHeader: FC<Props> = memo((props) => {
                     dataTestId={isOnboarded ? offboardButton : onboardButton}
                     disabled={onboardResourceLoading}
                     icon={isOnboarded ? <IconClose /> : <IconPlus />}
-                    loading={onboardResourceLoading}
+                    loading={onboardResourceLoading || buttonsLoading}
                     onClick={onboardButtonCallback}
                     variant='tertiary'
                 >
@@ -82,7 +84,7 @@ export const DevicesDetailsHeader: FC<Props> = memo((props) => {
                                     icon: <IconEdit />,
                                 },
                             ]}
-                            loading={onboardResourceLoading}
+                            loading={onboardResourceLoading || buttonsLoading}
                             menuProps={{
                                 placement: 'bottom-end',
                             }}
@@ -96,6 +98,7 @@ export const DevicesDetailsHeader: FC<Props> = memo((props) => {
             <Button
                 disabled={isUnregistered}
                 icon={isOwned ? <IconClose /> : <IconPlus />}
+                loading={buttonsLoading}
                 onClick={onOwnChange}
                 variant='tertiary'
             >
@@ -106,6 +109,7 @@ export const DevicesDetailsHeader: FC<Props> = memo((props) => {
                     className='m-l-10'
                     disabled={!isOwned}
                     icon={<IconNetwork />}
+                    loading={buttonsLoading}
                     onClick={openDpsModal}
                     variant='tertiary'
                 >
