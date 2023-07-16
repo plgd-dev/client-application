@@ -99,7 +99,7 @@ const IncompleteOnboardingDataModal: FC<Props> = (props) => {
                             setShowImport(!showImport)
                         }}
                     >
-                        <span css={copyStyles.text}>{_(t.massImport)}</span>
+                        <span css={copyStyles.text}>{_(t.pasteAll)}</span>
                     </a>
                 </div>
                 <AnimatePresence>
