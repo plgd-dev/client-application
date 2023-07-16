@@ -665,4 +665,8 @@ export const messages = defineMessages({
         id: 'devices.unit',
         defaultMessage: 'ID',
     },
+    massImport: {
+        id: 'devices.massImport',
+        defaultMessage: 'Mass import',
+    },
 })

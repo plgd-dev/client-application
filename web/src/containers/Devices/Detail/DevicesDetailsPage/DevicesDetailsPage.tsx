@@ -233,9 +233,9 @@ const DevicesDetailsPage: FC<Props> = (props) => {
             const cleanUpOnboardData = (d: string) => d.replace(/\\n/g, '\n')
 
             onboardDeviceApi(id, {
-                coapGatewayAddress: onboardingData.coapGatewayAddress || '',
+                coapGatewayAddress: onboardingData.deviceEndpoint || '',
                 authorizationCode: code as string,
-                authorizationProviderName: onboardingData.authorizationProviderName || '',
+                authorizationProviderName: onboardingData.authorizationProvider || '',
                 hubId: onboardingData.hubId || '',
                 certificateAuthorities: cleanUpOnboardData(onboardingData.certificateAuthorities || ''),
             })
