@@ -5,6 +5,7 @@ export type Props = {
     data: DeviceDataType
     isActiveTab: boolean
     isOwned: boolean
+    isUnsupported: boolean
     onboardResourceLoading: boolean
     deviceOnboardingResourceData: any
     resources: ResourcesType[]

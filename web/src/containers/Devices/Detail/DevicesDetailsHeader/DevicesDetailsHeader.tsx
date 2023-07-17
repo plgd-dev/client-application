@@ -21,6 +21,7 @@ export const DevicesDetailsHeader: FC<Props> = memo((props) => {
         isUnregistered,
         onOwnChange,
         isOwned,
+        isUnsupported,
         resources,
         openDpsModal,
         onboardResourceLoading,
@@ -95,15 +96,17 @@ export const DevicesDetailsHeader: FC<Props> = memo((props) => {
                         </SplitButton>
                     </div>
                 )}
-            <Button
-                disabled={isUnregistered}
-                icon={isOwned ? <IconClose /> : <IconPlus />}
-                loading={buttonsLoading}
-                onClick={onOwnChange}
-                variant='tertiary'
-            >
-                {isOwned ? _(t.disOwnDevice) : _(t.ownDevice)}
-            </Button>
+            {!isUnsupported && (
+                <Button
+                    disabled={isUnregistered}
+                    icon={isOwned ? <IconClose /> : <IconPlus />}
+                    loading={buttonsLoading}
+                    onClick={onOwnChange}
+                    variant='tertiary'
+                >
+                    {isOwned ? _(t.disOwnDevice) : _(t.ownDevice)}
+                </Button>
+            )}
             {hasDPS && (
                 <Button
                     className='m-l-10'

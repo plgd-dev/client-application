@@ -20,7 +20,8 @@ import { DEVICE_PROVISION_STATUS_DELAY_MS } from '@/containers/Devices/constants
 import { IconLoader } from '@shared-ui/components/Atomic/Loader'
 
 const Tab1: FC<Props> = (props) => {
-    const { data, deviceId, deviceOnboardingResourceData, isOwned, resources, onboardResourceLoading } = props
+    const { data, deviceId, deviceOnboardingResourceData, isOwned, isUnsupported, resources, onboardResourceLoading } =
+        props
     const { formatMessage: _ } = useIntl()
 
     const { onboardTitleStatus } = testId.devices.detail
@@ -77,6 +78,7 @@ const Tab1: FC<Props> = (props) => {
                     {isOwned ? _(t.owned) : _(t.unowned)}
                 </Badge>
             ),
+            hidden: isUnsupported,
         },
         {
             attribute: _(t.onboardingStatus),
@@ -88,10 +90,7 @@ const Tab1: FC<Props> = (props) => {
                 </Badge>
             ),
         },
-    ]
-
-    if (dpsEndpoint) {
-        rows.push({
+        {
             attribute: _(t.dpsStatus),
             value: resourceLoading ? (
                 <IconLoader size={20} type='secondary' />
@@ -100,21 +99,21 @@ const Tab1: FC<Props> = (props) => {
                     {isOwned && deviceResourceData ? provisionStatus : _(t.notAvailable)}
                 </Badge>
             ),
-        })
-    }
-
-    rows.push({
-        attribute: _(t.endpoints),
-        value: data?.endpoints ? (
-            <TagGroup>
-                {data?.endpoints?.map?.((endpoint: string) => (
-                    <Tag key={endpoint}>{endpoint}</Tag>
-                ))}
-            </TagGroup>
-        ) : (
-            <div>-</div>
-        ),
-    })
+            hidden: !dpsEndpoint,
+        },
+        {
+            attribute: _(t.endpoints),
+            value: data?.endpoints ? (
+                <TagGroup>
+                    {data?.endpoints?.map?.((endpoint: string) => (
+                        <Tag key={endpoint}>{endpoint}</Tag>
+                    ))}
+                </TagGroup>
+            ) : (
+                <div>-</div>
+            ),
+        },
+    ]
 
     return (
         <div
@@ -123,7 +122,7 @@ const Tab1: FC<Props> = (props) => {
                 overflow: 'hidden',
             }}
         >
-            <SimpleStripTable rows={rows} />
+            <SimpleStripTable rows={rows.filter((r) => r?.hidden === false || r?.hidden === undefined)} />
         </div>
     )
 }

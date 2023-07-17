@@ -44,7 +44,7 @@ const App: FC<Props> = (props) => {
         ...getOidcCommonSettings(),
         automaticSilentRenew: true,
         client_id: wellKnownConfig?.remoteProvisioning?.webOauthClient?.clientId || '',
-        redirect_uri: window.location.origin,
+        redirect_uri: window.location.href,
         extraQueryParams: {
             audience: wellKnownConfig?.remoteProvisioning?.webOauthClient?.audience || false,
         },

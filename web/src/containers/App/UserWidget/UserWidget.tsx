@@ -14,6 +14,7 @@ const UserWidget: FC<Props> = memo((props) => {
     const { logout } = props
     const { formatMessage: _ } = useIntl()
     const { userData } = useAuth()
+
     return (
         <UserWidgetShared
             description={userData?.profile?.family_name || ''}

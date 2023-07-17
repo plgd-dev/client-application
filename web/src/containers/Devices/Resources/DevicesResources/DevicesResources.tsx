@@ -133,10 +133,6 @@ export const DevicesResources: FC<Props> = ({
 
                     const edit = canBeResourceEdited(endpointInformations) || isOwned
 
-                    if (!edit) {
-                        return <span>{lastValue}</span>
-                    }
-
                     if (row.canExpand) {
                         return (
                             <div className='tree-expander-container'>
@@ -147,12 +143,16 @@ export const DevicesResources: FC<Props> = ({
                                         marginLeft: `${row.depth * RESOURCE_TREE_DEPTH_SIZE}px`,
                                     }}
                                 />
-                                <span
-                                    className={!row.canExpand ? 'link reveal-icon-on-hover' : ''}
-                                    onClick={onLinkClick}
-                                >
-                                    {`/${lastValue}/`}
-                                </span>
+                                {edit ? (
+                                    <span
+                                        className={!row.canExpand ? 'link reveal-icon-on-hover' : ''}
+                                        onClick={onLinkClick}
+                                    >
+                                        {`/${lastValue}/`}
+                                    </span>
+                                ) : (
+                                    <span>{lastValue}</span>
+                                )}
                             </div>
                         )
                     }

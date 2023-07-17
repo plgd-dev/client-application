@@ -1,4 +1,5 @@
 import { useIntl } from 'react-intl'
+
 import { security } from '@shared-ui/common/services'
 import { WellKnownConfigType } from '@shared-ui/common/hooks'
 

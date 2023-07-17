@@ -32,7 +32,6 @@ import {
 import DevicesDetailsHeader from '../DevicesDetailsHeader'
 import { messages as t } from '../../Devices.i18n'
 import { useDeviceDetails, useDevicesResources, useOnboardingButton } from '../../hooks'
-import './DevicesDetailsPage.scss'
 import { disOwnDevice, ownDevice } from '@/containers/Devices/slice'
 import IncompleteOnboardingDataModal, {
     getOnboardingDataFromConfig,
@@ -182,6 +181,10 @@ const DevicesDetailsPage: FC<Props> = (props) => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [_, id, isMounted, isOwned, deviceName])
 
+    const toggleOnboardingModal = useCallback((state = false) => {
+        setShowIncompleteOnboardingModal(state)
+    }, [])
+
     const openOnboardingModal = useCallback(() => {
         toggleOnboardingModal(true)
     }, [])
@@ -191,6 +194,20 @@ const DevicesDetailsPage: FC<Props> = (props) => {
 
         navigate(`/devices/${id}${i === 1 ? '/resources' : ''}`, { replace: true })
         // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
+
+    // Update the device name in the data object
+    const updateDeviceNameInData = useCallback((name: string) => {
+        updateData({
+            ...data,
+            data: {
+                ...data.data,
+                content: {
+                    ...data.data.content,
+                    n: name,
+                },
+            },
+        })
     }, [])
 
     if (deviceError) {
@@ -216,20 +233,6 @@ const DevicesDetailsPage: FC<Props> = (props) => {
 
     if (deviceName) {
         breadcrumbs.push({ label: deviceName })
-    }
-
-    // Update the device name in the data object
-    const updateDeviceNameInData = (name: string) => {
-        updateData({
-            ...data,
-            data: {
-                ...data.data,
-                content: {
-                    ...data.data.content,
-                    n: name,
-                },
-            },
-        })
     }
 
     const onboardDevice = async (onboardingData: OnboardingDataType) => {
@@ -273,10 +276,6 @@ const DevicesDetailsPage: FC<Props> = (props) => {
 
             setOnboarding(false)
         }
-    }
-
-    function toggleOnboardingModal(state = false) {
-        setShowIncompleteOnboardingModal(state)
     }
 
     const updateDeviceName = async (name: string) => {
@@ -327,6 +326,7 @@ const DevicesDetailsPage: FC<Props> = (props) => {
                     incompleteOnboardingData={incompleteOnboardingData}
                     isOwned={isOwned}
                     isUnregistered={isUnregistered}
+                    isUnsupported={isUnsupported}
                     onOwnChange={handleOwnChange}
                     onboardButtonCallback={handleOnboardCallback}
                     onboardResourceLoading={onboardResourceLoading}
@@ -337,7 +337,9 @@ const DevicesDetailsPage: FC<Props> = (props) => {
                 />
             }
             headlineStatusTag={
-                <StatusTag variant={isOwned ? 'success' : 'error'}>{isOwned ? _(t.owned) : _(t.unowned)}</StatusTag>
+                !isUnsupported && (
+                    <StatusTag variant={isOwned ? 'success' : 'error'}>{isOwned ? _(t.owned) : _(t.unowned)}</StatusTag>
+                )
             }
             loading={loading}
             title={deviceName || ''}
@@ -363,6 +365,7 @@ const DevicesDetailsPage: FC<Props> = (props) => {
                                 deviceOnboardingResourceData={deviceOnboardingResourceData}
                                 isActiveTab={activeTabItem === 0}
                                 isOwned={isOwned}
+                                isUnsupported={isUnsupported}
                                 onboardResourceLoading={onboardResourceLoading}
                                 resources={resources}
                             />

@@ -9,6 +9,7 @@ export type Props = {
     incompleteOnboardingData: boolean
     isOwned: boolean
     isUnregistered: boolean
+    isUnsupported: boolean
     onOwnChange: () => void
     onboardButtonCallback?: () => void
     onboardResourceLoading: boolean
