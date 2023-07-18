@@ -15,8 +15,8 @@ import light from '@shared-ui/components/Atomic/_theme/light'
 import AppContext from '@/containers/App/AppContext'
 import appConfig from '@/config'
 import { Props } from './AppInner.types'
-import { AppAuthProviderRefType } from '@/containers/App/AppAuthProvider/AppAuthProvider.types'
 import AppLayout from '@/containers/App/AppLayout/AppLayout'
+import { AppLayoutRefType } from '@/containers/App/AppLayout/AppLayout.types'
 
 const getBuildInformation = (wellKnownConfig: WellKnownConfigType) => ({
     buildDate: wellKnownConfig?.buildDate || '',
@@ -30,7 +30,7 @@ const AppInner = (props: Props) => {
     const { wellKnownConfig, configError, reFetchConfig, setInitialize } = props
     const buildInformation = getBuildInformation(wellKnownConfig)
 
-    const authProviderRef = useRef<AppAuthProviderRefType | null>(null)
+    const appLayoutRef = useRef<AppLayoutRefType | null>(null)
 
     if (wellKnownConfig && wellKnownConfig.remoteProvisioning) {
         security.setWebOAuthConfig({
@@ -49,8 +49,8 @@ const AppInner = (props: Props) => {
         setSuspectedUnauthorized(true)
 
         reFetchConfig().then((newWellKnownConfig: WellKnownConfigType) => {
-            if (authProviderRef) {
-                const userData: User = authProviderRef?.current?.getUserData()
+            if (appLayoutRef.current) {
+                const userData: User = appLayoutRef.current?.getAuthProviderRef().getUserData()
                 const parsedData = jwtDecode(userData.access_token)
                 const ownerId = get(parsedData, newWellKnownConfig.remoteProvisioning?.jwtOwnerClaim as string, '')
 
@@ -78,6 +78,8 @@ const AppInner = (props: Props) => {
         return <div className='client-error-message'>{configError?.message}</div>
     }
 
+    console.log({ initializedByAnother })
+
     return (
         <AppContext.Provider value={contextValue}>
             <ThemeProvider theme={light}>
@@ -86,6 +88,7 @@ const AppInner = (props: Props) => {
                     <AppLayout
                         initializedByAnother={initializedByAnother}
                         mockApp={props.mockApp}
+                        ref={appLayoutRef}
                         setInitialize={setInitialize}
                         suspectedUnauthorized={suspectedUnauthorized}
                         wellKnownConfig={wellKnownConfig}

@@ -45,6 +45,10 @@ export const messages = defineMessages({
         id: 'devices.unowned',
         defaultMessage: 'Unowned',
     },
+    unsupported: {
+        id: 'devices.unsupported',
+        defaultMessage: 'Unsupported',
+    },
     device: {
         id: 'devices.device',
         defaultMessage: 'Device',

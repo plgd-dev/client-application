@@ -11,10 +11,6 @@ export const infoBox = css`
     text-align: center;
 `
 
-export const icon = css`
-    font-size: 50px;
-`
-
 export const headline = css`
     font-size: 2rem;
     margin: 20px 0 10px 0;

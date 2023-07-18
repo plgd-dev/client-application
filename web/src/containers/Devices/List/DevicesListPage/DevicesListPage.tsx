@@ -36,7 +36,7 @@ import { DEVICE_TYPE_OIC_WK_D, devicesOwnerships, NO_DEVICE_NAME } from '@/conta
 import DevicesListActionButton from '@/containers/Devices/List/DevicesListActionButton'
 import AppContext from '@/containers/App/AppContext'
 
-const { OWNED } = devicesOwnerships
+const { OWNED, UNSUPPORTED } = devicesOwnerships
 
 const DevicesListPage = () => {
     const { formatMessage: _ } = useIntl()
@@ -222,6 +222,11 @@ const DevicesListPage = () => {
                 style: { width: '250px' },
                 Cell: ({ value }: { value: any }) => {
                     const isOwned = OWNED === value
+
+                    if (UNSUPPORTED === value) {
+                        return <Badge className='grey'>{_(t.unsupported)}</Badge>
+                    }
+
                     return <Badge className={isOwned ? 'green' : 'red'}>{isOwned ? _(t.owned) : _(t.unowned)}</Badge>
                 },
             },
@@ -238,10 +243,10 @@ const DevicesListPage = () => {
                     return (
                         <DevicesListActionButton
                             deviceId={id}
-                            isOwned={isOwned}
                             onDelete={deleteDevices}
                             onOwnChange={() => handleOwnDevice(isOwned, id, data.content.name)}
                             onView={(deviceId) => navigate(`/devices/${deviceId}`)}
+                            ownershipStatus={ownershipStatus}
                             resourcesLoadedCallback={(resources) => {
                                 setDpsData((prevData: DpsDataType) => ({
                                     ...prevData,

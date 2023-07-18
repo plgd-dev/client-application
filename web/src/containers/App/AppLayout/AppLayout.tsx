@@ -1,11 +1,12 @@
 import {
-    FC,
+    forwardRef,
     memo,
     ReactElement,
     SyntheticEvent,
     useCallback,
     useContext,
     useEffect,
+    useImperativeHandle,
     useMemo,
     useRef,
     useState,
@@ -31,13 +32,13 @@ import { mather, menu, Routes } from '@/routes'
 import { getVersionNumberFromGithub, reset } from '@/containers/App/AppRest'
 import { AppAuthProviderRefType } from '@/containers/App/AppAuthProvider/AppAuthProvider.types'
 import { messages as t } from '../App.i18n'
-import { Props } from './AppLayout.types'
+import { AppLayoutRefType, Props } from './AppLayout.types'
 import AppContext from '@/containers/App/AppContext'
 import { useDispatch, useSelector } from 'react-redux'
 import { CombinedStoreType } from '@/store/store'
 import { setVersion } from '@/containers/App/slice'
 
-const AppLayout: FC<Props> = (props) => {
+const AppLayout = forwardRef<AppLayoutRefType, Props>((props, ref) => {
     const { mockApp, wellKnownConfig, setInitialize, initializedByAnother, suspectedUnauthorized } = props
     const { formatMessage: _ } = useIntl()
     const location = useLocation()
@@ -52,6 +53,10 @@ const AppLayout: FC<Props> = (props) => {
     const { collapsed, setCollapsed } = useContext(AppContext)
 
     const appStore = useSelector((state: CombinedStoreType) => state.app)
+
+    useImperativeHandle(ref, () => ({
+        getAuthProviderRef: () => authProviderRef.current,
+    }))
 
     const requestVersion = useCallback((now: Date) => {
         getVersionNumberFromGithub().then((ret) => {
@@ -208,7 +213,7 @@ const AppLayout: FC<Props> = (props) => {
             />
         </ConditionalWrapper>
     )
-}
+})
 
 AppLayout.displayName = 'AppLayout'
 

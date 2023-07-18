@@ -2,7 +2,8 @@ import { FC } from 'react'
 import { useIntl } from 'react-intl'
 
 import Button from '@shared-ui/components/Atomic/Button'
-import { IconInfo } from '@shared-ui/components/Atomic'
+import { IconInfo } from '@shared-ui/components/Atomic/Icon/components'
+import { convertSize } from '@shared-ui/components/Atomic/Icon'
 
 import { Props } from './InitializedByAnother.types'
 import { messages as t } from './InitializedByAnother.i18n'
@@ -19,9 +20,7 @@ const InitializedByAnother: FC<Props> = (props) => {
     return (
         <div css={styles.initializedByAnother}>
             <div css={styles.infoBox}>
-                <div css={styles.icon}>
-                    <IconInfo />
-                </div>
+                <IconInfo {...convertSize(50)} />
                 <h1 css={styles.headline}>{_(t.headline)}</h1>
                 <div css={styles.description}>{_(t.description)}</div>
                 <div css={styles.buttonWrapper}>
