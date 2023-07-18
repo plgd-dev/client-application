@@ -78,8 +78,6 @@ const AppInner = (props: Props) => {
         return <div className='client-error-message'>{configError?.message}</div>
     }
 
-    console.log({ initializedByAnother })
-
     return (
         <AppContext.Provider value={contextValue}>
             <ThemeProvider theme={light}>
