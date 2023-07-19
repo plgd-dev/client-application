@@ -1,56 +1,38 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { FC, useCallback, useEffect, useMemo, useState } from 'react'
+import ReactDOM from 'react-dom'
 import { useIntl } from 'react-intl'
-import { useParams } from 'react-router-dom'
-import classNames from 'classnames'
-import { history } from '@/store'
-import ConfirmModal from '@shared-ui/components/new/ConfirmModal'
-import Layout from '@shared-ui/components/new/Layout'
-import NotFoundPage from '@/containers/NotFoundPage'
+import { useNavigate, useParams } from 'react-router-dom'
+import { useDispatch } from 'react-redux'
+
+import Footer from '@shared-ui/components/Layout/Footer'
+import NotFoundPage from '@shared-ui/components/Templates/NotFoundPage'
+import PageLayout from '@shared-ui/components/Atomic/PageLayout'
 import { useIsMounted, WellKnownConfigType } from '@shared-ui/common/hooks'
-import { messages as menuT } from '@shared-ui/components/new/Menu/Menu.i18n'
-import { showErrorToast, showSuccessToast } from '@shared-ui/components/new/Toast/Toast'
-import DevicesDetails from '../DevicesDetails'
-import DevicesResources from '../../Resources/DevicesResources'
-import DevicesDetailsHeader from '../DevicesDetailsHeader'
-import DevicesDetailsTitle from '../DevicesDetailsTitle'
-import DevicesResourcesModal from '../../Resources/DevicesResourcesModal'
-import DevicesDPSModal from '../../DevicesDPSModal'
+import { messages as menuT } from '@shared-ui/components/Atomic/Menu/Menu.i18n'
+import Notification from '@shared-ui/components/Atomic/Notification/Toast'
+import { BreadcrumbItem } from '@shared-ui/components/Layout/Header/Breadcrumbs/Breadcrumbs.types'
+import { security } from '@shared-ui/common/services'
+import StatusTag from '@shared-ui/components/Atomic/StatusTag'
+import Breadcrumbs from '@shared-ui/components/Layout/Header/Breadcrumbs'
+import EditDeviceNameModal from '@shared-ui/components/Organisms/EditDeviceNameModal'
+import Tabs from '@shared-ui/components/Atomic/Tabs'
+import { getApiErrorMessage } from '@shared-ui/common/utils'
+
+import { devicesStatuses, NO_DEVICE_NAME, devicesOwnerships, devicesOnboardingStatuses } from '../../constants'
+import { handleDeleteDevicesErrors, getDeviceChangeResourceHref } from '../../utils'
 import {
-    devicesStatuses,
-    defaultNewResource,
-    resourceModalTypes,
-    NO_DEVICE_NAME,
-    devicesOwnerships,
-    devicesOnboardingStatuses,
-} from '../../constants'
-import {
-    handleCreateResourceErrors,
-    handleFetchResourceErrors,
-    handleDeleteResourceErrors,
-    handleDeleteDevicesErrors,
-    updateResourceMethod,
-    handleUpdateResourceErrors,
-} from '../../utils'
-import {
-    getDevicesResourcesApi,
-    createDevicesResourceApi,
-    deleteDevicesResourceApi,
     ownDeviceApi,
     disownDeviceApi,
     getDeviceAuthCode,
     onboardDeviceApi,
     offboardDeviceApi,
     PLGD_BROWSER_USED,
+    updateDevicesResourceApi,
 } from '../../rest'
-import { useDeviceDetails, useDevicesResources, useOnboardingButton } from '../../hooks'
+import DevicesDetailsHeader from '../DevicesDetailsHeader'
 import { messages as t } from '../../Devices.i18n'
-import './DevicesDetailsPage.scss'
+import { useDeviceDetails, useDevicesResources, useOnboardingButton } from '../../hooks'
 import { disOwnDevice, ownDevice } from '@/containers/Devices/slice'
-import { useDispatch } from 'react-redux'
-import { BreadcrumbItem } from '@shared-ui/components/new/Breadcrumbs/Breadcrumbs.types'
-import omit from 'lodash/omit'
-import { DevicesDetailsResourceModalData } from '@/containers/Devices/Detail/DevicesDetailsPage/DevicesDetailsPage.types'
-import { DevicesResourcesModalParamsType } from '@/containers/Devices/Resources/DevicesResourcesModal/DevicesResourcesModal.types'
 import IncompleteOnboardingDataModal, {
     getOnboardingDataFromConfig,
 } from '@/containers/Devices/Detail/IncompleteOnboardingDataModal'
@@ -58,28 +40,28 @@ import {
     OnboardingDataType,
     onboardingDataDefault,
 } from '../IncompleteOnboardingDataModal/IncompleteOnboardingDataModal.types'
-import { security } from '@shared-ui/common/services'
 import FirstTimeOnboardingModal from '@/containers/Devices/Detail/FirstTimeOnboardingModal/FirstTimeOnboardingModal'
+import Tab1 from './Tabs/Tab1'
+import Tab2 from './Tabs/Tab2'
+import { Props } from './DevicesDetailsPage.types'
 
-const DevicesDetailsPage = () => {
+const DevicesDetailsPage: FC<Props> = (props) => {
+    const { defaultActiveTab } = props
     const { formatMessage: _ } = useIntl()
-    const {
-        id,
-        href: hrefParam,
-    }: {
-        id: string
-        href: string
-    } = useParams()
-    const [resourceModalData, setResourceModalData] = useState<DevicesDetailsResourceModalData | undefined>(undefined)
-    const [loadingResource, setLoadingResource] = useState(false)
-    const [savingResource, setSavingResource] = useState(false)
+    const { id: routerId } = useParams()
+    const id = routerId || ''
+
     const [showDpsModal, setShowDpsModal] = useState(false)
     const [showIncompleteOnboardingModal, setShowIncompleteOnboardingModal] = useState(false)
     const [showFirstTimeOnboardingModal, setShowFirstTimeOnboardingModal] = useState(false)
     const [onboardingData, setOnboardingData] = useState<OnboardingDataType>(onboardingDataDefault)
     const [onboarding, setOnboarding] = useState(false)
-    const [deleteResourceHref, setDeleteResourceHref] = useState<string>('')
-    const [ttlHasError] = useState(false)
+    const [showEditNameModal, setShowEditNameModal] = useState(false)
+    const [domReady, setDomReady] = useState(false)
+    const [deviceNameLoading, setDeviceNameLoading] = useState(false)
+    const [activeTabItem, setActiveTabItem] = useState(defaultActiveTab ?? 0)
+    const [ownLoading, setOwnLoading] = useState(false)
+
     const isMounted = useIsMounted()
     const { data, updateData, loading, error: deviceError } = useDeviceDetails(id)
     const {
@@ -89,6 +71,7 @@ const DevicesDetailsPage = () => {
         refresh: refreshResources,
     } = useDevicesResources(id)
     const dispatch = useDispatch()
+    const navigate = useNavigate()
 
     const isOwned = useMemo(() => data?.ownershipStatus === devicesOwnerships.OWNED, [data])
     const isUnsupported = useMemo(() => data?.ownershipStatus === devicesOwnerships.UNSUPPORTED, [data])
@@ -103,11 +86,16 @@ const DevicesDetailsPage = () => {
         resources,
         isOwned,
         isUnsupported,
-        deviceId: id
+        deviceId: id,
     })
 
     const wellKnownConfig = security.getWellKnowConfig() as WellKnownConfigType
     const parseOnboardingData = useCallback(() => getOnboardingDataFromConfig(wellKnownConfig), [wellKnownConfig])
+    const handleOpenEditDeviceNameModal = useCallback(() => setShowEditNameModal(true), [])
+
+    useEffect(() => {
+        setDomReady(true)
+    }, [])
 
     // check onboarding status evert 1s if onboarding process running
     useEffect(() => {
@@ -124,273 +112,9 @@ const DevicesDetailsPage = () => {
         }
     }, [deviceOnboardingResourceData, refetchDeviceOnboardingData])
 
-    // Open the resource modal when href is present
-    useEffect(
-        () => {
-            if (hrefParam && !loading && !loadingResources) {
-                openUpdateModal({ href: `/${hrefParam}` })
-            }
-        },
-        [hrefParam, loading, loadingResources] // eslint-disable-line
-    )
+    const openDpsModal = useCallback(() => setShowDpsModal(true), [])
 
-    if (deviceError) {
-        return <NotFoundPage title={_(t.deviceNotFound)} message={_(t.deviceNotFoundMessage, { id })} />
-    }
-
-    if (resourcesError) {
-        return (
-            <NotFoundPage title={_(t.deviceResourcesNotFound)} message={_(t.deviceResourcesNotFoundMessage, { id })} />
-        )
-    }
-
-    const deviceStatus = data?.metadata?.status?.value
-    const isOnline = true
-    const isUnregistered = devicesStatuses.UNREGISTERED === deviceStatus
-    const greyedOutClassName = classNames({
-        'grayed-out': isUnregistered,
-    })
-    const deviceName = data?.data?.content?.n || NO_DEVICE_NAME
-    const breadcrumbs: BreadcrumbItem[] = [
-        {
-            to: '/',
-            label: _(menuT.devices),
-        },
-    ]
-
-    if (deviceName) {
-        breadcrumbs.push({ label: deviceName })
-    }
-
-    // Fetches the resource and sets its values to the modal data, which opens the modal.
-    const openUpdateModal = async ({ href, currentInterface = '' }: { href: string; currentInterface?: string }) => {
-        // If there is already a fetch for a resource, disable the next attempt for a fetch until the previous fetch finishes
-        if (loadingResource) {
-            return
-        }
-
-        setLoadingResource(true)
-
-        try {
-            const { data: resourceData } = await getDevicesResourcesApi({
-                deviceId: id,
-                href,
-                currentInterface,
-            })
-
-            omit(resourceData, ['data.content.if', 'data.content.rt'])
-
-            if (isMounted.current) {
-                setLoadingResource(false)
-
-                // Retrieve the types and interfaces of this resource
-                const { resourceTypes: types = [], interfaces = [] } =
-                    resources?.find?.((link: { href: string }) => link.href === href) || {}
-
-                // Setting the data and opening the modal
-                setResourceModalData({
-                    data: {
-                        href,
-                        types,
-                        interfaces,
-                    },
-                    resourceData,
-                })
-            }
-        } catch (error) {
-            if (error && isMounted.current) {
-                setLoadingResource(false)
-                handleFetchResourceErrors(error, _)
-            }
-        }
-    }
-
-    // Fetches the resources supported types and sets its values to the modal data, which opens the modal.
-    const openCreateModal = async (href: string) => {
-        // If there is already a fetch for a resource, disable the next attempt for a fetch until the previous fetch finishes
-        if (loadingResource) {
-            return
-        }
-
-        setLoadingResource(true)
-
-        try {
-            const { data: deviceData } = await getDevicesResourcesApi({
-                deviceId: id,
-                href,
-            })
-            const supportedTypes = deviceData?.data?.content?.rts || []
-
-            if (isMounted.current) {
-                setLoadingResource(false)
-
-                // Setting the data and opening the modal
-                setResourceModalData({
-                    data: {
-                        href,
-                        types: supportedTypes,
-                    },
-                    resourceData: {
-                        ...defaultNewResource,
-                        rt: supportedTypes,
-                    },
-                    type: resourceModalTypes.CREATE_RESOURCE,
-                })
-            }
-        } catch (error) {
-            if (error && isMounted.current) {
-                setLoadingResource(false)
-                handleFetchResourceErrors(error, _)
-            }
-        }
-    }
-
-    const openDeleteModal = (href: string) => {
-        setDeleteResourceHref(href)
-    }
-
-    const closeDeleteModal = () => {
-        setDeleteResourceHref('')
-    }
-
-    // Updates the resource through rest API
-    const updateResource = async (
-        { href, currentInterface = '' }: DevicesResourcesModalParamsType,
-        resourceDataUpdate: any
-    ) => {
-        setSavingResource(true)
-
-        await updateResourceMethod(
-            { deviceId: id, href, currentInterface },
-            resourceDataUpdate,
-            () => {
-                showSuccessToast({
-                    title: _(t.resourceUpdateSuccess),
-                    message: _(t.resourceWasUpdated),
-                })
-                handleCloseUpdateModal()
-                setSavingResource(false)
-            },
-            (error: any) => {
-                setSavingResource(false)
-                handleUpdateResourceErrors(error, { id, href }, _)
-            }
-        )
-    }
-
-    // Created a new resource through rest API
-    const createResource = async (
-        { href, currentInterface = '' }: DevicesResourcesModalParamsType,
-        resourceDataCreate: object
-    ) => {
-        setSavingResource(true)
-
-        try {
-            await createDevicesResourceApi({ deviceId: id, href, currentInterface }, resourceDataCreate)
-
-            if (isMounted.current) {
-                showSuccessToast({
-                    title: _(t.resourceCreateSuccess),
-                    message: _(t.resourceWasCreated),
-                })
-
-                refreshResources()
-                setResourceModalData(undefined) // close modal
-                setSavingResource(false)
-            }
-        } catch (error) {
-            if (error && isMounted.current) {
-                handleCreateResourceErrors(error, { id, href }, _)
-                setSavingResource(false)
-            }
-        }
-    }
-
-    const deleteResource = async () => {
-        setLoadingResource(true)
-
-        try {
-            await deleteDevicesResourceApi({
-                deviceId: id,
-                href: deleteResourceHref || '',
-            })
-
-            if (isMounted.current) {
-                showSuccessToast({
-                    title: _(t.resourceDeleteSuccess),
-                    message: _(t.resourceWasDeleted),
-                })
-
-                refreshResources()
-                setLoadingResource(false)
-                closeDeleteModal()
-            }
-        } catch (error) {
-            if (error && isMounted.current) {
-                handleDeleteResourceErrors(error, { id, href: deleteResourceHref }, _)
-                setLoadingResource(false)
-                closeDeleteModal()
-            }
-        }
-    }
-
-    // Handler which cleans up the resource modal data and updates the URL
-    const handleCloseUpdateModal = () => {
-        setResourceModalData(undefined)
-
-        if (hrefParam) {
-            // Remove the href from the URL when the update modal is closed
-            history.replace(window.location.pathname.replace(`/${hrefParam}`, ''))
-        }
-    }
-
-    // Update the device name in the data object
-    const updateDeviceNameInData = (name: string) => {
-        updateData({
-            ...data,
-            data: {
-                ...data.data,
-                content: {
-                    ...data.data.content,
-                    n: name,
-                },
-            },
-        })
-    }
-
-    const handleOwnChange = async () => {
-        try {
-            isOwned ? await disownDeviceApi(id) : await ownDeviceApi(id)
-            const newOwnState = !isOwned
-
-            if (isMounted.current) {
-                updateData({
-                    ...data,
-                    ownershipStatus: newOwnState ? devicesOwnerships.OWNED : devicesOwnerships.UNOWNED,
-                })
-
-                if (!newOwnState) {
-                    // @ts-ignore
-                    dispatch(disOwnDevice(id))
-                    history.push('/')
-                } else {
-                    // @ts-ignore
-                    dispatch(ownDevice(id))
-                }
-
-                showSuccessToast({
-                    title: newOwnState ? _(t.deviceOwned) : _(t.deviceDisOwned),
-                    message: newOwnState
-                        ? _(t.deviceWasOwned, { name: deviceName })
-                        : _(t.deviceWasDisOwned, { name: deviceName }),
-                })
-            }
-        } catch (error) {
-            handleDeleteDevicesErrors(error, _, true)
-        }
-    }
-
-    function handleOnboardCallback() {
+    const handleOnboardCallback = useCallback(() => {
         if (deviceOnboardingResourceData.content.cps === devicesOnboardingStatuses.UNINITIALIZED) {
             if (incompleteOnboardingData) {
                 setShowIncompleteOnboardingModal(true)
@@ -403,6 +127,112 @@ const DevicesDetailsPage = () => {
                 refetchDeviceOnboardingData()
             })
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [deviceOnboardingResourceData, id, incompleteOnboardingData, onboardingData])
+
+    const deviceName = data?.data?.content?.n || NO_DEVICE_NAME
+
+    const handleOwnChange = useCallback(() => {
+        try {
+            setOwnLoading(true)
+            if (isOwned) {
+                disownDeviceApi(id).then(() => {
+                    if (isMounted.current) {
+                        updateData({
+                            ...data,
+                            ownershipStatus: devicesOwnerships.UNOWNED,
+                        })
+
+                        // @ts-ignore
+                        dispatch(disOwnDevice(id))
+
+                        Notification.success({
+                            title: _(t.deviceDisOwned),
+                            message: _(t.deviceWasDisOwned, { name: deviceName }),
+                        })
+
+                        setOwnLoading(false)
+                        navigate('/')
+                    }
+                })
+            } else {
+                ownDeviceApi(id).then(() => {
+                    if (isMounted.current) {
+                        updateData({
+                            ...data,
+                            ownershipStatus: devicesOwnerships.OWNED,
+                        })
+
+                        // @ts-ignore
+                        dispatch(ownDevice(id))
+
+                        Notification.success({
+                            title: _(t.deviceOwned),
+                            message: _(t.deviceWasOwned, { name: deviceName }),
+                        })
+
+                        setOwnLoading(false)
+                    }
+                })
+            }
+        } catch (error) {
+            handleDeleteDevicesErrors(error, _, true)
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [_, id, isMounted, isOwned, deviceName])
+
+    const toggleOnboardingModal = useCallback((state = false) => {
+        setShowIncompleteOnboardingModal(state)
+    }, [])
+
+    const openOnboardingModal = useCallback(() => {
+        toggleOnboardingModal(true)
+    }, [])
+
+    const handleTabChange = useCallback((i: number) => {
+        setActiveTabItem(i)
+
+        navigate(`/devices/${id}${i === 1 ? '/resources' : ''}`, { replace: true })
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
+
+    // Update the device name in the data object
+    const updateDeviceNameInData = useCallback((name: string) => {
+        updateData({
+            ...data,
+            data: {
+                ...data.data,
+                content: {
+                    ...data.data.content,
+                    n: name,
+                },
+            },
+        })
+    }, [])
+
+    if (deviceError) {
+        return <NotFoundPage message={_(t.deviceNotFoundMessage, { id })} title={_(t.deviceNotFound)} />
+    }
+
+    if (resourcesError) {
+        return (
+            <NotFoundPage message={_(t.deviceResourcesNotFoundMessage, { id })} title={_(t.deviceResourcesNotFound)} />
+        )
+    }
+
+    const deviceStatus = data?.metadata?.status?.value
+    const isOnline = true
+    const isUnregistered = devicesStatuses.UNREGISTERED === deviceStatus
+
+    const breadcrumbs: BreadcrumbItem[] = [
+        {
+            link: '/',
+            label: _(menuT.devices),
+        },
+    ]
+
+    if (deviceName) {
+        breadcrumbs.push({ label: deviceName })
     }
 
     const onboardDevice = async (onboardingData: OnboardingDataType) => {
@@ -422,9 +252,9 @@ const DevicesDetailsPage = () => {
             const cleanUpOnboardData = (d: string) => d.replace(/\\n/g, '\n')
 
             onboardDeviceApi(id, {
-                coapGatewayAddress: onboardingData.coapGatewayAddress || '',
+                coapGatewayAddress: onboardingData.deviceEndpoint || '',
                 authorizationCode: code as string,
-                authorizationProviderName: onboardingData.authorizationProviderName || '',
+                authorizationProviderName: onboardingData.authorizationProvider || '',
                 hubId: onboardingData.hubId || '',
                 certificateAuthorities: cleanUpOnboardData(onboardingData.certificateAuthorities || ''),
             })
@@ -433,14 +263,14 @@ const DevicesDetailsPage = () => {
                     refetchDeviceOnboardingData()
                 })
                 .catch((e) => {
-                    showErrorToast(JSON.parse(e?.request?.response)?.message || e.message)
+                    Notification.error(JSON.parse(e?.request?.response)?.message || e.message)
                     setOnboardingData(onboardingData)
                     toggleOnboardingModal(true)
                     setOnboarding(false)
                 })
         } catch (e: any) {
             if (e !== 'user-cancel') {
-                showErrorToast(e.message)
+                Notification.error(e.message)
                 console.error(e)
             }
 
@@ -448,129 +278,159 @@ const DevicesDetailsPage = () => {
         }
     }
 
-    function toggleOnboardingModal(state = false) {
-        setShowIncompleteOnboardingModal(state)
+    const updateDeviceName = async (name: string) => {
+        if (name.trim() !== '' && name !== deviceName) {
+            const href = getDeviceChangeResourceHref(resources)
+
+            setDeviceNameLoading(true)
+
+            try {
+                const { data } = await updateDevicesResourceApi(
+                    { deviceId: id, href },
+                    {
+                        n: name,
+                    }
+                )
+
+                if (isMounted.current) {
+                    setDeviceNameLoading(false)
+                    updateDeviceNameInData(data?.n || name)
+                }
+            } catch (error) {
+                if (error && isMounted.current) {
+                    Notification.error({
+                        title: _(t.deviceNameChangeFailed),
+                        message: getApiErrorMessage(error),
+                    })
+                    setDeviceNameLoading(false)
+                    setShowEditNameModal(false)
+                }
+            }
+        } else {
+            setDeviceNameLoading(false)
+            setShowEditNameModal(false)
+        }
     }
 
     return (
-        <Layout
-            title={`${deviceName ? deviceName + ' | ' : ''}${_(menuT.devices)}`}
+        <PageLayout
             breadcrumbs={breadcrumbs}
-            loading={loading || (!resourceModalData && loadingResource)}
+            footer={<Footer footerExpanded={false} paginationComponent={<div id='paginationPortalTarget'></div>} />}
             header={
                 <DevicesDetailsHeader
+                    buttonsLoading={ownLoading}
                     deviceId={id}
                     deviceName={deviceName}
-                    isOwned={isOwned}
-                    onOwnChange={handleOwnChange}
-                    isUnregistered={isUnregistered}
-                    resources={resources}
-                    openDpsModal={() => setShowDpsModal(true)}
-                    onboarding={onboarding}
-                    incompleteOnboardingData={incompleteOnboardingData}
                     deviceOnboardingResourceData={deviceOnboardingResourceData}
-                    onboardResourceLoading={onboardResourceLoading}
+                    handleOpenEditDeviceNameModal={handleOpenEditDeviceNameModal}
+                    incompleteOnboardingData={incompleteOnboardingData}
+                    isOwned={isOwned}
+                    isUnregistered={isUnregistered}
+                    isUnsupported={isUnsupported}
+                    onOwnChange={handleOwnChange}
                     onboardButtonCallback={handleOnboardCallback}
-                    openOnboardingModal={() => toggleOnboardingModal(true)}
+                    onboardResourceLoading={onboardResourceLoading}
+                    onboarding={onboarding}
+                    openDpsModal={openDpsModal}
+                    openOnboardingModal={openOnboardingModal}
+                    resources={resources}
                 />
             }
+            headlineStatusTag={
+                !isUnsupported && (
+                    <StatusTag variant={isOwned ? 'success' : 'error'}>{isOwned ? _(t.owned) : _(t.unowned)}</StatusTag>
+                )
+            }
+            loading={loading}
+            title={deviceName || ''}
         >
-            <DevicesDetailsTitle
-                className={classNames(
-                    {
-                        shimmering: loading,
-                    },
-                    greyedOutClassName
+            {domReady &&
+                ReactDOM.createPortal(
+                    <Breadcrumbs items={[{ label: _(menuT.devices), link: '/' }, { label: deviceName }]} />,
+                    document.querySelector('#breadcrumbsPortalTarget') as Element
                 )}
-                updateDeviceName={updateDeviceNameInData}
-                loading={loading}
-                isOwned={isOwned}
-                deviceName={deviceName}
-                deviceId={id}
-                resources={resources}
-            />
 
-            <DevicesDetails
-                data={data}
-                isOwned={isOwned}
-                loading={loading}
-                resources={resources}
-                deviceId={id}
-                onboardResourceLoading={onboardResourceLoading}
-                deviceOnboardingResourceData={deviceOnboardingResourceData}
-            />
-
-            <DevicesResources
-                data={resources}
-                onUpdate={openUpdateModal}
-                onCreate={openCreateModal}
-                onDelete={openDeleteModal}
-                deviceStatus={deviceStatus}
-                loading={loadingResource}
-                deviceId={id}
-                isOwned={isOwned}
-            />
-
-            <DevicesResourcesModal
-                {...resourceModalData}
-                onClose={handleCloseUpdateModal}
-                fetchResource={openUpdateModal}
-                updateResource={updateResource}
-                createResource={createResource}
-                retrieving={loadingResource}
-                loading={savingResource}
-                isDeviceOnline={isOnline}
-                isUnregistered={isUnregistered}
-                deviceId={id}
-                confirmDisabled={ttlHasError}
-            />
-
-            <ConfirmModal
-                onConfirm={deleteResource}
-                show={deleteResourceHref !== ''}
-                title={
-                    <>
-                        <i className='fas fa-trash-alt' />
-                        {`${_(t.delete)} ${deleteResourceHref}`}
-                    </>
-                }
-                body={<>{_(t.deleteResourceMessage)}</>}
-                confirmButtonText={_(t.delete)}
-                loading={loadingResource}
-                onClose={closeDeleteModal}
-                confirmDisabled={ttlHasError}
-            >
-                {_(t.delete)}
-            </ConfirmModal>
-
-            <DevicesDPSModal
-                show={showDpsModal}
-                onClose={() => setShowDpsModal(false)}
-                updateResource={updateResource}
-                resources={resources}
+            <Tabs
+                activeItem={activeTabItem}
+                fullHeight={true}
+                onItemChange={handleTabChange}
+                tabs={[
+                    {
+                        id: 0,
+                        name: _(t.deviceInformation),
+                        content: (
+                            <Tab1
+                                data={data}
+                                deviceId={id}
+                                deviceOnboardingResourceData={deviceOnboardingResourceData}
+                                isActiveTab={activeTabItem === 0}
+                                isOwned={isOwned}
+                                isUnsupported={isUnsupported}
+                                onboardResourceLoading={onboardResourceLoading}
+                                resources={resources}
+                            />
+                        ),
+                    },
+                    {
+                        id: 1,
+                        name: _(t.resources),
+                        content: (
+                            <Tab2
+                                closeDpsModal={() => setShowDpsModal(false)}
+                                deviceName={deviceName}
+                                deviceStatus={deviceStatus}
+                                isActiveTab={activeTabItem === 1}
+                                isOnline={isOnline}
+                                isOwned={isOwned}
+                                isUnregistered={isUnregistered}
+                                loadingResources={loadingResources}
+                                refreshResources={refreshResources}
+                                resourcesData={resourcesData}
+                                showDpsModal={showDpsModal}
+                            />
+                        ),
+                    },
+                ]}
             />
 
             <IncompleteOnboardingDataModal
                 deviceId={id}
-                show={showIncompleteOnboardingModal}
-                onboardingData={onboardingData}
                 onClose={() => toggleOnboardingModal(false)}
                 onSubmit={(onboardingData) => {
                     setOnboardingData(onboardingData)
                     onboardDevice(onboardingData).then()
                 }}
+                onboardingData={onboardingData}
+                show={showIncompleteOnboardingModal}
             />
 
             <FirstTimeOnboardingModal
-                show={showFirstTimeOnboardingModal}
                 onClose={() => {
                     setShowFirstTimeOnboardingModal(false)
                 }}
                 onSubmit={() => {
                     setShowFirstTimeOnboardingModal(false)
                 }}
+                show={showFirstTimeOnboardingModal}
             />
-        </Layout>
+
+            <EditDeviceNameModal
+                deviceName={deviceName}
+                deviceNameLoading={deviceNameLoading}
+                handleClose={() => setShowEditNameModal(false)}
+                handleSubmit={updateDeviceName}
+                i18n={{
+                    close: _(t.close),
+                    deviceName: _(t.deviceName),
+                    edit: _(t.edit),
+                    name: _(t.name),
+                    reset: _(t.reset),
+                    saveChange: _(t.saveChange),
+                    savingChanges: _(t.savingChanges),
+                }}
+                show={showEditNameModal}
+            />
+        </PageLayout>
     )
 }
 

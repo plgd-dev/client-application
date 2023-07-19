@@ -1,17 +1,21 @@
-import './PreSharedKeySetup.scss'
-import LogoPlgd from './LogoPlgd'
-import Label from '../../../../shared-ui/src/components/new/Label'
-import TextField from '../../../../shared-ui/src/components/new/TextField'
+import { ChangeEvent, useState } from 'react'
 import classNames from 'classnames'
 import { useIntl } from 'react-intl'
-import { messages as t } from './PreSharedKeySetup.i18n'
-import { ChangeEvent, useState } from 'react'
-import Button from '../../../../shared-ui/src/components/new/Button'
 import Form from 'react-bootstrap/Form'
+
+import Label from '@shared-ui/components/Atomic/Label'
+import TextField from '@shared-ui/components/Atomic/TextField'
+import { copyToClipboard } from '@shared-ui/common/utils'
+import Notification from '@shared-ui/components/Atomic/Notification/Toast'
+import Button from '@shared-ui/components/Atomic/Button'
+import { IconCopy, IconHidePassword, IconShowPassword } from '@shared-ui/components/Atomic/Icon'
+
+import './PreSharedKeySetup.scss'
+import LogoPlgd from './LogoPlgd'
+import { messages as t } from './PreSharedKeySetup.i18n'
 import { initializedByPreShared } from '@/containers/App/AppRest'
 import { Props } from './PreSharedKeySetup.types'
-import { copyToClipboard } from '../../../../shared-ui/src/common/utils'
-import { showSuccessToast, showErrorToast } from '../../../../shared-ui/src/components/old/toast'
+
 const validate = require('validate.js')
 
 type ValidationResult = {
@@ -48,7 +52,7 @@ const PreSharedKeySetup = (props: Props) => {
                     }
                 })
                 .catch((e) => {
-                    showErrorToast({
+                    Notification.error({
                         title: _(t.error),
                         message: e.response.data.message,
                     })
@@ -60,7 +64,7 @@ const PreSharedKeySetup = (props: Props) => {
 
     const handleCopy = (data: string) => {
         copyToClipboard(data)
-        showSuccessToast({
+        Notification.success({
             title: _(t.done),
             message: _(t.copied),
         })
@@ -86,45 +90,45 @@ const PreSharedKeySetup = (props: Props) => {
                     <h2>{_(t.headline)}</h2>
                     <div className='fromWrapper'>
                         <form action=''>
-                            <Label title={_(t.subjectId)} onClick={(e) => e.preventDefault()}>
+                            <Label onClick={(e) => e.preventDefault()} title={_(t.subjectId)}>
                                 <TextField
-                                    className={classNames({ error: validationResult?.subjectId })}
-                                    value={uuid}
-                                    name='subjectId'
                                     autoComplete='subjectId'
+                                    className={classNames({ error: validationResult?.subjectId })}
+                                    name='subjectId'
                                     onChange={handleUuidChange}
+                                    value={uuid}
                                 />
                                 <span className='copy' onClick={() => handleCopy(uuid)}>
-                                    <i className={`fas fa-copy`} />
+                                    <IconCopy />
                                 </span>
                             </Label>
                             {validationResult?.subjectId && (
                                 <div className='m-b-10 error-message'>{_(t.subjectIdError)}</div>
                             )}
-                            <Label title={_(t.key)} onClick={(e) => e.preventDefault()}>
+                            <Label onClick={(e) => e.preventDefault()} title={_(t.key)}>
                                 <Form.Control
+                                    autoComplete='current-password'
                                     className={classNames({ error: false })}
+                                    onChange={(e) => setKey(e.target.value)}
                                     type={passwordType}
                                     value={key}
-                                    autoComplete='current-password'
-                                    onChange={(e) => setKey(e.target.value)}
                                 />
                                 <span className='copy' onClick={() => handleCopy(key)}>
-                                    <i className={`fas fa-copy`} />
+                                    <IconCopy />
                                 </span>
                                 <span
                                     className='show-password'
                                     onClick={() => setPasswordType(passwordType === 'password' ? 'text' : 'password')}
                                 >
-                                    <i className={`fas ${passwordType === 'password' ? 'fa-eye' : 'fa-eye-slash'}`} />
+                                    {passwordType === 'password' ? <IconShowPassword /> : <IconHidePassword />}
                                 </span>
                             </Label>
                             <div className='buttons-wrapper'>
                                 <Button
-                                    variant='primary'
-                                    disabled={!uuid || !key}
                                     className='m-l-10'
+                                    disabled={!uuid || !key}
                                     onClick={handleSubmit}
+                                    variant='primary'
                                 >
                                     {_(t.initialize)}
                                 </Button>

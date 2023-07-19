@@ -11,7 +11,7 @@ export type Store = {
     devices: StoreType
 }
 
-type StoreType = {
+export type StoreType = {
     activeNotifications: any
     devicesList: any
     discoveryTimeout: number

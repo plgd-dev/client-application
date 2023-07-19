@@ -1,8 +1,8 @@
 // @ts-ignore
-import { time } from 'units-converter'
+import * as converter from 'units-converter/dist/es/index'
 import { getApiErrorMessage } from '@shared-ui/common/utils'
-import { showErrorToast, showWarningToast } from '@shared-ui/components/new/Toast/Toast'
-import { compareIgnoreCase } from '@shared-ui/components/new/Table/Utils'
+import Notification from '@shared-ui/components/Atomic/Notification/Toast'
+import { compareIgnoreCase } from '@shared-ui/components/Atomic/Table/Utils'
 import { errorCodes } from '@shared-ui/common/services/fetch-api'
 import {
     knownInterfaces,
@@ -23,6 +23,7 @@ import { ResourcesType } from '@/containers/Devices/Devices.types'
 import { security } from '@shared-ui/common/services'
 import { WellKnownConfigType } from '@shared-ui/common/hooks'
 
+const time = converter.time
 const { INFINITE, NS, MS, S, M, H } = commandTimeoutUnits
 
 // Returns the extension for resources API for the selected interface
@@ -63,13 +64,13 @@ export const handleUpdateResourceErrors = (
 
     if (errorMessage?.includes?.(errorCodes.DEADLINE_EXCEEDED)) {
         // Resource update went through, but it will be applied once the device comes online
-        showWarningToast({
+        Notification.warning({
             title: _(t.resourceUpdate),
             message: _(t.resourceWasUpdatedOffline),
         })
     } else if (errorMessage?.includes?.(errorCodes.COMMAND_EXPIRED)) {
         // Command timeout
-        showWarningToast({
+        Notification.warning({
             title: _(t.resourceUpdate),
             message: `${_(t.update)} ${_(t.commandOnResourceExpired, {
                 deviceId,
@@ -78,12 +79,12 @@ export const handleUpdateResourceErrors = (
         })
     } else if (errorMessage?.includes?.(errorCodes.INVALID_ARGUMENT)) {
         // JSON validation error
-        showErrorToast({
+        Notification.error({
             title: _(t.resourceUpdateError),
             message: _(t.invalidArgument),
         })
     } else {
-        showErrorToast({
+        Notification.error({
             title: _(t.resourceUpdateError),
             message: errorMessage,
         })
@@ -100,13 +101,13 @@ export const handleCreateResourceErrors = (
 
     if (errorMessage?.includes?.(errorCodes.DEADLINE_EXCEEDED)) {
         // Resource create went through, but it will be applied once the device comes online
-        showWarningToast({
+        Notification.warning({
             title: _(t.resourceCreate),
             message: _(t.resourceWasCreatedOffline),
         })
     } else if (errorMessage?.includes?.(errorCodes.COMMAND_EXPIRED)) {
         // Command timeout
-        showWarningToast({
+        Notification.warning({
             title: _(t.resourceCreate),
             message: `${_(t.create)} ${_(t.commandOnResourceExpired, {
                 deviceId,
@@ -115,12 +116,12 @@ export const handleCreateResourceErrors = (
         })
     } else if (errorMessage?.includes?.(errorCodes.INVALID_ARGUMENT)) {
         // JSON validation error
-        showErrorToast({
+        Notification.error({
             title: _(t.resourceCreateError),
             message: _(t.invalidArgument),
         })
     } else {
-        showErrorToast({
+        Notification.error({
             title: _(t.resourceCreateError),
             message: errorMessage,
         })
@@ -133,12 +134,12 @@ export const handleShadowSynchronizationErrors = (error: any, _: any) => {
 
     if (errorMessage?.includes?.(errorCodes.DEADLINE_EXCEEDED)) {
         // Shadow synchronization set went through, but it will be applied once the device comes online
-        showWarningToast({
+        Notification.warning({
             title: _(t.shadowSynchronization),
             message: _(t.shadowSynchronizationWasSetOffline),
         })
     } else {
-        showErrorToast({
+        Notification.error({
             title: _(t.shadowSynchronizationError),
             message: errorMessage,
         })
@@ -147,7 +148,7 @@ export const handleShadowSynchronizationErrors = (error: any, _: any) => {
 
 // Handle the errors occurred during resource fetch
 export const handleFetchResourceErrors = (error: any, _: any) =>
-    showErrorToast({
+    Notification.error({
         title: _(t.resourceRetrieveError),
         message: getApiErrorMessage(error),
     })
@@ -162,13 +163,13 @@ export const handleDeleteResourceErrors = (
 
     if (errorMessage?.includes?.(errorCodes.DEADLINE_EXCEEDED)) {
         // Resource update went through, but it will be applied once the device comes online
-        showWarningToast({
+        Notification.warning({
             title: _(t.resourceDelete),
             message: _(t.resourceWasDeletedOffline),
         })
     } else if (errorMessage?.includes?.(errorCodes.COMMAND_EXPIRED)) {
         // Command timeout
-        showWarningToast({
+        Notification.warning({
             title: _(t.resourceDelete),
             message: `${_(t.delete)} ${_(t.commandOnResourceExpired, {
                 deviceId,
@@ -176,7 +177,7 @@ export const handleDeleteResourceErrors = (
             })}`,
         })
     } else {
-        showErrorToast({
+        Notification.error({
             title: _(t.resourceDeleteError),
             message: errorMessage,
         })
@@ -187,7 +188,7 @@ export const handleDeleteResourceErrors = (
 export const handleDeleteDevicesErrors = (error: any, _: any, singular = false) => {
     const errorMessage = getApiErrorMessage(error)
 
-    showErrorToast({
+    Notification.error({
         title: !singular ? _(t.devicesDeletionError) : _(t.deviceDeletionError),
         message: errorMessage,
     })
@@ -197,7 +198,7 @@ export const handleDeleteDevicesErrors = (error: any, _: any, singular = false) 
 export const handleOwnDevicesErrors = (error: any, _: any) => {
     const errorMessage = getApiErrorMessage(error)
 
-    showErrorToast({
+    Notification.error({
         title: _(t.deviceOwnError),
         message: errorMessage,
     })

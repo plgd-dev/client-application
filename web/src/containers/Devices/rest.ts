@@ -122,7 +122,7 @@ export const ownDeviceApi = (deviceId: string) =>
     }).then((result) => {
         if (result?.data?.identityCertificateChallenge) {
             const state = result.data.identityCertificateChallenge.state
-            //owning with csr
+            // owning with csr
             // @ts-ignore
             const { certificateAuthority } = security.getWebOAuthConfig()
             signIdentityCsr(

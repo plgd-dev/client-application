@@ -1,10 +1,10 @@
-export type OnboardingDataType = {
-    authorizationCode?: string
-    certificateAuthorities?: string
-    coapGatewayAddress?: string
-    hubId?: string
-    authorizationProviderName?: string
+export type CopyDataType = {
+    attribute: string
+    attributeKey: keyof typeof onboardingDataDefault
+    value: string
 }
+
+export type OnboardingDataType = typeof onboardingDataDefault
 
 export type Props = {
     deviceId: string
@@ -15,11 +15,11 @@ export type Props = {
 }
 
 export const onboardingDataDefault = {
+    hubId: '',
+    deviceEndpoint: '',
     authorizationCode: '',
     certificateAuthorities: '',
-    coapGatewayAddress: '',
-    hubId: '',
-    authorizationProviderName: '',
+    authorizationProvider: '',
 }
 
 export const defaultProps = {

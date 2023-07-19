@@ -1,4 +1,8 @@
-import { DevicesResourcesModalType } from '../../Resources/DevicesResourcesModal/DevicesResourcesModal.types'
+import { DevicesResourcesModalType } from '@shared-ui/components/Organisms/DevicesResourcesModal/DevicesResourcesModal.types'
+
+export type Props = {
+    defaultActiveTab?: number
+}
 
 export type DevicesDetailsResourceModalData = {
     data: {

@@ -1,12 +1,14 @@
-import { FC, useMemo, useState } from 'react'
-import Modal from '@shared-ui/components/new/Modal'
-import { messages as t } from '@/containers/Devices/Devices.i18n'
-import Button from '@shared-ui/components/new/Button'
+import React, { FC, useMemo, useState } from 'react'
 import { useIntl } from 'react-intl'
 import isFunction from 'lodash/isFunction'
-import classNames from 'classnames'
-import TextField from '@shared-ui/components/new/TextField'
-import Label from '@shared-ui/components/new/Label'
+
+import Modal from '@shared-ui/components/Atomic/Modal'
+import Button from '@shared-ui/components/Atomic/Button'
+import FormGroup from '@shared-ui/components/Atomic/FormGroup'
+import FormLabel from '@shared-ui/components/Atomic/FormLabel'
+import FormInput from '@shared-ui/components/Atomic/FormInput'
+
+import { messages as t } from '@/containers/Devices/Devices.i18n'
 import { isValidEndpoint } from '@/containers/Devices/utils'
 import { knownResourceTypes } from '@/containers/Devices/constants'
 import { Props, defaultProps } from './DevicesDPSModal.types'
@@ -35,17 +37,14 @@ const DevicesDPSModal: FC<Props> = (props) => {
         setInputValue(e.target.value)
     }
 
-    const renderBody = () => {
-        return (
-            <Label title={_(t.deviceProvisioningServiceEndpoint)} onClick={(e) => e.preventDefault()}>
-                <TextField
-                    className={classNames({ error: hasError })}
-                    value={inputValue}
-                    onChange={handleInputChange}
-                />
-            </Label>
-        )
-    }
+    const renderBody = () => (
+        <div>
+            <FormGroup id='device-name'>
+                <FormLabel text={_(t.deviceProvisioningServiceEndpoint)} />
+                <FormInput onChange={handleInputChange} value={inputValue} />
+            </FormGroup>
+        </div>
+    )
 
     const handleSubmit = () => {
         isFunction(onClose) && onClose && onClose()
@@ -67,23 +66,33 @@ const DevicesDPSModal: FC<Props> = (props) => {
 
     const renderFooter = () => (
         <div className='w-100 d-flex justify-content-end'>
-            <Button variant='secondary' onClick={handleClose}>
-                {_(t.cancel)}
-            </Button>
+            <div />
+            <div className='modal-buttons'>
+                <Button className='modal-button' onClick={handleClose} variant='secondary'>
+                    {_(t.cancel)}
+                </Button>
 
-            <Button variant='primary' onClick={handleSubmit} disabled={hasError || inputValue === ''}>
-                {_(t.save)}
-            </Button>
+                <Button
+                    className='modal-button'
+                    disabled={hasError || inputValue === ''}
+                    onClick={handleSubmit}
+                    variant='primary'
+                >
+                    {_(t.save)}
+                </Button>
+            </div>
         </div>
     )
 
     return (
         <Modal
-            show={show}
+            appRoot={document.getElementById('root')}
             onClose={onClose}
-            title={_(t.provisionNewDeviceTitle)}
+            portalTarget={document.getElementById('modal-root')}
             renderBody={renderBody}
             renderFooter={renderFooter}
+            show={show}
+            title={_(t.provisionNewDeviceTitle)}
         />
     )
 }

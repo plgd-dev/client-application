@@ -7,7 +7,8 @@ export const messages = defineMessages({
     },
     description: {
         id: 'app.description',
-        defaultMessage: 'Description text here',
+        defaultMessage:
+            'Application Initialization Restricted. Please ensure the current user logs out before proceeding. Only after the different user has logged out, will you be able to utilize the application.',
     },
     logout: {
         id: 'app.logout',

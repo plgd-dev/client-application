@@ -1,43 +1,50 @@
+import { FC, memo, useMemo, useState } from 'react'
 import { useIntl } from 'react-intl'
-import ActionButton from '@shared-ui/components/new/ActionButton'
+import isFunction from 'lodash/isFunction'
+
+import TableActionButton from '@shared-ui/components/Organisms/TableActionButton'
+import { ItemType } from '@shared-ui/components/Organisms/TableActionButton/TableActionButton.types'
+import { IconClose, IconNetwork, IconPlus, IconShowPassword } from '@shared-ui/components/Atomic/Icon'
+
 import { messages as t } from '../../Devices.i18n'
-import { FC, useState } from 'react'
 import { getDevicesResourcesAllApi } from '@/containers/Devices/rest'
 import { canSetDPSEndpoint } from '@/containers/Devices/utils'
-import isFunction from 'lodash/isFunction'
 import { Props } from './DevicesListActionButton.types'
-import { ActionButtonItemType } from '@shared-ui/components/new/ActionButton/ActionButton.types'
+import { devicesOwnerships } from '@/containers/Devices/constants'
 
-const DevicesListActionButton: FC<Props> = ({
-    deviceId,
-    onView,
-    isOwned,
-    onOwnChange,
-    showDpsModal,
-    resourcesLoadedCallback,
-}) => {
+const { OWNED, UNSUPPORTED } = devicesOwnerships
+
+const DevicesListActionButton: FC<Props> = memo((props) => {
+    const { deviceId, onView, ownershipStatus, onOwnChange, showDpsModal, resourcesLoadedCallback } = props
+
+    const isOwned = useMemo(() => ownershipStatus === OWNED, [ownershipStatus])
+    const isUnsupported = useMemo(() => ownershipStatus === UNSUPPORTED, [ownershipStatus])
+
     const getDefaultItems = () => {
-        const defaultItems: ActionButtonItemType[] = [
+        const defaultItems: ItemType[] = [
             {
                 id: 'detail',
                 onClick: () => onView(deviceId),
                 label: _(t.details),
-                icon: 'fa-eye',
+                icon: <IconShowPassword />,
             },
-            {
+        ]
+
+        if (!isUnsupported) {
+            defaultItems.push({
                 id: 'own',
                 onClick: () => onOwnChange(),
                 label: isOwned ? _(t.disOwnDevice) : _(t.ownDevice),
-                icon: isOwned ? 'fa-cloud-download-alt' : 'fa-cloud-upload-alt',
-            },
-        ]
+                icon: isOwned ? <IconClose /> : <IconPlus />,
+            })
+        }
 
         if (isOwned) {
             defaultItems.push({
                 id: 'dps',
                 onClick: () => showDpsModal(deviceId),
                 label: _(t.setDpsEndpoint),
-                icon: 'fa-bacon',
+                icon: <IconNetwork />,
                 loading: true,
             })
         }
@@ -57,7 +64,7 @@ const DevicesListActionButton: FC<Props> = ({
             const hasDPS = canSetDPSEndpoint(data.resources)
 
             setItems(() => {
-                const newItems: any = []
+                const newItems: ItemType[] = []
                 items.forEach((item) => {
                     if (item.id === 'dps') {
                         if (hasDPS) {
@@ -76,18 +83,8 @@ const DevicesListActionButton: FC<Props> = ({
         }
     }
 
-    return (
-        <ActionButton
-            onToggle={handleToggle as any}
-            menuProps={{
-                align: 'end',
-            }}
-            items={items}
-        >
-            <i className='fas fa-ellipsis-h' />
-        </ActionButton>
-    )
-}
+    return <TableActionButton items={items} onToggle={handleToggle} />
+})
 
 DevicesListActionButton.displayName = 'DevicesListActionButton'
 

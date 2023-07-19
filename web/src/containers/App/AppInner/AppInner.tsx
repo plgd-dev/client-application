@@ -1,33 +1,22 @@
-import { useIntl } from 'react-intl'
-import { DEVICE_AUTH_MODE } from '@/constants'
-import PreSharedKeySetup from '@/containers/App/PreSharedKeySetup/PreSharedKeySetup'
-import Container from 'react-bootstrap/Container'
-import classNames from 'classnames'
-import StatusBar from '@shared-ui/components/new/StatusBar'
-import LeftPanel from '@shared-ui/components/new/LeftPanel'
-import Menu from '@shared-ui/components/new/Menu'
-import { Routes } from '@/routes'
-import Footer from '@shared-ui/components/new/Footer'
-import AppContext from '@/containers/App/AppContext'
-import { Router } from 'react-router-dom'
-import { history } from '@/store'
+import { useRef, useState, useMemo, useCallback } from 'react'
 import { Helmet } from 'react-helmet'
-import appConfig from '@/config'
-import { BrowserNotificationsContainer, Button, ToastContainer } from '@shared-ui/components/new'
-import { useLocalStorage, WellKnownConfigType } from '@shared-ui/common/hooks'
-import AppAuthProvider from '@/containers/App/AppAuthProvider/AppAuthProvider'
-import { ReactElement, useRef, useState } from 'react'
-import ConditionalWrapper from '@shared-ui/components/new/ConditionalWrapper'
-import { messages as t } from '../App.i18n'
-import { security } from '@shared-ui/common/services'
-import { Props } from './AppInner.types'
-import { reset } from '@/containers/App/AppRest'
-import UserWidget from '@shared-ui/components/new/UserWidget'
-import { AppAuthProviderRefType } from '@/containers/App/AppAuthProvider/AppAuthProvider.types'
-import InitializedByAnother from '@/containers/App/AppInner/InitializedByAnother/InitializedByAnother'
+import { BrowserRouter } from 'react-router-dom'
 import { User } from 'oidc-react'
 import jwtDecode from 'jwt-decode'
 import get from 'lodash/get'
+import { ThemeProvider } from '@emotion/react'
+
+import { ToastContainer } from '@shared-ui/components/Atomic/Notification'
+import { BrowserNotificationsContainer } from '@shared-ui/components/Atomic/Toast'
+import { useLocalStorage, WellKnownConfigType } from '@shared-ui/common/hooks'
+import { security } from '@shared-ui/common/services'
+import light from '@shared-ui/components/Atomic/_theme/light'
+
+import AppContext from '@/containers/App/AppContext'
+import appConfig from '@/config'
+import { Props } from './AppInner.types'
+import AppLayout from '@/containers/App/AppLayout/AppLayout'
+import { AppLayoutRefType } from '@/containers/App/AppLayout/AppLayout.types'
 
 const getBuildInformation = (wellKnownConfig: WellKnownConfigType) => ({
     buildDate: wellKnownConfig?.buildDate || '',
@@ -40,10 +29,8 @@ const getBuildInformation = (wellKnownConfig: WellKnownConfigType) => ({
 const AppInner = (props: Props) => {
     const { wellKnownConfig, configError, reFetchConfig, setInitialize } = props
     const buildInformation = getBuildInformation(wellKnownConfig)
-    const [authError, setAuthError] = useState<string | undefined>(undefined)
-    const [collapsed, setCollapsed] = useLocalStorage('leftPanelCollapsed', true)
-    const { formatMessage: _ } = useIntl()
-    const authProviderRef = useRef<AppAuthProviderRefType | null>(null)
+
+    const appLayoutRef = useRef<AppLayoutRefType | null>(null)
 
     if (wellKnownConfig && wellKnownConfig.remoteProvisioning) {
         security.setWebOAuthConfig({
@@ -56,13 +43,14 @@ const AppInner = (props: Props) => {
 
     const [initializedByAnother, setInitializedByAnother] = useState(false)
     const [suspectedUnauthorized, setSuspectedUnauthorized] = useState(false)
+    const [collapsed, setCollapsed] = useLocalStorage('leftPanelCollapsed', true)
 
-    const unauthorizedCallback = () => {
+    const unauthorizedCallback = useCallback(() => {
         setSuspectedUnauthorized(true)
 
         reFetchConfig().then((newWellKnownConfig: WellKnownConfigType) => {
-            if (authProviderRef) {
-                const userData: User = authProviderRef?.current?.getUserData()
+            if (appLayoutRef.current) {
+                const userData: User = appLayoutRef.current?.getAuthProviderRef().getUserData()
                 const parsedData = jwtDecode(userData.access_token)
                 const ownerId = get(parsedData, newWellKnownConfig.remoteProvisioning?.jwtOwnerClaim as string, '')
 
@@ -73,129 +61,40 @@ const AppInner = (props: Props) => {
 
             setSuspectedUnauthorized(false)
         })
-    }
+    }, [reFetchConfig])
 
-    const AppLayout = () => {
-        const handleLogout = () => {
-            if (authProviderRef) {
-                const signOut = authProviderRef?.current?.getSignOutMethod
-
-                if (signOut) {
-                    if (!initializedByAnother) {
-                        reset().then((_r) => {
-                            signOut().then((_r: void) => {
-                                setInitialize(false)
-                            })
-                        })
-                    } else {
-                        // s remoteProvisioning vsetko nad
-                        // bez remoteProvisioning
-                        signOut().then()
-                    }
-                } else {
-                    // preshared mode
-                    reset().then(() => {
-                        setInitialize(false)
-                    })
-                }
-            }
-        }
-
-        if (
-            !wellKnownConfig?.isInitialized &&
-            wellKnownConfig?.deviceAuthenticationMode === DEVICE_AUTH_MODE.PRE_SHARED_KEY
-        ) {
-            return <PreSharedKeySetup setInitialize={setInitialize} />
-        }
-
-        return (
-            <ConditionalWrapper
-                condition={!props.mockApp && wellKnownConfig?.deviceAuthenticationMode === DEVICE_AUTH_MODE.X509}
-                wrapper={(child: ReactElement) => (
-                    <AppAuthProvider
-                        wellKnownConfig={wellKnownConfig}
-                        setAuthError={setAuthError}
-                        setInitialize={setInitialize}
-                        ref={authProviderRef}
-                    >
-                        {child}
-                    </AppAuthProvider>
-                )}
-            >
-                <Container fluid id='app' className={classNames({ collapsed })}>
-                    <StatusBar>
-                        {!props.mockApp &&
-                            wellKnownConfig &&
-                            wellKnownConfig.remoteProvisioning &&
-                            wellKnownConfig?.deviceAuthenticationMode === DEVICE_AUTH_MODE.X509 && (
-                                <UserWidget logout={handleLogout} />
-                            )}
-                        {wellKnownConfig &&
-                            wellKnownConfig?.deviceAuthenticationMode === DEVICE_AUTH_MODE.PRE_SHARED_KEY && (
-                                <Button className='m-l-15' onClick={handleLogout}>
-                                    Logout
-                                </Button>
-                            )}
-                    </StatusBar>
-                    <LeftPanel>
-                        <Menu
-                            menuItems={[
-                                {
-                                    to: '/',
-                                    icon: 'fa-list',
-                                    nameKey: 'devices',
-                                    className: 'devices',
-                                },
-                            ]}
-                            collapsed={!!collapsed}
-                            toggleCollapsed={() => setCollapsed(!collapsed)}
-                            initializedByAnother={initializedByAnother}
-                        />
-                    </LeftPanel>
-                    <div id='content'>
-                        <InitializedByAnother show={initializedByAnother} logout={handleLogout} />
-                        {!initializedByAnother && !suspectedUnauthorized && <Routes />}
-                        <Footer
-                            links={[
-                                {
-                                    to: 'https://github.com/plgd-dev/client-application/blob/main/pb/service.swagger.json',
-                                    i18key: 'API',
-                                },
-                                {
-                                    to: 'https://docs.plgd.dev/',
-                                    i18key: 'docs',
-                                },
-                                {
-                                    to: 'https://discord.gg/Pcusx938kg',
-                                    i18key: 'contribute',
-                                },
-                            ]}
-                        />
-                    </div>
-                </Container>
-            </ConditionalWrapper>
-        )
-    }
+    const contextValue = useMemo(
+        () => ({
+            unauthorizedCallback,
+            collapsed,
+            setCollapsed,
+            buildInformation: buildInformation || undefined,
+        }),
+        [buildInformation, collapsed, setCollapsed, unauthorizedCallback]
+    )
 
     // Render an error box with a config error
-    if (configError || authError) {
-        return <div className='client-error-message'>{`${_(t.authError)}: ${configError?.message || authError}`}</div>
+    if (configError) {
+        return <div className='client-error-message'>{configError?.message}</div>
     }
 
     return (
-        <AppContext.Provider
-            value={{
-                collapsed,
-                unauthorizedCallback,
-                buildInformation: buildInformation || undefined,
-            }}
-        >
-            <Router history={history}>
-                <Helmet defaultTitle={appConfig.appName} titleTemplate={`%s | ${appConfig.appName}`} />
-                <AppLayout />
-                <ToastContainer />
-                <BrowserNotificationsContainer />
-            </Router>
+        <AppContext.Provider value={contextValue}>
+            <ThemeProvider theme={light}>
+                <BrowserRouter>
+                    <Helmet defaultTitle={appConfig.appName} titleTemplate={`%s | ${appConfig.appName}`} />
+                    <AppLayout
+                        initializedByAnother={initializedByAnother}
+                        mockApp={props.mockApp}
+                        ref={appLayoutRef}
+                        setInitialize={setInitialize}
+                        suspectedUnauthorized={suspectedUnauthorized}
+                        wellKnownConfig={wellKnownConfig}
+                    />
+                    <ToastContainer />
+                    <BrowserNotificationsContainer />
+                </BrowserRouter>
+            </ThemeProvider>
         </AppContext.Provider>
     )
 }

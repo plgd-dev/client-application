@@ -12,6 +12,11 @@ export type Props = {
     }
     deviceId: string
     deviceStatus: DevicesResourcesDeviceStatusType
+    isActiveTab: boolean
     isOwned: boolean
     loading: boolean
+    pageSize: {
+        height?: number
+        width?: number
+    }
 } & DeviceResourcesCrudType

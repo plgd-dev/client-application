@@ -1,6 +1,9 @@
-import { store, history } from '@/store'
+import { redirect } from 'react-router-dom'
+
 import { Emitter } from '@shared-ui/common/services/emitter'
-import { showInfoToast } from '@shared-ui/components/new/Toast/Toast'
+import { showInfoToast } from '@shared-ui/components/Atomic/Toast/Toast'
+
+import { store } from '@/store'
 import {
     devicesStatuses,
     resourceEventTypes,
@@ -74,7 +77,7 @@ export const deviceStatusListener = async ({ deviceMetadataUpdated, deviceRegist
                                 },
                                 {
                                     onClick: () => {
-                                        history.push(`/devices/${deviceId}`)
+                                        redirect(`/devices/${deviceId}`)
                                     },
                                     isNotification: true,
                                 }
@@ -128,7 +131,7 @@ export const deviceResourceRegistrationListener =
                     const toastTitle = getToastText(isNew, t.newResources, t.resourcesDeleted)
                     const toastMessage = getToastText(isNew, t.resourcesAdded, t.resourcesWereDeleted)
                     const onClickAction = () => {
-                        history.push(`/devices/${deviceId}`)
+                        redirect(`/devices/${deviceId}`)
                     }
                     // Show toast
                     showInfoToast(
@@ -151,10 +154,10 @@ export const deviceResourceRegistrationListener =
                         const onClickAction = () => {
                             if (isNew) {
                                 // redirect to resource and open resource modal
-                                history.push(`/devices/${deviceId}${href}`)
+                                redirect(`/devices/${deviceId}${href}`)
                             } else {
                                 // redirect to device
-                                history.push(`/devices/${deviceId}`)
+                                redirect(`/devices/${deviceId}`)
                             }
                         }
                         // Show toast
@@ -199,7 +202,7 @@ export const deviceResourceUpdateListener =
                     },
                     {
                         onClick: () => {
-                            history.push(`/devices/${deviceId}${href}`)
+                            redirect(`/devices/${deviceId}${href}`)
                         },
                         isNotification: true,
                     }

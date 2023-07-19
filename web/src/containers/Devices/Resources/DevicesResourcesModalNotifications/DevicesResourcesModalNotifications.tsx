@@ -3,7 +3,8 @@ import { useIntl } from 'react-intl'
 import { useSelector } from 'react-redux'
 
 import { WebSocketEventClient, eventFilters } from '@shared-ui/common/services'
-import Switch from '@shared-ui/components/new/Switch'
+import Switch from '@shared-ui/components/Atomic/Switch'
+
 import { getResourceUpdateNotificationKey } from '../../utils'
 import { isNotificationActive } from '../../slice'
 import { deviceResourceUpdateListener } from '../../websockets'
@@ -47,10 +48,10 @@ const DevicesResourcesModalNotifications: FC<Props> = ({ deviceId, deviceName, h
 
     return (
         <Switch
+            checked={notificationsEnabled}
             disabled={isUnregistered}
             id='resource-update-notifications'
             label={_(t.notifications)}
-            checked={notificationsEnabled}
             onChange={toggleNotifications}
         />
     )

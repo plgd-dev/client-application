@@ -1,9 +1,13 @@
 import { FC } from 'react'
-import { Props } from './InitializedByAnother.types'
-import './InitializedByAnother.scss'
 import { useIntl } from 'react-intl'
+
+import Button from '@shared-ui/components/Atomic/Button'
+import { IconInfo } from '@shared-ui/components/Atomic/Icon/components'
+import { convertSize } from '@shared-ui/components/Atomic/Icon'
+
+import { Props } from './InitializedByAnother.types'
 import { messages as t } from './InitializedByAnother.i18n'
-import Button from '@shared-ui/components/new/Button'
+import * as styles from './InitializedByAnother.styles'
 
 const InitializedByAnother: FC<Props> = (props) => {
     const { show, logout } = props
@@ -14,14 +18,12 @@ const InitializedByAnother: FC<Props> = (props) => {
     }
 
     return (
-        <div className='initialized-by-another'>
-            <div className='info-box'>
-                <div className='icon'>
-                    <i className='fas fa-info-circle'></i>
-                </div>
-                <h1>{_(t.headline)}</h1>
-                <div className='description'>{_(t.description)}</div>
-                <div className='button-wrapper'>
+        <div css={styles.initializedByAnother}>
+            <div css={styles.infoBox}>
+                <IconInfo {...convertSize(50)} />
+                <h1 css={styles.headline}>{_(t.headline)}</h1>
+                <div css={styles.description}>{_(t.description)}</div>
+                <div css={styles.buttonWrapper}>
                     <Button onClick={logout}>{_(t.logout)}</Button>
                 </div>
             </div>

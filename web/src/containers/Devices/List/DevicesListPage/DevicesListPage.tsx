@@ -1,12 +1,22 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { useIntl } from 'react-intl'
-import { showSuccessToast } from '@shared-ui/components/new/Toast/Toast'
-import ConfirmModal from '@shared-ui/components/new/ConfirmModal'
-import Layout from '@shared-ui/components/new/Layout'
+import { toast } from 'react-toastify'
+import { useDispatch, useSelector } from 'react-redux'
+import { Link, useNavigate } from 'react-router-dom'
+
+import Notification from '@shared-ui/components/Atomic/Notification/Toast'
+import ConfirmModal from '@shared-ui/components/Atomic/ConfirmModal'
+import PageLayout from '@shared-ui/components/Atomic/PageLayout'
 import { useIsMounted } from '@shared-ui/common/hooks'
-import { messages as menuT } from '@shared-ui/components/new/Menu/Menu.i18n'
+import { messages as menuT } from '@shared-ui/components/Atomic/Menu/Menu.i18n'
+import { getApiErrorMessage } from '@shared-ui/common/utils'
+import Footer from '@shared-ui/components/Layout/Footer'
+import DevicesList from '@shared-ui/components/Organisms/DevicesList/DevicesList'
+import { DevicesResourcesModalParamsType } from '@shared-ui/components/Organisms/DevicesResourcesModal/DevicesResourcesModal.types'
+import Badge from '@shared-ui/components/Atomic/Badge'
+import Tag from '@shared-ui/components/Atomic/Tag'
+
 import { useDevicesList } from '../../hooks'
-import DevicesList from '../DevicesList'
 import DevicesListHeader from '../DevicesListHeader'
 import { deleteDevicesApi, disownDeviceApi, ownDeviceApi } from '../../rest'
 import {
@@ -17,15 +27,16 @@ import {
     updateResourceMethod,
 } from '../../utils'
 import { messages as t } from '../../Devices.i18n'
-import { toast } from 'react-toastify'
-import { getApiErrorMessage } from '@shared-ui/common/utils'
 import { getDevices, updateDevices, flushDevices, ownDevice, disOwnDevice } from '@/containers/Devices/slice'
-import { useDispatch, useSelector } from 'react-redux'
 import DevicesTimeoutModal from '../DevicesTimeoutModal'
 import DevicesDPSModal from '../../DevicesDPSModal'
 import { DeviceDataType, ResourcesType } from '@/containers/Devices/Devices.types'
 import { DpsDataType } from '@/containers/Devices/List/DevicesListPage/DevicesListPage.types'
-import { DevicesResourcesModalParamsType } from '@/containers/Devices/Resources/DevicesResourcesModal/DevicesResourcesModal.types'
+import { DEVICE_TYPE_OIC_WK_D, devicesOwnerships, NO_DEVICE_NAME } from '@/containers/Devices/constants'
+import DevicesListActionButton from '@/containers/Devices/List/DevicesListActionButton'
+import AppContext from '@/containers/App/AppContext'
+
+const { OWNED, UNSUPPORTED } = devicesOwnerships
 
 const DevicesListPage = () => {
     const { formatMessage: _ } = useIntl()
@@ -33,16 +44,20 @@ const DevicesListPage = () => {
     const [deleteModalOpen, setDeleteModalOpen] = useState(false)
     const [timeoutModalOpen, setTimeoutModalOpen] = useState(false)
     const [selectedDevices, setSelectedDevices] = useState([])
+    const [isAllSelected, setIsAllSelected] = useState(false)
     const [deleting, setDeleting] = useState(false)
     const [owning, setOwning] = useState(false)
     const [showDpsModal, setShowDpsModal] = useState(false)
+    const [singleDevice, setSingleDevice] = useState<null | string>(null)
     const [dpsData, setDpsData] = useState<DpsDataType>({
         deviceId: '',
         resources: undefined,
     })
     const isMounted = useIsMounted()
     const dispatch = useDispatch()
+    const navigate = useNavigate()
     const dataToDisplay: DeviceDataType = useSelector(getDevices)
+    const { collapsed } = useContext(AppContext)
 
     useEffect(() => {
         deviceError && toast.error(getApiErrorMessage(deviceError))
@@ -53,17 +68,27 @@ const DevicesListPage = () => {
         data && dispatch(updateDevices(data))
     }, [data, dispatch])
 
-    const handleOpenDeleteModal = () => {
-        setDeleteModalOpen(true)
-    }
+    const handleOpenDeleteModal = useCallback(
+        (deviceId?: string) => {
+            if (typeof deviceId === 'string') {
+                setSingleDevice(deviceId)
+            } else if (singleDevice && !deviceId) {
+                setSingleDevice(null)
+            }
 
-    const handleCloseDeleteModal = () => {
+            setDeleteModalOpen(true)
+        },
+        [singleDevice]
+    )
+
+    const handleCloseDeleteModal = useCallback(() => {
         setDeleteModalOpen(false)
-    }
+    }, [])
 
-    const handleRefresh = () => {
+    const handleRefresh = useCallback(() => {
         refresh()
-    }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [])
 
     const deleteDevices = async () => {
         try {
@@ -72,7 +97,7 @@ const DevicesListPage = () => {
             await sleep(200)
 
             if (isMounted.current) {
-                showSuccessToast({
+                Notification.success({
                     title: _(t.devicesDeleted),
                     message: _(t.devicesDeletedMessage),
                 })
@@ -96,7 +121,7 @@ const DevicesListPage = () => {
             isOwned ? await disownDeviceApi(deviceId) : await ownDeviceApi(deviceId)
 
             if (isMounted.current) {
-                showSuccessToast({
+                Notification.success({
                     title: isOwned ? _(t.deviceDisOwned) : _(t.deviceOwned),
                     message: isOwned
                         ? _(t.deviceWasDisOwned, { name: deviceName })
@@ -130,7 +155,7 @@ const DevicesListPage = () => {
             { deviceId: dpsData.deviceId, href, currentInterface },
             resourceDataUpdate,
             () => {
-                showSuccessToast({
+                Notification.success({
                     title: _(t.resourceUpdateSuccess),
                     message: _(t.resourceWasUpdated),
                 })
@@ -143,70 +168,163 @@ const DevicesListPage = () => {
         )
     }
 
-    const loadingOrDeleting = loading || deleting || owning
+    const handleFlashDevices = () => {
+        // @ts-ignore
+        dispatch(flushDevices())
+    }
+
+    const loadingOrOwning = useMemo(() => loading || owning, [loading, owning])
+    const loadingOrDeletingOrOwning = useMemo(() => loadingOrOwning || deleting, [loadingOrOwning, deleting])
+
+    const handleOpenTimeoutModal = useCallback(() => {
+        setTimeoutModalOpen(true)
+    }, [])
+
+    const columns = useMemo(
+        () => [
+            {
+                Header: _(t.name),
+                accessor: 'data.content.n',
+                Cell: ({ value, row }: { value: any; row: any }) => {
+                    const deviceName = value || NO_DEVICE_NAME
+                    return (
+                        <Link data-test-id={deviceName} to={`/devices/${row.original?.id}`}>
+                            <span className='no-wrap-text'>{deviceName}</span>
+                        </Link>
+                    )
+                },
+                style: { width: '100%' },
+            },
+            {
+                Header: 'Types',
+                accessor: 'types',
+                style: { maxWidth: '350px', width: '100%' },
+                Cell: ({ value }: { value: any }) => {
+                    if (!value) {
+                        return null
+                    }
+                    return value
+                        .filter((i: string) => i !== DEVICE_TYPE_OIC_WK_D)
+                        .map((i: string) => <Tag key={i}>{i}</Tag>)
+                },
+            },
+            {
+                Header: 'ID',
+                accessor: 'id',
+                style: { maxWidth: '350px', width: '100%' },
+                Cell: ({ value }: { value: any }) => {
+                    return <span className='no-wrap-text'>{value}</span>
+                },
+            },
+            {
+                Header: _(t.ownershipStatus),
+                accessor: 'ownershipStatus',
+                style: { width: '250px' },
+                Cell: ({ value }: { value: any }) => {
+                    const isOwned = OWNED === value
+
+                    if (UNSUPPORTED === value) {
+                        return <Badge className='grey'>{_(t.unsupported)}</Badge>
+                    }
+
+                    return <Badge className={isOwned ? 'green' : 'red'}>{isOwned ? _(t.owned) : _(t.unowned)}</Badge>
+                },
+            },
+            {
+                Header: _(t.actions),
+                accessor: 'actions',
+                disableSortBy: true,
+                Cell: ({ row }: { row: any }) => {
+                    const {
+                        original: { id, ownershipStatus, data },
+                    } = row
+                    const isOwned = ownershipStatus === OWNED
+
+                    return (
+                        <DevicesListActionButton
+                            deviceId={id}
+                            onDelete={deleteDevices}
+                            onOwnChange={() => handleOwnDevice(isOwned, id, data.content.name)}
+                            onView={(deviceId) => navigate(`/devices/${deviceId}`)}
+                            ownershipStatus={ownershipStatus}
+                            resourcesLoadedCallback={(resources) => {
+                                setDpsData((prevData: DpsDataType) => ({
+                                    ...prevData,
+                                    resources,
+                                }))
+                            }}
+                            showDpsModal={(deviceId: string) => {
+                                setDpsData((prevData: DpsDataType) => ({ ...prevData, deviceId }))
+                                setShowDpsModal(true)
+                            }}
+                        />
+                    )
+                },
+                className: 'actions',
+            },
+        ],
+        [loading] // eslint-disable-line
+    )
 
     return (
-        <Layout
-            title={_(menuT.devices)}
+        <PageLayout
             breadcrumbs={[
                 {
                     label: _(menuT.devices),
                 },
             ]}
-            loading={loading || owning}
+            footer={<Footer footerExpanded={false} paginationComponent={<div id='paginationPortalTarget'></div>} />}
             header={
                 <DevicesListHeader
-                    loading={loading || owning}
+                    handleFlashDevices={handleFlashDevices}
+                    i18n={{
+                        flushCache: _(t.flushCache),
+                    }}
+                    loading={loadingOrOwning}
+                    openTimeoutModal={handleOpenTimeoutModal}
                     refresh={handleRefresh}
-                    openTimeoutModal={() => setTimeoutModalOpen(true)}
                 />
             }
+            loading={loading || owning}
+            title={_(menuT.devices)}
         >
             <DevicesList
+                collapsed={collapsed ?? false}
+                columns={columns}
                 data={dataToDisplay}
-                selectedDevices={selectedDevices}
-                setSelectedDevices={setSelectedDevices}
-                loading={loadingOrDeleting}
+                i18n={{
+                    delete: _(t.delete),
+                    search: _(t.search),
+                }}
+                isAllSelected={isAllSelected}
+                loading={loadingOrDeletingOrOwning}
                 onDeleteClick={handleOpenDeleteModal}
-                ownDevice={handleOwnDevice}
-                showDpsModal={(deviceId: string) => {
-                    setDpsData((prevData: DpsDataType) => ({ ...prevData, deviceId }))
-                    setShowDpsModal(true)
-                }}
-                resourcesLoadedCallback={(resources) => {
-                    setDpsData((prevData: DpsDataType) => ({
-                        ...prevData,
-                        resources,
-                    }))
-                }}
+                selectedDevices={selectedDevices}
+                setIsAllSelected={setIsAllSelected}
+                setSelectedDevices={setSelectedDevices}
             />
 
             <ConfirmModal
-                onConfirm={deleteDevices}
-                show={deleteModalOpen}
-                title={
-                    <>
-                        <i className='fas fa-trash-alt' />
-                        {_(t.flushDevices)}
-                    </>
-                }
                 body={_(t.flushDevicesMessage)}
                 confirmButtonText={_(t.flushCache)}
-                loading={loadingOrDeleting}
+                loading={loadingOrDeletingOrOwning}
                 onClose={handleCloseDeleteModal}
+                onConfirm={deleteDevices}
+                show={deleteModalOpen}
+                title={<>{_(t.flushDevices)}</>}
             >
                 {_(t.flushCache)}
             </ConfirmModal>
 
-            <DevicesTimeoutModal show={timeoutModalOpen} onClose={() => setTimeoutModalOpen(false)} />
+            <DevicesTimeoutModal onClose={() => setTimeoutModalOpen(false)} show={timeoutModalOpen} />
 
             <DevicesDPSModal
-                show={showDpsModal}
                 onClose={() => setShowDpsModal(false)}
-                updateResource={updateResource}
                 resources={dpsData.resources as ResourcesType[]}
+                show={showDpsModal}
+                updateResource={updateResource}
             />
-        </Layout>
+        </PageLayout>
     )
 }
 

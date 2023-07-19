@@ -1,16 +1,20 @@
 import React, { FC, useEffect, useRef, useState } from 'react'
 import { useIntl } from 'react-intl'
-import Button from '@shared-ui/components/new/Button'
-import Modal from '@shared-ui/components/new/Modal'
-import TextField from '@shared-ui/components/new/TextField'
-import Label from '@shared-ui/components/new/Label'
-import { showErrorToast, showSuccessToast } from '@shared-ui/components/new/Toast/Toast'
+import Button from '@shared-ui/components/Atomic/Button'
+import Modal from '@shared-ui/components/Atomic/Modal'
+import Notification from '@shared-ui/components/Atomic/Notification/Toast'
+import { convertSize, IconPlus } from '@shared-ui/components/Atomic/Icon'
+import FormGroup from '@shared-ui/components/Atomic/FormGroup'
+import FormLabel from '@shared-ui/components/Atomic/FormLabel'
+import FormInput from '@shared-ui/components/Atomic/FormInput'
+
 import { addDeviceByIp } from '../../rest'
 import { messages as t } from '../../Devices.i18n'
 import { useIsMounted } from '@shared-ui/common/hooks'
 import { addDevice } from '@/containers/Devices/slice'
 import { useDispatch } from 'react-redux'
 import { Props } from './FindNewDeviceByIp.types'
+import * as styles from '@/containers/Devices/Detail/IncompleteOnboardingDataModal/IncompleteOnboardingDataModal.styles'
 
 const FindNewDeviceByIp: FC<Props> = ({ disabled }) => {
     const [fetching, setFetching] = useState<boolean>(false)
@@ -42,16 +46,18 @@ const FindNewDeviceByIp: FC<Props> = ({ disabled }) => {
     }
 
     const renderBody = () => (
-        <Label title={_(t.deviceIp)} required={true} errorMessage={error ? _(t.invalidIp) : undefined}>
-            <TextField
-                value={deviceIp}
-                onChange={(e) => setDeviceIp(e.target.value.trim())}
-                placeholder={_(t.enterDeviceIp) as string}
+        <FormGroup error={error ? _(t.invalidIp) : undefined} id='form-group-device-ip'>
+            <FormLabel required={true} text={_(t.deviceIp)} />
+            <FormInput
                 disabled={fetching}
                 inputRef={baseInputRef}
+                inputWrapperStyle={styles.inputWrapper}
+                onChange={(e) => setDeviceIp(e.target.value.trim())}
                 onKeyPress={(e) => (e.charCode === 13 ? handleFetch() : undefined)}
+                placeholder={_(t.enterDeviceIp) as string}
+                value={deviceIp}
             />
-        </Label>
+        </FormGroup>
     )
 
     const handleFetch = async () => {
@@ -66,7 +72,7 @@ const FindNewDeviceByIp: FC<Props> = ({ disabled }) => {
 
                     dispatch(addDevice(deviceData))
 
-                    showSuccessToast({
+                    Notification.success({
                         title: _(t.deviceAddByIpSuccess),
                         message: deviceData.data.content.n,
                     })
@@ -76,7 +82,7 @@ const FindNewDeviceByIp: FC<Props> = ({ disabled }) => {
                 }
             })
         } catch (e: any) {
-            showErrorToast({
+            Notification.error({
                 title: _(t.deviceAddByIpError),
                 message: e.message,
             })
@@ -87,36 +93,45 @@ const FindNewDeviceByIp: FC<Props> = ({ disabled }) => {
 
     const renderFooter = () => {
         return (
-            <div className='w-100 d-flex justify-content-end align-items-center'>
-                <Button variant='secondary' onClick={onClose} disabled={fetching}>
-                    {_(t.cancel)}
-                </Button>
+            <div className='w-100 d-flex justify-content-between align-items-center'>
+                <div />
+                <div className='modal-buttons'>
+                    <Button className='modal-button' disabled={fetching} onClick={onClose} variant='secondary'>
+                        {_(t.cancel)}
+                    </Button>
 
-                <Button
-                    variant='primary'
-                    onClick={handleFetch}
-                    loading={fetching}
-                    disabled={fetching || error || deviceIp === ''}
-                >
-                    {_(t.addDevice)}
-                </Button>
+                    <Button
+                        className='modal-button'
+                        disabled={fetching || error || deviceIp === ''}
+                        loading={fetching}
+                        onClick={handleFetch}
+                        variant='primary'
+                    >
+                        {_(t.addDevice)}
+                    </Button>
+                </div>
             </div>
         )
     }
 
     return (
         <>
-            <Button onClick={() => setShow(true)} className='m-r-10' icon='fa-plus' disabled={disabled}>
+            <Button
+                className='m-r-10'
+                disabled={disabled}
+                icon={<IconPlus {...convertSize(20)} />}
+                onClick={() => setShow(true)}
+            >
                 {_(t.deviceByIp)}
             </Button>
 
             <Modal
-                show={show}
+                closeButton={!fetching}
                 onClose={onClose}
-                title={_(t.findDeviceByIp)}
                 renderBody={renderBody}
                 renderFooter={renderFooter}
-                closeButton={!fetching}
+                show={show}
+                title={_(t.findDeviceByIp)}
             />
         </>
     )

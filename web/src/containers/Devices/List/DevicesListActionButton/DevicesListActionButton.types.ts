@@ -1,6 +1,8 @@
+import { devicesOwnerships } from '@/containers/Devices/constants'
+
 export type Props = {
     deviceId: string
-    isOwned: boolean
+    ownershipStatus: keyof typeof devicesOwnerships
     onOwnChange: () => void
     onView: (deviceId: string) => void
     resourcesLoadedCallback: (data: any) => void

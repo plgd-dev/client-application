@@ -1,11 +1,16 @@
+import { FC, memo } from 'react'
 import { useIntl } from 'react-intl'
+
+import { IconEdit, IconRefresh, IconTrash } from '@shared-ui/components/Atomic/Icon'
+import SplitButton from '@shared-ui/components/Atomic/SplitButton'
+import Button from '@shared-ui/components/Atomic/Button'
+
 import FindNewDeviceByIp from '../FindNewDeviceByIp'
 import { messages as t } from '../../Devices.i18n'
-import SplitButton from '@shared-ui/components/new/SplitButton'
-import { FC } from 'react'
 import { Props } from './DevicesListHeader.types'
 
-const DevicesListHeader: FC<Props> = ({ loading, refresh, openTimeoutModal }) => {
+const DevicesListHeader: FC<Props> = memo((props) => {
+    const { loading, refresh, openTimeoutModal, handleFlashDevices, i18n } = props
     const { formatMessage: _ } = useIntl()
 
     return (
@@ -13,21 +18,24 @@ const DevicesListHeader: FC<Props> = ({ loading, refresh, openTimeoutModal }) =>
             <FindNewDeviceByIp disabled={loading} />
             <SplitButton
                 disabled={loading}
-                onClick={refresh}
-                icon='fa-sync'
+                icon={<IconRefresh />}
                 items={[
                     {
                         onClick: openTimeoutModal,
                         label: _(t.changeTimeout),
-                        icon: 'fa-pen',
+                        icon: <IconEdit />,
                     },
                 ]}
+                onClick={refresh}
             >
-                {`${_(t.discovery)}`}
+                {_(t.discovery)}
             </SplitButton>
+            <Button className='m-l-10' disabled={loading} icon={<IconTrash />} onClick={handleFlashDevices}>
+                {i18n.flushCache}
+            </Button>
         </div>
     )
-}
+})
 
 DevicesListHeader.displayName = 'DevicesListHeader'
 

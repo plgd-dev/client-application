@@ -1,5 +1,6 @@
 import { fetchApi, security } from '@shared-ui/common/services'
 import { SecurityConfig } from '@/containers/App/App.types'
+import { GITHUB_VERSION_URL } from '@/constants'
 
 const getConfig = () => security.getGeneralConfig() as SecurityConfig
 
@@ -56,3 +57,5 @@ export const initializedByPreShared = (subjectId: string, key: string) =>
             },
         },
     })
+
+export const getVersionNumberFromGithub = () => fetchApi(GITHUB_VERSION_URL, { useToken: false })
