@@ -63,14 +63,23 @@ const AppInner = (props: Props) => {
         })
     }, [reFetchConfig])
 
+    const inIframe = useCallback(() => {
+        try {
+            return window.self !== window.top
+        } catch (e) {
+            return true
+        }
+    }, [])
+
     const contextValue = useMemo(
         () => ({
             unauthorizedCallback,
             collapsed,
             setCollapsed,
+            iframeMode: inIframe(),
             buildInformation: buildInformation || undefined,
         }),
-        [buildInformation, collapsed, setCollapsed, unauthorizedCallback]
+        [buildInformation, collapsed, setCollapsed, unauthorizedCallback, inIframe]
     )
 
     // Render an error box with a config error
