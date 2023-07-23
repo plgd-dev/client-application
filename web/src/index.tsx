@@ -35,6 +35,8 @@ const BaseComponent = () => {
         })
     }
 
+    console.log('TEST')
+
     return (
         <Provider store={store}>
             <IntlProvider defaultLanguage={appConfig.defaultLanguage} languages={languages}>

@@ -149,6 +149,14 @@ const AppLayout = forwardRef<AppLayoutRefType, Props>((props, ref) => {
         return <div />
     })
 
+    const inIframe = () => {
+        try {
+            return window.self !== window.top
+        } catch (e) {
+            return true
+        }
+    }
+
     if (authError) {
         return <div className='client-error-message'>{`${_(t.authError)}: ${authError}`}</div>
     }
@@ -180,6 +188,7 @@ const AppLayout = forwardRef<AppLayoutRefType, Props>((props, ref) => {
                         userWidget={<UserWidgetComponent />}
                     />
                 }
+                isIframeMode={inIframe()}
                 leftPanel={
                     <LeftPanel
                         activeId={activeItem}
