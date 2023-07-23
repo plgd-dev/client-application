@@ -1,4 +1,4 @@
-import { FC, useCallback, useEffect, useMemo, useState } from 'react'
+import { FC, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import ReactDOM from 'react-dom'
 import { useIntl } from 'react-intl'
 import { useNavigate, useParams } from 'react-router-dom'
@@ -44,6 +44,7 @@ import FirstTimeOnboardingModal from '@/containers/Devices/Detail/FirstTimeOnboa
 import Tab1 from './Tabs/Tab1'
 import Tab2 from './Tabs/Tab2'
 import { Props } from './DevicesDetailsPage.types'
+import AppContext from '@/containers/App/AppContext'
 
 const DevicesDetailsPage: FC<Props> = (props) => {
     const { defaultActiveTab } = props
@@ -61,6 +62,8 @@ const DevicesDetailsPage: FC<Props> = (props) => {
     const [deviceNameLoading, setDeviceNameLoading] = useState(false)
     const [activeTabItem, setActiveTabItem] = useState(defaultActiveTab ?? 0)
     const [ownLoading, setOwnLoading] = useState(false)
+
+    const { iframeMode } = useContext(AppContext)
 
     const isMounted = useIsMounted()
     const { data, updateData, loading, error: deviceError } = useDeviceDetails(id)
@@ -187,6 +190,7 @@ const DevicesDetailsPage: FC<Props> = (props) => {
 
     const openOnboardingModal = useCallback(() => {
         toggleOnboardingModal(true)
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     const handleTabChange = useCallback((i: number) => {
@@ -208,6 +212,7 @@ const DevicesDetailsPage: FC<Props> = (props) => {
                 },
             },
         })
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
     if (deviceError) {
@@ -345,6 +350,7 @@ const DevicesDetailsPage: FC<Props> = (props) => {
             title={deviceName || ''}
         >
             {domReady &&
+                !iframeMode &&
                 ReactDOM.createPortal(
                     <Breadcrumbs items={[{ label: _(menuT.devices), link: '/' }, { label: deviceName }]} />,
                     document.querySelector('#breadcrumbsPortalTarget') as Element

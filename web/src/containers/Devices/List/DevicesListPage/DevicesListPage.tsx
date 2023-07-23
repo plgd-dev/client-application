@@ -57,7 +57,7 @@ const DevicesListPage = () => {
     const dispatch = useDispatch()
     const navigate = useNavigate()
     const dataToDisplay: DeviceDataType = useSelector(getDevices)
-    const { collapsed } = useContext(AppContext)
+    const { collapsed, iframeMode } = useContext(AppContext)
 
     useEffect(() => {
         deviceError && toast.error(getApiErrorMessage(deviceError))
@@ -296,6 +296,7 @@ const DevicesListPage = () => {
                     delete: _(t.delete),
                     search: _(t.search),
                 }}
+                iframeMode={iframeMode}
                 isAllSelected={isAllSelected}
                 loading={loadingOrDeletingOrOwning}
                 onDeleteClick={handleOpenDeleteModal}
