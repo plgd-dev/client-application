@@ -13,6 +13,7 @@ import {
 } from 'react'
 import { useIntl } from 'react-intl'
 import { useNavigate, useLocation } from 'react-router-dom'
+import { useDispatch, useSelector } from 'react-redux'
 
 import ConditionalWrapper from '@shared-ui/components/Atomic/ConditionalWrapper'
 import Layout from '@shared-ui/components/Layout'
@@ -34,7 +35,6 @@ import { AppAuthProviderRefType } from '@/containers/App/AppAuthProvider/AppAuth
 import { messages as t } from '../App.i18n'
 import { AppLayoutRefType, Props } from './AppLayout.types'
 import AppContext from '@/containers/App/AppContext'
-import { useDispatch, useSelector } from 'react-redux'
 import { CombinedStoreType } from '@/store/store'
 import { setVersion } from '@/containers/App/slice'
 
@@ -151,31 +151,6 @@ const AppLayout = forwardRef<AppLayoutRefType, Props>((props, ref) => {
 
     if (authError) {
         return <div className='client-error-message'>{`${_(t.authError)}: ${authError}`}</div>
-    }
-
-    if (iframeMode) {
-        // send message that client-app is ready
-        // @ts-ignore
-        window.top.postMessage(
-            {
-                key: 'PLGD_EVENT_MESSAGE',
-                clientReady: true,
-            },
-            '*'
-        )
-
-        // listen on message
-        window.addEventListener('message', function (event) {
-            if (
-                event.data.hasOwnProperty('key') &&
-                event.data.key === 'PLGD_EVENT_MESSAGE' &&
-                event.data.hasOwnProperty('PLGD_HUB_REMOTE_PROVISIONING_DATA')
-            ) {
-                console.log('DATA FROM HUB:')
-                console.log(event.data.PLGD_HUB_REMOTE_PROVISIONING_DATA)
-                console.log(wellKnownConfig)
-            }
-        })
     }
 
     return (
