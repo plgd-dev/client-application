@@ -1,9 +1,14 @@
-import { FC, useContext } from 'react'
+import { FC, useCallback, useContext, useEffect, useMemo, useRef } from 'react'
 import { UserManagerSettings } from 'oidc-client-ts'
 import { AuthProvider, UserManager } from 'oidc-react'
 
 import ConditionalWrapper from '@shared-ui/components/Atomic/ConditionalWrapper'
-import { useWellKnownConfiguration, WellKnownConfigType } from '@shared-ui/common/hooks/useWellKnownConfiguration'
+import {
+    mergeConfig,
+    useWellKnownConfiguration,
+    WellKnownConfigType,
+    WellKnownConfigurationState,
+} from '@shared-ui/common/hooks/useWellKnownConfiguration'
 import { security } from '@shared-ui/common/services'
 
 import AppContext from './AppContext'
@@ -15,14 +20,70 @@ import './App.scss'
 
 const App: FC<Props> = (props) => {
     const httpGatewayAddress = process.env.REACT_APP_HTTP_GATEWAY_ADDRESS || window.location.origin
-    const [wellKnownConfig, setWellKnownConfig, reFetchConfig, wellKnownConfigError] =
-        useWellKnownConfiguration(httpGatewayAddress)
+    const [wellKnownConfig, setWellKnownConfig, reFetchConfig, wellKnownConfigError] = useWellKnownConfiguration(
+        httpGatewayAddress,
+        () => (wellKnownConfigState.current = WellKnownConfigurationState.MERGED)
+    )
+    const wellKnownConfigState = useRef(WellKnownConfigurationState.UNUSED)
+
+    const inIframe = useCallback(() => {
+        try {
+            return window.self !== window.top
+        } catch (e) {
+            return true
+        }
+    }, [])
+
+    const isIframe = useMemo(() => inIframe(), [inIframe])
 
     security.setGeneralConfig({
         httpGatewayAddress,
     })
 
     security.setWellKnowConfig(wellKnownConfig)
+
+    useEffect(() => {
+        if (isIframe && wellKnownConfig) {
+            // send message that client-app is ready
+
+            if (wellKnownConfigState.current === WellKnownConfigurationState.UNUSED) {
+                wellKnownConfigState.current = WellKnownConfigurationState.REQUESTED
+                // @ts-ignore
+                window.top.postMessage(
+                    {
+                        key: 'PLGD_EVENT_MESSAGE',
+                        clientReady: true,
+                    },
+                    '*'
+                )
+            }
+
+            // listen on message
+            window.addEventListener('message', function (event) {
+                if (
+                    wellKnownConfigState.current === WellKnownConfigurationState.REQUESTED &&
+                    event.data.hasOwnProperty('key') &&
+                    event.data.key === 'PLGD_EVENT_MESSAGE' &&
+                    event.data.hasOwnProperty('PLGD_HUB_REMOTE_PROVISIONING_DATA')
+                ) {
+                    if (wellKnownConfig?.remoteProvisioning) {
+                        setWellKnownConfig({
+                            ...wellKnownConfig,
+                            remoteProvisioning: mergeConfig(
+                                wellKnownConfig.remoteProvisioning,
+                                event.data.PLGD_HUB_REMOTE_PROVISIONING_DATA
+                            ),
+                        })
+                    }
+                }
+            })
+        }
+    }, [wellKnownConfig, isIframe, setWellKnownConfig])
+
+    if (wellKnownConfig && process.env.REACT_APP_TEST_PROVIDER_NAME) {
+        // @ts-ignore
+        wellKnownConfig.remoteProvisioning.deviceOauthClient.providerName = process.env.REACT_APP_TEST_PROVIDER_NAME
+    }
 
     const setInitialize = (value = true) => {
         setWellKnownConfig({
@@ -31,7 +92,10 @@ const App: FC<Props> = (props) => {
         } as WellKnownConfigType)
     }
 
-    if (!wellKnownConfig) {
+    if (
+        (!wellKnownConfig && !isIframe) ||
+        (isIframe && wellKnownConfigState.current !== WellKnownConfigurationState.MERGED)
+    ) {
         return <AppLoader />
     }
 
@@ -76,10 +140,11 @@ const App: FC<Props> = (props) => {
         >
             <AppInner
                 configError={wellKnownConfigError}
+                isIframe={isIframe}
                 mockApp={props.mockApp}
                 reFetchConfig={reFetchConfig}
                 setInitialize={setInitialize}
-                wellKnownConfig={wellKnownConfig}
+                wellKnownConfig={wellKnownConfig!}
             />
         </ConditionalWrapper>
     )
