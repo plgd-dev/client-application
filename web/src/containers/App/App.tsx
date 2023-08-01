@@ -92,9 +92,6 @@ const App: FC<Props> = (props) => {
         } as WellKnownConfigType)
     }
 
-    console.log(wellKnownConfig)
-    console.log(wellKnownConfigState.current)
-
     if (
         (!wellKnownConfig && !isIframe) ||
         (isIframe && wellKnownConfigState.current !== WellKnownConfigurationState.MERGED)
