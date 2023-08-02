@@ -169,6 +169,10 @@ export const messages = defineMessages({
         id: 'devices.delete',
         defaultMessage: 'Delete',
     },
+    select: {
+        id: 'devices.select',
+        defaultMessage: 'Select',
+    },
     view: {
         id: 'devices.view',
         defaultMessage: 'View',

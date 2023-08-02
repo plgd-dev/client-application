@@ -295,6 +295,7 @@ const DevicesListPage = () => {
                 i18n={{
                     delete: _(t.delete),
                     search: _(t.search),
+                    select: _(t.select),
                 }}
                 iframeMode={iframeMode}
                 isAllSelected={isAllSelected}
