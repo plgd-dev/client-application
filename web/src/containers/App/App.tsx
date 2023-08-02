@@ -80,10 +80,10 @@ const App: FC<Props> = (props) => {
         }
     }, [wellKnownConfig, isIframe, setWellKnownConfig])
 
-    // if (wellKnownConfig && process.env.REACT_APP_TEST_PROVIDER_NAME) {
-    //     // @ts-ignore
-    //     wellKnownConfig.remoteProvisioning.deviceOauthClient.providerName = process.env.REACT_APP_TEST_PROVIDER_NAME
-    // }
+    if (wellKnownConfig && process.env.REACT_APP_TEST_PROVIDER_NAME) {
+        // @ts-ignore
+        wellKnownConfig.remoteProvisioning.deviceOauthClient.providerName = process.env.REACT_APP_TEST_PROVIDER_NAME
+    }
 
     const setInitialize = (value = true) => {
         setWellKnownConfig({
