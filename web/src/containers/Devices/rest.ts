@@ -153,6 +153,7 @@ export type OnboardDataType = {
     authorizationProviderName: string
     hubId: string
     certificateAuthorities: string
+    redirectUri: string
 }
 
 export const onboardDeviceApi = (deviceId: string, data: OnboardDataType) =>

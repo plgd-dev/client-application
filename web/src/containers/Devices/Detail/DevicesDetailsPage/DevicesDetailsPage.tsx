@@ -262,6 +262,7 @@ const DevicesDetailsPage: FC<Props> = (props) => {
                 authorizationProviderName: onboardingData.authorizationProvider || '',
                 hubId: onboardingData.hubId || '',
                 certificateAuthorities: cleanUpOnboardData(onboardingData.certificateAuthorities || ''),
+                redirectUri: `${window.location.origin}/devices`,
             })
                 .then((r) => {
                     setOnboarding(false)
