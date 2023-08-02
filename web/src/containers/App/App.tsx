@@ -15,6 +15,7 @@ import AppContext from './AppContext'
 import { DEVICE_AUTH_MODE } from '@/constants'
 import AppLoader from '@/containers/App/AppLoader/AppLoader'
 import AppInner from '@/containers/App/AppInner/AppInner'
+import { getParentAppWellKnownConfiguration } from '@/containers/App/AppRest'
 import { Props } from './App.types'
 import './App.scss'
 
@@ -43,40 +44,27 @@ const App: FC<Props> = (props) => {
     security.setWellKnowConfig(wellKnownConfig)
 
     useEffect(() => {
-        if (isIframe && wellKnownConfig) {
-            // send message that client-app is ready
+        if (isIframe) {
+            const queryParams = new URLSearchParams(window.location.search)
+            const parentWellKnownConfigUrl = queryParams.get('wellKnownConfigUrl')
 
-            if (wellKnownConfigState.current === WellKnownConfigurationState.UNUSED) {
-                wellKnownConfigState.current = WellKnownConfigurationState.REQUESTED
-                // @ts-ignore
-                window.top.postMessage(
-                    {
-                        key: 'PLGD_EVENT_MESSAGE',
-                        clientReady: true,
-                    },
-                    '*'
-                )
-            }
+            if (wellKnownConfig && parentWellKnownConfigUrl) {
+                if (wellKnownConfigState.current === WellKnownConfigurationState.UNUSED) {
+                    wellKnownConfigState.current = WellKnownConfigurationState.REQUESTED
 
-            // listen on message
-            window.addEventListener('message', function (event) {
-                if (
-                    wellKnownConfigState.current === WellKnownConfigurationState.REQUESTED &&
-                    event.data.hasOwnProperty('key') &&
-                    event.data.key === 'PLGD_EVENT_MESSAGE' &&
-                    event.data.hasOwnProperty('PLGD_HUB_REMOTE_PROVISIONING_DATA')
-                ) {
-                    if (wellKnownConfig?.remoteProvisioning) {
-                        setWellKnownConfig({
-                            ...wellKnownConfig,
-                            remoteProvisioning: mergeConfig(
-                                wellKnownConfig.remoteProvisioning,
-                                event.data.PLGD_HUB_REMOTE_PROVISIONING_DATA
-                            ),
-                        })
-                    }
+                    getParentAppWellKnownConfiguration(parentWellKnownConfigUrl).then((response) => {
+                        if (response) {
+                            wellKnownConfigState.current = WellKnownConfigurationState.RECEIVED
+                            const data = response.data
+
+                            setWellKnownConfig({
+                                ...wellKnownConfig,
+                                remoteProvisioning: mergeConfig(wellKnownConfig.remoteProvisioning!, data),
+                            })
+                        }
+                    })
                 }
-            })
+            }
         }
     }, [wellKnownConfig, isIframe, setWellKnownConfig])
 
