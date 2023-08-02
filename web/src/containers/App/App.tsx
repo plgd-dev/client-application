@@ -144,7 +144,7 @@ const App: FC<Props> = (props) => {
                 mockApp={props.mockApp}
                 reFetchConfig={reFetchConfig}
                 setInitialize={setInitialize}
-                wellKnownConfig={wellKnownConfig!}
+                wellKnownConfig={wellKnownConfig as WellKnownConfigType}
             />
         </ConditionalWrapper>
     )
