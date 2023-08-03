@@ -177,6 +177,7 @@ func onboardInsecureDevice(ctx context.Context, dev *device, links schema.Resour
 		AuthorizationCode:     req.GetAuthorizationCode(),
 		URL:                   req.GetCoapGatewayAddress(),
 		CloudID:               req.GetHubId(),
+		RedirectURI:           req.GetRedirectUri(),
 	}, nil, coap.WithDeviceID(dev.DeviceID()))
 	if err != nil {
 		return fmt.Errorf("could not set cloud resource of device %s: %w", dev.DeviceID(), err)

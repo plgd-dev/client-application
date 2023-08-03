@@ -32,6 +32,8 @@ message OnboardDeviceRequest {
     string hub_id = 5;
     // list of hub certificate authorities in PEM format to verify the hub certificate
     string certificate_authorities = 6;
+    // provide redirect uri to allow hub to use it during exchange of authorization code for access token
+    string redirect_uri = 7;
 }
 
 message OnboardDeviceResponse {

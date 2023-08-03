@@ -374,6 +374,10 @@
                 "certificateAuthorities": {
                   "type": "string",
                   "title": "list of hub certificate authorities in PEM format to verify the hub certificate"
+                },
+                "redirectUri": {
+                  "type": "string",
+                  "title": "provide redirect uri to allow hub to use it during exchange of authorization code for access token"
                 }
               }
             }

@@ -16,9 +16,9 @@ apis:
     idleTimeout: 30s
     tls:
       enabled: false
-      caPool: /certs/ca.pem
-      keyFile: /certs/key.pem
-      certFile: /certs/crt.pem
+      caPool: certs/ca.pem
+      keyFile: certs/key.pem
+      certFile: certs/crt.pem
       clientCertificateRequired: true
     cors:
       allowedOrigins:
@@ -59,9 +59,9 @@ apis:
       timeout: 0s
     tls:
       enabled: false
-      caPool: /certs/ca.pem
-      keyFile: /certs/key.pem
-      certFile: /certs/crt.pem
+      caPool: certs/ca.pem
+      keyFile: certs/key.pem
+      certFile: certs/crt.pem
       clientCertificateRequired: true
 clients:
   device:
@@ -77,9 +77,9 @@ clients:
           - justWorks
         manufacturerCertificate:
           tls:
-            caPool: /certs/mfg_ca.pem
-            keyFile: /certs/mfg_key.pem
-            certFile: /certs/mfg_crt.pem
+            caPool: certs/mfg_ca.pem
+            keyFile: certs/mfg_key.pem
+            certFile: certs/mfg_crt.pem
       tls:
         authentication: preSharedKey
         preSharedKey:

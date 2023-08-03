@@ -61,6 +61,19 @@ func main() {
 	if _, err = os.Stat(cfg.APIs.HTTP.UI.Directory); cfg.APIs.HTTP.UI.Enabled && err != nil {
 		if err = extractUI(cfg.APIs.HTTP.UI.Directory); err != nil {
 			log.Errorf("cannot extract UI: %v", err)
+			return
+		}
+	}
+	if cfg.APIs.HTTP.Enabled && cfg.APIs.HTTP.TLS.Enabled && !checkSelfSignedCertificate(cfg.APIs.HTTP.TLS.CertFile, cfg.APIs.HTTP.TLS.KeyFile) {
+		if err = generateSelfSigned(cfg.APIs.HTTP.TLS.CertFile, cfg.APIs.HTTP.TLS.KeyFile); err != nil {
+			log.Errorf("cannot generate self signed certificate for HTTP: %v", err)
+			return
+		}
+	}
+	if cfg.APIs.GRPC.Enabled && cfg.APIs.GRPC.TLS.Enabled && !checkSelfSignedCertificate(cfg.APIs.GRPC.TLS.CertFile, cfg.APIs.GRPC.TLS.KeyFile) {
+		if err = generateSelfSigned(cfg.APIs.GRPC.TLS.CertFile, cfg.APIs.GRPC.TLS.KeyFile); err != nil {
+			log.Errorf("cannot generate self signed certificate for GRPC: %v", err)
+			return
 		}
 	}
 	logger := log.NewLogger(cfg.Log)
