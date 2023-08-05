@@ -27,7 +27,7 @@ const getBuildInformation = (wellKnownConfig: WellKnownConfigType) => ({
 })
 
 const AppInner = (props: Props) => {
-    const { wellKnownConfig, isIframe, configError, reFetchConfig, setInitialize } = props
+    const { wellKnownConfig, configError, reFetchConfig, setInitialize } = props
     const buildInformation = getBuildInformation(wellKnownConfig)
 
     const appLayoutRef = useRef<AppLayoutRefType | null>(null)
@@ -46,34 +46,31 @@ const AppInner = (props: Props) => {
     const [collapsed, setCollapsed] = useLocalStorage('leftPanelCollapsed', true)
 
     const unauthorizedCallback = useCallback(() => {
-        if (!isIframe) {
-            setSuspectedUnauthorized(true)
+        setSuspectedUnauthorized(true)
 
-            reFetchConfig().then((newWellKnownConfig: WellKnownConfigType) => {
-                if (appLayoutRef.current) {
-                    const userData: User = appLayoutRef.current?.getAuthProviderRef().getUserData()
-                    const parsedData = jwtDecode(userData.access_token)
-                    const ownerId = get(parsedData, newWellKnownConfig.remoteProvisioning?.jwtOwnerClaim as string, '')
+        reFetchConfig().then((newWellKnownConfig: WellKnownConfigType) => {
+            if (appLayoutRef.current) {
+                const userData: User = appLayoutRef.current?.getAuthProviderRef().getUserData()
+                const parsedData = jwtDecode(userData.access_token)
+                const ownerId = get(parsedData, newWellKnownConfig.remoteProvisioning?.jwtOwnerClaim as string, '')
 
-                    if (ownerId !== newWellKnownConfig?.owner) {
-                        setInitializedByAnother(true)
-                    }
+                if (ownerId !== newWellKnownConfig?.owner) {
+                    setInitializedByAnother(true)
                 }
+            }
 
-                setSuspectedUnauthorized(false)
-            })
-        }
-    }, [reFetchConfig, isIframe])
+            setSuspectedUnauthorized(false)
+        })
+    }, [reFetchConfig])
 
     const contextValue = useMemo(
         () => ({
             unauthorizedCallback,
             collapsed,
             setCollapsed,
-            iframeMode: isIframe,
             buildInformation: buildInformation || undefined,
         }),
-        [buildInformation, collapsed, setCollapsed, unauthorizedCallback, isIframe]
+        [buildInformation, collapsed, setCollapsed, unauthorizedCallback]
     )
 
     // Render an error box with a config error
