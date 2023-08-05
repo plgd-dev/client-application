@@ -3,9 +3,9 @@ import { useIntl } from 'react-intl'
 
 import NotFoundPage from '@shared-ui/components/Templates/NotFoundPage'
 import { IconDevices } from '@shared-ui/components/Atomic'
+import DevicesListPage from '@shared-ui/app/clientApp/Devices/List/DevicesListPage'
+import DevicesDetailsPage from '@shared-ui/app/clientApp/Devices/Detail/DevicesDetailsPage'
 
-import DevicesListPage from '@/containers/Devices/List/DevicesListPage'
-import DevicesDetailsPage from '@/containers/Devices/Detail/DevicesDetailsPage'
 import MockApp from '@/containers/MockApp/MockApp'
 import { messages as t } from './containers/App/App.i18n'
 

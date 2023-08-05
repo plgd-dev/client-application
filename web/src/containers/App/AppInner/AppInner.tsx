@@ -11,8 +11,8 @@ import { BrowserNotificationsContainer } from '@shared-ui/components/Atomic/Toas
 import { useLocalStorage, WellKnownConfigType } from '@shared-ui/common/hooks'
 import { security } from '@shared-ui/common/services'
 import light from '@shared-ui/components/Atomic/_theme/light'
+import AppContext from '@shared-ui/app/clientApp/App/AppContext'
 
-import AppContext from '@/containers/App/AppContext'
 import appConfig from '@/config'
 import { Props } from './AppInner.types'
 import AppLayout from '@/containers/App/AppLayout/AppLayout'

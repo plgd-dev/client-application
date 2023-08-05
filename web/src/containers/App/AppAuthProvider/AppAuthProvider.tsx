@@ -1,14 +1,16 @@
 import { useAuth, User } from 'oidc-react'
-import { security } from '@shared-ui/common/services'
 import { forwardRef, useEffect, useImperativeHandle, useRef } from 'react'
-import { REMOTE_PROVISIONING_MODE } from '@/constants'
+
+import { security } from '@shared-ui/common/services'
 import {
     getJwksData,
     getOpenIdConfiguration,
     initializeFinal,
     initializeJwksData,
     signIdentityCsr,
-} from '@/containers/App/AppRest'
+} from '@shared-ui/app/clientApp/App/AppRest'
+import { REMOTE_PROVISIONING_MODE } from '@shared-ui/app/clientApp/constants'
+
 import AppLoader from '@/containers/App/AppLoader/AppLoader'
 import { AppAuthProviderRefType, Props } from './AppAuthProvider.types'
 

@@ -10,13 +10,13 @@ import {
     WellKnownConfigurationState,
 } from '@shared-ui/common/hooks/useWellKnownConfiguration'
 import { security } from '@shared-ui/common/services'
+import AppContext from '@shared-ui/app/clientApp/App/AppContext'
+import { DEVICE_AUTH_MODE } from '@shared-ui/app/clientApp/constants'
+import { getParentAppWellKnownConfiguration } from '@shared-ui/app/clientApp/App/AppRest'
+import { Props } from '@shared-ui/app/clientApp/App/App.types'
 
-import AppContext from './AppContext'
-import { DEVICE_AUTH_MODE } from '@/constants'
 import AppLoader from '@/containers/App/AppLoader/AppLoader'
 import AppInner from '@/containers/App/AppInner/AppInner'
-import { getParentAppWellKnownConfiguration } from '@/containers/App/AppRest'
-import { Props } from './App.types'
 import './App.scss'
 
 const App: FC<Props> = (props) => {

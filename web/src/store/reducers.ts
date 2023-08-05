@@ -1,7 +1,8 @@
 import { combineReducers } from 'redux'
 import { enableBatching } from 'redux-batched-actions'
 
-import devicesReducer from '@/containers/Devices/slice'
+import devicesReducer from '@shared-ui/app/clientApp/Devices/slice'
+
 import appReducer from '@/containers/App/slice'
 
 export const createRootReducer = () =>
