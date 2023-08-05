@@ -133,7 +133,7 @@ func generateSelfSigned(certFile, keyFile string) error {
 			CommonName:   cn,
 		},
 		NotBefore: time.Now(),
-		NotAfter:  time.Now().Add(time.Hour * 24 * 356),
+		NotAfter:  time.Now().Add(time.Hour * 24 * 365),
 
 		KeyUsage:              x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature | x509.KeyUsageCertSign,
 		ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth, x509.ExtKeyUsageClientAuth},

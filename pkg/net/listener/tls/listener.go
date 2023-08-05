@@ -54,6 +54,8 @@ func tlsRecordHeaderLooksLikeHTTP(hdr []byte) bool {
 	return false
 }
 
+// prepareConnection accepts connections asynchronously to avoid blocking subsequent connection attempts due to potential blocking caused by c.Peek.
+// The use of asynchronous connection acceptance ensures that the program can continue accepting incoming connections while waiting for c.Peek to complete
 func (l *SplitListener) prepareConnection(c net.Conn) {
 	// buffer reads on our conn
 	bconn := &Conn{
@@ -69,9 +71,7 @@ func (l *SplitListener) prepareConnection(c net.Conn) {
 		_ = bconn.Close()
 		return
 	}
-
-	// I don't remember what the TLS handshake looks like,
-	// but this works as a POC
+	// The first 5 bytes is a TLS header, so we can use it to check for HTTP
 	if tlsRecordHeaderLooksLikeHTTP(hdr) {
 		bconn.ConnectionType = ConnectionTypeHTTP
 		l.cons <- chConn{c: bconn, err: nil}
