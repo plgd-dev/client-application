@@ -9,11 +9,11 @@ import { copyToClipboard } from '@shared-ui/common/utils'
 import Notification from '@shared-ui/components/Atomic/Notification/Toast'
 import Button from '@shared-ui/components/Atomic/Button'
 import { IconCopy, IconHidePassword, IconShowPassword } from '@shared-ui/components/Atomic/Icon'
+import { initializedByPreShared } from '@shared-ui/app/clientApp/App/AppRest'
 
 import './PreSharedKeySetup.scss'
 import LogoPlgd from './LogoPlgd'
 import { messages as t } from './PreSharedKeySetup.i18n'
-import { initializedByPreShared } from '@/containers/App/AppRest'
 import { Props } from './PreSharedKeySetup.types'
 
 const validate = require('validate.js')
