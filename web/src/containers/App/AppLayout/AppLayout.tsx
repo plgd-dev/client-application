@@ -50,7 +50,7 @@ const AppLayout = forwardRef<AppLayoutRefType, Props>((props, ref) => {
 
     const authProviderRef = useRef<AppAuthProviderRefType | null>(null)
 
-    const { collapsed, setCollapsed, iframeMode } = useContext(AppContext)
+    const { collapsed, setCollapsed } = useContext(AppContext)
 
     const appStore = useSelector((state: CombinedStoreType) => state.app)
 
@@ -180,7 +180,6 @@ const AppLayout = forwardRef<AppLayoutRefType, Props>((props, ref) => {
                         userWidget={<UserWidgetComponent />}
                     />
                 }
-                isIframeMode={iframeMode}
                 leftPanel={
                     <LeftPanel
                         activeId={activeItem}
