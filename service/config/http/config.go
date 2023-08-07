@@ -18,10 +18,12 @@ package http
 
 import (
 	"fmt"
+	"path"
 	"time"
 
 	"github.com/plgd-dev/client-application/pkg/net/listener"
 	"github.com/plgd-dev/hub/v2/pkg/net/http/server"
+	certManagerServer "github.com/plgd-dev/hub/v2/pkg/security/certManager/server"
 )
 
 type CORSConfig struct {
@@ -57,12 +59,19 @@ func (c *Config) Validate() error {
 	return c.Config.Validate()
 }
 
-func DefaultConfig(uiDirectory string) Config {
+func DefaultConfig(directory string) Config {
 	return Config{
 		Config: listener.Config{
 			Addr: ":8080",
 			TLS: listener.TLSConfig{
-				Enabled: false,
+				Enabled: true,
+				Config: certManagerServer.Config{
+					// we use the same cert for CA because certManagerServer.Config doesn't allow nil values
+					CAPool:                    path.Join(directory, "certs", "crt.pem"),
+					KeyFile:                   path.Join(directory, "certs", "key.pem"),
+					CertFile:                  path.Join(directory, "certs", "crt.pem"),
+					ClientCertificateRequired: false,
+				},
 			},
 		},
 		CORS: CORSConfig{
@@ -72,7 +81,7 @@ func DefaultConfig(uiDirectory string) Config {
 		},
 		UI: UIConfig{
 			Enabled:   true,
-			Directory: uiDirectory,
+			Directory: path.Join(directory, "www"),
 		},
 		Server: server.Config{
 			ReadTimeout:       time.Second * 8,

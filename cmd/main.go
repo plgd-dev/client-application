@@ -37,7 +37,7 @@ var (
 	ReleaseURL = "unknown url"
 )
 
-func main() {
+func loadConfig() config.Config {
 	var opts struct {
 		Version    bool   `short:"v" long:"version" description:"version"`
 		ConfigPath string `long:"config" description:"yaml config file path"`
@@ -45,34 +45,49 @@ func main() {
 	_, _ = flags.NewParser(&opts, flags.Default|flags.IgnoreUnknown).Parse()
 	if opts.Version {
 		fmt.Println(Version)
-		return
+		os.Exit(0)
 	}
 	if err := resolveDefaultConfig(opts.ConfigPath); err != nil {
 		log.Errorf("cannot create default config: %v", err)
-		return
+		os.Exit(1)
 	}
 	// parse line arguments again because resolveDefaultConfig can set config path
 	_, _ = flags.NewParser(&opts, flags.Default|flags.IgnoreUnknown).Parse()
 	cfg, err := config.New(opts.ConfigPath)
 	if err != nil {
 		log.Errorf("cannot load config: %v", err)
-		return
+		os.Exit(1)
 	}
 	if _, err = os.Stat(cfg.APIs.HTTP.UI.Directory); cfg.APIs.HTTP.UI.Enabled && err != nil {
 		if err = extractUI(cfg.APIs.HTTP.UI.Directory); err != nil {
 			log.Errorf("cannot extract UI: %v", err)
+			os.Exit(1)
 		}
 	}
+	if cfg.APIs.HTTP.Enabled && cfg.APIs.HTTP.TLS.Enabled && !checkSelfSignedCertificate(cfg.APIs.HTTP.TLS.CertFile, cfg.APIs.HTTP.TLS.KeyFile) {
+		if err = generateSelfSigned(cfg.APIs.HTTP.TLS.CertFile, cfg.APIs.HTTP.TLS.KeyFile); err != nil {
+			log.Errorf("cannot generate self signed certificate for HTTP: %v", err)
+			os.Exit(1)
+		}
+	}
+	if cfg.APIs.GRPC.Enabled && cfg.APIs.GRPC.TLS.Enabled && !checkSelfSignedCertificate(cfg.APIs.GRPC.TLS.CertFile, cfg.APIs.GRPC.TLS.KeyFile) {
+		if err = generateSelfSigned(cfg.APIs.GRPC.TLS.CertFile, cfg.APIs.GRPC.TLS.KeyFile); err != nil {
+			log.Errorf("cannot generate self signed certificate for GRPC: %v", err)
+			os.Exit(1)
+		}
+	}
+	return cfg
+}
+
+func main() {
+	cfg := loadConfig()
 	logger := log.NewLogger(cfg.Log)
 	log.Set(logger)
 	fileWatcher, err := fsnotify.NewWatcher(logger)
 	if err != nil {
 		log.Errorf("cannot create file fileWatcher: %v", err)
-		return
+		os.Exit(1)
 	}
-	defer func() {
-		_ = fileWatcher.Close()
-	}()
 	log.Debugf("version: %v, buildDate: %v, buildRevision %v", Version, BuildDate, CommitHash)
 	log.Debugf("config:\n%v", cfg.String())
 	info := grpc.ServiceInformation{
@@ -86,11 +101,11 @@ func main() {
 	s, err := service.New(context.Background(), cfg, &info, fileWatcher, logger)
 	if err != nil {
 		log.Errorf("cannot create service: %v", err)
-		return
+		os.Exit(1)
 	}
 	err = s.Serve()
 	if err != nil {
 		log.Errorf("cannot serve service: %v", err)
-		return
+		os.Exit(1)
 	}
 }

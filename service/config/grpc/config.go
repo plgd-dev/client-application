@@ -17,27 +17,34 @@
 package grpc
 
 import (
+	"path"
 	"time"
 
 	"github.com/plgd-dev/client-application/pb"
 	"github.com/plgd-dev/client-application/pkg/net/grpc/server"
 	grpcServer "github.com/plgd-dev/hub/v2/pkg/net/grpc/server"
+	certManagerServer "github.com/plgd-dev/hub/v2/pkg/security/certManager/server"
 )
 
 type Config = server.Config
 
 type ServiceInformation = pb.BuildInfo
 
-var defaultConfig = Config{
-	Addr: ":8081",
-	TLS: server.TLSConfig{
-		Enabled: false,
-	},
-	EnforcementPolicy: grpcServer.EnforcementPolicyConfig{
-		MinTime: 5 * time.Minute,
-	},
-}
-
-func DefaultConfig() Config {
-	return defaultConfig
+func DefaultConfig(directory string) Config {
+	return Config{
+		Addr: ":8081",
+		TLS: server.TLSConfig{
+			Enabled: true,
+			Config: certManagerServer.Config{
+				// we use the same cert for CA because certManagerServer.Config doesn't allow nil values
+				CAPool:                    path.Join(directory, "certs", "crt.pem"),
+				KeyFile:                   path.Join(directory, "certs", "key.pem"),
+				CertFile:                  path.Join(directory, "certs", "crt.pem"),
+				ClientCertificateRequired: false,
+			},
+		},
+		EnforcementPolicy: grpcServer.EnforcementPolicyConfig{
+			MinTime: 5 * time.Minute,
+		},
+	}
 }

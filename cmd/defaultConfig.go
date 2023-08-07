@@ -43,7 +43,7 @@ func resolveDefaultConfig(configPath string) error {
 		return nil
 	}
 	configDirectoryPath := filepath.Dir(configPath)
-	cfg := config.DefaultConfig(configDirectoryPath + "/www")
+	cfg := config.DefaultConfig(configDirectoryPath)
 	if err := os.WriteFile(configPath, []byte(cfg.String()), 0o600); err != nil {
 		return fmt.Errorf("cannot write default config: %w", err)
 	}
