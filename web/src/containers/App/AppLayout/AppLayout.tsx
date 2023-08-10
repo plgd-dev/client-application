@@ -30,8 +30,8 @@ import { getVersionNumberFromGithub, reset } from '@shared-ui/app/clientApp/App/
 import { DEVICE_AUTH_MODE, GITHUB_VERSION_REQUEST_INTERVAL } from '@shared-ui/app/clientApp/constants'
 import AppAuthProvider from '@shared-ui/app/clientApp/App/AppAuthProvider'
 import { AppAuthProviderRefType } from '@shared-ui/app/clientApp/App/AppAuthProvider/AppAuthProvider.types'
+import InitializedByAnother from '@shared-ui/app/clientApp/App/InitializedByAnother'
 
-import InitializedByAnother from '@/containers/App/AppInner/InitializedByAnother/InitializedByAnother'
 import { mather, menu, Routes } from '@/routes'
 import { messages as t } from '../App.i18n'
 import { AppLayoutRefType, Props } from './AppLayout.types'
