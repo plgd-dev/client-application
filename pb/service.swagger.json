@@ -939,7 +939,8 @@
       "type": "string",
       "enum": [
         "PRE_SHARED_KEY",
-        "X509"
+        "X509",
+        "UNINITIALIZED"
       ],
       "default": "PRE_SHARED_KEY"
     },

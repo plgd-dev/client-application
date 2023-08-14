@@ -25,7 +25,6 @@ import (
 	configGrpc "github.com/plgd-dev/client-application/service/config/grpc"
 	"github.com/plgd-dev/hub/v2/pkg/fsnotify"
 	"github.com/plgd-dev/hub/v2/pkg/log"
-	kitNetGrpc "github.com/plgd-dev/hub/v2/pkg/net/grpc"
 	"github.com/plgd-dev/hub/v2/pkg/net/grpc/server"
 	"go.opentelemetry.io/otel/trace"
 )
@@ -36,17 +35,12 @@ type Service struct {
 
 // New creates new GRPC service
 func New(ctx context.Context, serviceName string, config configGrpc.Config, clientApplicationServer *ClientApplicationServer, fileWatcher *fsnotify.Watcher, logger log.Logger, tracerProvider trace.TracerProvider) (*Service, error) {
-	interceptor := kitNetGrpc.MakeAuthInterceptors(func(ctx context.Context, method string) (context.Context, error) {
-		return ctx, nil
-	})
-	if clientApplicationServer.HasJWTAuthorizationEnabled() {
-		methods := []string{
-			"/" + pb.ClientApplication_ServiceDesc.ServiceName + "/UpdateJSONWebKeys",
-			"/" + pb.ClientApplication_ServiceDesc.ServiceName + "/GetJSONWebKeys",
-			"/" + pb.ClientApplication_ServiceDesc.ServiceName + "/GetConfiguration",
-		}
-		interceptor = server.NewAuth(clientApplicationServer, server.WithWhiteListedMethods(methods...))
+	methods := []string{
+		"/" + pb.ClientApplication_ServiceDesc.ServiceName + "/UpdateJSONWebKeys",
+		"/" + pb.ClientApplication_ServiceDesc.ServiceName + "/GetJSONWebKeys",
+		"/" + pb.ClientApplication_ServiceDesc.ServiceName + "/GetConfiguration",
 	}
+	interceptor := server.NewAuth(clientApplicationServer, server.WithWhiteListedMethods(methods...))
 	opts, err := server.MakeDefaultOptions(interceptor, logger, tracerProvider)
 	if err != nil {
 		return nil, fmt.Errorf("cannot create grpc server options: %w", err)

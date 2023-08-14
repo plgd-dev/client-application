@@ -186,7 +186,10 @@ func processDiscoveryResourceResponse(serviceDevice *serviceDevice.Service, logg
 		if err != nil {
 			return nil, fmt.Errorf("cannot parse device ID('%v'): %w", devID, err)
 		}
-		device := newDevice(devID, serviceDevice, logger)
+		device, err := newDevice(devID, serviceDevice, logger)
+		if err != nil {
+			return nil, fmt.Errorf("cannot create device('%v'): %w", devID, err)
+		}
 		device.private.ResourceTypes = d.resourceTypes
 		device.updateEndpointsLocked(d.endpoints)
 		device.private.OwnershipStatus = d.ownershipStatus
@@ -262,7 +265,10 @@ func processDeviceResourceResponse(serviceDevice *serviceDevice.Service, logger 
 	if err != nil {
 		return nil, fmt.Errorf("cannot parse device ID('%v'): %w", d.ID, err)
 	}
-	device := newDevice(devID, serviceDevice, logger)
+	device, err := newDevice(devID, serviceDevice, logger)
+	if err != nil {
+		return nil, fmt.Errorf("cannot create device('%v'): %w", devID, err)
+	}
 	contentFormat, err := resp.ContentFormat()
 	if err != nil {
 		contentFormat = message.AppOcfCbor
@@ -405,10 +411,13 @@ func getDeviceByAddress(ctx context.Context, serviceDevice *serviceDevice.Servic
 		return err
 	}
 	for _, discoveredDevice := range discoveryRes {
-		newDevice := newDevice(discoveredDevice.ID, serviceDevice, logger)
+		newDevice, err := newDevice(discoveredDevice.ID, serviceDevice, logger)
+		if err != nil {
+			return fmt.Errorf("cannot create device('%v'): %w", discoveredDevice.ID, err)
+		}
 		d, _ := devices.LoadOrStore(discoveredDevice.ID, newDevice)
 		d.updateDeviceMetadata(discoveredDevice.private.ResourceTypes, discoveredDevice.private.Endpoints, discoveredDevice.private.OwnershipStatus)
-		err := getDeviceResourceContent(ctx, discoveredDevice.private.DeviceURI, serviceDevice, logger, d)
+		err = getDeviceResourceContent(ctx, discoveredDevice.private.DeviceURI, serviceDevice, logger, d)
 		if err != nil {
 			d.ErrorFunc(fmt.Errorf("cannot get device resource content: %w", err))
 		}
@@ -565,20 +574,29 @@ func (s *ClientApplicationServer) GetDevices(req *pb.GetDevicesRequest, srv pb.C
 			return true
 		})
 	}
+
 	if len(req.GetUseMulticast()) > 0 {
+		devService := s.serviceDevice.Load()
+		if devService == nil {
+			return fmt.Errorf("cannot get devices: device service is not initialized")
+		}
 		toCall = append(toCall, func() {
 			getDevicesByMulticast(discoveryCtx, toDiscoveryConfiguration(toUseMulticastFilter(req.GetUseMulticast())), func(conn *client.Conn, resp *pool.Message) {
 				defer func() {
 					_ = conn.Close()
 				}()
-				_ = onDiscoveryResourceResponse(discoveryCtx, conn, s.serviceDevice, s.logger, resp, discoveredDevices)
+				_ = onDiscoveryResourceResponse(discoveryCtx, conn, devService, s.logger, resp, discoveredDevices)
 			})
 		},
 		)
 	}
 	if len(req.GetUseEndpoints()) > 0 {
+		devService := s.serviceDevice.Load()
+		if devService == nil {
+			return fmt.Errorf("cannot get devices: device service is not initialized")
+		}
 		toCall = append(toCall, func() {
-			getDevicesByEndpoints(discoveryCtx, s.serviceDevice, s.logger, req.GetUseEndpoints(), discoveredDevices)
+			getDevicesByEndpoints(discoveryCtx, devService, s.logger, req.GetUseEndpoints(), discoveredDevices)
 		})
 	}
 

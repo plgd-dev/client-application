@@ -77,34 +77,34 @@ func resourceMatcher(r *http.Request, rm *router.RouteMatch) bool {
 }
 
 func createAuthFunc(config configHttp.Config, clientApplicationServer *grpc.ClientApplicationServer) func(ctx context.Context, method, uri string) (context.Context, error) {
-	auth := func(ctx context.Context, method, uri string) (context.Context, error) {
+	whiteList := []kitNetHttp.RequestMatcher{
+		{
+			Method: http.MethodGet,
+			URI:    regexp.MustCompile(regexp.QuoteMeta(WellKnownJWKs)),
+		},
+		{
+			Method: http.MethodGet,
+			URI:    regexp.MustCompile(regexp.QuoteMeta(WellKnownConfiguration)),
+		},
+		{
+			// token is directly verified by clientApplication
+			Method: http.MethodPost,
+			URI:    regexp.MustCompile(regexp.QuoteMeta(Initialize)),
+		},
+	}
+	if config.UI.Enabled {
+		whiteList = append(whiteList, kitNetHttp.RequestMatcher{
+			Method: http.MethodGet,
+			URI:    regexp.MustCompile(`^\/(a$|[^a].*|ap$|a[^p].*|ap[^i].*|api[^/])`),
+		})
+	}
+	auth := kitNetHttp.NewInterceptorWithValidator(clientApplicationServer, authRules, whiteList...)
+	return func(ctx context.Context, method, uri string) (context.Context, error) {
+		if clientApplicationServer.HasJWTAuthorizationEnabled() {
+			return auth(ctx, method, uri)
+		}
 		return ctx, nil
 	}
-	if clientApplicationServer.HasJWTAuthorizationEnabled() {
-		whiteList := []kitNetHttp.RequestMatcher{
-			{
-				Method: http.MethodGet,
-				URI:    regexp.MustCompile(regexp.QuoteMeta(WellKnownJWKs)),
-			},
-			{
-				Method: http.MethodGet,
-				URI:    regexp.MustCompile(regexp.QuoteMeta(WellKnownConfiguration)),
-			},
-			{
-				// token is directly verified by clientApplication
-				Method: http.MethodPost,
-				URI:    regexp.MustCompile(regexp.QuoteMeta(Initialize)),
-			},
-		}
-		if config.UI.Enabled {
-			whiteList = append(whiteList, kitNetHttp.RequestMatcher{
-				Method: http.MethodGet,
-				URI:    regexp.MustCompile(`^\/(a$|[^a].*|ap$|a[^p].*|ap[^i].*|api[^/])`),
-			})
-		}
-		auth = kitNetHttp.NewInterceptorWithValidator(clientApplicationServer, authRules, whiteList...)
-	}
-	return auth
 }
 
 type contextKey struct {

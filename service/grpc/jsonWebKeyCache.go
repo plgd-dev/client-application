@@ -53,6 +53,9 @@ func (c *JSONWebKeyCache) LookupKey(token *jwt.Token) (jwk.Key, error) {
 
 func (s *ClientApplicationServer) ParseWithClaims(token string, claims jwt.Claims) error {
 	if token == "" {
+		if !s.HasJWTAuthorizationEnabled() {
+			return nil
+		}
 		return status.Errorf(codes.Unauthenticated, "missing token")
 	}
 	c := s.jwksCache.Load()
@@ -86,5 +89,9 @@ func (s *ClientApplicationServer) ParseWithClaims(token string, claims jwt.Claim
 }
 
 func (s *ClientApplicationServer) HasJWTAuthorizationEnabled() bool {
-	return s.serviceDevice.GetDeviceAuthenticationMode() == pb.GetConfigurationResponse_X509
+	devService := s.serviceDevice.Load()
+	if devService == nil {
+		return false
+	}
+	return devService.GetDeviceAuthenticationMode() == pb.GetConfigurationResponse_X509
 }

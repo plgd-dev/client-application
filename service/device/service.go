@@ -79,7 +79,7 @@ func errClosingConnection(debugf func(fmt string, a ...any), scheme schema.Schem
 }
 
 // New creates new GRPC service
-func New(ctx context.Context, serviceName string, getConfig func() configDevice.Config, logger log.Logger, tracerProvider trace.TracerProvider) (*Service, error) {
+func New(ctx context.Context, getConfig func() configDevice.Config, logger log.Logger) (*Service, error) {
 	config := getConfig()
 	var authenticationClient AuthenticationClient
 	switch config.COAP.TLS.Authentication {
@@ -124,7 +124,6 @@ func New(ctx context.Context, serviceName string, getConfig func() configDevice.
 	return &Service{
 		getConfig:            getConfig,
 		logger:               logger,
-		tracerProvider:       tracerProvider,
 		udp4server:           udp4server,
 		udp6server:           udp6server,
 		udp4Listener:         udp4Listener,

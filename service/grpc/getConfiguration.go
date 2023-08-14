@@ -25,13 +25,26 @@ import (
 
 func (s *ClientApplicationServer) GetConfiguration(ctx context.Context, _ *pb.GetConfigurationRequest) (*pb.GetConfigurationResponse, error) {
 	info := s.info.Clone()
-	info.DeviceAuthenticationMode = s.serviceDevice.GetDeviceAuthenticationMode()
-	info.IsInitialized = s.serviceDevice.IsInitialized()
-	info.Owner = s.serviceDevice.GetOwner()
+	devService := s.serviceDevice.Load()
+	info.DeviceAuthenticationMode = pb.GetConfigurationResponse_UNINITIALIZED
+	info.IsInitialized = false
+	info.Owner = ""
 	remoteProvisioning := s.GetConfig().RemoteProvisioning
 	info.RemoteProvisioning = remoteProvisioning.Clone()
-	if info.RemoteProvisioning != nil {
-		info.RemoteProvisioning.CurrentTime = time.Now().UnixNano()
+	if info.RemoteProvisioning == nil {
+		info.RemoteProvisioning = &pb.RemoteProvisioning{}
 	}
+	info.RemoteProvisioning.CurrentTime = time.Now().UnixNano()
+	if devService != nil {
+		info.DeviceAuthenticationMode = devService.GetDeviceAuthenticationMode()
+		info.IsInitialized = devService.IsInitialized()
+		info.Owner = devService.GetOwner()
+		if info.DeviceAuthenticationMode == pb.GetConfigurationResponse_X509 {
+			info.RemoteProvisioning.Mode = pb.RemoteProvisioning_USER_AGENT
+		} else {
+			info.RemoteProvisioning.Mode = pb.RemoteProvisioning_MODE_NONE
+		}
+	}
+
 	return info, nil
 }

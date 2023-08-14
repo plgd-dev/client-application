@@ -92,16 +92,19 @@ func New(ctx context.Context, cfg config.Config, info *configGrpc.ServiceInforma
 	tracerProvider := trace.NewNoopTracerProvider()
 	var closerFunc fn.FuncList
 	config := atomic.NewPointer(&cfg)
-	deviceService, err := device.New(ctx, serviceName, func() configDevice.Config {
-		return config.Load().Clients.Device
-	}, logger, tracerProvider)
-	if err != nil {
-		return nil, fmt.Errorf("cannot create device service: %w", err)
+	var deviceService *device.Service
+	var err error
+	if cfg.Clients.Device.COAP.TLS.Authentication != configDevice.AuthenticationUninitialized {
+		deviceService, err = device.New(ctx, func() configDevice.Config {
+			return config.Load().Clients.Device
+		}, logger)
+		if err != nil {
+			return nil, fmt.Errorf("cannot create device service: %w", err)
+		}
 	}
 	clientApplicationServer := grpc.NewClientApplicationServer(config, deviceService, info, logger)
 	closerFunc.AddFunc(clientApplicationServer.Close)
-	services := make([]service.APIService, 0, 3)
-	services = append(services, deviceService)
+	services := make([]service.APIService, 0, 2)
 	if cfg.APIs.HTTP.Enabled {
 		httpService, err := newHttpService(ctx, cfg, clientApplicationServer, fileWatcher, logger, tracerProvider)
 		if err != nil {

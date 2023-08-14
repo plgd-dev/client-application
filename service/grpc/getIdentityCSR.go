@@ -22,27 +22,25 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/plgd-dev/client-application/pb"
+	serviceDevice "github.com/plgd-dev/client-application/service/device"
 	"github.com/plgd-dev/hub/v2/identity-store/events"
 	"github.com/plgd-dev/hub/v2/pkg/net/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
 
-func (s *ClientApplicationServer) getIdentityCSR(ctx context.Context) (*pb.IdentityCertificateChallenge, error) {
-	if !s.signIdentityCertificateRemotely() {
-		return nil, status.Errorf(codes.Unimplemented, "not supported")
-	}
+func (s *ClientApplicationServer) getIdentityCSR(ctx context.Context, devService *serviceDevice.Service) (*pb.IdentityCertificateChallenge, error) {
 	cfg := s.GetConfig()
 	owner, err := grpc.OwnerFromTokenMD(ctx, cfg.RemoteProvisioning.GetJwtOwnerClaim())
 	if err != nil {
 		return nil, s.logger.LogAndReturnError(status.Errorf(codes.Unauthenticated, "cannot get owner from token: %v", err))
 	}
-	csr, err := s.serviceDevice.GetIdentityCSR(events.OwnerToUUID(owner))
+	csr, err := devService.GetIdentityCSR(events.OwnerToUUID(owner))
 	if err != nil {
 		return nil, status.Error(codes.Unimplemented, err.Error())
 	}
 	state := uuid.New()
-	s.csrCache.Set(state, true, time.Duration(cfg.RemoteProvisioning.GetUserAgent().GetCsrChallengeStateExpiration()))
+	s.csrCache.Set(state, devService, time.Duration(cfg.RemoteProvisioning.GetUserAgent().GetCsrChallengeStateExpiration()))
 	return &pb.IdentityCertificateChallenge{
 		CertificateSigningRequest: csr,
 		State:                     state.String(),

@@ -78,6 +78,7 @@ message GetConfigurationResponse {
     enum DeviceAuthenticationMode {
         PRE_SHARED_KEY = 0;
         X509 = 1;
+        UNINITIALIZED = 2;
     };
     string version = 1; // deprecated, use build_info.version
     string build_date = 2; // deprecated, use build_info.build_date
