@@ -321,9 +321,9 @@ func NewClientApplicationServer(ctx context.Context, opts ...ClientApplicationSe
 		return nil, nil, err
 	}
 	logger := log.NewLogger(cfg.Log)
-	d, err := serviceDevice.New(ctx, "client-application-device", func() configDevice.Config {
+	d, err := serviceDevice.New(ctx, func() configDevice.Config {
 		return deviceCfg
-	}, logger, trace.NewNoopTracerProvider())
+	}, logger)
 	if err != nil {
 		return nil, nil, err
 	}

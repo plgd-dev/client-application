@@ -195,8 +195,9 @@ func (c *PreSharedKeyConfig) Validate() error {
 type Authentication string
 
 const (
-	AuthenticationPreSharedKey Authentication = "preSharedKey"
-	AuthenticationX509         Authentication = "x509"
+	AuthenticationPreSharedKey  Authentication = "preSharedKey"
+	AuthenticationX509          Authentication = "x509"
+	AuthenticationUninitialized Authentication = "uninitialized"
 )
 
 type TLSConfig struct {
@@ -207,6 +208,7 @@ type TLSConfig struct {
 func (c *TLSConfig) Validate() error {
 	switch c.Authentication {
 	case AuthenticationX509:
+	case AuthenticationUninitialized:
 	case AuthenticationPreSharedKey:
 		if err := c.PreSharedKey.Validate(); err != nil {
 			return fmt.Errorf("preSharedKey.%w", err)
@@ -276,7 +278,7 @@ var defaultConfig = Config{
 			SZXStr:  "1024",
 		},
 		TLS: TLSConfig{
-			Authentication: AuthenticationPreSharedKey,
+			Authentication: AuthenticationUninitialized,
 			PreSharedKey: PreSharedKeyConfig{
 				SubjectIDStr: "",
 				Key:          "",

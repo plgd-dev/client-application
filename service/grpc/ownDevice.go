@@ -141,14 +141,19 @@ func (s *ClientApplicationServer) ownDeviceGetCSR(ctx context.Context, timeoutVa
 		return nil, status.Errorf(codes.Unavailable, "cannot get CSR: state %v is already in progress", remoteSign.state)
 	}
 	go func() {
+		devService := s.serviceDevice.Load()
+		if devService == nil {
+			remoteSign.Close(fmt.Errorf("device service is not initialized"))
+			return
+		}
 		defer s.remoteOwnSignCache.Delete(deviceStateID(dev.ID, remoteSign.state))
-		ownOpts, err := s.serviceDevice.GetOwnOptions()
+		ownOpts, err := devService.GetOwnOptions()
 		if err != nil {
 			remoteSign.Close(fmt.Errorf("cannot get own options: %w", err))
 			return
 		}
 		ownOpts = append(ownOpts, core.WithSetupCertificates(remoteSign.Sign))
-		err = dev.Own(remoteSign.ctx, links, s.serviceDevice.GetOwnershipClients(), ownOpts...)
+		err = dev.Own(remoteSign.ctx, links, devService.GetOwnershipClients(), ownOpts...)
 		remoteSign.Close(err)
 	}()
 	csr, err := remoteSign.ReadCSR(ctx)
@@ -183,6 +188,10 @@ func (s *ClientApplicationServer) ownDeviceSetCertificate(ctx context.Context, d
 }
 
 func (s *ClientApplicationServer) OwnDevice(ctx context.Context, req *pb.OwnDeviceRequest) (*pb.OwnDeviceResponse, error) {
+	devService := s.serviceDevice.Load()
+	if devService == nil {
+		return nil, status.Errorf(codes.Unavailable, "device service is not initialized")
+	}
 	devID, err := strDeviceID2UUID(req.GetDeviceId())
 	if err != nil {
 		return nil, err
@@ -203,11 +212,11 @@ func (s *ClientApplicationServer) OwnDevice(ctx context.Context, req *pb.OwnDevi
 		return resp, nil
 	}
 
-	ownOptions, err := s.serviceDevice.GetOwnOptions()
+	ownOptions, err := devService.GetOwnOptions()
 	if err != nil {
 		return nil, convErrToGrpcStatus(codes.Unavailable, fmt.Errorf("cannot get own options: %w", err)).Err()
 	}
-	err = dev.Own(ctx, links, s.serviceDevice.GetOwnershipClients(), ownOptions...)
+	err = dev.Own(ctx, links, devService.GetOwnershipClients(), ownOptions...)
 	if err != nil {
 		return nil, convErrToGrpcStatus(codes.Unavailable, fmt.Errorf("cannot own device %v: %w", dev.ID, err)).Err()
 	}
