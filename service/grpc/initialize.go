@@ -47,8 +47,8 @@ func (s *ClientApplicationServer) InitializeRemoteProvisioning(ctx context.Conte
 
 	respCsr, err := s.getIdentityCSR(ctx, devService)
 	if err != nil {
-		if err2 := s.reset(ctx); err2 != nil {
-			s.logger.Warnf("cannot reset when initialize remote provisioning fails(%v): %w", err, err2)
+		if err2 := s.reset(ctx, true); err2 != nil {
+			s.logger.Errorf("cannot reset previous device: %w", err2)
 		}
 		return nil, err
 	}
@@ -58,9 +58,9 @@ func (s *ClientApplicationServer) InitializeRemoteProvisioning(ctx context.Conte
 }
 
 func (s *ClientApplicationServer) init(ctx context.Context, devService *serviceDevice.Service) {
-	err := s.reset(ctx)
+	err := s.reset(ctx, false)
 	if err != nil {
-		s.logger.Warnf("cannot reset during initialize fails: %v", err)
+		s.logger.Errorf("cannot reset previous device service setup during initialization: %w", err)
 	}
 	s.serviceDevice.Store(devService)
 	go func() {
@@ -73,9 +73,6 @@ func (s *ClientApplicationServer) init(ctx context.Context, devService *serviceD
 
 func (s *ClientApplicationServer) UpdatePSK(subjectUUID, key string) error {
 	cfg := s.GetConfig()
-	if cfg.Clients.Device.COAP.TLS.PreSharedKey.SubjectIDStr == subjectUUID && cfg.Clients.Device.COAP.TLS.PreSharedKey.Key == key {
-		return nil
-	}
 	cfg.Clients.Device.COAP.TLS.PreSharedKey.Key = key
 	cfg.Clients.Device.COAP.TLS.PreSharedKey.SubjectIDStr = subjectUUID
 	return s.StoreConfig(cfg)
