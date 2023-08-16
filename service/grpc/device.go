@@ -62,7 +62,7 @@ type device struct {
 	*core.Device
 }
 
-func newDevice(deviceID uuid.UUID, serviceDevice *serviceDevice.Service, logger log.Logger) (*device, error) {
+func newDevice(deviceID uuid.UUID, serviceDevice *serviceDevice.Service, logger log.Logger) *device {
 	coreDeviceCfg := serviceDevice.GetDeviceConfiguration()
 	d := device{
 		ID:     deviceID,
@@ -70,7 +70,7 @@ func newDevice(deviceID uuid.UUID, serviceDevice *serviceDevice.Service, logger 
 	}
 	coreDeviceCfg.Logger = serviceDevice.DeviceLogger()
 	d.Device = core.NewDevice(coreDeviceCfg, deviceID.String(), []string{}, d.GetEndpoints)
-	return &d, nil
+	return &d
 }
 
 func (d *device) ErrorFunc(err error) {
