@@ -18,15 +18,18 @@ package http_test
 
 import (
 	"context"
+	"io"
 	"net/http"
 	"testing"
 	"time"
 
+	"github.com/plgd-dev/client-application/pb"
 	serviceHttp "github.com/plgd-dev/client-application/service/http"
 	"github.com/plgd-dev/client-application/test"
 	httpgwTest "github.com/plgd-dev/hub/v2/http-gateway/test"
 	hubTestOAuthServer "github.com/plgd-dev/hub/v2/test/oauth-server/test"
 	"github.com/stretchr/testify/require"
+	"google.golang.org/protobuf/encoding/protojson"
 )
 
 func doReset(t *testing.T, token string, expCode int) {
@@ -35,6 +38,20 @@ func doReset(t *testing.T, token string, expCode int) {
 		Host(test.CLIENT_APPLICATION_HTTP_HOST).AuthToken(token).Build()
 	resp := httpgwTest.HTTPDo(t, request)
 	require.Equal(t, expCode, resp.StatusCode)
+	if resp.StatusCode == http.StatusOK {
+		request = httpgwTest.NewRequest(http.MethodGet, serviceHttp.WellKnownConfiguration, nil).Host(test.CLIENT_APPLICATION_HTTP_HOST).Build()
+		resp = httpgwTest.HTTPDo(t, request)
+		require.Equal(t, http.StatusOK, resp.StatusCode)
+		configRespBody, err := io.ReadAll(resp.Body)
+		require.NoError(t, err)
+		configResp := pb.GetConfigurationResponse{}
+		err = protojson.Unmarshal(configRespBody, &configResp)
+		require.NoError(t, err)
+		require.False(t, configResp.GetIsInitialized())
+		require.Equal(t, configResp.GetOwner(), "")
+		require.Equal(t, configResp.GetDeviceAuthenticationMode(), pb.GetConfigurationResponse_UNINITIALIZED)
+		require.Equal(t, configResp.GetRemoteProvisioning().GetMode(), pb.RemoteProvisioning_MODE_NONE)
+	}
 }
 
 func TestClientApplicationServerReset(t *testing.T) {
@@ -52,6 +69,6 @@ func TestClientApplicationServerReset(t *testing.T) {
 	doReset(t, token, http.StatusOK)
 
 	// try again reset - should fail
-	doReset(t, token, http.StatusUnauthorized)
+	doReset(t, token, http.StatusBadRequest)
 	initializeRemoteProvisioning(ctx, t)
 }

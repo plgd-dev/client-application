@@ -70,8 +70,8 @@ func initializeRemoteProvisioning(ctx context.Context, t *testing.T) {
 	require.NoError(t, err)
 	require.False(t, configResp.GetIsInitialized())
 	require.Equal(t, configResp.GetOwner(), "")
-	require.Equal(t, configResp.GetDeviceAuthenticationMode(), pb.GetConfigurationResponse_X509)
-	require.Equal(t, configResp.GetRemoteProvisioning().GetMode(), pb.RemoteProvisioning_USER_AGENT)
+	require.Equal(t, configResp.GetDeviceAuthenticationMode(), pb.GetConfigurationResponse_UNINITIALIZED)
+	require.Equal(t, configResp.GetRemoteProvisioning().GetMode(), pb.RemoteProvisioning_MODE_NONE)
 
 	request = httpgwTest.NewRequest(http.MethodGet, serviceHttp.WellKnownJWKs, nil).Host(config.OAUTH_SERVER_HOST).Build()
 	resp = httpgwTest.HTTPDo(t, request)
@@ -104,6 +104,19 @@ func initializeRemoteProvisioning(ctx context.Context, t *testing.T) {
 	resp = httpgwTest.HTTPDo(t, request)
 	require.Equal(t, http.StatusOK, resp.StatusCode)
 
+	request = httpgwTest.NewRequest(http.MethodGet, serviceHttp.WellKnownConfiguration, nil).Host(test.CLIENT_APPLICATION_HTTP_HOST).Build()
+	resp = httpgwTest.HTTPDo(t, request)
+	require.Equal(t, http.StatusOK, resp.StatusCode)
+	configRespBody, err = io.ReadAll(resp.Body)
+	require.NoError(t, err)
+	configResp = pb.GetConfigurationResponse{}
+	err = protojson.Unmarshal(configRespBody, &configResp)
+	require.NoError(t, err)
+	require.True(t, configResp.GetIsInitialized())
+	require.Equal(t, configResp.GetOwner(), "1")
+	require.Equal(t, configResp.GetDeviceAuthenticationMode(), pb.GetConfigurationResponse_X509)
+	require.Equal(t, configResp.GetRemoteProvisioning().GetMode(), pb.RemoteProvisioning_USER_AGENT)
+
 	request = httpgwTest.NewRequest(http.MethodGet, serviceHttp.IdentityCertificate, nil).Host(test.CLIENT_APPLICATION_HTTP_HOST).AuthToken(token).Build()
 	resp = httpgwTest.HTTPDo(t, request)
 	require.Equal(t, http.StatusOK, resp.StatusCode)
@@ -113,8 +126,8 @@ func setupRemoteProvisioning(t *testing.T, services ...hubTestService.SetUpServi
 	cfg := test.MakeConfig(t)
 	cfg.Log.Level = zapcore.DebugLevel
 	cfg.APIs.HTTP.TLS.ClientCertificateRequired = false
-	cfg.Clients.Device.COAP.TLS.Authentication = device.AuthenticationX509
-	cfg.RemoteProvisioning.Mode = pb.RemoteProvisioning_USER_AGENT
+	cfg.Clients.Device.COAP.TLS.Authentication = device.AuthenticationUninitialized
+	cfg.RemoteProvisioning.Mode = pb.RemoteProvisioning_MODE_NONE
 	shutDown := test.New(t, cfg)
 
 	var service hubTestService.SetUpServicesConfig
