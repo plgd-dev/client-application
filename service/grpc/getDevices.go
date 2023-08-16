@@ -186,10 +186,7 @@ func processDiscoveryResourceResponse(serviceDevice *serviceDevice.Service, logg
 		if err != nil {
 			return nil, fmt.Errorf("cannot parse device ID('%v'): %w", devID, err)
 		}
-		device, err := newDevice(devID, serviceDevice, logger)
-		if err != nil {
-			return nil, fmt.Errorf("cannot create device('%v'): %w", devID, err)
-		}
+		device := newDevice(devID, serviceDevice, logger)
 		device.private.ResourceTypes = d.resourceTypes
 		device.updateEndpointsLocked(d.endpoints)
 		device.private.OwnershipStatus = d.ownershipStatus
@@ -265,10 +262,7 @@ func processDeviceResourceResponse(serviceDevice *serviceDevice.Service, logger 
 	if err != nil {
 		return nil, fmt.Errorf("cannot parse device ID('%v'): %w", d.ID, err)
 	}
-	device, err := newDevice(devID, serviceDevice, logger)
-	if err != nil {
-		return nil, fmt.Errorf("cannot create device('%v'): %w", devID, err)
-	}
+	device := newDevice(devID, serviceDevice, logger)
 	contentFormat, err := resp.ContentFormat()
 	if err != nil {
 		contentFormat = message.AppOcfCbor
@@ -411,10 +405,7 @@ func getDeviceByAddress(ctx context.Context, serviceDevice *serviceDevice.Servic
 		return err
 	}
 	for _, discoveredDevice := range discoveryRes {
-		newDevice, err := newDevice(discoveredDevice.ID, serviceDevice, logger)
-		if err != nil {
-			return fmt.Errorf("cannot create device('%v'): %w", discoveredDevice.ID, err)
-		}
+		newDevice := newDevice(discoveredDevice.ID, serviceDevice, logger)
 		d, _ := devices.LoadOrStore(discoveredDevice.ID, newDevice)
 		d.updateDeviceMetadata(discoveredDevice.private.ResourceTypes, discoveredDevice.private.Endpoints, discoveredDevice.private.OwnershipStatus)
 		err = getDeviceResourceContent(ctx, discoveredDevice.private.DeviceURI, serviceDevice, logger, d)
