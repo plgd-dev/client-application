@@ -73,6 +73,9 @@ func (s *ClientApplicationServer) init(ctx context.Context, devService *serviceD
 
 func (s *ClientApplicationServer) UpdatePSK(subjectUUID, key string) error {
 	cfg := s.GetConfig()
+	if cfg.Clients.Device.COAP.TLS.PreSharedKey.SubjectIDStr == subjectUUID && cfg.Clients.Device.COAP.TLS.PreSharedKey.Key == key {
+		return nil
+	}
 	cfg.Clients.Device.COAP.TLS.PreSharedKey.Key = key
 	cfg.Clients.Device.COAP.TLS.PreSharedKey.SubjectIDStr = subjectUUID
 	return s.StoreConfig(cfg)
