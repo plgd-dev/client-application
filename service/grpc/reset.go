@@ -23,8 +23,7 @@ import (
 	"github.com/plgd-dev/client-application/pb"
 )
 
-func (s *ClientApplicationServer) reset(ctx context.Context) error {
-	s.jwksCache.Store(nil)
+func (s *ClientApplicationServer) reset(ctx context.Context, forceReset bool) error {
 	devService := s.serviceDevice.Swap(nil)
 	s.csrCache.DeleteAll()
 	s.remoteOwnSignCache.Range(func(key uuid.UUID, value *remoteSign) bool {
@@ -41,15 +40,17 @@ func (s *ClientApplicationServer) reset(ctx context.Context) error {
 			s.logger.Warnf("cannot close device service: %v", err)
 		}
 	}
+	if forceReset {
+		s.jwksCache.Store(nil)
+		// reset psk
+		return s.UpdatePSK("", "")
+	}
 	return nil
 }
 
 func (s *ClientApplicationServer) Reset(ctx context.Context, req *pb.ResetRequest) (*pb.ResetResponse, error) {
-	err := s.reset(ctx)
+	err := s.reset(ctx, true)
 	if err != nil {
-		return nil, err
-	}
-	if err := s.UpdatePSK("", ""); err != nil {
 		return nil, err
 	}
 	return &pb.ResetResponse{}, nil
