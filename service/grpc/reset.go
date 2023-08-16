@@ -41,12 +41,15 @@ func (s *ClientApplicationServer) reset(ctx context.Context) error {
 			s.logger.Warnf("cannot close device service: %v", err)
 		}
 	}
-	return s.UpdatePSK("", "")
+	return nil
 }
 
 func (s *ClientApplicationServer) Reset(ctx context.Context, req *pb.ResetRequest) (*pb.ResetResponse, error) {
 	err := s.reset(ctx)
 	if err != nil {
+		return nil, err
+	}
+	if err := s.UpdatePSK("", ""); err != nil {
 		return nil, err
 	}
 	return &pb.ResetResponse{}, nil
