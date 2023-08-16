@@ -53,7 +53,7 @@ func initializePSK(t *testing.T, subjectID string, key string) {
 	require.NoError(t, err)
 	require.False(t, configResp.GetIsInitialized())
 	require.Equal(t, configResp.GetOwner(), "")
-	require.Equal(t, configResp.GetDeviceAuthenticationMode(), pb.GetConfigurationResponse_PRE_SHARED_KEY)
+	require.Equal(t, configResp.GetDeviceAuthenticationMode(), pb.GetConfigurationResponse_UNINITIALIZED)
 
 	doInitializePSK(t, subjectID, key, http.StatusOK)
 
@@ -67,13 +67,14 @@ func initializePSK(t *testing.T, subjectID string, key string) {
 	require.NoError(t, err)
 	require.True(t, configResp1.GetIsInitialized())
 	require.Equal(t, configResp1.GetOwner(), subjectID)
+	require.Equal(t, configResp1.GetDeviceAuthenticationMode(), pb.GetConfigurationResponse_PRE_SHARED_KEY)
 }
 
 func setupClientApplicationForPSKInitialization(t *testing.T) func() {
 	cfg := test.MakeConfig(t)
 	cfg.Log.Level = zapcore.DebugLevel
 	cfg.APIs.HTTP.TLS.ClientCertificateRequired = false
-	cfg.Clients.Device.COAP.TLS.Authentication = device.AuthenticationPreSharedKey
+	cfg.Clients.Device.COAP.TLS.Authentication = device.AuthenticationUninitialized
 	cfg.Clients.Device.COAP.TLS.PreSharedKey.Key = ""
 	cfg.Clients.Device.COAP.TLS.PreSharedKey.SubjectIDStr = ""
 	shutDown := test.New(t, cfg)
@@ -107,6 +108,7 @@ func TestClientApplicationServerInitializeWithPSK(t *testing.T) {
 
 	// reset
 	doReset(t, "", http.StatusOK)
+
 	// reset again
 	doReset(t, "", http.StatusBadRequest)
 	// initialize again
