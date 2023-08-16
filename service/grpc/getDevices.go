@@ -564,7 +564,7 @@ func (s *ClientApplicationServer) GetDevices(req *pb.GetDevicesRequest, srv pb.C
 	cachedDevices := coapSync.NewMap[uuid.UUID, *device]()
 	timeout := DefaultTimeout
 	if req.GetTimeout() > 0 {
-		timeout = time.Duration(req.GetTimeout()) * time.Nanosecond
+		timeout = time.Duration(req.GetTimeout())
 	}
 	discoveryCtx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
