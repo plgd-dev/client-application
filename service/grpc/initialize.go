@@ -21,6 +21,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/plgd-dev/client-application/pb"
+	"github.com/plgd-dev/client-application/service/config"
 	configDevice "github.com/plgd-dev/client-application/service/config/device"
 	serviceDevice "github.com/plgd-dev/client-application/service/device"
 	"github.com/plgd-dev/hub/v2/identity-store/events"
@@ -71,20 +72,29 @@ func (s *ClientApplicationServer) init(ctx context.Context, devService *serviceD
 	}()
 }
 
-func (s *ClientApplicationServer) UpdatePSK(subjectUUID, key string) error {
+func (s *ClientApplicationServer) updatePSK(subjectUUID, key string, save bool) (config.Config, error) {
 	cfg := s.GetConfig()
+	cfg.Clients.Device.COAP.TLS.Authentication = configDevice.AuthenticationPreSharedKey
 	cfg.Clients.Device.COAP.TLS.PreSharedKey.Key = key
 	cfg.Clients.Device.COAP.TLS.PreSharedKey.SubjectIDStr = subjectUUID
-	return s.StoreConfig(cfg)
+	var err error
+	if save {
+		err = s.StoreConfig(&cfg)
+	} else {
+		err = cfg.Validate()
+	}
+	if err != nil {
+		return config.Config{}, err
+	}
+	s.config.Store(&cfg)
+	return cfg, nil
 }
 
-func (s *ClientApplicationServer) initWithPSK(ctx context.Context, subjectUUID, key string) error {
-	err := s.UpdatePSK(subjectUUID, key)
+func (s *ClientApplicationServer) initWithPSK(ctx context.Context, subjectUUID, key string, save bool) error {
+	cfg, err := s.updatePSK(subjectUUID, key, save)
 	if err != nil {
 		return err
 	}
-	cfg := s.GetConfig()
-	cfg.Clients.Device.COAP.TLS.Authentication = configDevice.AuthenticationPreSharedKey
 	cfg.RemoteProvisioning.Mode = pb.RemoteProvisioning_MODE_NONE
 	devService, err := serviceDevice.New(context.Background(), func() configDevice.Config {
 		return cfg.Clients.Device
@@ -118,7 +128,7 @@ func (s *ClientApplicationServer) Initialize(ctx context.Context, req *pb.Initia
 	if req.GetPreSharedKey().GetKey() == "" {
 		return nil, status.Errorf(codes.InvalidArgument, "invalid pre-shared key")
 	}
-	if err := s.initWithPSK(ctx, req.GetPreSharedKey().GetSubjectId(), req.GetPreSharedKey().GetKey()); err != nil {
+	if err := s.initWithPSK(ctx, req.GetPreSharedKey().GetSubjectId(), req.GetPreSharedKey().GetKey(), req.GetPreSharedKey().GetSave()); err != nil {
 		return nil, err
 	}
 	if _, err := s.ClearCache(ctx, &pb.ClearCacheRequest{}); err != nil {
