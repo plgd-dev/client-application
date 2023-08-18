@@ -1325,6 +1325,10 @@
         "key": {
           "type": "string",
           "description": "Associated secret to the client application ID. Only first 16bytes is used."
+        },
+        "save": {
+          "type": "boolean",
+          "description": "If true, the client application will be save subject_id and key to the persistent storage."
         }
       }
     },

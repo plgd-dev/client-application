@@ -74,14 +74,14 @@ func (s *ClientApplicationServer) GetConfig() config.Config {
 	return *cfg
 }
 
-func (s *ClientApplicationServer) StoreConfig(cfg config.Config) error {
+func (s *ClientApplicationServer) StoreConfig(cfg *config.Config) error {
 	if err := cfg.Validate(); err != nil {
 		return status.Errorf(codes.InvalidArgument, "invalid configuration: %v", err)
 	}
 	if err := cfg.Store(); err != nil {
 		return status.Errorf(codes.Internal, "cannot store configuration: %v", err)
 	}
-	s.config.Store(&cfg)
+	s.config.Store(cfg)
 	return nil
 }
 

@@ -45,7 +45,10 @@ func (s *ClientApplicationServer) reset(ctx context.Context, forceReset bool) er
 	if forceReset {
 		s.jwksCache.Store(nil)
 		// reset psk
-		return s.UpdatePSK("", "")
+		_, err := s.updatePSK("", "", true)
+		if err != nil {
+			return err
+		}
 	}
 	return nil
 }
