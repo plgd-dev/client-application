@@ -20,6 +20,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net"
 	"net/http"
 	"net/http/httptest"
 	"regexp"
@@ -31,6 +32,7 @@ import (
 	"github.com/grpc-ecosystem/grpc-gateway/v2/runtime"
 	"github.com/plgd-dev/client-application/pb"
 	"github.com/plgd-dev/client-application/pkg/net/listener"
+	"github.com/plgd-dev/client-application/pkg/net/listener/tls"
 	configHttp "github.com/plgd-dev/client-application/service/config/http"
 	"github.com/plgd-dev/client-application/service/grpc"
 	"github.com/plgd-dev/hub/v2/http-gateway/serverMux"
@@ -105,21 +107,48 @@ func createAuthFunc(config configHttp.Config, clientApplicationServer *grpc.Clie
 	return auth
 }
 
-// New creates new HTTP service
-func New(ctx context.Context, serviceName string, config configHttp.Config, clientApplicationServer *grpc.ClientApplicationServer, fileWatcher *fsnotify.Watcher, logger log.Logger, tracerProvider trace.TracerProvider) (*Service, error) {
-	listener, err := listener.New(config.Config, fileWatcher, logger)
-	if err != nil {
-		return nil, fmt.Errorf("cannot create grpc server: %w", err)
+type contextKey struct {
+	key string
+}
+
+var connContextKey = &contextKey{"http-conn"}
+
+func saveConnInContext(ctx context.Context, c net.Conn) context.Context {
+	return context.WithValue(ctx, connContextKey, c)
+}
+
+func getTLSConn(r *http.Request) (*tls.Conn, bool) {
+	c, ok := r.Context().Value(connContextKey).(*tls.Conn)
+	return c, ok
+}
+
+func newListener(config configHttp.Config, fileWatcher *fsnotify.Watcher, logger log.Logger) (listener.Listener, error) {
+	if config.Config.TLS.Enabled {
+		return tls.New(tls.Config{
+			Addr: config.Config.Addr,
+			TLS:  config.Config.TLS.Config,
+		}, fileWatcher, logger)
+	} else {
+		return listener.New(config.Config, fileWatcher, logger)
 	}
+}
 
-	ch := new(inprocgrpc.Channel)
-	pb.RegisterClientApplicationServer(ch, clientApplicationServer)
-	grpcClient := pb.NewClientApplicationClient(ch)
+func wrapHandler(handler http.Handler, serviceName string, tracerProvider trace.TracerProvider) http.Handler {
+	h := kitNetHttp.OpenTelemetryNewHandler(handler, serviceName, tracerProvider)
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if c, ok := getTLSConn(r); ok && c.ConnectionType == tls.ConnectionTypeHTTP {
+			http.Redirect(w, r, "https://"+r.Host+r.RequestURI, http.StatusMovedPermanently)
+			if f, ok := w.(http.Flusher); ok {
+				f.Flush()
+			}
+			_ = c.Close()
+			return
+		}
+		h.ServeHTTP(w, r)
+	})
+}
 
-	auth := createAuthFunc(config, clientApplicationServer)
-	mux := serverMux.New()
-	r := serverMux.NewRouter(queryCaseInsensitive, auth)
-
+func newCORSHandler(config configHttp.Config, r *router.Router) http.Handler {
 	corsOptions := make([]handlers.CORSOption, 0, 5)
 	corsOptions = append(corsOptions, handlers.AllowedHeaders(config.CORS.AllowedHeaders))
 	corsOptions = append(corsOptions, handlers.AllowedOrigins(config.CORS.AllowedOrigins))
@@ -127,18 +156,10 @@ func New(ctx context.Context, serviceName string, config configHttp.Config, clie
 	if config.CORS.AllowCredentials {
 		corsOptions = append(corsOptions, handlers.AllowCredentials())
 	}
-	handler := handlers.CORS(corsOptions...)(r)
+	return handlers.CORS(corsOptions...)(r)
+}
 
-	// register grpc-proxy handler
-	if err := pb.RegisterClientApplicationHandlerClient(context.Background(), mux, grpcClient); err != nil {
-		_ = listener.Close()
-		return nil, fmt.Errorf("failed to register grpc-gateway handler: %w", err)
-	}
-	requestHandler := &RequestHandler{mux: mux, clientApplicationServer: clientApplicationServer, config: config}
-	r.PathPrefix(Devices).Methods(http.MethodPut).MatcherFunc(resourceMatcher).HandlerFunc(requestHandler.updateResource)
-	r.PathPrefix(Devices).Methods(http.MethodPost).MatcherFunc(resourceMatcher).HandlerFunc(requestHandler.createResource)
-	r.PathPrefix(ApiV1).Handler(mux)
-	r.PathPrefix(WellKnown).Handler(mux)
+func setUIHandlers(config configHttp.Config, r *router.Router) {
 	// serve www directory
 	if config.UI.Enabled {
 		fs := http.FileServer(http.Dir(config.UI.Directory))
@@ -159,18 +180,49 @@ func New(ctx context.Context, serviceName string, config configHttp.Config, clie
 			}
 		}))
 	}
+}
+
+// New creates new HTTP service
+func New(ctx context.Context, serviceName string, config configHttp.Config, clientApplicationServer *grpc.ClientApplicationServer, fileWatcher *fsnotify.Watcher, logger log.Logger, tracerProvider trace.TracerProvider) (*Service, error) {
+	lis, err := newListener(config, fileWatcher, logger)
+	if err != nil {
+		return nil, fmt.Errorf("cannot create grpc server: %w", err)
+	}
+
+	ch := new(inprocgrpc.Channel)
+	pb.RegisterClientApplicationServer(ch, clientApplicationServer)
+	grpcClient := pb.NewClientApplicationClient(ch)
+
+	auth := createAuthFunc(config, clientApplicationServer)
+	mux := serverMux.New()
+	r := serverMux.NewRouter(queryCaseInsensitive, auth)
+	handler := newCORSHandler(config, r)
+
+	// register grpc-proxy handler
+	if err := pb.RegisterClientApplicationHandlerClient(context.Background(), mux, grpcClient); err != nil {
+		_ = lis.Close()
+		return nil, fmt.Errorf("failed to register grpc-gateway handler: %w", err)
+	}
+	requestHandler := &RequestHandler{mux: mux, clientApplicationServer: clientApplicationServer, config: config}
+	r.PathPrefix(Devices).Methods(http.MethodPut).MatcherFunc(resourceMatcher).HandlerFunc(requestHandler.updateResource)
+	r.PathPrefix(Devices).Methods(http.MethodPost).MatcherFunc(resourceMatcher).HandlerFunc(requestHandler.createResource)
+	r.PathPrefix(ApiV1).Handler(mux)
+	r.PathPrefix(WellKnown).Handler(mux)
+
+	setUIHandlers(config, r)
 
 	httpServer := &http.Server{
-		Handler:           kitNetHttp.OpenTelemetryNewHandler(handler, serviceName, tracerProvider),
+		Handler:           wrapHandler(handler, serviceName, tracerProvider),
 		ReadTimeout:       config.Server.ReadTimeout,
 		ReadHeaderTimeout: config.Server.ReadHeaderTimeout,
 		WriteTimeout:      config.Server.WriteTimeout,
 		IdleTimeout:       config.Server.IdleTimeout,
+		ConnContext:       saveConnInContext,
 	}
 
 	return &Service{
 		httpServer: httpServer,
-		listener:   listener,
+		listener:   lis,
 	}, nil
 }
 

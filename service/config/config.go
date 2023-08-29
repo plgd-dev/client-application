@@ -120,7 +120,7 @@ func (c Config) Store() error {
 	return Store(c, c.configPath)
 }
 
-func DefaultConfig(uiDirectory string) Config {
+func DefaultConfig(directory string) Config {
 	logCfg := log.MakeDefaultConfig()
 	logCfg.Encoding = "console"
 	return Config{
@@ -128,11 +128,11 @@ func DefaultConfig(uiDirectory string) Config {
 		APIs: APIsConfig{
 			HTTP: HTTPConfig{
 				Enabled: true,
-				Config:  http.DefaultConfig(uiDirectory),
+				Config:  http.DefaultConfig(directory),
 			},
 			GRPC: GRPCConfig{
 				Enabled: true,
-				Config:  grpc.DefaultConfig(),
+				Config:  grpc.DefaultConfig(directory),
 			},
 		},
 		Clients: ClientsConfig{
