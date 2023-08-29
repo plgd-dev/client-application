@@ -132,6 +132,7 @@ const AppLayout = forwardRef<AppLayoutRefType, Props>((props, ref) => {
     const UserWidgetComponent = memo(() => {
         if (
             !mockApp &&
+            !initializedByAnother &&
             wellKnownConfig &&
             wellKnownConfig.remoteProvisioning &&
             wellKnownConfig?.deviceAuthenticationMode === DEVICE_AUTH_MODE.X509
@@ -155,7 +156,11 @@ const AppLayout = forwardRef<AppLayoutRefType, Props>((props, ref) => {
 
     return (
         <ConditionalWrapper
-            condition={!props.mockApp && wellKnownConfig?.deviceAuthenticationMode === DEVICE_AUTH_MODE.X509}
+            condition={
+                !props.mockApp &&
+                !initializedByAnother &&
+                wellKnownConfig?.deviceAuthenticationMode === DEVICE_AUTH_MODE.X509
+            }
             wrapper={(child: ReactElement) => (
                 <AppAuthProvider
                     ref={authProviderRef}

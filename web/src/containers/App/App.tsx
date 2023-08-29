@@ -1,4 +1,4 @@
-import { FC, useContext } from 'react'
+import { FC, useContext, useMemo } from 'react'
 import { UserManagerSettings } from 'oidc-client-ts'
 import { AuthProvider, UserManager } from 'oidc-react'
 import { useIntl } from 'react-intl'
@@ -27,6 +27,11 @@ const App: FC<Props> = (props) => {
 
     security.setWellKnowConfig(wellKnownConfig)
 
+    const authority = useMemo(
+        () => wellKnownConfig?.remoteProvisioning?.authority,
+        [wellKnownConfig?.remoteProvisioning?.authority]
+    )
+
     const setInitialize = (value = true) => {
         setWellKnownConfig({
             ...wellKnownConfig,
@@ -39,7 +44,7 @@ const App: FC<Props> = (props) => {
     }
 
     const getOidcCommonSettings = () => ({
-        authority: wellKnownConfig?.remoteProvisioning?.authority || '',
+        authority: authority || '',
         scope: wellKnownConfig?.remoteProvisioning?.webOauthClient?.scopes?.join?.(' ') || '',
     })
 
@@ -74,11 +79,14 @@ const App: FC<Props> = (props) => {
 
     return (
         <ConditionalWrapper
-            condition={!props.mockApp && wellKnownConfig?.deviceAuthenticationMode === DEVICE_AUTH_MODE.X509}
+            condition={
+                !props.mockApp && !!authority && wellKnownConfig?.deviceAuthenticationMode === DEVICE_AUTH_MODE.X509
+            }
             wrapper={Wrapper}
         >
             <AppInner
                 configError={wellKnownConfigError}
+                initializedByAnother={!authority}
                 mockApp={props.mockApp}
                 reFetchConfig={reFetchConfig}
                 setInitialize={setInitialize}

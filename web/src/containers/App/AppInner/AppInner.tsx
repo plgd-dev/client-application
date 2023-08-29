@@ -27,7 +27,13 @@ const getBuildInformation = (wellKnownConfig: WellKnownConfigType) => ({
 })
 
 const AppInner = (props: Props) => {
-    const { wellKnownConfig, configError, reFetchConfig, setInitialize } = props
+    const {
+        wellKnownConfig,
+        configError,
+        reFetchConfig,
+        setInitialize,
+        initializedByAnother: initializedByAnotherProp,
+    } = props
     const buildInformation = getBuildInformation(wellKnownConfig)
 
     const appLayoutRef = useRef<AppLayoutRefType | null>(null)
@@ -41,10 +47,11 @@ const AppInner = (props: Props) => {
         })
     }
 
-    const [initializedByAnother, setInitializedByAnother] = useState(false)
+    const [initializedByAnother, setInitializedByAnother] = useState(
+        initializedByAnotherProp === undefined ? false : initializedByAnotherProp
+    )
     const [suspectedUnauthorized, setSuspectedUnauthorized] = useState(false)
     const [collapsed, setCollapsed] = useLocalStorage('leftPanelCollapsed', true)
-
     const unauthorizedCallback = useCallback(() => {
         setSuspectedUnauthorized(true)
 
