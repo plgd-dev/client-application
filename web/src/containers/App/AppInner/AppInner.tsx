@@ -17,6 +17,7 @@ import appConfig from '@/config'
 import { Props } from './AppInner.types'
 import AppLayout from '@/containers/App/AppLayout/AppLayout'
 import { AppLayoutRefType } from '@/containers/App/AppLayout/AppLayout.types'
+import { DEVICE_AUTH_MODE } from '@shared-ui/app/clientApp/constants'
 
 const getBuildInformation = (wellKnownConfig: WellKnownConfigType) => ({
     buildDate: wellKnownConfig?.buildDate || '',
@@ -47,8 +48,16 @@ const AppInner = (props: Props) => {
         })
     }
 
+    const isInitializedByAnother = useMemo(
+        () =>
+            initializedByAnotherProp &&
+            wellKnownConfig.isInitialized &&
+            wellKnownConfig?.deviceAuthenticationMode === DEVICE_AUTH_MODE.X509,
+        [wellKnownConfig, initializedByAnotherProp]
+    )
+
     const [initializedByAnother, setInitializedByAnother] = useState(
-        initializedByAnotherProp === undefined ? false : initializedByAnotherProp
+        initializedByAnotherProp === undefined ? false : isInitializedByAnother
     )
     const [suspectedUnauthorized, setSuspectedUnauthorized] = useState(false)
     const [collapsed, setCollapsed] = useLocalStorage('leftPanelCollapsed', true)
@@ -91,7 +100,7 @@ const AppInner = (props: Props) => {
                 <BrowserRouter>
                     <Helmet defaultTitle={appConfig.appName} titleTemplate={`%s | ${appConfig.appName}`} />
                     <AppLayout
-                        initializedByAnother={initializedByAnother}
+                        initializedByAnother={!!initializedByAnother}
                         mockApp={props.mockApp}
                         ref={appLayoutRef}
                         setInitialize={setInitialize}
