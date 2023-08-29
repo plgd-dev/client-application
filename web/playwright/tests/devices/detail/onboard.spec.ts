@@ -14,7 +14,7 @@ test('onboard device', async ({ page }) => {
     // back to page
     await page.goto('/')
 
-    await page.getByTestId('devsim-server00').click()
+    // await page.getByTestId('devsim-server00').click()
 
     // is onboarded -> exist offboard button
     if (await page.getByTestId(offboardButton).isVisible()) {
