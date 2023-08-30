@@ -109,8 +109,6 @@ func TestClientApplicationServerInitializeWithPSK(t *testing.T) {
 	// reset
 	doReset(t, "", http.StatusOK)
 
-	// reset again
-	doReset(t, "", http.StatusBadRequest)
 	// initialize again
 	initializePSK(t, subjectID, "key")
 	doDisown(t, dev.GetId(), http.StatusNotFound)

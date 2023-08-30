@@ -68,7 +68,7 @@ func TestClientApplicationServerReset(t *testing.T) {
 	// reset
 	doReset(t, token, http.StatusOK)
 
-	// try again reset - should fail
-	doReset(t, token, http.StatusBadRequest)
+	// try again reset
+	doReset(t, token, http.StatusOK)
 	initializeRemoteProvisioning(ctx, t)
 }

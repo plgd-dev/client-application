@@ -21,8 +21,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/plgd-dev/client-application/pb"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 func (s *ClientApplicationServer) reset(ctx context.Context, forceReset bool) error {
@@ -56,9 +54,6 @@ func (s *ClientApplicationServer) reset(ctx context.Context, forceReset bool) er
 func (s *ClientApplicationServer) Reset(ctx context.Context, req *pb.ResetRequest) (*pb.ResetResponse, error) {
 	s.initializationMutex.Lock()
 	defer s.initializationMutex.Unlock()
-	if s.serviceDevice.Load() == nil {
-		return nil, status.Errorf(codes.FailedPrecondition, "already uninitialized")
-	}
 	err := s.reset(ctx, true)
 	if err != nil {
 		return nil, err
