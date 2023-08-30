@@ -74,7 +74,11 @@ func (s *ClientApplicationServer) init(ctx context.Context, devService *serviceD
 
 func (s *ClientApplicationServer) updatePSK(subjectUUID, key string, save bool) (config.Config, error) {
 	cfg := s.GetConfig()
-	cfg.Clients.Device.COAP.TLS.Authentication = configDevice.AuthenticationPreSharedKey
+	if subjectUUID == "" || key == "" {
+		cfg.Clients.Device.COAP.TLS.Authentication = configDevice.AuthenticationUninitialized
+	} else {
+		cfg.Clients.Device.COAP.TLS.Authentication = configDevice.AuthenticationPreSharedKey
+	}
 	cfg.Clients.Device.COAP.TLS.PreSharedKey.Key = key
 	cfg.Clients.Device.COAP.TLS.PreSharedKey.SubjectIDStr = subjectUUID
 	var err error
