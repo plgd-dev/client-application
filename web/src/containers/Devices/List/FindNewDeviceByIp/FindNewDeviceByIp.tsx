@@ -14,7 +14,7 @@ import { useIsMounted } from '@shared-ui/common/hooks'
 import { addDevice } from '@/containers/Devices/slice'
 import { useDispatch } from 'react-redux'
 import { Props } from './FindNewDeviceByIp.types'
-import * as styles from '@/containers/Devices/Detail/IncompleteOnboardingDataModal/IncompleteOnboardingDataModal.styles'
+// import * as styles from '@/containers/Devices/Detail/IncompleteOnboardingDataModal/IncompleteOnboardingDataModal.styles'
 
 const FindNewDeviceByIp: FC<Props> = ({ disabled }) => {
     const [fetching, setFetching] = useState<boolean>(false)
@@ -47,11 +47,11 @@ const FindNewDeviceByIp: FC<Props> = ({ disabled }) => {
 
     const renderBody = () => (
         <FormGroup error={error ? _(t.invalidIp) : undefined} id='form-group-device-ip'>
-            <FormLabel required={true} text={_(t.deviceIp)} />
+            <FormLabel text={_(t.deviceIp)} />
             <FormInput
                 disabled={fetching}
                 inputRef={baseInputRef}
-                inputWrapperStyle={styles.inputWrapper}
+                // inputWrapperStyle={styles.inputWrapper}
                 onChange={(e) => setDeviceIp(e.target.value.trim())}
                 onKeyPress={(e) => (e.charCode === 13 ? handleFetch() : undefined)}
                 placeholder={_(t.enterDeviceIp) as string}
