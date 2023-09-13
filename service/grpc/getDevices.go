@@ -52,7 +52,7 @@ import (
 )
 
 const (
-	DefaultTimeout = 2 * time.Second
+	DefaultTimeout = 10 * time.Second
 	MulticastPort  = 5683
 )
 
