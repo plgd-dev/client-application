@@ -19,6 +19,7 @@ import FormLabel from '@shared-ui/components/Atomic/FormLabel'
 import FormInput from '@shared-ui/components/Atomic/FormInput'
 import FormGroup from '@shared-ui/components/Atomic/FormGroup'
 import FormTextarea from '@shared-ui/components/Atomic/FormTextarea'
+
 import * as copyStyles from '@shared-ui/components/Atomic/CopyElement/CopyElement.styles'
 
 import { messages as t } from '@/containers/Devices/Devices.i18n'
@@ -116,8 +117,8 @@ const IncompleteOnboardingDataModal: FC<Props> = (props) => {
                         >
                             <FormTextarea
                                 autoFocus={true}
-                                onChange={(e) => setTextareaValue(e.target.value)}
-                                onPaste={(e) => parsePasteData(e.clipboardData.getData('text'))}
+                                onChange={(e: any) => setTextareaValue(e.target.value)}
+                                onPaste={(e: any) => parsePasteData(e.clipboardData.getData('text'))}
                                 value={textareaValue}
                             />
                         </motion.div>
@@ -208,7 +209,7 @@ const IncompleteOnboardingDataModal: FC<Props> = (props) => {
                         <FormLabel text={_(t.onboardingFieldCertificateAuthority)} />
                         <FormInput
                             copy={true}
-                            inputWrapperStyle={styles.inputWrapper}
+                            // inputWrapperStyle={styles.inputWrapper}
                             onChange={(e) => handleInputChange(e.target.value, 'certificateAuthorities')}
                             value={onboardingData.certificateAuthorities || ''}
                         />
