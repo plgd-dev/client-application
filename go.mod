@@ -25,7 +25,7 @@ require (
 	github.com/stretchr/testify v1.8.4
 	go.opentelemetry.io/otel/trace v1.14.0
 	go.uber.org/atomic v1.11.0
-	go.uber.org/zap v1.24.0
+	go.uber.org/zap v1.26.0
 	google.golang.org/api v0.138.0
 	google.golang.org/grpc v1.58.0
 	google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.3.0
