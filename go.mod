@@ -23,7 +23,7 @@ require (
 	github.com/plgd-dev/hub/v2 v2.10.0
 	github.com/plgd-dev/kit/v2 v2.0.0-20211006190727-057b33161b90
 	github.com/stretchr/testify v1.8.4
-	go.opentelemetry.io/otel/trace v1.14.0
+	go.opentelemetry.io/otel/trace v1.19.0
 	go.uber.org/atomic v1.11.0
 	go.uber.org/zap v1.24.0
 	google.golang.org/api v0.138.0
