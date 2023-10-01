@@ -30,14 +30,15 @@ import { getVersionNumberFromGithub, reset } from '@shared-ui/app/clientApp/App/
 import { DEVICE_AUTH_MODE, GITHUB_VERSION_REQUEST_INTERVAL } from '@shared-ui/app/clientApp/constants'
 import AppAuthProvider from '@shared-ui/app/clientApp/App/AppAuthProvider'
 import { AppAuthProviderRefType } from '@shared-ui/app/clientApp/App/AppAuthProvider/AppAuthProvider.types'
+import Logo from '@shared-ui/components/Layout/LeftPanel/components/Logo'
 import InitializedByAnother from '@shared-ui/app/clientApp/App/InitializedByAnother'
+import PageLoader from '@shared-ui/components/Atomic/PageLoader'
 
 import { mather, menu, Routes } from '@/routes'
 import { messages as t } from '../App.i18n'
 import { AppLayoutRefType, Props } from './AppLayout.types'
 import { CombinedStoreType } from '@/store/store'
 import { setVersion } from '@/containers/App/slice'
-import Logo from '@shared-ui/components/Layout/LeftPanel/components/Logo'
 
 const AppLayout = forwardRef<AppLayoutRefType, Props>((props, ref) => {
     const { mockApp, wellKnownConfig, setInitialize, initializedByAnother, suspectedUnauthorized } = props
@@ -110,7 +111,6 @@ const AppLayout = forwardRef<AppLayoutRefType, Props>((props, ref) => {
     const handleLogout = () => {
         if (authProviderRef) {
             const signOut = authProviderRef?.current?.getSignOutMethod
-            console.log({ signOut })
 
             if (signOut) {
                 if (!initializedByAnother) {
@@ -152,6 +152,22 @@ const AppLayout = forwardRef<AppLayoutRefType, Props>((props, ref) => {
         return <div />
     })
 
+    const getContent = useCallback(() => {
+        if (initializedByAnother) {
+            return <InitializedByAnother show={true} />
+        } else if (suspectedUnauthorized) {
+            return (
+                <>
+                    <PageLoader loading className='auth-loader' />
+                    <div className='page-loading-text'>{`${_(t.loading)}...`}</div>
+                </>
+            )
+        } else {
+            return <Routes />
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [initializedByAnother, suspectedUnauthorized])
+
     if (authError) {
         return <div className='client-error-message'>{`${_(t.authError)}: ${authError}`}</div>
     }
@@ -175,12 +191,7 @@ const AppLayout = forwardRef<AppLayoutRefType, Props>((props, ref) => {
             )}
         >
             <Layout
-                content={
-                    <>
-                        <InitializedByAnother show={initializedByAnother} />
-                        {!initializedByAnother && !suspectedUnauthorized && <Routes />}
-                    </>
-                }
+                content={getContent()}
                 header={
                     <Header
                         breadcrumbs={<div id='breadcrumbsPortalTarget'></div>}

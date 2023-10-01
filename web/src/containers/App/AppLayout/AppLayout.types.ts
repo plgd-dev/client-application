@@ -9,5 +9,6 @@ export type Props = {
     suspectedUnauthorized: boolean
     mockApp: boolean
     setInitialize: (isInitialize?: boolean) => void
+    updateWellKnownConfig: (data: WellKnownConfigType) => void
     wellKnownConfig?: WellKnownConfigType
 }

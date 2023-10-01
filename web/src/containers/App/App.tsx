@@ -1,4 +1,4 @@
-import { FC, useContext, useMemo } from 'react'
+import { FC, useContext, useMemo, useState } from 'react'
 import { UserManagerSettings } from 'oidc-client-ts'
 import { AuthProvider, UserManager } from 'oidc-react'
 import { useIntl } from 'react-intl'
@@ -14,12 +14,20 @@ import AppLoader from '@shared-ui/app/clientApp/App/AppLoader'
 import AppInner from '@/containers/App/AppInner/AppInner'
 import { messages as t } from './App.i18n'
 import './App.scss'
+import UnInitializedScreen from '@shared-ui/app/clientApp/App/UnInitializedScreen'
 
 const App: FC<Props> = (props) => {
     const { formatMessage: _ } = useIntl()
     const httpGatewayAddress = process.env.REACT_APP_HTTP_GATEWAY_ADDRESS || window.location.origin
-    const [wellKnownConfig, setWellKnownConfig, reFetchConfig, wellKnownConfigError] =
-        useWellKnownConfiguration(httpGatewayAddress)
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const [test, setTest] = useState(1)
+    const [wellKnownConfig, setWellKnownConfig, reFetchConfig, wellKnownConfigError] = useWellKnownConfiguration(
+        httpGatewayAddress,
+        undefined,
+        (w) => {
+            setTest(2)
+        }
+    )
 
     security.setGeneralConfig({
         httpGatewayAddress,
@@ -37,6 +45,10 @@ const App: FC<Props> = (props) => {
             ...wellKnownConfig,
             isInitialized: value,
         } as WellKnownConfigType)
+    }
+
+    const updateWellKnownConfig = (data: WellKnownConfigType) => {
+        setWellKnownConfig(data)
     }
 
     if (!wellKnownConfig) {
@@ -62,6 +74,10 @@ const App: FC<Props> = (props) => {
 
     const onSignIn = async () => {
         window.location.href = window.location.href.split('?')[0]
+    }
+
+    if (!wellKnownConfig.isInitialized) {
+        return <UnInitializedScreen updateWellKnownConfig={setWellKnownConfig} wellKnownConfig={wellKnownConfig} />
     }
 
     const Wrapper = (child: any) => (
@@ -90,6 +106,7 @@ const App: FC<Props> = (props) => {
                 mockApp={props.mockApp}
                 reFetchConfig={reFetchConfig}
                 setInitialize={setInitialize}
+                updateWellKnownConfig={updateWellKnownConfig}
                 wellKnownConfig={wellKnownConfig as WellKnownConfigType}
             />
         </ConditionalWrapper>

@@ -34,6 +34,7 @@ const AppInner = (props: Props) => {
         reFetchConfig,
         setInitialize,
         initializedByAnother: initializedByAnotherProp,
+        updateWellKnownConfig,
     } = props
     const buildInformation = getBuildInformation(wellKnownConfig)
 
@@ -105,7 +106,7 @@ const AppInner = (props: Props) => {
                         ref={appLayoutRef}
                         setInitialize={setInitialize}
                         suspectedUnauthorized={suspectedUnauthorized}
-                        wellKnownConfig={wellKnownConfig}
+                        updateWellKnownConfig={updateWellKnownConfig}
                     />
                     <ToastContainer />
                     <BrowserNotificationsContainer />
