@@ -6,5 +6,6 @@ export type Props = {
     mockApp: boolean
     reFetchConfig: any
     setInitialize: (isInitialize?: boolean) => void
+    updateWellKnownConfig: (data: WellKnownConfigType) => void
     wellKnownConfig: WellKnownConfigType
 }
