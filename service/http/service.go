@@ -20,9 +20,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
+	"log"
 	"net"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"regexp"
 	"strings"
 
@@ -37,7 +40,7 @@ import (
 	"github.com/plgd-dev/client-application/service/grpc"
 	"github.com/plgd-dev/hub/v2/http-gateway/serverMux"
 	"github.com/plgd-dev/hub/v2/pkg/fsnotify"
-	"github.com/plgd-dev/hub/v2/pkg/log"
+	pkgLog "github.com/plgd-dev/hub/v2/pkg/log"
 	kitNetHttp "github.com/plgd-dev/hub/v2/pkg/net/http"
 	"go.opentelemetry.io/otel/trace"
 )
@@ -122,7 +125,7 @@ func getTLSConn(r *http.Request) (*tls.Conn, bool) {
 	return c, ok
 }
 
-func newListener(config configHttp.Config, fileWatcher *fsnotify.Watcher, logger log.Logger) (listener.Listener, error) {
+func newListener(config configHttp.Config, fileWatcher *fsnotify.Watcher, logger pkgLog.Logger) (listener.Listener, error) {
 	if config.Config.TLS.Enabled {
 		return tls.New(tls.Config{
 			Addr: config.Config.Addr,
@@ -176,14 +179,14 @@ func setUIHandlers(config configHttp.Config, r *router.Router) {
 			}
 			w.WriteHeader(c.Code)
 			if _, err := c.Body.WriteTo(w); err != nil {
-				log.Errorf("failed to write response body: %w", err)
+				pkgLog.Errorf("failed to write response body: %w", err)
 			}
 		}))
 	}
 }
 
 // New creates new HTTP service
-func New(ctx context.Context, serviceName string, config configHttp.Config, clientApplicationServer *grpc.ClientApplicationServer, fileWatcher *fsnotify.Watcher, logger log.Logger, tracerProvider trace.TracerProvider) (*Service, error) {
+func New(ctx context.Context, serviceName string, config configHttp.Config, clientApplicationServer *grpc.ClientApplicationServer, fileWatcher *fsnotify.Watcher, logger pkgLog.Logger, tracerProvider trace.TracerProvider) (*Service, error) {
 	lis, err := newListener(config, fileWatcher, logger)
 	if err != nil {
 		return nil, fmt.Errorf("cannot create grpc server: %w", err)
@@ -211,6 +214,11 @@ func New(ctx context.Context, serviceName string, config configHttp.Config, clie
 
 	setUIHandlers(config, r)
 
+	httpLogger := log.New(io.Discard, "", 0)
+	if logger.Config().Level == pkgLog.DebugLevel {
+		httpLogger = log.New(os.Stderr, "net/http", log.LstdFlags)
+	}
+
 	httpServer := &http.Server{
 		Handler:           wrapHandler(handler, serviceName, tracerProvider),
 		ReadTimeout:       config.Server.ReadTimeout,
@@ -218,6 +226,7 @@ func New(ctx context.Context, serviceName string, config configHttp.Config, clie
 		WriteTimeout:      config.Server.WriteTimeout,
 		IdleTimeout:       config.Server.IdleTimeout,
 		ConnContext:       saveConnInContext,
+		ErrorLog:          httpLogger,
 	}
 
 	return &Service{
