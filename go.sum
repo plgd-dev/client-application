@@ -740,6 +740,8 @@ github.com/pion/dtls/v2 v2.0.1-0.20200503085337-8e86b3a7d585/go.mod h1:/GahSOC8Z
 github.com/pion/dtls/v2 v2.0.10-0.20210502094952-3dc563b9aede/go.mod h1:86wv5dgx2J/z871nUR+5fTTY9tISLUlo+C5Gm86r1Hs=
 github.com/pion/dtls/v2 v2.2.8-0.20231001141911-840187442335 h1:BEUIk2q6R/cFuLV7z5F5hnMy8Wi08I6bPJ0J8PDX/ZA=
 github.com/pion/dtls/v2 v2.2.8-0.20231001141911-840187442335/go.mod h1:9uxx7OZq9NvKDfKhLQ12rp9GZCflx7VKgLEoS2T2mGo=
+github.com/pion/dtls/v2 v2.2.8-0.20231003120602-c8645455edb4 h1:nBe54PGpvUy3E/mbq7F9+AOV8EDByQQCeE1nUtMv41I=
+github.com/pion/dtls/v2 v2.2.8-0.20231003120602-c8645455edb4/go.mod h1:DJs+oipyW4oFpJCsMKhtkiQxb5r7m1r9VP0mH08JHN4=
 github.com/pion/logging v0.2.2 h1:M9+AIj/+pxNsDfAT64+MAVgJO0rsyLnoJKCqf//DoeY=
 github.com/pion/logging v0.2.2/go.mod h1:k0/tDVsRCX2Mb2ZEmTqNa7CWsQPc+YYCB7Q+5pahoms=
 github.com/pion/transport v0.10.0/go.mod h1:BnHnUipd0rZQyTVB2SBGojFHT9CBt5C5TcsJSQGkvSE=
