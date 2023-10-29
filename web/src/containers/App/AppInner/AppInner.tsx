@@ -86,6 +86,7 @@ const AppInner = (props: Props) => {
             collapsed,
             setCollapsed,
             buildInformation: buildInformation || undefined,
+            isHub: false,
         }),
         [buildInformation, collapsed, setCollapsed, unauthorizedCallback]
     )
