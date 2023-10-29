@@ -23,9 +23,10 @@ const App: FC<Props> = (props) => {
     const [test, setTest] = useState(1)
     const [wellKnownConfig, setWellKnownConfig, reFetchConfig, wellKnownConfigError] = useWellKnownConfiguration(
         httpGatewayAddress,
-        undefined,
-        (w) => {
-            setTest(2)
+        {
+            onConfigurationChange: () => {
+                setTest(2)
+            },
         }
     )
 

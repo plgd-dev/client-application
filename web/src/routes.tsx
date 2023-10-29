@@ -30,7 +30,8 @@ export const Routes = () => {
     const { formatMessage: _ } = useIntl()
     return (
         <RoutesGroup>
-            <Route element={<DevicesListPage />} path='/' />
+            <Route element={<DevicesListPage defaultActiveTab={0} />} path='/' />
+            <Route element={<DevicesListPage defaultActiveTab={1} />} path='/configuration' />
             <Route element={<DevicesDetailsPage defaultActiveTab={0} />} path='/devices/:id' />
             <Route element={<DevicesDetailsPage defaultActiveTab={1} />} path='/devices/:id/resources' />
             <Route element={<DevicesDetailsPage defaultActiveTab={1} />} path='/devices/:id/resources/*' />
