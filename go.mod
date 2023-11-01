@@ -18,7 +18,7 @@ require (
 	github.com/jessevdk/go-flags v1.5.0
 	github.com/lestrrat-go/jwx v1.2.26
 	github.com/pion/dtls/v2 v2.2.8-0.20231001141911-840187442335
-	github.com/plgd-dev/device/v2 v2.2.1
+	github.com/plgd-dev/device/v2 v2.2.2
 	github.com/plgd-dev/go-coap/v3 v3.1.6-0.20231002093212-ea0ff53e8348
 	github.com/plgd-dev/hub/v2 v2.12.1
 	github.com/plgd-dev/kit/v2 v2.0.0-20211006190727-057b33161b90
