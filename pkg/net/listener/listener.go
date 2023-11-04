@@ -38,7 +38,7 @@ type Server struct {
 	closeFunc []func()
 }
 
-// NewServer instantiates a listen server.
+// New instantiates a listening server.
 // When passing addr with an unspecified port or ":", use Addr().
 func New(config Config, fileWatcher *fsnotify.Watcher, logger log.Logger) (Listener, error) {
 	if config.TLS.Enabled {

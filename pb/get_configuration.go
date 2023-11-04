@@ -154,7 +154,7 @@ func (c *RemoteProvisioning_Mode) UnmarshalYAML(value *yaml.Node) error {
 }
 
 func validateCA(path string) ([]byte, error) {
-	data, err := os.ReadFile(path)
+	data, err := os.ReadFile(path) //nolint:gosec
 	if err != nil {
 		return nil, err
 	}

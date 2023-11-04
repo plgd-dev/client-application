@@ -61,7 +61,7 @@ func extractUI(directory string) (errRet error) {
 	if err != nil {
 		return fmt.Errorf("cannot get executable path: %w", err)
 	}
-	f, err := os.OpenFile(ex, os.O_RDONLY, 0)
+	f, err := os.OpenFile(ex, os.O_RDONLY, 0) //nolint:gosec
 	if err != nil {
 		return fmt.Errorf("cannot open executable: %w", err)
 	}

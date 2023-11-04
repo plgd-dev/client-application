@@ -68,7 +68,7 @@ func (s *Service) Serve() error {
 	return s.grpcServer.Serve()
 }
 
-// Shutdown ends serving
+// Close stops serving
 func (s *Service) Close() error {
 	s.grpcServer.Stop()
 	return nil
