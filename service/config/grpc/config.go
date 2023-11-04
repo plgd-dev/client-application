@@ -22,6 +22,7 @@ import (
 
 	"github.com/plgd-dev/client-application/pb"
 	"github.com/plgd-dev/client-application/pkg/net/grpc/server"
+	"github.com/plgd-dev/hub/v2/pkg/config/property/urischeme"
 	grpcServer "github.com/plgd-dev/hub/v2/pkg/net/grpc/server"
 	certManagerServer "github.com/plgd-dev/hub/v2/pkg/security/certManager/server"
 )
@@ -38,8 +39,8 @@ func DefaultConfig(directory string) Config {
 			Config: certManagerServer.Config{
 				// we use the same cert for CA because certManagerServer.Config doesn't allow nil values
 				CAPool:                    path.Join(directory, "certs", "crt.pem"),
-				KeyFile:                   path.Join(directory, "certs", "key.pem"),
-				CertFile:                  path.Join(directory, "certs", "crt.pem"),
+				KeyFile:                   urischeme.URIScheme(path.Join(directory, "certs", "key.pem")),
+				CertFile:                  urischeme.URIScheme(path.Join(directory, "certs", "crt.pem")),
 				ClientCertificateRequired: false,
 			},
 		},
