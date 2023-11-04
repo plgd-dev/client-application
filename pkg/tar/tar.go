@@ -50,7 +50,7 @@ func makeTarFileFunc(src string, tw *tar.Writer) func(file string, fi os.FileInf
 			return err
 		}
 		// open files for taring
-		f, err := os.Open(file)
+		f, err := os.Open(file) //nolint:gosec
 		if err != nil {
 			return err
 		}
@@ -96,7 +96,7 @@ func Tar(src string, writers ...io.Writer) (err error) {
 }
 
 func copyFile(target string, perm fs.FileMode, tr io.Reader) error {
-	f, err := os.OpenFile(target, os.O_CREATE|os.O_RDWR, perm)
+	f, err := os.OpenFile(target, os.O_CREATE|os.O_RDWR, perm) //nolint:gosec
 	if err != nil {
 		return err
 	}
@@ -158,7 +158,7 @@ func Untar(dst string, r io.Reader) error {
 		// if its a dir and it doesn't exist create it
 		case tar.TypeDir:
 			if _, err := os.Stat(target); err != nil {
-				if err := os.MkdirAll(target, 0o755); err != nil {
+				if err := os.MkdirAll(target, 0o750); err != nil {
 					return err
 				}
 			}

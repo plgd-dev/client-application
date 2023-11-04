@@ -102,7 +102,7 @@ func createAuthFunc(config configHttp.Config, clientApplicationServer *grpc.Clie
 				URI:    regexp.MustCompile(`^\/(a$|[^a].*|ap$|a[^p].*|ap[^i].*|api[^/])`),
 			})
 		}
-		auth = kitNetHttp.NewInterceptorWithValidator(clientApplicationServer, authRules, whiteList...)
+		auth = kitNetHttp.NewInterceptorWithValidator(clientApplicationServer, kitNetHttp.NewDefaultAuthorizationRules(ApiV1), whiteList...)
 	}
 	return auth
 }
@@ -260,27 +260,4 @@ var queryCaseInsensitive = map[string]string{
 	strings.ToLower(TimeoutQueryKey):               TimeoutQueryKey,
 	strings.ToLower(OwnershipStatusFilterQueryKey): OwnershipStatusFilterQueryKey,
 	strings.ToLower(TypeFilterQueryKey):            TypeFilterQueryKey,
-}
-
-var authRules = map[string][]kitNetHttp.AuthArgs{
-	http.MethodGet: {
-		{
-			URI: regexp.MustCompile(regexp.QuoteMeta(ApiV1) + `\/.*`),
-		},
-	},
-	http.MethodPost: {
-		{
-			URI: regexp.MustCompile(regexp.QuoteMeta(ApiV1) + `\/.*`),
-		},
-	},
-	http.MethodDelete: {
-		{
-			URI: regexp.MustCompile(regexp.QuoteMeta(ApiV1) + `\/.*`),
-		},
-	},
-	http.MethodPut: {
-		{
-			URI: regexp.MustCompile(regexp.QuoteMeta(ApiV1) + `\/.*`),
-		},
-	},
 }

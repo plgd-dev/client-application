@@ -13,7 +13,7 @@ linters-settings:
             - errors
   stylecheck:
     go: "1.18"
-    checks: ["all", "-ST1003"]
+    checks: ["all", "-ST1000" , "-ST1003"]
 
 linters:
   enable:
@@ -104,6 +104,14 @@ linters:
 # issues:
 #   # Fix found issues (if it's supported by the linter).
 #   fix: true
+
+issues:
+  exclude-use-default: false
+  exclude-rules:
+    # Allow complex tests, better to be self contained
+    - path: _test\.go
+      linters:
+        - goconst
 
 run:
   skip-dirs-use-default: false
