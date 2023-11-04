@@ -228,7 +228,7 @@ func NewRemoteProvisioningConfig() *pb.RemoteProvisioning {
 			Scopes:       []string{"offline"},
 		},
 		Id:     testConfig.HubID(),
-		CaPool: []string{testConfig.CA_POOL},
+		CaPool: []string{testConfig.CA_POOL.FilePath()},
 	}
 	if err := c.Validate(); err != nil {
 		panic(err)

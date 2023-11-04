@@ -64,14 +64,16 @@ func loadConfig() config.Config {
 			os.Exit(1)
 		}
 	}
-	if cfg.APIs.HTTP.Enabled && cfg.APIs.HTTP.TLS.Enabled && !checkSelfSignedCertificate(cfg.APIs.HTTP.TLS.CertFile, cfg.APIs.HTTP.TLS.KeyFile) {
-		if err = generateSelfSigned(cfg.APIs.HTTP.TLS.CertFile, cfg.APIs.HTTP.TLS.KeyFile); err != nil {
+	if cfg.APIs.HTTP.Enabled && cfg.APIs.HTTP.TLS.Enabled &&
+		!checkSelfSignedCertificate(cfg.APIs.HTTP.TLS.CertFile.FilePath(), cfg.APIs.HTTP.TLS.KeyFile.FilePath()) {
+		if err = generateSelfSigned(cfg.APIs.HTTP.TLS.CertFile.FilePath(), cfg.APIs.HTTP.TLS.KeyFile.FilePath()); err != nil {
 			log.Errorf("cannot generate self signed certificate for HTTP: %v", err)
 			os.Exit(1)
 		}
 	}
-	if cfg.APIs.GRPC.Enabled && cfg.APIs.GRPC.TLS.Enabled && !checkSelfSignedCertificate(cfg.APIs.GRPC.TLS.CertFile, cfg.APIs.GRPC.TLS.KeyFile) {
-		if err = generateSelfSigned(cfg.APIs.GRPC.TLS.CertFile, cfg.APIs.GRPC.TLS.KeyFile); err != nil {
+	if cfg.APIs.GRPC.Enabled && cfg.APIs.GRPC.TLS.Enabled &&
+		!checkSelfSignedCertificate(cfg.APIs.GRPC.TLS.CertFile.FilePath(), cfg.APIs.GRPC.TLS.KeyFile.FilePath()) {
+		if err = generateSelfSigned(cfg.APIs.GRPC.TLS.CertFile.FilePath(), cfg.APIs.GRPC.TLS.KeyFile.FilePath()); err != nil {
 			log.Errorf("cannot generate self signed certificate for GRPC: %v", err)
 			os.Exit(1)
 		}

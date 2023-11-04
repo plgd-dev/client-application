@@ -36,6 +36,7 @@ import (
 	serviceHttp "github.com/plgd-dev/client-application/service/http"
 	"github.com/plgd-dev/client-application/test"
 	httpgwTest "github.com/plgd-dev/hub/v2/http-gateway/test"
+	"github.com/plgd-dev/hub/v2/pkg/config/property/urischeme"
 	kitNetGrpc "github.com/plgd-dev/hub/v2/pkg/net/grpc"
 	hubTestOAuthServerService "github.com/plgd-dev/hub/v2/test/oauth-server/service"
 	hubTestOAuthServerTest "github.com/plgd-dev/hub/v2/test/oauth-server/test"
@@ -119,7 +120,7 @@ func MakeAccessToken(subject, audience, scopes string, validFor time.Duration) (
 }
 
 func GetAccessTokenForUser(t *testing.T, user string) string {
-	privKey, err := hubTestOAuthServerService.LoadPrivateKey(os.Getenv("TEST_OAUTH_SERVER_ACCESS_TOKEN_PRIVATE_KEY"))
+	privKey, err := hubTestOAuthServerService.LoadPrivateKey(urischeme.URIScheme(os.Getenv("TEST_OAUTH_SERVER_ACCESS_TOKEN_PRIVATE_KEY")))
 	require.NoError(t, err)
 	jwkKey, err := createJwkKey(privKey)
 	require.NoError(t, err)

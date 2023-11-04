@@ -26,6 +26,7 @@ import (
 	"github.com/google/uuid"
 	"github.com/plgd-dev/go-coap/v3/net/blockwise"
 	"github.com/plgd-dev/hub/v2/identity-store/events"
+	"github.com/plgd-dev/hub/v2/pkg/config/property/urischeme"
 	"github.com/plgd-dev/hub/v2/pkg/security/certManager/client"
 	pkgStrings "github.com/plgd-dev/hub/v2/pkg/strings"
 	"github.com/plgd-dev/kit/v2/security"
@@ -83,8 +84,8 @@ func (c *ManufacturerTLSConfig) Validate() error {
 func (c *ManufacturerTLSConfig) ToCertMangerConfig() client.Config {
 	return client.Config{
 		CAPool:          c.CAPool,
-		KeyFile:         c.KeyFile,
-		CertFile:        c.CertFile,
+		KeyFile:         urischeme.URIScheme(c.KeyFile),
+		CertFile:        urischeme.URIScheme(c.CertFile),
 		UseSystemCAPool: false,
 	}
 }
