@@ -16,7 +16,7 @@
     "@types/lodash": "^4.14.195",
     "@types/node": "^18.15.11",
     "@types/react": "^18.2.14",
-    "@types/react-dom": "^18.2.6",
+    "@types/react-dom": "^18.2.13",
     "@types/react-helmet": "^6.1.6",
     "@types/react-table": "^7.7.14",
     "@types/url-parse": "^1.4.8",
