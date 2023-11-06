@@ -48,7 +48,7 @@
     "react-intl-po": "^2.2.2",
     "react-redux": "^8.1.1",
     "react-resize-detector": "^9.1.0",
-    "react-router-dom": "^6.14.1",
+    "react-router-dom": "^6.16.0",
     "react-scripts": "5.0.1",
     "react-select": "^5.7.3",
     "react-table": "^7.8.0",
