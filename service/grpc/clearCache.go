@@ -19,32 +19,47 @@ package grpc
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/google/uuid"
+	"github.com/hashicorp/go-multierror"
 	"github.com/plgd-dev/client-application/pb"
 )
 
-func (s *ClientApplicationServer) ClearCache(ctx context.Context, _ *pb.ClearCacheRequest) (*pb.ClearCacheResponse, error) {
-	var errors []error
-	s.devices.Range(func(key uuid.UUID, dev *device) bool {
-		s.devices.Delete(key)
-		err := dev.Close(ctx)
-		if err != nil {
-			errors = append(errors, fmt.Errorf("cannot close device %v connections: %w", key, err))
-		}
-		return true
-	})
-	var err error
-	switch len(errors) {
-	case 0:
-	case 1:
-		err = errors[0]
-	default:
-		err = fmt.Errorf("%v", errors)
-	}
-	if err != nil {
-		s.logger.Warnf("cannot properly clear cache: %w", err)
-	}
+func closeDevice(dev *device) error {
+	ctx, cancel := context.WithDeadline(context.Background(), time.Now().Add(time.Second))
+	defer cancel()
+	return dev.Close(ctx)
+}
 
+func closeDevices(devices map[uuid.UUID]*device) error {
+	var errors *multierror.Error
+	for key, dev := range devices {
+		err := closeDevice(dev)
+		if err != nil {
+			errors = multierror.Append(errors, fmt.Errorf("cannot close device %v connections: %w", key, err))
+		}
+	}
+	if errors == nil {
+		return nil
+	}
+	switch errors.Len() {
+	case 0:
+		return nil
+	case 1:
+		return errors.Errors[0]
+	default:
+		return errors
+	}
+}
+
+func (s *ClientApplicationServer) ClearCache(ctx context.Context, _ *pb.ClearCacheRequest) (*pb.ClearCacheResponse, error) {
+	devices := s.devices.LoadAndDeleteAll()
+	go func(devices map[uuid.UUID]*device) {
+		err := closeDevices(devices)
+		if err != nil {
+			s.logger.Warnf("cannot properly clear cache: %w", err)
+		}
+	}(devices)
 	return &pb.ClearCacheResponse{}, nil
 }
