@@ -1,58 +1,54 @@
-import {
-    forwardRef,
-    memo,
-    ReactElement,
-    SyntheticEvent,
-    useCallback,
-    useContext,
-    useEffect,
-    useImperativeHandle,
-    useMemo,
-    useRef,
-    useState,
-} from 'react'
+import React, { forwardRef, ReactElement, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react'
 import { useIntl } from 'react-intl'
-import { useNavigate, useLocation } from 'react-router-dom'
 import { useDispatch, useSelector } from 'react-redux'
+import { useNavigate } from 'react-router-dom'
+import { useTheme } from '@emotion/react'
 
 import ConditionalWrapper from '@shared-ui/components/Atomic/ConditionalWrapper'
 import Layout from '@shared-ui/components/Layout'
 import Header from '@shared-ui/components/Layout/Header'
-import LeftPanel, { parseActiveItem } from '@shared-ui/components/Layout/LeftPanel'
-import VersionMark, { getVersionMarkData } from '@shared-ui/components/Atomic/VersionMark'
 import UserWidget from '@/containers/App/UserWidget/UserWidget'
 import Button from '@shared-ui/components/Atomic/Button'
-import { MenuItem } from '@shared-ui/components/Layout/LeftPanel/LeftPanel.types'
 import { getMinutesBetweenDates } from '@shared-ui/common/utils'
-import { severities } from '@shared-ui/components/Atomic/VersionMark/constants'
-import AppContext from '@shared-ui/app/clientApp/App/AppContext'
 import { getVersionNumberFromGithub, reset } from '@shared-ui/app/clientApp/App/AppRest'
 import { DEVICE_AUTH_MODE, GITHUB_VERSION_REQUEST_INTERVAL } from '@shared-ui/app/clientApp/constants'
 import AppAuthProvider from '@shared-ui/app/clientApp/App/AppAuthProvider'
 import { AppAuthProviderRefType } from '@shared-ui/app/clientApp/App/AppAuthProvider/AppAuthProvider.types'
-import Logo from '@shared-ui/components/Layout/LeftPanel/components/Logo'
-import InitializedByAnother from '@shared-ui/app/clientApp/App/InitializedByAnother'
 import PageLoader from '@shared-ui/components/Atomic/PageLoader'
+import { ThemeType } from '@shared-ui/components/Atomic/_theme'
 
-import { mather, menu, Routes } from '@/routes'
+import { Routes } from '@/routes'
 import { messages as t } from '../App.i18n'
 import { AppLayoutRefType, Props } from './AppLayout.types'
 import { CombinedStoreType } from '@/store/store'
 import { setVersion } from '@/containers/App/slice'
+import AppConfig from '../AppConfig/AppConfig'
+
+const LogoElement = (props: any) => {
+    const { css, logo, className, onClick } = props
+    return (
+        <img
+            alt=''
+            className={className}
+            css={css}
+            height={logo.height}
+            onClick={onClick}
+            src={logo.source}
+            width={logo.width}
+        />
+    )
+}
 
 const AppLayout = forwardRef<AppLayoutRefType, Props>((props, ref) => {
     const { mockApp, wellKnownConfig, setInitialize, initializedByAnother, suspectedUnauthorized } = props
     const { formatMessage: _ } = useIntl()
-    const location = useLocation()
     const dispatch = useDispatch()
     const navigate = useNavigate()
+    const theme: ThemeType = useTheme()
 
     const [authError, setAuthError] = useState<string | undefined>(undefined)
-    const [activeItem, setActiveItem] = useState(parseActiveItem(location.pathname, menu, mather))
 
     const authProviderRef = useRef<AppAuthProviderRefType | null>(null)
-
-    const { collapsed, setCollapsed } = useContext(AppContext)
 
     const appStore = useSelector((state: CombinedStoreType) => state.app)
 
@@ -87,27 +83,6 @@ const AppLayout = forwardRef<AppLayoutRefType, Props>((props, ref) => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [])
 
-    const versionMarkData = useMemo(
-        () =>
-            getVersionMarkData({
-                buildVersion: wellKnownConfig?.version || '',
-                githubVersion: appStore.version.latest || '',
-                i18n: {
-                    version: _(t.version),
-                    newUpdateIsAvailable: _(t.newUpdateIsAvailable),
-                },
-            }),
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        [appStore.version.latest, wellKnownConfig]
-    )
-
-    const handleItemClick = (item: MenuItem, e: SyntheticEvent) => {
-        e.preventDefault()
-
-        setActiveItem(item.id)
-        item.link && navigate(item.link)
-    }
-
     const handleLogout = () => {
         if (authProviderRef) {
             const signOut = authProviderRef?.current?.getSignOutMethod
@@ -131,7 +106,7 @@ const AppLayout = forwardRef<AppLayoutRefType, Props>((props, ref) => {
         }
     }
 
-    const UserWidgetComponent = memo(() => {
+    const getUserWidgetComponent = useCallback(() => {
         if (
             !mockApp &&
             !initializedByAnother &&
@@ -139,23 +114,22 @@ const AppLayout = forwardRef<AppLayoutRefType, Props>((props, ref) => {
             wellKnownConfig.remoteProvisioning &&
             wellKnownConfig?.deviceAuthenticationMode === DEVICE_AUTH_MODE.X509
         ) {
-            return <UserWidget logout={handleLogout} />
+            return <UserWidget logoutTitle={_(t.logOut)} onLogout={handleLogout} />
         }
         if (wellKnownConfig && wellKnownConfig?.deviceAuthenticationMode === DEVICE_AUTH_MODE.PRE_SHARED_KEY) {
             return (
                 <Button className='m-l-15' onClick={handleLogout}>
-                    Logout
+                    {_(t.logOut)}
                 </Button>
             )
         }
 
         return <div />
-    })
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [handleLogout, initializedByAnother, mockApp, wellKnownConfig])
 
     const getContent = useCallback(() => {
-        if (initializedByAnother) {
-            return <InitializedByAnother show={true} />
-        } else if (suspectedUnauthorized) {
+        if (suspectedUnauthorized && !initializedByAnother) {
             return (
                 <>
                     <PageLoader loading className='auth-loader' />
@@ -163,7 +137,7 @@ const AppLayout = forwardRef<AppLayoutRefType, Props>((props, ref) => {
                 </>
             )
         } else {
-            return <Routes />
+            return <Routes initializedByAnother={initializedByAnother} />
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [initializedByAnother, suspectedUnauthorized])
@@ -195,38 +169,9 @@ const AppLayout = forwardRef<AppLayoutRefType, Props>((props, ref) => {
                 header={
                     <Header
                         breadcrumbs={<div id='breadcrumbsPortalTarget'></div>}
-                        userWidget={<UserWidgetComponent />}
-                    />
-                }
-                leftPanel={
-                    <LeftPanel
-                        activeId={activeItem}
-                        collapsed={collapsed}
-                        logo={<Logo height={32} width={147} />}
-                        menu={menu}
-                        onItemClick={handleItemClick}
-                        setCollapsed={setCollapsed}
-                        versionMark={
-                            wellKnownConfig && (
-                                <VersionMark
-                                    severity={versionMarkData.severity}
-                                    update={
-                                        wellKnownConfig &&
-                                        versionMarkData.severity !== severities.SUCCESS &&
-                                        appStore.version.latest_url
-                                            ? {
-                                                  text: _(t.clickHere),
-                                                  onClick: (e) => {
-                                                      e.preventDefault()
-                                                      window.open(appStore.version.latest_url, '_blank')
-                                                  },
-                                              }
-                                            : undefined
-                                    }
-                                    versionText={versionMarkData.text}
-                                />
-                            )
-                        }
+                        configButton={<AppConfig />}
+                        contentLeft={theme.logo && <LogoElement logo={theme.logo} onClick={() => navigate(`/`)} />}
+                        userWidget={getUserWidgetComponent()}
                     />
                 }
             />

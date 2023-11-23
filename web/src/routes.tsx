@@ -3,11 +3,11 @@ import { useIntl } from 'react-intl'
 
 import NotFoundPage from '@shared-ui/components/Templates/NotFoundPage'
 import { IconDevices } from '@shared-ui/components/Atomic'
-import DevicesListPage from '@shared-ui/app/clientApp/Devices/List/DevicesListPage'
 import DevicesDetailsPage from '@shared-ui/app/clientApp/Devices/Detail/DevicesDetailsPage'
 import MockApp from '@shared-ui/app/clientApp/MockApp'
 
 import { messages as t } from './containers/App/App.i18n'
+import DevicesListPage from '@/containers/Devices/List'
 
 export const menu = [
     {
@@ -26,12 +26,16 @@ export const menu = [
 
 export const mather = (pathname: string, pattern: string) => matchPath(pattern, pathname)
 
-export const Routes = () => {
+export type RoutesPropsType = {
+    initializedByAnother?: boolean
+}
+
+export const Routes = (props: RoutesPropsType) => {
     const { formatMessage: _ } = useIntl()
     return (
         <RoutesGroup>
-            <Route element={<DevicesListPage defaultActiveTab={0} />} path='/' />
-            <Route element={<DevicesListPage defaultActiveTab={1} />} path='/configuration' />
+            <Route element={<DevicesListPage defaultActiveTab={0} {...props} />} path='/' />
+            <Route element={<DevicesListPage defaultActiveTab={1} {...props} />} path='/configuration' />
             <Route element={<DevicesDetailsPage defaultActiveTab={0} />} path='/devices/:id' />
             <Route element={<DevicesDetailsPage defaultActiveTab={1} />} path='/devices/:id/resources' />
             <Route element={<DevicesDetailsPage defaultActiveTab={1} />} path='/devices/:id/resources/*' />

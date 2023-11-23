@@ -4,20 +4,19 @@ import { BrowserRouter } from 'react-router-dom'
 import { User } from 'oidc-react'
 import jwtDecode from 'jwt-decode'
 import get from 'lodash/get'
-import { ThemeProvider } from '@emotion/react'
 
 import { ToastContainer } from '@shared-ui/components/Atomic/Notification'
 import { BrowserNotificationsContainer } from '@shared-ui/components/Atomic/Toast'
 import { useLocalStorage, WellKnownConfigType } from '@shared-ui/common/hooks'
 import { security } from '@shared-ui/common/services'
-import light from '@shared-ui/components/Atomic/_theme/light'
-import AppContext from '@shared-ui/app/clientApp/App/AppContext'
+import AppContext from '@shared-ui/app/share/AppContext'
+import { DEVICE_AUTH_MODE } from '@shared-ui/app/clientApp/constants'
 
 import appConfig from '@/config'
 import { Props } from './AppInner.types'
 import AppLayout from '@/containers/App/AppLayout/AppLayout'
 import { AppLayoutRefType } from '@/containers/App/AppLayout/AppLayout.types'
-import { DEVICE_AUTH_MODE } from '@shared-ui/app/clientApp/constants'
+import { storeUserWellKnownConfig } from '@/containers/App/slice'
 
 const getBuildInformation = (wellKnownConfig: WellKnownConfigType) => ({
     buildDate: wellKnownConfig?.buildDate || '',
@@ -87,6 +86,7 @@ const AppInner = (props: Props) => {
             setCollapsed,
             buildInformation: buildInformation || undefined,
             isHub: false,
+            updateAppWellKnownConfig: storeUserWellKnownConfig,
         }),
         [buildInformation, collapsed, setCollapsed, unauthorizedCallback]
     )
@@ -98,21 +98,20 @@ const AppInner = (props: Props) => {
 
     return (
         <AppContext.Provider value={contextValue}>
-            <ThemeProvider theme={light}>
-                <BrowserRouter>
-                    <Helmet defaultTitle={appConfig.appName} titleTemplate={`%s | ${appConfig.appName}`} />
-                    <AppLayout
-                        initializedByAnother={!!initializedByAnother}
-                        mockApp={props.mockApp}
-                        ref={appLayoutRef}
-                        setInitialize={setInitialize}
-                        suspectedUnauthorized={suspectedUnauthorized}
-                        updateWellKnownConfig={updateWellKnownConfig}
-                    />
-                    <ToastContainer />
-                    <BrowserNotificationsContainer />
-                </BrowserRouter>
-            </ThemeProvider>
+            <BrowserRouter>
+                <Helmet defaultTitle={appConfig.appName} titleTemplate={`%s | ${appConfig.appName}`} />
+                <AppLayout
+                    initializedByAnother={!!initializedByAnother}
+                    mockApp={props.mockApp}
+                    ref={appLayoutRef}
+                    setInitialize={setInitialize}
+                    suspectedUnauthorized={suspectedUnauthorized}
+                    updateWellKnownConfig={updateWellKnownConfig}
+                    wellKnownConfig={wellKnownConfig}
+                />
+                <ToastContainer />
+                <BrowserNotificationsContainer />
+            </BrowserRouter>
         </AppContext.Provider>
     )
 }
