@@ -1,14 +1,21 @@
 import React from 'react'
 import { createRoot } from 'react-dom/client'
 import { Provider } from 'react-redux'
+import { persistStore } from 'redux-persist'
+import { PersistGate } from 'redux-persist/integration/react'
+
+import IntlProvider from '@shared-ui/components/Atomic/IntlProvider'
+
 import { store } from '@/store'
 import { App } from '@/containers/App'
-import IntlProvider from '@shared-ui/components/Atomic/IntlProvider'
 import reportWebVitals from './reportWebVitals'
 import { DEVICE_AUTH_CODE_SESSION_KEY } from '@/constants'
+
 // @ts-ignore
 import languages from './languages/languages.json'
 import appConfig from '@/config'
+
+let persistor = persistStore(store)
 
 reportWebVitals()
 
@@ -37,9 +44,11 @@ const BaseComponent = () => {
 
     return (
         <Provider store={store}>
-            <IntlProvider defaultLanguage={appConfig.defaultLanguage} languages={languages}>
-                <App mockApp={isMockApp} />
-            </IntlProvider>
+            <PersistGate persistor={persistor}>
+                <IntlProvider defaultLanguage={appConfig.defaultLanguage} languages={languages}>
+                    <App mockApp={isMockApp} />
+                </IntlProvider>
+            </PersistGate>
         </Provider>
     )
 }
