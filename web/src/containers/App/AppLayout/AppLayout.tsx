@@ -84,7 +84,7 @@ const AppLayout = forwardRef<AppLayoutRefType, Props>((props, ref) => {
     }, [])
 
     const handleLogout = () => {
-        if (authProviderRef) {
+        if (authProviderRef?.current) {
             const signOut = authProviderRef?.current?.getSignOutMethod
 
             if (signOut) {
@@ -97,12 +97,12 @@ const AppLayout = forwardRef<AppLayoutRefType, Props>((props, ref) => {
                 } else {
                     signOut().then()
                 }
-            } else {
-                // preshared mode
-                reset().then(() => {
-                    setInitialize(false)
-                })
             }
+        } else {
+            // PSK mode
+            reset().then(() => {
+                setInitialize(false)
+            })
         }
     }
 

@@ -23,11 +23,13 @@ const DevicesListPage: FC<Props> = (props) => {
         clientData: appStore.userWellKnownConfig,
     })
 
-    console.log({ diffOwner })
-    console.log({ initialize })
-    console.log({ initializationLoading })
-
-    return <DevicesListPageCore {...props} initializedByAnother={diffOwner} loading={initializationLoading} />
+    return (
+        <DevicesListPageCore
+            {...props}
+            initializedByAnother={diffOwner || !initialize}
+            loading={initializationLoading}
+        />
+    )
 }
 
 DevicesListPage.displayName = 'DevicesListPage'
