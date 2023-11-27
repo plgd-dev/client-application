@@ -28,8 +28,6 @@ body {
 #root {
   height: 100%;
   min-height: 100vh;
-  //display: flex;
-  //flex-direction: column;
 
   & > div:first-child{
     min-height: 100vh;
@@ -43,14 +41,6 @@ body {
   display: flex;
   position: relative;
   overflow: hidden;
-}
-
-
-// Collapsed menu state
-#app.collapsed {
-  #content {
-    //margin-left: $left_panel_collapsed;
-  }
 }
 
 .client-error-message,
