@@ -28,6 +28,7 @@ export const mather = (pathname: string, pattern: string) => matchPath(pattern, 
 
 export type RoutesPropsType = {
     initializedByAnother?: boolean
+    loading?: boolean
 }
 
 export const Routes = (props: RoutesPropsType) => {
