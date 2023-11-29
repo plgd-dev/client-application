@@ -10,5 +10,5 @@ export type Props = {
     mockApp: boolean
     setInitialize: (isInitialize?: boolean) => void
     updateWellKnownConfig: (data: WellKnownConfigType) => void
-    wellKnownConfig?: WellKnownConfigType
+    wellKnownConfig: WellKnownConfigType
 }

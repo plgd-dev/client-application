@@ -87,8 +87,9 @@ const AppInner = (props: Props) => {
             buildInformation: buildInformation || undefined,
             isHub: false,
             updateAppWellKnownConfig: storeUserWellKnownConfig,
+            setInitialize,
         }),
-        [buildInformation, collapsed, setCollapsed, unauthorizedCallback]
+        [buildInformation, collapsed, setCollapsed, unauthorizedCallback, setInitialize]
     )
 
     // Render an error box with a config error

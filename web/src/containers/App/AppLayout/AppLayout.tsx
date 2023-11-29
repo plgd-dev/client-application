@@ -1,4 +1,13 @@
-import React, { forwardRef, ReactElement, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react'
+import React, {
+    forwardRef,
+    ReactElement,
+    useCallback,
+    useEffect,
+    useImperativeHandle,
+    useMemo,
+    useRef,
+    useState,
+} from 'react'
 import { useIntl } from 'react-intl'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
@@ -14,8 +23,9 @@ import { getVersionNumberFromGithub, reset } from '@shared-ui/app/clientApp/App/
 import { DEVICE_AUTH_MODE, GITHUB_VERSION_REQUEST_INTERVAL } from '@shared-ui/app/clientApp/constants'
 import AppAuthProvider from '@shared-ui/app/clientApp/App/AppAuthProvider'
 import { AppAuthProviderRefType } from '@shared-ui/app/clientApp/App/AppAuthProvider/AppAuthProvider.types'
-import PageLoader from '@shared-ui/components/Atomic/PageLoader'
 import { ThemeType } from '@shared-ui/components/Atomic/_theme'
+import { hasDifferentOwner } from '@shared-ui/common/services/api-utils'
+import { useAppInitialization } from '@shared-ui/app/clientApp/Devices/hooks'
 
 import { Routes } from '@/routes'
 import { messages as t } from '../App.i18n'
@@ -128,19 +138,24 @@ const AppLayout = forwardRef<AppLayoutRefType, Props>((props, ref) => {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [handleLogout, initializedByAnother, mockApp, wellKnownConfig])
 
-    const getContent = useCallback(() => {
-        if (suspectedUnauthorized && !initializedByAnother) {
-            return (
-                <>
-                    <PageLoader loading className='auth-loader' />
-                    <div className='page-loading-text'>{`${_(t.loading)}...`}</div>
-                </>
-            )
-        } else {
-            return <Routes initializedByAnother={initializedByAnother} />
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [initializedByAnother, suspectedUnauthorized])
+    const diffOwner = useMemo(
+        () => hasDifferentOwner(wellKnownConfig, appStore.userWellKnownConfig, true),
+        [wellKnownConfig, appStore.userWellKnownConfig]
+    )
+
+    // previous same owner, can be called reset
+    const sameOwnerDiffAuth = useMemo(
+        () => !hasDifferentOwner(wellKnownConfig, appStore.userWellKnownConfig),
+        [wellKnownConfig, appStore.userWellKnownConfig]
+    )
+
+    const [initializationLoading, reInitializeLoading] = useAppInitialization({
+        wellKnownConfig,
+        loading: diffOwner && !sameOwnerDiffAuth,
+        clientData: appStore.userWellKnownConfig,
+        reInitialize: diffOwner && sameOwnerDiffAuth && !wellKnownConfig.isInitialized,
+        changeInitialize: setInitialize,
+    })
 
     if (authError) {
         return <div className='client-error-message'>{`${_(t.authError)}: ${authError}`}</div>
@@ -165,7 +180,14 @@ const AppLayout = forwardRef<AppLayoutRefType, Props>((props, ref) => {
             )}
         >
             <Layout
-                content={getContent()}
+                content={
+                    <Routes
+                        initializedByAnother={
+                            (initializedByAnother && !suspectedUnauthorized) || !wellKnownConfig.isInitialized
+                        }
+                        loading={initializationLoading || reInitializeLoading}
+                    />
+                }
                 header={
                     <Header
                         breadcrumbs={<div id='breadcrumbsPortalTarget'></div>}
