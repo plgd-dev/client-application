@@ -1,9 +1,7 @@
-import { useRef, useState, useMemo, useCallback } from 'react'
+import { useRef, useState, useMemo, useCallback, useEffect } from 'react'
 import { Helmet } from 'react-helmet'
 import { BrowserRouter } from 'react-router-dom'
-import { User } from 'oidc-react'
-import jwtDecode from 'jwt-decode'
-import get from 'lodash/get'
+import { useSelector } from 'react-redux'
 
 import { ToastContainer } from '@shared-ui/components/Atomic/Notification'
 import { BrowserNotificationsContainer } from '@shared-ui/components/Atomic/Toast'
@@ -11,12 +9,15 @@ import { useLocalStorage, WellKnownConfigType } from '@shared-ui/common/hooks'
 import { security } from '@shared-ui/common/services'
 import AppContext from '@shared-ui/app/share/AppContext'
 import { DEVICE_AUTH_MODE } from '@shared-ui/app/clientApp/constants'
+import { hasDifferentOwner } from '@shared-ui/common/services/api-utils'
 
 import appConfig from '@/config'
 import { Props } from './AppInner.types'
 import AppLayout from '@/containers/App/AppLayout/AppLayout'
 import { AppLayoutRefType } from '@/containers/App/AppLayout/AppLayout.types'
 import { storeUserWellKnownConfig } from '@/containers/App/slice'
+import { CombinedStoreType } from '@/store/store'
+import isEmpty from 'lodash/isEmpty'
 
 const getBuildInformation = (wellKnownConfig: WellKnownConfigType) => ({
     buildDate: wellKnownConfig?.buildDate || '',
@@ -61,23 +62,36 @@ const AppInner = (props: Props) => {
     )
     const [suspectedUnauthorized, setSuspectedUnauthorized] = useState(false)
     const [collapsed, setCollapsed] = useLocalStorage('leftPanelCollapsed', true)
+
+    const appStore = useSelector((state: CombinedStoreType) => state.app)
+
+    const differentOwner = useCallback(
+        (wellKnownConfig: WellKnownConfigType, userWellKnownConfig: any) =>
+            hasDifferentOwner(wellKnownConfig, userWellKnownConfig, true),
+        []
+    )
+
     const unauthorizedCallback = useCallback(() => {
         setSuspectedUnauthorized(true)
 
-        reFetchConfig().then((newWellKnownConfig: WellKnownConfigType) => {
-            if (appLayoutRef.current) {
-                const userData: User = appLayoutRef.current?.getAuthProviderRef().getUserData()
-                const parsedData = jwtDecode(userData.access_token)
-                const ownerId = get(parsedData, newWellKnownConfig.remoteProvisioning?.jwtOwnerClaim as string, '')
-
-                if (ownerId !== newWellKnownConfig?.owner) {
+        reFetchConfig()
+            .then((newWellKnownConfig: WellKnownConfigType) => {
+                if (differentOwner(newWellKnownConfig, appStore.userWellKnownConfig)) {
                     setInitializedByAnother(true)
                 }
-            }
+            })
+            .then(() => {
+                setSuspectedUnauthorized(false)
+            })
+    }, [differentOwner, reFetchConfig, appStore.userWellKnownConfig])
 
-            setSuspectedUnauthorized(false)
-        })
-    }, [reFetchConfig])
+    // check on load
+    useEffect(() => {
+        if (!isEmpty(appStore.userWellKnownConfig)) {
+            unauthorizedCallback()
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [appStore.userWellKnownConfig])
 
     const contextValue = useMemo(
         () => ({

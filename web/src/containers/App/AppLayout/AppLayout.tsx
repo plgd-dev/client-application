@@ -1,17 +1,9 @@
-import React, {
-    forwardRef,
-    ReactElement,
-    useCallback,
-    useEffect,
-    useImperativeHandle,
-    useMemo,
-    useRef,
-    useState,
-} from 'react'
+import React, { forwardRef, ReactElement, useCallback, useEffect, useImperativeHandle, useMemo, useRef } from 'react'
 import { useIntl } from 'react-intl'
 import { useDispatch, useSelector } from 'react-redux'
 import { useNavigate } from 'react-router-dom'
 import { useTheme } from '@emotion/react'
+import isEmpty from 'lodash/isEmpty'
 
 import ConditionalWrapper from '@shared-ui/components/Atomic/ConditionalWrapper'
 import Layout from '@shared-ui/components/Layout'
@@ -55,8 +47,6 @@ const AppLayout = forwardRef<AppLayoutRefType, Props>((props, ref) => {
     const dispatch = useDispatch()
     const navigate = useNavigate()
     const theme: ThemeType = useTheme()
-
-    const [authError, setAuthError] = useState<string | undefined>(undefined)
 
     const authProviderRef = useRef<AppAuthProviderRefType | null>(null)
 
@@ -117,9 +107,12 @@ const AppLayout = forwardRef<AppLayoutRefType, Props>((props, ref) => {
     }
 
     const getUserWidgetComponent = useCallback(() => {
+        if (isEmpty(appStore.userWellKnownConfig)) {
+            return <div />
+        }
+
         if (
             !mockApp &&
-            !initializedByAnother &&
             wellKnownConfig &&
             wellKnownConfig.remoteProvisioning &&
             wellKnownConfig?.deviceAuthenticationMode === DEVICE_AUTH_MODE.X509
@@ -136,7 +129,7 @@ const AppLayout = forwardRef<AppLayoutRefType, Props>((props, ref) => {
 
         return <div />
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [handleLogout, initializedByAnother, mockApp, wellKnownConfig])
+    }, [handleLogout, initializedByAnother, mockApp, wellKnownConfig, appStore.userWellKnownConfig])
 
     const diffOwner = useMemo(
         () => hasDifferentOwner(wellKnownConfig, appStore.userWellKnownConfig, true),
@@ -151,15 +144,10 @@ const AppLayout = forwardRef<AppLayoutRefType, Props>((props, ref) => {
 
     const [initializationLoading, reInitializeLoading] = useAppInitialization({
         wellKnownConfig,
-        loading: diffOwner && !sameOwnerDiffAuth,
         clientData: appStore.userWellKnownConfig,
         reInitialize: diffOwner && sameOwnerDiffAuth && !wellKnownConfig.isInitialized,
         changeInitialize: setInitialize,
     })
-
-    if (authError) {
-        return <div className='client-error-message'>{`${_(t.authError)}: ${authError}`}</div>
-    }
 
     return (
         <ConditionalWrapper
@@ -168,16 +156,7 @@ const AppLayout = forwardRef<AppLayoutRefType, Props>((props, ref) => {
                 !initializedByAnother &&
                 wellKnownConfig?.deviceAuthenticationMode === DEVICE_AUTH_MODE.X509
             }
-            wrapper={(child: ReactElement) => (
-                <AppAuthProvider
-                    ref={authProviderRef}
-                    setAuthError={setAuthError}
-                    setInitialize={setInitialize}
-                    wellKnownConfig={wellKnownConfig}
-                >
-                    {child}
-                </AppAuthProvider>
-            )}
+            wrapper={(child: ReactElement) => <AppAuthProvider ref={authProviderRef}>{child}</AppAuthProvider>}
         >
             <Layout
                 content={
