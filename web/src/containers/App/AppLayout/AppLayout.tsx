@@ -23,7 +23,7 @@ import { Routes } from '@/routes'
 import { messages as t } from '../App.i18n'
 import { AppLayoutRefType, Props } from './AppLayout.types'
 import { CombinedStoreType } from '@/store/store'
-import { setVersion } from '@/containers/App/slice'
+import { setVersion, storeUserWellKnownConfig } from '@/containers/App/slice'
 import AppConfig from '../AppConfig/AppConfig'
 
 const LogoElement = (props: any) => {
@@ -42,7 +42,7 @@ const LogoElement = (props: any) => {
 }
 
 const AppLayout = forwardRef<AppLayoutRefType, Props>((props, ref) => {
-    const { mockApp, wellKnownConfig, setInitialize, initializedByAnother, suspectedUnauthorized } = props
+    const { mockApp, wellKnownConfig, initializedByAnother, suspectedUnauthorized, reFetchConfig } = props
     const { formatMessage: _ } = useIntl()
     const dispatch = useDispatch()
     const navigate = useNavigate()
@@ -91,7 +91,9 @@ const AppLayout = forwardRef<AppLayoutRefType, Props>((props, ref) => {
                 if (!initializedByAnother) {
                     reset().then((_r) => {
                         signOut().then((_r: void) => {
-                            setInitialize(false)
+                            reFetchConfig().then(() => {
+                                dispatch(storeUserWellKnownConfig({}))
+                            })
                         })
                     })
                 } else {
@@ -101,7 +103,9 @@ const AppLayout = forwardRef<AppLayoutRefType, Props>((props, ref) => {
         } else {
             // PSK mode
             reset().then(() => {
-                setInitialize(false)
+                reFetchConfig().then(() => {
+                    dispatch(storeUserWellKnownConfig({}))
+                })
             })
         }
     }
@@ -146,7 +150,7 @@ const AppLayout = forwardRef<AppLayoutRefType, Props>((props, ref) => {
         wellKnownConfig,
         clientData: appStore.userWellKnownConfig,
         reInitialize: diffOwner && sameOwnerDiffAuth && !wellKnownConfig.isInitialized,
-        changeInitialize: setInitialize,
+        reFetchConfig,
     })
 
     return (

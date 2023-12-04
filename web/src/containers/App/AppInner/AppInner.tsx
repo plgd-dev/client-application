@@ -32,7 +32,6 @@ const AppInner = (props: Props) => {
         wellKnownConfig,
         configError,
         reFetchConfig,
-        setInitialize,
         initializedByAnother: initializedByAnotherProp,
         updateWellKnownConfig,
     } = props
@@ -101,9 +100,9 @@ const AppInner = (props: Props) => {
             buildInformation: buildInformation || undefined,
             isHub: false,
             updateAppWellKnownConfig: storeUserWellKnownConfig,
-            setInitialize,
+            reFetchConfig,
         }),
-        [buildInformation, collapsed, setCollapsed, unauthorizedCallback, setInitialize]
+        [buildInformation, collapsed, setCollapsed, unauthorizedCallback, reFetchConfig]
     )
 
     // Render an error box with a config error
@@ -118,8 +117,8 @@ const AppInner = (props: Props) => {
                 <AppLayout
                     initializedByAnother={!!initializedByAnother}
                     mockApp={props.mockApp}
+                    reFetchConfig={reFetchConfig}
                     ref={appLayoutRef}
-                    setInitialize={setInitialize}
                     suspectedUnauthorized={suspectedUnauthorized}
                     updateWellKnownConfig={updateWellKnownConfig}
                     wellKnownConfig={wellKnownConfig}

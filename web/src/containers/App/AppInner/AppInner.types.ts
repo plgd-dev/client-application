@@ -4,8 +4,7 @@ export type Props = {
     configError: Error | undefined
     initializedByAnother?: boolean
     mockApp: boolean
-    reFetchConfig: any
-    setInitialize: (isInitialize?: boolean) => void
+    reFetchConfig: () => Promise<any>
     updateWellKnownConfig: (data: WellKnownConfigType) => void
     wellKnownConfig: WellKnownConfigType
 }

@@ -76,16 +76,6 @@ const App: FC<Props> = (props) => {
         [mergedWellKnownConfig?.remoteProvisioning?.authority]
     )
 
-    const setInitialize = useCallback(
-        (value = true) => {
-            setWellKnownConfig({
-                ...wellKnownConfig,
-                isInitialized: value,
-            } as WellKnownConfigType)
-        },
-        [setWellKnownConfig, wellKnownConfig]
-    )
-
     const updateWellKnownConfig = (data: WellKnownConfigType) => {
         setWellKnownConfig(data)
     }
@@ -159,7 +149,6 @@ const App: FC<Props> = (props) => {
                     initializedByAnother={!authority}
                     mockApp={props.mockApp}
                     reFetchConfig={reFetchConfig}
-                    setInitialize={setInitialize}
                     updateWellKnownConfig={updateWellKnownConfig}
                     wellKnownConfig={mergedWellKnownConfig as WellKnownConfigType}
                 />
