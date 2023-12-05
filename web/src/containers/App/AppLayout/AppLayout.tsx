@@ -90,10 +90,9 @@ const AppLayout = forwardRef<AppLayoutRefType, Props>((props, ref) => {
             if (signOut) {
                 if (!initializedByAnother) {
                     reset().then((_r) => {
-                        signOut().then((_r: void) => {
-                            reFetchConfig().then(() => {
-                                dispatch(storeUserWellKnownConfig({}))
-                            })
+                        reFetchConfig().then(() => {
+                            dispatch(storeUserWellKnownConfig({}))
+                            signOut().then((_r: void) => {})
                         })
                     })
                 } else {
