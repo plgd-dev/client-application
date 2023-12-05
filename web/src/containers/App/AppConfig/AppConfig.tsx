@@ -36,7 +36,7 @@ const AppConfig: FC<any> = () => {
     }
 
     return (
-        <FloatingPanel reference={<IconSettings {...convertSize(20)} />} title='Config'>
+        <FloatingPanel reference={<IconSettings {...convertSize(20)} />} title={_(t.config)}>
             <div style={{ padding: '16px 0' }}>
                 <FormGroup id='form-group-1' marginBottom={false}>
                     <FormLabel text={_(t.theme)} />

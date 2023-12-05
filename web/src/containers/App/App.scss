@@ -1,21 +1,13 @@
-@import '~bootstrap/scss/bootstrap';
 @import '@/assets/fonts/fontawesome/css/all.min.css';
-@import 'react-toastify/dist/ReactToastify.css';
 
 @import '@shared-ui/common/styles/colors.scss';
 @import '@shared-ui/common/styles/default.scss';
 @import '@shared-ui/common/styles/animations.scss';
-@import '@shared-ui/common/styles/form.scss';
 @import '@shared-ui/components/Atomic/PageLoader/PageLoader.scss';
 @import '@shared-ui/components/Atomic/Table/Table.scss';
-@import '@shared-ui/components/Atomic/Table/Pagination.scss';
-@import '@shared-ui/components/Atomic/Button/Button.scss';
 @import '@shared-ui/components/Atomic/Editor/Editor.scss';
-@import '@shared-ui/components/Atomic/Toast/Toast.scss';
-@import '@shared-ui/components/Atomic/Checkbox/Checkbox.scss';
 @import '@shared-ui/components/Atomic/TreeExpander/TreeExpander.scss';
 @import '@shared-ui/components/Atomic/CopyBox/CopyBox.scss';
-@import '@shared-ui/components/Atomic/SplitButton/SplitButton.scss';
 
 html {
   height: 100%;
@@ -28,10 +20,6 @@ body {
 #root {
   height: 100%;
   min-height: 100vh;
-
-  & > div:first-child{
-    min-height: 100vh;
-  }
 }
 
 #app {

@@ -2,14 +2,15 @@ import { useRef, useState, useMemo, useCallback, useEffect } from 'react'
 import { Helmet } from 'react-helmet'
 import { BrowserRouter } from 'react-router-dom'
 import { useSelector } from 'react-redux'
+import isEmpty from 'lodash/isEmpty'
 
-import { ToastContainer } from '@shared-ui/components/Atomic/Notification'
 import { BrowserNotificationsContainer } from '@shared-ui/components/Atomic/Toast'
 import { useLocalStorage, WellKnownConfigType } from '@shared-ui/common/hooks'
 import { security } from '@shared-ui/common/services'
 import AppContext from '@shared-ui/app/share/AppContext'
 import { DEVICE_AUTH_MODE } from '@shared-ui/app/clientApp/constants'
 import { hasDifferentOwner } from '@shared-ui/common/services/api-utils'
+import App from '@shared-ui/components/Atomic/App/App'
 
 import appConfig from '@/config'
 import { Props } from './AppInner.types'
@@ -17,7 +18,6 @@ import AppLayout from '@/containers/App/AppLayout/AppLayout'
 import { AppLayoutRefType } from '@/containers/App/AppLayout/AppLayout.types'
 import { storeUserWellKnownConfig } from '@/containers/App/slice'
 import { CombinedStoreType } from '@/store/store'
-import isEmpty from 'lodash/isEmpty'
 
 const getBuildInformation = (wellKnownConfig: WellKnownConfigType) => ({
     buildDate: wellKnownConfig?.buildDate || '',
@@ -114,16 +114,17 @@ const AppInner = (props: Props) => {
         <AppContext.Provider value={contextValue}>
             <BrowserRouter>
                 <Helmet defaultTitle={appConfig.appName} titleTemplate={`%s | ${appConfig.appName}`} />
-                <AppLayout
-                    initializedByAnother={!!initializedByAnother}
-                    mockApp={props.mockApp}
-                    reFetchConfig={reFetchConfig}
-                    ref={appLayoutRef}
-                    suspectedUnauthorized={suspectedUnauthorized}
-                    updateWellKnownConfig={updateWellKnownConfig}
-                    wellKnownConfig={wellKnownConfig}
-                />
-                <ToastContainer />
+                <App>
+                    <AppLayout
+                        initializedByAnother={!!initializedByAnother}
+                        mockApp={props.mockApp}
+                        reFetchConfig={reFetchConfig}
+                        ref={appLayoutRef}
+                        suspectedUnauthorized={suspectedUnauthorized}
+                        updateWellKnownConfig={updateWellKnownConfig}
+                        wellKnownConfig={wellKnownConfig}
+                    />
+                </App>
                 <BrowserNotificationsContainer />
             </BrowserRouter>
         </AppContext.Provider>
