@@ -54,4 +54,8 @@ export const messages = defineMessages({
         id: 'app.configurationUpdatedMessage',
         defaultMessage: 'The configuration was successfully updated.',
     },
+    config: {
+        id: 'app.config',
+        defaultMessage: 'Config',
+    },
 })
