@@ -114,7 +114,7 @@ const AppInner = (props: Props) => {
         <AppContext.Provider value={contextValue}>
             <BrowserRouter>
                 <Helmet defaultTitle={appConfig.appName} titleTemplate={`%s | ${appConfig.appName}`} />
-                <App>
+                <App toastContainerPortalTarget={document.getElementById('toast-root')}>
                     <AppLayout
                         initializedByAnother={!!initializedByAnother}
                         mockApp={props.mockApp}

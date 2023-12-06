@@ -3,11 +3,8 @@
 @import '@shared-ui/common/styles/colors.scss';
 @import '@shared-ui/common/styles/default.scss';
 @import '@shared-ui/common/styles/animations.scss';
-@import '@shared-ui/components/Atomic/PageLoader/PageLoader.scss';
+
 @import '@shared-ui/components/Atomic/Table/Table.scss';
-@import '@shared-ui/components/Atomic/Editor/Editor.scss';
-@import '@shared-ui/components/Atomic/TreeExpander/TreeExpander.scss';
-@import '@shared-ui/components/Atomic/CopyBox/CopyBox.scss';
 
 html {
   height: 100%;
