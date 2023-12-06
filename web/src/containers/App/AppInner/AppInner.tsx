@@ -28,13 +28,7 @@ const getBuildInformation = (wellKnownConfig: WellKnownConfigType) => ({
 })
 
 const AppInner = (props: Props) => {
-    const {
-        wellKnownConfig,
-        configError,
-        reFetchConfig,
-        initializedByAnother: initializedByAnotherProp,
-        updateWellKnownConfig,
-    } = props
+    const { wellKnownConfig, configError, reFetchConfig, initializedByAnother: initializedByAnotherProp } = props
     const buildInformation = getBuildInformation(wellKnownConfig)
 
     const appLayoutRef = useRef<AppLayoutRefType | null>(null)
@@ -121,7 +115,6 @@ const AppInner = (props: Props) => {
                         reFetchConfig={reFetchConfig}
                         ref={appLayoutRef}
                         suspectedUnauthorized={suspectedUnauthorized}
-                        updateWellKnownConfig={updateWellKnownConfig}
                         wellKnownConfig={wellKnownConfig}
                     />
                 </App>
