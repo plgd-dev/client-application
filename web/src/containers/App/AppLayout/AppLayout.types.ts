@@ -9,6 +9,5 @@ export type Props = {
     mockApp: boolean
     reFetchConfig: () => Promise<any>
     suspectedUnauthorized: boolean
-    updateWellKnownConfig: (data: WellKnownConfigType) => void
     wellKnownConfig: WellKnownConfigType
 }

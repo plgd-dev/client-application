@@ -4,7 +4,6 @@ import { AuthProvider, UserManager } from 'oidc-react'
 import { useIntl } from 'react-intl'
 import { useDispatch, useSelector } from 'react-redux'
 import { ThemeProvider } from '@emotion/react'
-import get from 'lodash/get'
 
 import ConditionalWrapper from '@shared-ui/components/Atomic/ConditionalWrapper'
 import {
@@ -32,6 +31,7 @@ const App: FC<Props> = (props) => {
     const dispatch = useDispatch()
 
     const appStore = useSelector((state: CombinedStoreType) => state.app)
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [wellKnownConfig, setWellKnownConfig, reFetchConfig, wellKnownConfigError] = useWellKnownConfiguration(
         httpGatewayAddress,
         {
@@ -41,24 +41,13 @@ const App: FC<Props> = (props) => {
         }
     )
 
-    const [theme, themeError] = useAppTheme({
+    const [theme, themeError, getThemeData] = useAppTheme({
         getTheme,
         setTheme,
         setThemes,
     })
 
     const currentTheme = useMemo(() => appStore.configuration?.theme ?? 'plgd', [appStore.configuration?.theme])
-
-    const getThemeData = useCallback(() => {
-        if (theme) {
-            const index = theme.findIndex((i: any) => Object.keys(i)[0] === currentTheme)
-            if (index >= 0) {
-                return get(theme[index], `${currentTheme}`, {})
-            }
-        }
-
-        return {}
-    }, [theme, currentTheme])
 
     const mergedWellKnownConfig = useMemo(() => {
         if (wellKnownConfig) {
@@ -75,10 +64,6 @@ const App: FC<Props> = (props) => {
         () => mergedWellKnownConfig?.remoteProvisioning?.authority,
         [mergedWellKnownConfig?.remoteProvisioning?.authority]
     )
-
-    const updateWellKnownConfig = (data: WellKnownConfigType) => {
-        setWellKnownConfig(data)
-    }
 
     const useAuthLib = useMemo(
         () =>
@@ -103,6 +88,10 @@ const App: FC<Props> = (props) => {
     // Render an error box
     if (themeError) {
         return <div className='client-error-message'>{`${_(t.authError)}: ${themeError?.message}`}</div>
+    }
+
+    if (wellKnownConfigError) {
+        return <div className='client-error-message'>{wellKnownConfigError?.message}</div>
     }
 
     const getOidcCommonSettings = () => ({
@@ -142,14 +131,13 @@ const App: FC<Props> = (props) => {
     )
 
     return (
-        <ThemeProvider theme={getThemeData()}>
+        <ThemeProvider theme={getThemeData(currentTheme)}>
             <ConditionalWrapper condition={useAuthLib} wrapper={Wrapper}>
                 <AppInner
                     configError={wellKnownConfigError}
                     initializedByAnother={!authority}
                     mockApp={props.mockApp}
                     reFetchConfig={reFetchConfig}
-                    updateWellKnownConfig={updateWellKnownConfig}
                     wellKnownConfig={mergedWellKnownConfig as WellKnownConfigType}
                 />
             </ConditionalWrapper>
