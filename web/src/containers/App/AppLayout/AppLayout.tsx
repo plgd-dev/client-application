@@ -72,6 +72,7 @@ const AppLayout = forwardRef<AppLayoutRefType, Props>((props, ref) => {
             reset().then(() => {
                 reFetchConfig().then(() => {
                     dispatch(storeUserWellKnownConfig({}))
+                    navigate('/', { replace: true })
                 })
             })
         }
