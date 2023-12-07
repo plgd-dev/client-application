@@ -3,7 +3,7 @@ module github.com/plgd-dev/client-application
 go 1.18
 
 require (
-	cloud.google.com/go v0.110.10
+	cloud.google.com/go v0.111.0
 	github.com/apex/log v1.9.0
 	github.com/favadi/protoc-go-inject-tag v1.4.0
 	github.com/fullstorydev/grpchan v1.1.1
