@@ -1,22 +1,23 @@
-import { useRef, useState, useMemo, useCallback } from 'react'
+import { useRef, useState, useMemo, useCallback, useEffect } from 'react'
 import { Helmet } from 'react-helmet'
 import { BrowserRouter } from 'react-router-dom'
-import { User } from 'oidc-react'
-import jwtDecode from 'jwt-decode'
-import get from 'lodash/get'
-import { ThemeProvider } from '@emotion/react'
+import { useSelector } from 'react-redux'
+import isEmpty from 'lodash/isEmpty'
 
-import { ToastContainer } from '@shared-ui/components/Atomic/Notification'
 import { BrowserNotificationsContainer } from '@shared-ui/components/Atomic/Toast'
 import { useLocalStorage, WellKnownConfigType } from '@shared-ui/common/hooks'
 import { security } from '@shared-ui/common/services'
-import light from '@shared-ui/components/Atomic/_theme/light'
+import AppContext from '@shared-ui/app/share/AppContext'
+import { DEVICE_AUTH_MODE } from '@shared-ui/app/clientApp/constants'
+import { hasDifferentOwner } from '@shared-ui/common/services/api-utils'
+import App from '@shared-ui/components/Atomic/App/App'
 
-import AppContext from '@/containers/App/AppContext'
 import appConfig from '@/config'
 import { Props } from './AppInner.types'
 import AppLayout from '@/containers/App/AppLayout/AppLayout'
 import { AppLayoutRefType } from '@/containers/App/AppLayout/AppLayout.types'
+import { storeUserWellKnownConfig } from '@/containers/App/slice'
+import { CombinedStoreType } from '@/store/store'
 
 const getBuildInformation = (wellKnownConfig: WellKnownConfigType) => ({
     buildDate: wellKnownConfig?.buildDate || '',
@@ -27,7 +28,7 @@ const getBuildInformation = (wellKnownConfig: WellKnownConfigType) => ({
 })
 
 const AppInner = (props: Props) => {
-    const { wellKnownConfig, configError, reFetchConfig, setInitialize } = props
+    const { wellKnownConfig, configError, reFetchConfig, initializedByAnother: initializedByAnotherProp } = props
     const buildInformation = getBuildInformation(wellKnownConfig)
 
     const appLayoutRef = useRef<AppLayoutRefType | null>(null)
@@ -41,27 +42,49 @@ const AppInner = (props: Props) => {
         })
     }
 
-    const [initializedByAnother, setInitializedByAnother] = useState(false)
+    const isInitializedByAnother = useMemo(
+        () =>
+            initializedByAnotherProp &&
+            wellKnownConfig.isInitialized &&
+            wellKnownConfig?.deviceAuthenticationMode === DEVICE_AUTH_MODE.X509,
+        [wellKnownConfig, initializedByAnotherProp]
+    )
+
+    const [initializedByAnother, setInitializedByAnother] = useState(
+        initializedByAnotherProp === undefined ? false : isInitializedByAnother
+    )
     const [suspectedUnauthorized, setSuspectedUnauthorized] = useState(false)
     const [collapsed, setCollapsed] = useLocalStorage('leftPanelCollapsed', true)
+
+    const appStore = useSelector((state: CombinedStoreType) => state.app)
+
+    const differentOwner = useCallback(
+        (wellKnownConfig: WellKnownConfigType, userWellKnownConfig: any) =>
+            hasDifferentOwner(wellKnownConfig, userWellKnownConfig, true),
+        []
+    )
 
     const unauthorizedCallback = useCallback(() => {
         setSuspectedUnauthorized(true)
 
-        reFetchConfig().then((newWellKnownConfig: WellKnownConfigType) => {
-            if (appLayoutRef.current) {
-                const userData: User = appLayoutRef.current?.getAuthProviderRef().getUserData()
-                const parsedData = jwtDecode(userData.access_token)
-                const ownerId = get(parsedData, newWellKnownConfig.remoteProvisioning?.jwtOwnerClaim as string, '')
-
-                if (ownerId !== newWellKnownConfig?.owner) {
+        reFetchConfig()
+            .then((newWellKnownConfig: WellKnownConfigType) => {
+                if (differentOwner(newWellKnownConfig, appStore.userWellKnownConfig)) {
                     setInitializedByAnother(true)
                 }
-            }
+            })
+            .then(() => {
+                setSuspectedUnauthorized(false)
+            })
+    }, [differentOwner, reFetchConfig, appStore.userWellKnownConfig])
 
-            setSuspectedUnauthorized(false)
-        })
-    }, [reFetchConfig])
+    // check on load
+    useEffect(() => {
+        if (!isEmpty(appStore.userWellKnownConfig)) {
+            unauthorizedCallback()
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [appStore.userWellKnownConfig])
 
     const contextValue = useMemo(
         () => ({
@@ -69,8 +92,11 @@ const AppInner = (props: Props) => {
             collapsed,
             setCollapsed,
             buildInformation: buildInformation || undefined,
+            isHub: false,
+            updateAppWellKnownConfig: storeUserWellKnownConfig,
+            reFetchConfig,
         }),
-        [buildInformation, collapsed, setCollapsed, unauthorizedCallback]
+        [buildInformation, collapsed, setCollapsed, unauthorizedCallback, reFetchConfig]
     )
 
     // Render an error box with a config error
@@ -80,21 +106,20 @@ const AppInner = (props: Props) => {
 
     return (
         <AppContext.Provider value={contextValue}>
-            <ThemeProvider theme={light}>
-                <BrowserRouter>
-                    <Helmet defaultTitle={appConfig.appName} titleTemplate={`%s | ${appConfig.appName}`} />
+            <BrowserRouter>
+                <Helmet defaultTitle={appConfig.appName} titleTemplate={`%s | ${appConfig.appName}`} />
+                <App toastContainerPortalTarget={document.getElementById('toast-root')}>
                     <AppLayout
-                        initializedByAnother={initializedByAnother}
+                        initializedByAnother={!!initializedByAnother}
                         mockApp={props.mockApp}
+                        reFetchConfig={reFetchConfig}
                         ref={appLayoutRef}
-                        setInitialize={setInitialize}
                         suspectedUnauthorized={suspectedUnauthorized}
                         wellKnownConfig={wellKnownConfig}
                     />
-                    <ToastContainer />
-                    <BrowserNotificationsContainer />
-                </BrowserRouter>
-            </ThemeProvider>
+                </App>
+                <BrowserNotificationsContainer />
+            </BrowserRouter>
         </AppContext.Provider>
     )
 }

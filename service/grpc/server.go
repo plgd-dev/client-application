@@ -36,23 +36,22 @@ import (
 type ClientApplicationServer struct {
 	pb.UnimplementedClientApplicationServer
 
-	serviceDevice      *serviceDevice.Service
+	serviceDevice      atomic.Pointer[serviceDevice.Service]
 	info               *pb.GetConfigurationResponse
 	logger             log.Logger
 	devices            *coapSync.Map[uuid.UUID, *device]
-	csrCache           *ttlcache.Cache[uuid.UUID, bool]
+	csrCache           *ttlcache.Cache[uuid.UUID, *serviceDevice.Service]
 	config             *atomic.Pointer[config.Config]
 	jwksCache          atomic.Pointer[JSONWebKeyCache]
 	remoteOwnSignCache *coapSync.Map[uuid.UUID, *remoteSign]
 
-	updatePSKLock sync.Mutex
+	initializationMutex sync.Mutex
 }
 
-func NewClientApplicationServer(cfg *atomic.Pointer[config.Config], serviceDevice *serviceDevice.Service, info *configGrpc.ServiceInformation, logger log.Logger) *ClientApplicationServer {
-	csrCache := ttlcache.New[uuid.UUID, bool]()
+func NewClientApplicationServer(cfg *atomic.Pointer[config.Config], devService *serviceDevice.Service, info *configGrpc.ServiceInformation, logger log.Logger) *ClientApplicationServer {
+	csrCache := ttlcache.New[uuid.UUID, *serviceDevice.Service]()
 	go csrCache.Start()
-	return &ClientApplicationServer{
-		serviceDevice:      serviceDevice,
+	s := ClientApplicationServer{
 		info:               pb.NewGetConfigurationResponse(info),
 		logger:             logger,
 		csrCache:           csrCache,
@@ -60,6 +59,10 @@ func NewClientApplicationServer(cfg *atomic.Pointer[config.Config], serviceDevic
 		remoteOwnSignCache: coapSync.NewMap[uuid.UUID, *remoteSign](),
 		devices:            coapSync.NewMap[uuid.UUID, *device](),
 	}
+	if devService != nil {
+		s.init(context.Background(), devService)
+	}
+	return &s
 }
 
 func (s *ClientApplicationServer) Version() string {
@@ -71,14 +74,14 @@ func (s *ClientApplicationServer) GetConfig() config.Config {
 	return *cfg
 }
 
-func (s *ClientApplicationServer) StoreConfig(cfg config.Config) error {
+func (s *ClientApplicationServer) StoreConfig(cfg *config.Config) error {
 	if err := cfg.Validate(); err != nil {
 		return status.Errorf(codes.InvalidArgument, "invalid configuration: %v", err)
 	}
 	if err := cfg.Store(); err != nil {
 		return status.Errorf(codes.Internal, "cannot store configuration: %v", err)
 	}
-	s.config.Store(&cfg)
+	s.config.Store(cfg)
 	return nil
 }
 

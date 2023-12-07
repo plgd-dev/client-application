@@ -21,14 +21,10 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/plgd-dev/client-application/pb"
-	"github.com/plgd-dev/hub/v2/pkg/log"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
-func (s *ClientApplicationServer) reset(ctx context.Context) error {
-	s.jwksCache.Store(nil)
-	s.serviceDevice.Reset()
+func (s *ClientApplicationServer) reset(ctx context.Context, forceReset bool) error {
+	devService := s.serviceDevice.Swap(nil)
 	s.csrCache.DeleteAll()
 	s.remoteOwnSignCache.Range(func(key uuid.UUID, value *remoteSign) bool {
 		s.remoteOwnSignCache.Delete(key)
@@ -36,19 +32,29 @@ func (s *ClientApplicationServer) reset(ctx context.Context) error {
 		return true
 	})
 	if _, err := s.ClearCache(ctx, &pb.ClearCacheRequest{}); err != nil {
-		log.Warnf("cannot clear device cache: %v", err)
+		s.logger.Warnf("cannot clear device cache: %v", err)
 	}
-	if s.signIdentityCertificateRemotely() {
-		return nil
+	if devService != nil {
+		err := devService.Close()
+		if err != nil {
+			s.logger.Warnf("cannot close device service: %v", err)
+		}
 	}
-	return s.UpdatePSK("", "")
+	if forceReset {
+		s.jwksCache.Store(nil)
+		// reset psk
+		_, err := s.updatePSK("", "", true)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (s *ClientApplicationServer) Reset(ctx context.Context, req *pb.ResetRequest) (*pb.ResetResponse, error) {
-	if !s.serviceDevice.IsInitialized() {
-		return nil, status.Errorf(codes.FailedPrecondition, "not initialized")
-	}
-	err := s.reset(ctx)
+	s.initializationMutex.Lock()
+	defer s.initializationMutex.Unlock()
+	err := s.reset(ctx, true)
 	if err != nil {
 		return nil, err
 	}

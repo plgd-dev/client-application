@@ -21,6 +21,9 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/plgd-dev/client-application/pb"
+	"github.com/plgd-dev/client-application/service/config"
+	configDevice "github.com/plgd-dev/client-application/service/config/device"
+	serviceDevice "github.com/plgd-dev/client-application/service/device"
 	"github.com/plgd-dev/hub/v2/identity-store/events"
 	"github.com/plgd-dev/hub/v2/pkg/log"
 	"google.golang.org/grpc/codes"
@@ -34,10 +37,19 @@ func (s *ClientApplicationServer) InitializeRemoteProvisioning(ctx context.Conte
 	if err != nil {
 		return nil, err
 	}
-	respCsr, err := s.getIdentityCSR(ctx)
+	cfg := s.GetConfig()
+	cfg.Clients.Device.COAP.TLS.Authentication = configDevice.AuthenticationX509
+	devService, err := serviceDevice.New(context.Background(), func() configDevice.Config {
+		return cfg.Clients.Device
+	}, s.logger)
 	if err != nil {
-		if err2 := s.reset(ctx); err2 != nil {
-			s.logger.Warnf("cannot reset when initialize remote provisioning fails(%v): %w", err, err2)
+		return nil, err
+	}
+
+	respCsr, err := s.getIdentityCSR(ctx, devService)
+	if err != nil {
+		if err2 := s.reset(ctx, true); err2 != nil {
+			s.logger.Errorf("cannot reset previous device: %w", err2)
 		}
 		return nil, err
 	}
@@ -46,27 +58,67 @@ func (s *ClientApplicationServer) InitializeRemoteProvisioning(ctx context.Conte
 	}, nil
 }
 
-func (s *ClientApplicationServer) UpdatePSK(subjectUUID, key string) error {
-	s.updatePSKLock.Lock()
-	defer s.updatePSKLock.Unlock()
-	isInitialized := s.serviceDevice.IsInitialized()
-	if isInitialized && (subjectUUID != "" || key != "") {
-		return status.Errorf(codes.FailedPrecondition, errAlreadyInitialized)
+func (s *ClientApplicationServer) init(ctx context.Context, devService *serviceDevice.Service) {
+	err := s.reset(ctx, false)
+	if err != nil {
+		s.logger.Errorf("cannot reset previous device service setup during initialization: %w", err)
 	}
-	if !isInitialized && (subjectUUID == "" && key == "") {
-		return status.Errorf(codes.FailedPrecondition, "not initialized")
-	}
+	s.serviceDevice.Store(devService)
+	go func() {
+		err := devService.Serve()
+		if err != nil {
+			s.logger.Warnf("device service cannot serve coap connections: %v", err)
+		}
+	}()
+}
+
+func (s *ClientApplicationServer) updatePSK(subjectUUID, key string, save bool) (config.Config, error) {
 	cfg := s.GetConfig()
+	if subjectUUID == "" || key == "" {
+		cfg.Clients.Device.COAP.TLS.Authentication = configDevice.AuthenticationUninitialized
+	} else {
+		cfg.Clients.Device.COAP.TLS.Authentication = configDevice.AuthenticationPreSharedKey
+	}
 	cfg.Clients.Device.COAP.TLS.PreSharedKey.Key = key
 	cfg.Clients.Device.COAP.TLS.PreSharedKey.SubjectIDStr = subjectUUID
-	return s.StoreConfig(cfg)
+	var err error
+	if save {
+		err = s.StoreConfig(&cfg)
+	} else {
+		err = cfg.Validate()
+	}
+	if err != nil {
+		return config.Config{}, err
+	}
+	s.config.Store(&cfg)
+	return cfg, nil
+}
+
+func (s *ClientApplicationServer) initWithPSK(ctx context.Context, subjectUUID, key string, save bool) error {
+	cfg, err := s.updatePSK(subjectUUID, key, save)
+	if err != nil {
+		return err
+	}
+	cfg.RemoteProvisioning.Mode = pb.RemoteProvisioning_MODE_NONE
+	devService, err := serviceDevice.New(context.Background(), func() configDevice.Config {
+		return cfg.Clients.Device
+	}, s.logger)
+	if err != nil {
+		return err
+	}
+	s.init(ctx, devService)
+	return nil
 }
 
 func (s *ClientApplicationServer) Initialize(ctx context.Context, req *pb.InitializeRequest) (*pb.InitializeResponse, error) {
-	if s.serviceDevice.IsInitialized() {
+	s.initializationMutex.Lock()
+	defer s.initializationMutex.Unlock()
+
+	devService := s.serviceDevice.Load()
+	if devService != nil && devService.IsInitialized() {
 		return nil, status.Errorf(codes.FailedPrecondition, errAlreadyInitialized)
 	}
-	if s.signIdentityCertificateRemotely() {
+	if req.GetPreSharedKey() == nil {
 		return s.InitializeRemoteProvisioning(ctx, req)
 	}
 	if req.GetPreSharedKey().GetSubjectId() == "" {
@@ -80,7 +132,7 @@ func (s *ClientApplicationServer) Initialize(ctx context.Context, req *pb.Initia
 	if req.GetPreSharedKey().GetKey() == "" {
 		return nil, status.Errorf(codes.InvalidArgument, "invalid pre-shared key")
 	}
-	if err := s.UpdatePSK(req.GetPreSharedKey().GetSubjectId(), req.GetPreSharedKey().GetKey()); err != nil {
+	if err := s.initWithPSK(ctx, req.GetPreSharedKey().GetSubjectId(), req.GetPreSharedKey().GetKey(), req.GetPreSharedKey().GetSave()); err != nil {
 		return nil, err
 	}
 	if _, err := s.ClearCache(ctx, &pb.ClearCacheRequest{}); err != nil {
@@ -90,7 +142,11 @@ func (s *ClientApplicationServer) Initialize(ctx context.Context, req *pb.Initia
 }
 
 func (s *ClientApplicationServer) FinishInitialize(ctx context.Context, req *pb.FinishInitializeRequest) (*pb.FinishInitializeResponse, error) {
-	if s.serviceDevice.IsInitialized() {
+	s.initializationMutex.Lock()
+	defer s.initializationMutex.Unlock()
+
+	devService := s.serviceDevice.Load()
+	if devService != nil && devService.IsInitialized() {
 		return nil, status.Errorf(codes.FailedPrecondition, errAlreadyInitialized)
 	}
 	if err := s.updateIdentityCertificate(ctx, req); err != nil {

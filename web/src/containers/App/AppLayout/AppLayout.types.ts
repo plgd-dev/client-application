@@ -6,8 +6,8 @@ export type AppLayoutRefType = {
 
 export type Props = {
     initializedByAnother: boolean
-    suspectedUnauthorized: boolean
     mockApp: boolean
-    setInitialize: (isInitialize?: boolean) => void
-    wellKnownConfig?: WellKnownConfigType
+    reFetchConfig: () => Promise<any>
+    suspectedUnauthorized: boolean
+    wellKnownConfig: WellKnownConfigType
 }

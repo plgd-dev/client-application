@@ -1,3 +1,10 @@
 FROM node:16 AS build-web
 COPY . /web
-RUN cd /web && npm install --ignore-scripts && npm run build
+RUN cd /web && \
+    npm config set fetch-retries 3 && \
+    npm config set fetch-retry-mintimeout 600000 &&  \
+    npm config set fetch-retry-maxtimeout 1200000 && \
+    npm config set fetch-timeout 1800000 && \
+    npm install --ignore-scripts && \
+    npm run :generate:theme && \
+    npm run build

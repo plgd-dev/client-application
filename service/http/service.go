@@ -20,6 +20,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"net"
 	"net/http"
 	"net/http/httptest"
@@ -37,7 +38,7 @@ import (
 	"github.com/plgd-dev/client-application/service/grpc"
 	"github.com/plgd-dev/hub/v2/http-gateway/serverMux"
 	"github.com/plgd-dev/hub/v2/pkg/fsnotify"
-	"github.com/plgd-dev/hub/v2/pkg/log"
+	pkgLog "github.com/plgd-dev/hub/v2/pkg/log"
 	kitNetHttp "github.com/plgd-dev/hub/v2/pkg/net/http"
 	"go.opentelemetry.io/otel/trace"
 )
@@ -77,34 +78,34 @@ func resourceMatcher(r *http.Request, rm *router.RouteMatch) bool {
 }
 
 func createAuthFunc(config configHttp.Config, clientApplicationServer *grpc.ClientApplicationServer) func(ctx context.Context, method, uri string) (context.Context, error) {
-	auth := func(ctx context.Context, method, uri string) (context.Context, error) {
+	whiteList := []kitNetHttp.RequestMatcher{
+		{
+			Method: http.MethodGet,
+			URI:    regexp.MustCompile(regexp.QuoteMeta(WellKnownJWKs)),
+		},
+		{
+			Method: http.MethodGet,
+			URI:    regexp.MustCompile(regexp.QuoteMeta(WellKnownConfiguration)),
+		},
+		{
+			// token is directly verified by clientApplication
+			Method: http.MethodPost,
+			URI:    regexp.MustCompile(regexp.QuoteMeta(Initialize)),
+		},
+	}
+	if config.UI.Enabled {
+		whiteList = append(whiteList, kitNetHttp.RequestMatcher{
+			Method: http.MethodGet,
+			URI:    regexp.MustCompile(`^\/(a$|[^a].*|ap$|a[^p].*|ap[^i].*|api[^/])`),
+		})
+	}
+	auth := kitNetHttp.NewInterceptorWithValidator(clientApplicationServer, kitNetHttp.NewDefaultAuthorizationRules(ApiV1), whiteList...)
+	return func(ctx context.Context, method, uri string) (context.Context, error) {
+		if clientApplicationServer.HasJWTAuthorizationEnabled() {
+			return auth(ctx, method, uri)
+		}
 		return ctx, nil
 	}
-	if clientApplicationServer.HasJWTAuthorizationEnabled() {
-		whiteList := []kitNetHttp.RequestMatcher{
-			{
-				Method: http.MethodGet,
-				URI:    regexp.MustCompile(regexp.QuoteMeta(WellKnownJWKs)),
-			},
-			{
-				Method: http.MethodGet,
-				URI:    regexp.MustCompile(regexp.QuoteMeta(WellKnownConfiguration)),
-			},
-			{
-				// token is directly verified by clientApplication
-				Method: http.MethodPost,
-				URI:    regexp.MustCompile(regexp.QuoteMeta(Initialize)),
-			},
-		}
-		if config.UI.Enabled {
-			whiteList = append(whiteList, kitNetHttp.RequestMatcher{
-				Method: http.MethodGet,
-				URI:    regexp.MustCompile(`^\/(a$|[^a].*|ap$|a[^p].*|ap[^i].*|api[^/])`),
-			})
-		}
-		auth = kitNetHttp.NewInterceptorWithValidator(clientApplicationServer, kitNetHttp.NewDefaultAuthorizationRules(ApiV1), whiteList...)
-	}
-	return auth
 }
 
 type contextKey struct {
@@ -122,7 +123,7 @@ func getTLSConn(r *http.Request) (*tls.Conn, bool) {
 	return c, ok
 }
 
-func newListener(config configHttp.Config, fileWatcher *fsnotify.Watcher, logger log.Logger) (listener.Listener, error) {
+func newListener(config configHttp.Config, fileWatcher *fsnotify.Watcher, logger pkgLog.Logger) (listener.Listener, error) {
 	if config.Config.TLS.Enabled {
 		return tls.New(tls.Config{
 			Addr: config.Config.Addr,
@@ -176,14 +177,27 @@ func setUIHandlers(config configHttp.Config, r *router.Router) {
 			}
 			w.WriteHeader(c.Code)
 			if _, err := c.Body.WriteTo(w); err != nil {
-				log.Errorf("failed to write response body: %w", err)
+				pkgLog.Errorf("failed to write response body: %w", err)
 			}
 		}))
 	}
 }
 
+type logWriter struct {
+	logger pkgLog.Logger
+}
+
+func (l *logWriter) Write(p []byte) (n int, err error) {
+	l.logger.Debug(string(p))
+	return len(p), nil
+}
+
+func newErrorLogger(logger pkgLog.Logger) *log.Logger {
+	return log.New(&logWriter{logger: logger.With("package", "net/http")}, "", 0)
+}
+
 // New creates new HTTP service
-func New(ctx context.Context, serviceName string, config configHttp.Config, clientApplicationServer *grpc.ClientApplicationServer, fileWatcher *fsnotify.Watcher, logger log.Logger, tracerProvider trace.TracerProvider) (*Service, error) {
+func New(ctx context.Context, serviceName string, config configHttp.Config, clientApplicationServer *grpc.ClientApplicationServer, fileWatcher *fsnotify.Watcher, logger pkgLog.Logger, tracerProvider trace.TracerProvider) (*Service, error) {
 	lis, err := newListener(config, fileWatcher, logger)
 	if err != nil {
 		return nil, fmt.Errorf("cannot create grpc server: %w", err)
@@ -218,6 +232,7 @@ func New(ctx context.Context, serviceName string, config configHttp.Config, clie
 		WriteTimeout:      config.Server.WriteTimeout,
 		IdleTimeout:       config.Server.IdleTimeout,
 		ConnContext:       saveConnInContext,
+		ErrorLog:          newErrorLogger(logger),
 	}
 
 	return &Service{

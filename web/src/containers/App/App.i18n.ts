@@ -42,4 +42,20 @@ export const messages = defineMessages({
         id: 'app.clickHere',
         defaultMessage: 'Click here!',
     },
+    theme: {
+        id: 'app.theme',
+        defaultMessage: 'Theme',
+    },
+    configurationUpdated: {
+        id: 'app.configurationUpdated',
+        defaultMessage: 'Configuration Updated',
+    },
+    configurationUpdatedMessage: {
+        id: 'app.configurationUpdatedMessage',
+        defaultMessage: 'The configuration was successfully updated.',
+    },
+    config: {
+        id: 'app.config',
+        defaultMessage: 'Config',
+    },
 })

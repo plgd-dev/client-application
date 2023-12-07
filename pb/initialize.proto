@@ -27,6 +27,8 @@ message InitializePreSharedKey {
     string subject_id = 1;
     // Associated secret to the client application ID. Only first 16bytes is used.
     string key = 2;
+    // If true, the client application will be save subject_id and key to the persistent storage.
+    bool save = 3;
 }
 
 message InitializeX509 {

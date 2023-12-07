@@ -23,14 +23,14 @@ import (
 	"github.com/plgd-dev/client-application/pb"
 	"github.com/plgd-dev/hub/v2/pkg/net/grpc"
 	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
 )
 
 func (s *ClientApplicationServer) GetIdentityCertificate(ctx context.Context, req *pb.GetIdentityCertificateRequest) (*pb.GetIdentityCertificateResponse, error) {
-	if !s.signIdentityCertificateRemotely() {
-		return nil, status.Errorf(codes.Unimplemented, "initialize with certificate is disabled")
+	devService := s.serviceDevice.Load()
+	if devService == nil {
+		return nil, grpc.ForwardErrorf(codes.Unavailable, "service is not initialized")
 	}
-	tls, err := s.serviceDevice.GetIdentityCertificate()
+	tls, err := devService.GetIdentityCertificate()
 	if err != nil {
 		return nil, grpc.ForwardErrorf(codes.Unavailable, "cannot get identity certificate %v", err)
 	}

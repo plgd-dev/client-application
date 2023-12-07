@@ -42,7 +42,6 @@ import (
 	udpClient "github.com/plgd-dev/go-coap/v3/udp/client"
 	udpServer "github.com/plgd-dev/go-coap/v3/udp/server"
 	"github.com/plgd-dev/hub/v2/pkg/log"
-	"go.opentelemetry.io/otel/trace"
 )
 
 type AuthenticationClient interface {
@@ -63,7 +62,6 @@ type AuthenticationClient interface {
 type Service struct {
 	getConfig            func() configDevice.Config
 	logger               log.Logger
-	tracerProvider       trace.TracerProvider
 	udp4server           *udpServer.Server
 	udp6server           *udpServer.Server
 	udp4Listener         *coapNet.UDPConn
@@ -79,7 +77,7 @@ func errClosingConnection(debugf func(fmt string, a ...any), scheme schema.Schem
 }
 
 // New creates new GRPC service
-func New(ctx context.Context, serviceName string, getConfig func() configDevice.Config, logger log.Logger, tracerProvider trace.TracerProvider) (*Service, error) {
+func New(ctx context.Context, getConfig func() configDevice.Config, logger log.Logger) (*Service, error) {
 	config := getConfig()
 	var authenticationClient AuthenticationClient
 	switch config.COAP.TLS.Authentication {
@@ -87,6 +85,8 @@ func New(ctx context.Context, serviceName string, getConfig func() configDevice.
 		authenticationClient = newAuthenticationPreSharedKey(getConfig)
 	case configDevice.AuthenticationX509:
 		authenticationClient = newAuthenticationX509(config)
+	case configDevice.AuthenticationUninitialized:
+		return nil, fmt.Errorf("device is not initialized")
 	}
 
 	opts := []udpServer.Option{
@@ -124,7 +124,6 @@ func New(ctx context.Context, serviceName string, getConfig func() configDevice.
 	return &Service{
 		getConfig:            getConfig,
 		logger:               logger,
-		tracerProvider:       tracerProvider,
 		udp4server:           udp4server,
 		udp6server:           udp6server,
 		udp4Listener:         udp4Listener,
@@ -368,8 +367,10 @@ func (s *Service) GetDeviceAuthenticationMode() pb.GetConfigurationResponse_Devi
 		return pb.GetConfigurationResponse_X509
 	case configDevice.AuthenticationPreSharedKey:
 		return pb.GetConfigurationResponse_PRE_SHARED_KEY
+	case configDevice.AuthenticationUninitialized:
+		return pb.GetConfigurationResponse_UNINITIALIZED
 	}
-	return pb.GetConfigurationResponse_PRE_SHARED_KEY
+	return pb.GetConfigurationResponse_UNINITIALIZED
 }
 
 func (s *Service) IsInitialized() bool {

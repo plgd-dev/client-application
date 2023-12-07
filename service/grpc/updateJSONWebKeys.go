@@ -21,7 +21,6 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/lestrrat-go/jwx/jwk"
-	"github.com/plgd-dev/client-application/pb"
 	"github.com/plgd-dev/hub/v2/identity-store/events"
 	"github.com/plgd-dev/hub/v2/pkg/net/grpc"
 	plgdJwt "github.com/plgd-dev/hub/v2/pkg/security/jwt"
@@ -70,10 +69,6 @@ func (s *ClientApplicationServer) getOwnerForUpdateJSONWebKeys(ctx context.Conte
 }
 
 func (s *ClientApplicationServer) UpdateJSONWebKeys(ctx context.Context, jwksReq *structpb.Struct) error {
-	if s.GetConfig().RemoteProvisioning.GetMode() != pb.RemoteProvisioning_USER_AGENT {
-		return status.Errorf(codes.Unimplemented, "not supported")
-	}
-
 	owner, err := s.getOwnerForUpdateJSONWebKeys(ctx)
 	if err != nil {
 		return err

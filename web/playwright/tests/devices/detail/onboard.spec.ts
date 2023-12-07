@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test'
-import testId from '../../../../src/testId'
+import testId from '../../../../packages/shared-ui/src/app/clientApp/testId'
 
 test('onboard device', async ({ page }) => {
     const { WELL_KNOWN_CONFIG, REACT_APP_TEST_LOGIN_USERNAME, REACT_APP_TEST_LOGIN_PASSWORD } = process.env
@@ -14,7 +14,7 @@ test('onboard device', async ({ page }) => {
     // back to page
     await page.goto('/')
 
-    await page.getByTestId('devsim-server00').click()
+    // await page.getByTestId('devsim-server00').click()
 
     // is onboarded -> exist offboard button
     if (await page.getByTestId(offboardButton).isVisible()) {

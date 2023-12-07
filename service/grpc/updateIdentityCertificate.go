@@ -21,6 +21,7 @@ import (
 
 	"github.com/google/uuid"
 	"github.com/plgd-dev/client-application/pb"
+	serviceDevice "github.com/plgd-dev/client-application/service/device"
 	"github.com/plgd-dev/device/v2/pkg/net/coap"
 	"github.com/plgd-dev/hub/v2/identity-store/events"
 	"github.com/plgd-dev/hub/v2/pkg/net/grpc"
@@ -29,28 +30,33 @@ import (
 	"google.golang.org/grpc/status"
 )
 
-func (s *ClientApplicationServer) validateState(state uuid.UUID) bool {
+func (s *ClientApplicationServer) validateState(state uuid.UUID) (*serviceDevice.Service, bool) {
 	item := s.csrCache.Get(state)
 	if item == nil {
-		return false
+		return nil, false
 	}
 	s.csrCache.Delete(state)
-	return !item.IsExpired()
+	if item.IsExpired() {
+		return nil, false
+	}
+	return item.Value(), true
 }
 
 func (s *ClientApplicationServer) signIdentityCertificateRemotely() bool {
-	return s.GetConfig().RemoteProvisioning.GetMode() == pb.RemoteProvisioning_USER_AGENT && s.serviceDevice.GetDeviceAuthenticationMode() == pb.GetConfigurationResponse_X509
+	devService := s.serviceDevice.Load()
+	if devService == nil {
+		return false
+	}
+	return devService.GetDeviceAuthenticationMode() == pb.GetConfigurationResponse_X509
 }
 
 func (s *ClientApplicationServer) updateIdentityCertificate(ctx context.Context, req *pb.FinishInitializeRequest) error {
-	if !s.signIdentityCertificateRemotely() {
-		return status.Errorf(codes.Unimplemented, "not supported")
-	}
 	state, err := uuid.Parse(req.GetState())
 	if err != nil {
 		return status.Errorf(codes.InvalidArgument, "cannot parse state: %v", err)
 	}
-	if !s.validateState(state) {
+	devState, ok := s.validateState(state)
+	if !ok {
 		return status.Errorf(codes.InvalidArgument, "invalid state")
 	}
 	owner, err := grpc.OwnerFromTokenMD(ctx, s.GetConfig().RemoteProvisioning.GetJwtOwnerClaim())
@@ -69,8 +75,9 @@ func (s *ClientApplicationServer) updateIdentityCertificate(ctx context.Context,
 	if ownerID != ident {
 		return status.Errorf(codes.InvalidArgument, "invalid owner id")
 	}
-	if err := s.serviceDevice.SetIdentityCertificate(owner, req.GetCertificate()); err != nil {
+	if err := devState.SetIdentityCertificate(owner, req.GetCertificate()); err != nil {
 		return status.Errorf(codes.Internal, "cannot set certificate: %v", err)
 	}
+	s.init(ctx, devState)
 	return nil
 }
