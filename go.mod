@@ -19,7 +19,7 @@ require (
 	github.com/lestrrat-go/jwx v1.2.26
 	github.com/pion/dtls/v2 v2.2.8-0.20231026152330-9cc3df9c3369
 	github.com/plgd-dev/device/v2 v2.2.3-0.20231102140441-be15c594982e
-	github.com/plgd-dev/go-coap/v3 v3.1.6
+	github.com/plgd-dev/go-coap/v3 v3.3.0
 	github.com/plgd-dev/hub/v2 v2.13.1-0.20231103112740-d2a9b071272d
 	github.com/plgd-dev/kit/v2 v2.0.0-20211006190727-057b33161b90
 	github.com/stretchr/testify v1.8.4
