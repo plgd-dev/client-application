@@ -30,8 +30,11 @@ import (
 	"github.com/plgd-dev/device/v2/schema"
 	plgdDevice "github.com/plgd-dev/device/v2/schema/device"
 	"github.com/plgd-dev/device/v2/schema/doxm"
+	"github.com/plgd-dev/device/v2/schema/interfaces"
+	"github.com/plgd-dev/device/v2/schema/resources"
 	grpcgwPb "github.com/plgd-dev/hub/v2/grpc-gateway/pb"
 	"github.com/plgd-dev/hub/v2/pkg/log"
+	"github.com/plgd-dev/hub/v2/pkg/strings"
 	"github.com/plgd-dev/hub/v2/resource-aggregate/commands"
 	"github.com/plgd-dev/hub/v2/resource-aggregate/events"
 	"google.golang.org/grpc/codes"
@@ -176,10 +179,13 @@ func (d *device) checkAccess(link schema.ResourceLink) error {
 	return nil
 }
 
-func (d *device) getResourceLinkAndCheckAccess(ctx context.Context, resourceID *commands.ResourceId) (schema.ResourceLink, error) {
+func (d *device) getResourceLinkAndCheckAccess(ctx context.Context, resourceID *commands.ResourceId, resInterface string) (schema.ResourceLink, error) {
 	link, err := d.getResourceLink(ctx, resourceID)
 	if err != nil {
 		return link, err
+	}
+	if strings.Contains(link.ResourceTypes, resources.ResourceType) && resInterface == interfaces.OC_IF_B {
+		link.Endpoints = link.Endpoints.FilterSecureEndpoints()
 	}
 	return link, d.checkAccess(link)
 }

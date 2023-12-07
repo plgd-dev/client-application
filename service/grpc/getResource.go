@@ -73,7 +73,7 @@ func (s *ClientApplicationServer) GetResource(ctx context.Context, req *pb.GetRe
 	if err != nil {
 		return nil, err
 	}
-	link, err := dev.getResourceLinkAndCheckAccess(ctx, req.GetResourceId())
+	link, err := dev.getResourceLinkAndCheckAccess(ctx, req.GetResourceId(), req.GetResourceInterface())
 	if err != nil {
 		return nil, err
 	}

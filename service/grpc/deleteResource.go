@@ -39,7 +39,7 @@ func (s *ClientApplicationServer) DeleteResource(ctx context.Context, req *pb.De
 	if err != nil {
 		return nil, err
 	}
-	link, err := dev.getResourceLinkAndCheckAccess(ctx, req.GetResourceId())
+	link, err := dev.getResourceLinkAndCheckAccess(ctx, req.GetResourceId(), "")
 	if err != nil {
 		return nil, err
 	}

@@ -54,7 +54,7 @@ func (s *ClientApplicationServer) CreateResource(ctx context.Context, req *pb.Cr
 	if err != nil {
 		return nil, err
 	}
-	link, err := dev.getResourceLinkAndCheckAccess(ctx, req.GetResourceId())
+	link, err := dev.getResourceLinkAndCheckAccess(ctx, req.GetResourceId(), "")
 	if err != nil {
 		return nil, err
 	}
