@@ -4,6 +4,7 @@ on:
     - cron: "15 1 * * *"  # every day at 1:15am
   pull_request:
     types: [closed]
+  workflow_dispatch:
 
 jobs:
   pull-request-ghcr-cleanup:
@@ -22,6 +23,9 @@ jobs:
           org-name: plgd-dev
           filter-tags: vnext-pr${{ github.event.pull_request.number }}*
           token: ${{ secrets.GHCR_CLEANUP_PAT }}
+          token-type: pat
+      - if: ${{ steps.run-1.outcome == 'failure' }}
+        run: sleep 60
       - name: Delete images related to closed PR (2)
         id: run-2
         if: ${{ steps.run-1.outcome == 'failure' }}
@@ -34,6 +38,9 @@ jobs:
           org-name: plgd-dev
           filter-tags: vnext-pr${{ github.event.pull_request.number }}*
           token: ${{ secrets.GHCR_CLEANUP_PAT }}
+          token-type: pat
+      - if: ${{ steps.run-2.outcome == 'failure' }}
+        run: sleep 60
       - name: Delete images related to closed PR (3)
         if: ${{ steps.run-2.outcome == 'failure' }}
         uses: snok/container-retention-policy@v2
@@ -44,6 +51,7 @@ jobs:
           org-name: plgd-dev
           filter-tags: vnext-pr${{ github.event.pull_request.number }}*
           token: ${{ secrets.GHCR_CLEANUP_PAT }}
+          token-type: pat
   nightly-ghcr-cleanup:
     if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
     name: Delete stale or untagged images
