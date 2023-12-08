@@ -23,9 +23,13 @@ jobs:
       run: npx playwright install --with-deps
     - name: Install dotenv
       run: npm install --save dotenv
+    - name: Build client application
+      run: make build
+    - name: Run client application
+      run: .tmp/dist/client-application_linux_amd64_v1/client-application &
     - name: Run Playwright tests
       working-directory: ./web/playwright
-      run: npx playwright test
+      run: REACT_APP_HTTP_GATEWAY_ADDRESS=localhost:8080 npx playwright test
     - uses: actions/upload-artifact@v3
       if: always()
       with:
