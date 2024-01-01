@@ -14,11 +14,12 @@ require (
 	github.com/gorilla/handlers v1.5.2
 	github.com/gorilla/mux v1.8.1
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.18.1
+	github.com/hashicorp/go-multierror v1.1.1
 	github.com/jellydator/ttlcache/v3 v3.1.0
 	github.com/jessevdk/go-flags v1.5.0
 	github.com/lestrrat-go/jwx v1.2.27
 	github.com/pion/dtls/v2 v2.2.8-0.20231201063746-dc751e3b2df9
-	github.com/plgd-dev/device/v2 v2.2.3-0.20231201123030-848022cce7d7
+	github.com/plgd-dev/device/v2 v2.2.4
 	github.com/plgd-dev/go-coap/v3 v3.3.1-0.20231201115455-b5adef4fb2ee
 	github.com/plgd-dev/hub/v2 v2.14.1-0.20231201134621-229a574f786f
 	github.com/plgd-dev/kit/v2 v2.0.0-20211006190727-057b33161b90
@@ -127,7 +128,6 @@ require (
 	github.com/grpc-ecosystem/go-grpc-middleware/v2 v2.0.1 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.1 // indirect
-	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/hashicorp/go-retryablehttp v0.6.8 // indirect
 	github.com/hashicorp/go-version v1.2.1 // indirect
 	github.com/huandu/xstrings v1.3.2 // indirect
