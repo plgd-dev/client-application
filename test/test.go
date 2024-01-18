@@ -46,7 +46,7 @@ import (
 	testConfig "github.com/plgd-dev/hub/v2/test/config"
 	"github.com/plgd-dev/kit/v2/codec/cbor"
 	"github.com/stretchr/testify/require"
-	"go.opentelemetry.io/otel/trace"
+	"go.opentelemetry.io/otel/trace/noop"
 	"go.uber.org/atomic"
 	"google.golang.org/grpc"
 )
@@ -245,7 +245,7 @@ func NewHttpService(ctx context.Context, t *testing.T) (*http.Service, func()) {
 
 	fileWatcher, err := fsnotify.NewWatcher(logger)
 	require.NoError(t, err)
-	s, err := http.New(ctx, "client-application-http", cfg.APIs.HTTP.Config, clientApplicationServer, fileWatcher, logger, trace.NewNoopTracerProvider())
+	s, err := http.New(ctx, "client-application-http", cfg.APIs.HTTP.Config, clientApplicationServer, fileWatcher, logger, noop.NewTracerProvider())
 	require.NoError(t, err)
 
 	var wg sync.WaitGroup
