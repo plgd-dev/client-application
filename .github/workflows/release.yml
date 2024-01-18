@@ -2,9 +2,17 @@ name: goreleaser
 
 on:
   push:
-    # run only against tags
+    branches:
+      - main
     tags:
-      - '*'
+      # Create a release on a tag push
+      - "*"
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref_name != 'main' }}
 
 permissions:
   contents: write
@@ -26,7 +34,7 @@ jobs:
         run: git fetch --force --tags
       -
         name: Set up Go
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v5
         with:
           go-version: 1.20
     
@@ -34,9 +42,24 @@ jobs:
         id: vars
         run: |
           echo "ui_file=$(pwd)/.tmp/ui.tar.gz" >> $GITHUB_OUTPUT
-      -
-        name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@v4
+      
+      - name: Dry-run GoReleaser
+        if: ${{ github.ref_type != 'tag' }}
+        uses: goreleaser/goreleaser-action@v5
+        with:
+          # either 'goreleaser' (default) or 'goreleaser-pro'
+          distribution: goreleaser
+          version: latest
+          args: release --rm-dist --skip-validate --skip-publish
+        env:
+          UI_SEPARATOR: "--------UI--------"
+          UI_FILE: ${{ steps.vars.outputs.ui_file }}
+          # Your GoReleaser Pro key, if you are using the 'goreleaser-pro' distribution
+          # GORELEASER_KEY: ${{ secrets.GORELEASER_KEY }}
+          
+      - name: Run GoReleaser
+        if: ${{ github.ref_type == 'tag' }}
+        uses: goreleaser/goreleaser-action@v5
         with:
           # either 'goreleaser' (default) or 'goreleaser-pro'
           distribution: goreleaser
