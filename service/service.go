@@ -32,6 +32,7 @@ import (
 	"github.com/plgd-dev/hub/v2/pkg/log"
 	"github.com/plgd-dev/hub/v2/pkg/service"
 	"go.opentelemetry.io/otel/trace"
+	"go.opentelemetry.io/otel/trace/noop"
 	"go.uber.org/atomic"
 )
 
@@ -89,7 +90,7 @@ func closeServicesOnError(err error, services []service.APIService) error {
 
 // New creates server.
 func New(ctx context.Context, cfg config.Config, info *configGrpc.ServiceInformation, fileWatcher *fsnotify.Watcher, logger log.Logger) (*service.Service, error) {
-	tracerProvider := trace.NewNoopTracerProvider()
+	tracerProvider := noop.NewTracerProvider()
 	var closerFunc fn.FuncList
 	config := atomic.NewPointer(&cfg)
 	var deviceService *device.Service
