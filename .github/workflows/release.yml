@@ -36,7 +36,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: 1.20
+          go-version: "1.20"
     
       - name: Print Go version
         run: go version
@@ -49,28 +49,22 @@ jobs:
         run: |
           echo "ui_file=$(pwd)/.tmp/ui.tar.gz" >> $GITHUB_OUTPUT
       
-      - name: Dry-run GoReleaser
-        if: ${{ github.ref_type != 'tag' }}
-        uses: goreleaser/goreleaser-action@v5
-        with:
-          # either 'goreleaser' (default) or 'goreleaser-pro'
-          distribution: goreleaser
-          version: latest
-          args: release --rm-dist --skip-validate --skip-publish
-        env:
-          UI_SEPARATOR: "--------UI--------"
-          UI_FILE: ${{ steps.vars.outputs.ui_file }}
-          # Your GoReleaser Pro key, if you are using the 'goreleaser-pro' distribution
-          # GORELEASER_KEY: ${{ secrets.GORELEASER_KEY }}
+      - name: Set args for goreleaser
+        id: args
+        run: |
+          if ${{ github.ref_type == 'tag' }} ; then
+            echo "args=release --rm-dist" >> $GITHUB_OUTPUT
+          else
+            echo "args=release --rm-dist --skip-validate --skip-publish" >> $GITHUB_OUTPUT
+          fi
           
       - name: Run GoReleaser
-        if: ${{ github.ref_type == 'tag' }}
         uses: goreleaser/goreleaser-action@v5
         with:
           # either 'goreleaser' (default) or 'goreleaser-pro'
           distribution: goreleaser
           version: latest
-          args: release --rm-dist
+          args: ${{ steps.args.outputs.args }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           UI_SEPARATOR: "--------UI--------"
