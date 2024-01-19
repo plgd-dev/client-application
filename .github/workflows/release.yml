@@ -2,9 +2,17 @@ name: goreleaser
 
 on:
   push:
-    # run only against tags
+    branches:
+      - main
     tags:
-      - '*'
+      # Create a release on a tag push
+      - "*"
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.ref_name != 'main' }}
 
 permissions:
   contents: write
@@ -24,24 +32,39 @@ jobs:
       -
         name: Fetch all tags
         run: git fetch --force --tags
-      -
-        name: Set up Go
-        uses: actions/setup-go@v4
+      
+      - name: Set up Go
+        uses: actions/setup-go@v5
         with:
-          go-version: 1.20
+          go-version: "1.20"
     
+      - name: Print Go version
+        run: go version
+      
+      - name: Print supported platforms
+        run: go tool dist list
+
       - name: Set ui_file
         id: vars
         run: |
           echo "ui_file=$(pwd)/.tmp/ui.tar.gz" >> $GITHUB_OUTPUT
-      -
-        name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@v4
+      
+      - name: Set args for goreleaser
+        id: args
+        run: |
+          if ${{ github.ref_type == 'tag' }} ; then
+            echo "args=release --rm-dist" >> $GITHUB_OUTPUT
+          else
+            echo "args=release --rm-dist --skip-validate --skip-publish" >> $GITHUB_OUTPUT
+          fi
+          
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v5
         with:
           # either 'goreleaser' (default) or 'goreleaser-pro'
           distribution: goreleaser
           version: latest
-          args: release --rm-dist
+          args: ${{ steps.args.outputs.args }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           UI_SEPARATOR: "--------UI--------"
