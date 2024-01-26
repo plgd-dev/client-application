@@ -44,6 +44,11 @@ jobs:
       - name: Print supported platforms
         run: go tool dist list
 
+      - name: Install syft
+        run: |
+          curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
+          syft version
+
       - name: Set ui_file
         id: vars
         run: |
@@ -71,3 +76,10 @@ jobs:
           UI_FILE: ${{ steps.vars.outputs.ui_file }}
           # Your GoReleaser Pro key, if you are using the 'goreleaser-pro' distribution
           # GORELEASER_KEY: ${{ secrets.GORELEASER_KEY }}
+
+      - name: Generate SBOM
+        uses: anchore/sbom-action@v0
+        with:
+          path: .
+          artifact-name: sbom.spdx
+          upload-artifact-retention: 14
