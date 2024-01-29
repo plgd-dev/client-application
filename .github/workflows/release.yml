@@ -77,9 +77,19 @@ jobs:
           # Your GoReleaser Pro key, if you are using the 'goreleaser-pro' distribution
           # GORELEASER_KEY: ${{ secrets.GORELEASER_KEY }}
 
+      # Needed for syft to generate SBOM also for npm dependencies
+      - name: Install npm
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+      - name: Get npm dependencies
+        run: |
+          cd web
+          npm install
+
       - name: Generate SBOM
         uses: anchore/sbom-action@v0
         with:
           path: .
-          artifact-name: sbom.spdx
+          artifact-name: sbom.spdx.json
           upload-artifact-retention: 14
