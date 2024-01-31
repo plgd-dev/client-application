@@ -28,10 +28,10 @@ import (
 	"github.com/plgd-dev/device/v2/schema"
 	"github.com/plgd-dev/device/v2/schema/acl"
 	"github.com/plgd-dev/device/v2/schema/cloud"
+	"github.com/plgd-dev/device/v2/schema/credential"
 	"github.com/plgd-dev/device/v2/schema/maintenance"
 	"github.com/plgd-dev/device/v2/schema/softwareupdate"
 	"github.com/plgd-dev/kit/v2/security"
-	"github.com/plgd-dev/kit/v2/strings"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 )
@@ -151,6 +151,38 @@ func onboardSecureDevice(ctx context.Context, dev *device, links schema.Resource
 	})
 }
 
+func insecureAddCredentials(ctx context.Context, cloudID string, dev *device, links schema.ResourceLinks, cert string) error {
+	links = links.GetResourceLinks(credential.ResourceType)
+	if len(links) == 0 {
+		// add credential resource is not supported by device
+		return nil
+	}
+	_, err := security.ParseX509FromPEM([]byte(cert))
+	if err != nil {
+		return fmt.Errorf("cannot parse CA for device %v: %w", dev.DeviceID(), err)
+	}
+	link := links[0]
+	link.Endpoints = link.Endpoints.FilterUnsecureEndpoints()
+	setCaCredential := credential.CredentialUpdateRequest{
+		Credentials: []credential.Credential{
+			{
+				Subject: cloudID,
+				Type:    credential.CredentialType_ASYMMETRIC_SIGNING_WITH_CERTIFICATE,
+				Usage:   credential.CredentialUsage_TRUST_CA,
+				PublicData: &credential.CredentialPublicData{
+					DataInternal: cert,
+					Encoding:     credential.CredentialPublicDataEncoding_PEM,
+				},
+			},
+		},
+	}
+	err = dev.UpdateResource(ctx, link, setCaCredential, nil, coap.WithDeviceID(dev.DeviceID()))
+	if err != nil {
+		return fmt.Errorf("cannot add CA to credential resource %v of device %v: %w", link.Href, dev.DeviceID(), err)
+	}
+	return nil
+}
+
 func onboardInsecureDevice(ctx context.Context, dev *device, links schema.ResourceLinks, req *pb.OnboardDeviceRequest) error {
 	switch {
 	case req.GetAuthorizationProviderName() == "":
@@ -160,18 +192,20 @@ func onboardInsecureDevice(ctx context.Context, dev *device, links schema.Resour
 	case req.GetCoapGatewayAddress() == "":
 		return fmt.Errorf("invalid URL")
 	}
-	var link schema.ResourceLink
-
-	for _, l := range links {
-		if strings.SliceContains(l.ResourceTypes, cloud.ResourceType) {
-			link = l
-			break
-		}
-	}
-	if link.Href == "" {
+	cloudLinks := links.GetResourceLinks(cloud.ResourceType)
+	if len(cloudLinks) == 0 {
 		return fmt.Errorf("could not resolve cloud resource link of device %s", dev.DeviceID())
 	}
+	link := cloudLinks[0]
 	link.Endpoints = link.Endpoints.FilterUnsecureEndpoints()
+
+	if len(req.GetCertificateAuthorities()) > 0 {
+		err := insecureAddCredentials(ctx, req.GetHubId(), dev, links, req.GetCertificateAuthorities())
+		if err != nil {
+			return err
+		}
+	}
+
 	err := dev.UpdateResource(ctx, link, cloud.ConfigurationUpdateRequest{
 		AuthorizationProvider: req.GetAuthorizationProviderName(),
 		AuthorizationCode:     req.GetAuthorizationCode(),

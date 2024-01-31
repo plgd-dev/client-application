@@ -18,14 +18,19 @@ package grpc
 
 import (
 	"context"
+	"crypto/ecdsa"
+	"crypto/elliptic"
+	"crypto/rand"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/plgd-dev/client-application/pb"
 	"github.com/plgd-dev/device/v2/client/core"
+	"github.com/plgd-dev/device/v2/pkg/security/generateCertificate"
 	"github.com/plgd-dev/device/v2/schema"
 	"github.com/plgd-dev/device/v2/schema/cloud"
+	"github.com/plgd-dev/device/v2/schema/credential"
 	"github.com/stretchr/testify/require"
 )
 
@@ -50,4 +55,38 @@ func TestOnboardInsecureDevice(t *testing.T) {
 	})
 	require.Error(t, err)
 	require.True(t, strings.Contains(err.Error(), "could not set cloud resource of device"))
+}
+
+func TestOnboardInsecureDeviceWithCA(t *testing.T) {
+	// we don't have a insecure device simulator for this test, so we create a fake device
+	// and try to onboard it
+	ctx, cancel := context.WithTimeout(context.Background(), time.Second*8)
+	defer cancel()
+	dev := device{Device: &core.Device{}}
+	links := schema.ResourceLinks{
+		{
+			Href:          cloud.ResourceURI,
+			ResourceTypes: []string{cloud.ResourceType},
+		},
+		{
+			Href:          credential.ResourceURI,
+			ResourceTypes: []string{credential.ResourceType},
+		},
+	}
+
+	key, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	require.NoError(t, err)
+	caPEM, err := generateCertificate.GenerateRootCA(generateCertificate.Configuration{}, key)
+	require.NoError(t, err)
+
+	err = onboardInsecureDevice(ctx, &dev, links, &pb.OnboardDeviceRequest{
+		DeviceId:                  "devId",
+		CoapGatewayAddress:        "coaps+tcp://localhost:5684",
+		AuthorizationCode:         "authCode",
+		AuthorizationProviderName: "authProviderName",
+		HubId:                     "hubId",
+		CertificateAuthorities:    string(caPEM),
+	})
+	require.Error(t, err)
+	require.True(t, strings.Contains(err.Error(), "cannot add CA to credential resource"))
 }

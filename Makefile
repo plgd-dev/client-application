@@ -104,7 +104,7 @@ inject-web: $(CLIENT_APPLICATION_BINARY_PATH)
 .PHONY: inject-web
 
 build:
-	UI_FILE=$(UI_FILE) UI_SEPARATOR=$(UI_SEPARATOR) goreleaser build --rm-dist --single-target --skip-validate
+	UI_FILE=$(UI_FILE) UI_SEPARATOR=$(UI_SEPARATOR) goreleaser build --clean --single-target --skip=validate
 .PHONY: build
 
 test: env

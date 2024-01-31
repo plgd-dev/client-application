@@ -58,9 +58,9 @@ jobs:
         id: args
         run: |
           if ${{ github.ref_type == 'tag' }} ; then
-            echo "args=release --rm-dist" >> $GITHUB_OUTPUT
+            echo "args=release --clean" >> $GITHUB_OUTPUT
           else
-            echo "args=release --rm-dist --skip-validate --skip-publish" >> $GITHUB_OUTPUT
+            echo "args=release --clean --skip=validate --skip=publish" >> $GITHUB_OUTPUT
           fi
           
       - name: Run GoReleaser
