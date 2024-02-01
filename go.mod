@@ -9,7 +9,7 @@ require (
 	github.com/fullstorydev/grpchan v1.1.1
 	github.com/glendc/go-external-ip v0.1.0
 	github.com/golang-jwt/jwt/v4 v4.5.0
-	github.com/google/uuid v1.5.0
+	github.com/google/uuid v1.6.0
 	github.com/goreleaser/goreleaser v1.9.2
 	github.com/gorilla/handlers v1.5.2
 	github.com/gorilla/mux v1.8.1
@@ -18,9 +18,9 @@ require (
 	github.com/jellydator/ttlcache/v3 v3.1.1
 	github.com/jessevdk/go-flags v1.5.0
 	github.com/lestrrat-go/jwx v1.2.28
-	github.com/pion/dtls/v2 v2.2.8-0.20240102042511-9ffd96c827fe
-	github.com/plgd-dev/device/v2 v2.2.5-0.20240112105119-e165727b7d41
-	github.com/plgd-dev/go-coap/v3 v3.3.1
+	github.com/pion/dtls/v2 v2.2.8-0.20240201071732-2597464081c8
+	github.com/plgd-dev/device/v2 v2.2.5-0.20240201132112-e22e783189d2
+	github.com/plgd-dev/go-coap/v3 v3.3.2-0.20240201130556-f8d6fade418f
 	github.com/plgd-dev/hub/v2 v2.16.2
 	github.com/plgd-dev/kit/v2 v2.0.0-20211006190727-057b33161b90
 	github.com/stretchr/testify v1.8.4
@@ -28,7 +28,7 @@ require (
 	go.uber.org/atomic v1.11.0
 	go.uber.org/zap v1.26.0
 	google.golang.org/api v0.156.0
-	google.golang.org/grpc v1.60.1
+	google.golang.org/grpc v1.61.0
 	google.golang.org/grpc/cmd/protoc-gen-go-grpc v1.3.0
 	google.golang.org/protobuf v1.32.0
 	gopkg.in/yaml.v3 v3.0.1
@@ -209,7 +209,7 @@ require (
 	go.uber.org/multierr v1.11.0 // indirect
 	gocloud.dev v0.24.0 // indirect
 	golang.org/x/crypto v0.18.0 // indirect
-	golang.org/x/exp v0.0.0-20240112132812-db7319d0e0e3 // indirect
+	golang.org/x/exp v0.0.0-20240119083558-1b970713d09a // indirect
 	golang.org/x/net v0.20.0 // indirect
 	golang.org/x/oauth2 v0.16.0 // indirect
 	golang.org/x/sync v0.6.0 // indirect
@@ -218,9 +218,9 @@ require (
 	golang.org/x/time v0.5.0 // indirect
 	golang.org/x/xerrors v0.0.0-20220907171357-04be3eba64a2 // indirect
 	google.golang.org/appengine v1.6.8 // indirect
-	google.golang.org/genproto v0.0.0-20240102182953-50ed04b92917 // indirect
+	google.golang.org/genproto v0.0.0-20240116215550-a9fa1716bcac // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20240116215550-a9fa1716bcac // indirect
-	google.golang.org/genproto/googleapis/rpc v0.0.0-20240116215550-a9fa1716bcac // indirect
+	google.golang.org/genproto/googleapis/rpc v0.0.0-20240125205218-1f4bbc51befe // indirect
 	gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc // indirect
 	gopkg.in/inf.v0 v0.9.1 // indirect
 	gopkg.in/mail.v2 v2.3.1 // indirect
