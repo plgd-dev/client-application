@@ -3,7 +3,7 @@ package grpc
 import (
 	"fmt"
 
-	"github.com/golang-jwt/jwt/v4"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
 	"github.com/lestrrat-go/jwx/jwk"
 	"github.com/plgd-dev/client-application/pb"
@@ -73,7 +73,10 @@ func (s *ClientApplicationServer) ParseWithClaims(token string, claims jwt.Claim
 	}
 	plgdClaims := plgdJwt.Claims(*scopeClaims)
 	cfg := s.GetConfig()
-	owner := plgdClaims.Owner(cfg.RemoteProvisioning.GetJwtOwnerClaim())
+	owner, err := plgdClaims.GetOwner(cfg.RemoteProvisioning.GetJwtOwnerClaim())
+	if err != nil {
+		return status.Errorf(codes.Unauthenticated, "cannot get owner claim: %v", err)
+	}
 	if owner == "" {
 		return status.Errorf(codes.Unauthenticated, "owner claim is not set")
 	}
