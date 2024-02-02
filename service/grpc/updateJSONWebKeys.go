@@ -48,22 +48,25 @@ func (s *ClientApplicationServer) getOwnerForUpdateJSONWebKeys(ctx context.Conte
 	}
 	owner := ""
 	cfg := s.GetConfig()
-	if s.jwksCache.Load() != nil {
-		scopedClaims := plgdJwt.NewScopeClaims()
-		err = s.ParseWithClaims(token, scopedClaims)
-		if err != nil {
-			return "", status.Errorf(codes.Unauthenticated, "cannot parse token: %v", err)
-		}
-		claims := plgdJwt.Claims(*scopedClaims)
-		owner = claims.Owner(cfg.RemoteProvisioning.GetJwtOwnerClaim())
-		if owner == "" {
-			return "", status.Errorf(codes.Unauthenticated, "cannot get owner from token: claim %v is not set", cfg.RemoteProvisioning.GetJwtOwnerClaim())
-		}
-	} else {
+	if s.jwksCache.Load() == nil {
 		owner, err = grpc.OwnerFromTokenMD(ctx, cfg.RemoteProvisioning.GetJwtOwnerClaim())
 		if err != nil {
 			return "", status.Errorf(codes.Unauthenticated, "cannot get owner from token: %v", err)
 		}
+		return owner, nil
+	}
+	scopedClaims := plgdJwt.NewScopeClaims()
+	err = s.ParseWithClaims(token, scopedClaims)
+	if err != nil {
+		return "", status.Errorf(codes.Unauthenticated, "cannot parse token: %v", err)
+	}
+	claims := plgdJwt.Claims(*scopedClaims)
+	owner, err = claims.GetOwner(cfg.RemoteProvisioning.GetJwtOwnerClaim())
+	if err != nil {
+		return "", status.Errorf(codes.Unauthenticated, "cannot get owner from token: %v", err)
+	}
+	if owner == "" {
+		return "", status.Errorf(codes.Unauthenticated, "cannot get owner from token: claim %v is not set", cfg.RemoteProvisioning.GetJwtOwnerClaim())
 	}
 	return owner, nil
 }
