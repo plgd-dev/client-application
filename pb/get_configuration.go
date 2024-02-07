@@ -71,7 +71,7 @@ func (c *BuildInfo) Clone() *BuildInfo {
 	}
 }
 
-func NewGetConfigurationResponse(info *BuildInfo) *GetConfigurationResponse {
+func NewGetConfigurationResponse(info *BuildInfo, ui *UIConfiguration) *GetConfigurationResponse {
 	return &GetConfigurationResponse{
 		BuildInfo:  info,
 		Version:    info.GetVersion(),
@@ -79,6 +79,16 @@ func NewGetConfigurationResponse(info *BuildInfo) *GetConfigurationResponse {
 		CommitHash: info.GetCommitHash(),
 		CommitDate: info.GetCommitDate(),
 		ReleaseUrl: info.GetReleaseUrl(),
+		Ui:         ui,
+	}
+}
+
+func (r *UIConfiguration) Clone() *UIConfiguration {
+	if r == nil {
+		return nil
+	}
+	return &UIConfiguration{
+		DefaultDiscoveryTimeout: r.GetDefaultDiscoveryTimeout(),
 	}
 }
 
@@ -94,6 +104,7 @@ func (r *GetConfigurationResponse) Clone() *GetConfigurationResponse {
 		ReleaseUrl:         r.GetBuildInfo().GetReleaseUrl(),
 		RemoteProvisioning: r.RemoteProvisioning.Clone(),
 		BuildInfo:          r.GetBuildInfo().Clone(),
+		Ui:                 r.GetUi().Clone(),
 	}
 }
 

@@ -273,6 +273,9 @@ func NewServiceInformation() *pb.GetConfigurationResponse {
 		IsInitialized:            true,
 		DeviceAuthenticationMode: pb.GetConfigurationResponse_PRE_SHARED_KEY,
 		Owner:                    PSK_OWNER,
+		Ui: &pb.UIConfiguration{
+			DefaultDiscoveryTimeout: (time.Second * 2).Nanoseconds(),
+		},
 		BuildInfo: &pb.BuildInfo{
 			Version:    VERSION,
 			BuildDate:  BUILD_DATE,
