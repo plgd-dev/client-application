@@ -18,6 +18,7 @@ import { Props } from '@shared-ui/app/clientApp/App/App.types'
 import AppLoader from '@shared-ui/app/clientApp/App/AppLoader'
 import { useAppTheme } from '@shared-ui/common/hooks/use-app-theme'
 import { getTheme } from '@shared-ui/app/clientApp/App/AppRest'
+import { getDevicesDiscoveryTimeout, setDiscoveryTimeout } from '@shared-ui/app/clientApp/Devices/slice'
 
 import AppInner from '@/containers/App/AppInner/AppInner'
 import { messages as t } from './App.i18n'
@@ -31,12 +32,21 @@ const App: FC<Props> = (props) => {
     const dispatch = useDispatch()
 
     const appStore = useSelector((state: CombinedStoreType) => state.app)
+    const discoveryTimeout: number = useSelector(getDevicesDiscoveryTimeout)
+
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const [wellKnownConfig, setWellKnownConfig, reFetchConfig, wellKnownConfigError] = useWellKnownConfiguration(
         httpGatewayAddress,
         {
             onSuccess: (wellKnownCfg) => {
                 dispatch(storeWellKnownConfig(wellKnownCfg))
+
+                if (
+                    wellKnownCfg.ui.defaultDiscoveryTimeout &&
+                    parseInt(wellKnownCfg.ui.defaultDiscoveryTimeout, 10) !== discoveryTimeout
+                ) {
+                    dispatch(setDiscoveryTimeout(parseInt(wellKnownCfg.ui.defaultDiscoveryTimeout, 10)))
+                }
             },
         }
     )
