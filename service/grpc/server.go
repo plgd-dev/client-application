@@ -51,8 +51,15 @@ type ClientApplicationServer struct {
 func NewClientApplicationServer(cfg *atomic.Pointer[config.Config], devService *serviceDevice.Service, info *configGrpc.ServiceInformation, logger log.Logger) *ClientApplicationServer {
 	csrCache := ttlcache.New[uuid.UUID, *serviceDevice.Service]()
 	go csrCache.Start()
+	var ui *pb.UIConfiguration
+	curCfg := cfg.Load()
+	if curCfg != nil && curCfg.APIs.HTTP.Enabled {
+		ui = &pb.UIConfiguration{
+			DefaultDiscoveryTimeout: curCfg.APIs.HTTP.UI.DefaultDiscoveryTimeout.Nanoseconds(),
+		}
+	}
 	s := ClientApplicationServer{
-		info:               pb.NewGetConfigurationResponse(info),
+		info:               pb.NewGetConfigurationResponse(info, ui),
 		logger:             logger,
 		csrCache:           csrCache,
 		config:             cfg,

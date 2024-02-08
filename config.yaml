@@ -44,6 +44,7 @@ apis:
       allowCredentials: false
     ui:
       enabled: false
+      defaultDiscoveryTimeout: 2s
       directory: ""
   grpc:
     enabled: true

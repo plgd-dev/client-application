@@ -42,13 +42,17 @@ type Config struct {
 }
 
 type UIConfig struct {
-	Enabled   bool   `yaml:"enabled" json:"enabled"`
-	Directory string `yaml:"directory" json:"directory"`
+	Enabled                 bool          `yaml:"enabled" json:"enabled"`
+	Directory               string        `yaml:"directory" json:"directory"`
+	DefaultDiscoveryTimeout time.Duration `yaml:"defaultDiscoveryTimeout" json:"defaultDiscoveryTimeout"`
 }
 
 func (c *UIConfig) Validate() error {
 	if c.Enabled && c.Directory == "" {
 		return fmt.Errorf("directory('%v')", c.Directory)
+	}
+	if c.DefaultDiscoveryTimeout == 0 {
+		c.DefaultDiscoveryTimeout = time.Second * 2
 	}
 	return nil
 }
@@ -81,8 +85,9 @@ func DefaultConfig(directory string) Config {
 			AllowedMethods: []string{"GET", "PATCH", "HEAD", "POST", "PUT", "OPTIONS", "DELETE"},
 		},
 		UI: UIConfig{
-			Enabled:   true,
-			Directory: path.Join(directory, "www"),
+			Enabled:                 true,
+			Directory:               path.Join(directory, "www"),
+			DefaultDiscoveryTimeout: time.Second * 2,
 		},
 		Server: server.Config{
 			ReadTimeout:       time.Second * 8,

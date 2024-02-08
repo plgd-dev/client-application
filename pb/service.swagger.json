@@ -1049,42 +1049,6 @@
         }
       }
     },
-    "pbAuditContext": {
-      "type": "object",
-      "properties": {
-        "userId": {
-          "type": "string"
-        },
-        "correlationId": {
-          "type": "string"
-        }
-      }
-    },
-    "pbBuildInfo": {
-      "type": "object",
-      "properties": {
-        "version": {
-          "type": "string",
-          "title": "version of the service"
-        },
-        "buildDate": {
-          "type": "string",
-          "title": "build date of the service"
-        },
-        "commitHash": {
-          "type": "string",
-          "title": "commit hash of the service"
-        },
-        "commitDate": {
-          "type": "string",
-          "title": "commit date of the service"
-        },
-        "releaseUrl": {
-          "type": "string",
-          "title": "release url of the service"
-        }
-      }
-    },
     "pbClearCacheResponse": {
       "type": "object"
     },
@@ -1106,10 +1070,6 @@
         "status": {
           "$ref": "#/definitions/pbConnectionStatus"
         },
-        "onlineValidUntil": {
-          "type": "string",
-          "format": "int64"
-        },
         "id": {
           "type": "string",
           "description": "when status is ONLINE, this field contains the connection id. To update state offline, this field must be same as the one in the previous message."
@@ -1122,6 +1082,10 @@
         "protocol": {
           "$ref": "#/definitions/ConnectionProtocol",
           "description": "application protocol. It need to be set when the status is ONLINE."
+        },
+        "serviceId": {
+          "type": "string",
+          "description": "The service.ID, which identify the device being served, must be set when the status is ONLINE. However, during an OFFLINE event, they will be sed to empty values."
         }
       }
     },
@@ -1223,27 +1187,6 @@
         }
       }
     },
-    "pbEventMetadata": {
-      "type": "object",
-      "properties": {
-        "version": {
-          "type": "string",
-          "format": "uint64"
-        },
-        "timestamp": {
-          "type": "string",
-          "format": "int64"
-        },
-        "connectionId": {
-          "type": "string"
-        },
-        "sequence": {
-          "type": "string",
-          "format": "uint64",
-          "title": "sequence number within the same connection_id; the ResourceChanged event uses the value to skip old events, other event types might not fill the value"
-        }
-      }
-    },
     "pbFinishInitializeResponse": {
       "type": "object"
     },
@@ -1287,7 +1230,10 @@
           "type": "string"
         },
         "buildInfo": {
-          "$ref": "#/definitions/pbBuildInfo"
+          "$ref": "#/definitions/servicepbBuildInfo"
+        },
+        "ui": {
+          "$ref": "#/definitions/pbUIConfiguration"
         }
       }
     },
@@ -1470,10 +1416,15 @@
           "$ref": "#/definitions/resourceaggregatepbStatus"
         },
         "auditContext": {
-          "$ref": "#/definitions/pbAuditContext"
+          "$ref": "#/definitions/resourceaggregatepbAuditContext"
         },
         "eventMetadata": {
-          "$ref": "#/definitions/pbEventMetadata"
+          "$ref": "#/definitions/resourceaggregatepbEventMetadata"
+        },
+        "etag": {
+          "type": "string",
+          "format": "byte",
+          "title": "etag of the resource used by twin synchronization"
         },
         "openTelemetryCarrier": {
           "type": "object",
@@ -1497,10 +1448,10 @@
           "$ref": "#/definitions/resourceaggregatepbContent"
         },
         "auditContext": {
-          "$ref": "#/definitions/pbAuditContext"
+          "$ref": "#/definitions/resourceaggregatepbAuditContext"
         },
         "eventMetadata": {
-          "$ref": "#/definitions/pbEventMetadata"
+          "$ref": "#/definitions/resourceaggregatepbEventMetadata"
         },
         "openTelemetryCarrier": {
           "type": "object",
@@ -1524,10 +1475,10 @@
           "$ref": "#/definitions/resourceaggregatepbContent"
         },
         "auditContext": {
-          "$ref": "#/definitions/pbAuditContext"
+          "$ref": "#/definitions/resourceaggregatepbAuditContext"
         },
         "eventMetadata": {
-          "$ref": "#/definitions/pbEventMetadata"
+          "$ref": "#/definitions/resourceaggregatepbEventMetadata"
         },
         "openTelemetryCarrier": {
           "type": "object",
@@ -1563,10 +1514,10 @@
           }
         },
         "auditContext": {
-          "$ref": "#/definitions/pbAuditContext"
+          "$ref": "#/definitions/resourceaggregatepbAuditContext"
         },
         "eventMetadata": {
-          "$ref": "#/definitions/pbEventMetadata"
+          "$ref": "#/definitions/resourceaggregatepbEventMetadata"
         },
         "openTelemetryCarrier": {
           "type": "object",
@@ -1591,10 +1542,10 @@
           "$ref": "#/definitions/resourceaggregatepbContent"
         },
         "auditContext": {
-          "$ref": "#/definitions/pbAuditContext"
+          "$ref": "#/definitions/resourceaggregatepbAuditContext"
         },
         "eventMetadata": {
-          "$ref": "#/definitions/pbEventMetadata"
+          "$ref": "#/definitions/resourceaggregatepbEventMetadata"
         },
         "openTelemetryCarrier": {
           "type": "object",
@@ -1624,8 +1575,25 @@
         "commandMetadata": {
           "$ref": "#/definitions/pbCommandMetadata",
           "description": "when status is SYNCING, this field contains the connection id. To update state to IN_SYNC, this field must be same as the one in the previous message."
+        },
+        "forceSynchronizationAt": {
+          "type": "string",
+          "format": "int64",
+          "description": "unix timestamp in nanoseconds (https://golang.org/pkg/time/#Time.UnixNano) when the force synchronization has been started. 0 means force synchronization has never started."
         }
       }
+    },
+    "pbUIConfiguration": {
+      "type": "object",
+      "properties": {
+        "defaultDiscoveryTimeout": {
+          "type": "string",
+          "format": "int64",
+          "title": "default discovery timeout in nanoseconds"
+        }
+      },
+      "description": "similar to https://github.com/plgd-dev/hub/blob/4c4861a4bc483ba4080a1d448063da392eff4026/grpc-gateway/pb/hubConfiguration.proto#L61",
+      "title": "UI configuration"
     },
     "pbUserAgent": {
       "type": "object",
@@ -1671,7 +1639,21 @@
         "NULL_VALUE"
       ],
       "default": "NULL_VALUE",
-      "description": "`NullValue` is a singleton enumeration to represent the null value for the\n`Value` type union.\n\n The JSON representation for `NullValue` is JSON `null`.\n\n - NULL_VALUE: Null value."
+      "description": "`NullValue` is a singleton enumeration to represent the null value for the\n`Value` type union.\n\nThe JSON representation for `NullValue` is JSON `null`.\n\n - NULL_VALUE: Null value."
+    },
+    "resourceaggregatepbAuditContext": {
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string"
+        },
+        "correlationId": {
+          "type": "string"
+        },
+        "owner": {
+          "type": "string"
+        }
+      }
     },
     "resourceaggregatepbContent": {
       "type": "object",
@@ -1687,6 +1669,31 @@
           "type": "integer",
           "format": "int32",
           "title": "-1 means content-format was not provided"
+        }
+      }
+    },
+    "resourceaggregatepbEventMetadata": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "type": "string",
+          "format": "uint64"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "int64"
+        },
+        "connectionId": {
+          "type": "string"
+        },
+        "sequence": {
+          "type": "string",
+          "format": "uint64",
+          "title": "sequence number within the same connection_id; the ResourceChanged event uses the value to skip old events, other event types might not fill the value"
+        },
+        "hubId": {
+          "type": "string",
+          "title": "the hub which sent the event"
         }
       }
     },
@@ -1755,10 +1762,36 @@
         "ERROR",
         "METHOD_NOT_ALLOWED",
         "CREATED",
-        "CANCELED"
+        "CANCELED",
+        "NOT_MODIFIED"
       ],
       "default": "UNKNOWN",
-      "description": " - CANCELED: Canceled indicates the operation was canceled (typically by the user)."
+      "description": " - CANCELED: Canceled indicates the operation was canceled (typically by the user).\n - NOT_MODIFIED: Valid indicates the content hasn't changed. (provided etag in GET request is same as the resource etag)."
+    },
+    "servicepbBuildInfo": {
+      "type": "object",
+      "properties": {
+        "version": {
+          "type": "string",
+          "title": "version of the service"
+        },
+        "buildDate": {
+          "type": "string",
+          "title": "build date of the service"
+        },
+        "commitHash": {
+          "type": "string",
+          "title": "commit hash of the service"
+        },
+        "commitDate": {
+          "type": "string",
+          "title": "commit date of the service"
+        },
+        "releaseUrl": {
+          "type": "string",
+          "title": "release url of the service"
+        }
+      }
     }
   },
   "securityDefinitions": {

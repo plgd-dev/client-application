@@ -74,6 +74,13 @@ message BuildInfo {
     string release_url = 5;
 }
 
+// UI configuration
+message UIConfiguration {
+    // similar to https://github.com/plgd-dev/hub/blob/4c4861a4bc483ba4080a1d448063da392eff4026/grpc-gateway/pb/hubConfiguration.proto#L61
+
+    int64 default_discovery_timeout = 100; // default discovery timeout in nanoseconds
+}
+
 message GetConfigurationResponse {
     enum DeviceAuthenticationMode {
         PRE_SHARED_KEY = 0;
@@ -91,4 +98,5 @@ message GetConfigurationResponse {
     RemoteProvisioning remote_provisioning = 8;
     string owner = 9;
     BuildInfo build_info = 10;
+    UIConfiguration ui = 11;
 }
