@@ -5,6 +5,9 @@ linters-settings:
     default-signifies-exhaustive: true
   gocyclo:
     min-complexity: 15
+  gomoddirectives:
+    replace-allow-list:
+      - github.com/pion/dtls/v2
   gomodguard:
     blocked:
       modules:
