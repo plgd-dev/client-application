@@ -17,7 +17,7 @@ require (
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/jellydator/ttlcache/v3 v3.2.0
 	github.com/jessevdk/go-flags v1.5.0
-	github.com/lestrrat-go/jwx v1.2.28
+	github.com/lestrrat-go/jwx v1.2.29
 	github.com/pion/dtls/v2 v2.2.8-0.20240201071732-2597464081c8
 	github.com/plgd-dev/device/v2 v2.3.2-0.20240305073234-ee311673e17c
 	github.com/plgd-dev/go-coap/v3 v3.3.4-0.20240303135359-ce5dcc5ef1ba
