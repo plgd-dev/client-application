@@ -1,4 +1,4 @@
-FROM node:18 AS build-web
+FROM node:20 AS build-web
 COPY . /web
 RUN cd /web && \
     npm config set fetch-retries 3 && \
