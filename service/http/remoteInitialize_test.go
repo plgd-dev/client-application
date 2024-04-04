@@ -164,7 +164,7 @@ func setupRemoteProvisioning(t *testing.T, services ...hubTestService.SetUpServi
 }
 
 func signCSR(ctx context.Context, t *testing.T, csr []byte) []byte {
-	conn, err := grpc.Dial(config.CERTIFICATE_AUTHORITY_HOST, grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{
+	conn, err := grpc.NewClient(config.CERTIFICATE_AUTHORITY_HOST, grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{
 		RootCAs:    hubTest.GetRootCertificatePool(t),
 		MinVersion: tls.VersionTLS12,
 	})))

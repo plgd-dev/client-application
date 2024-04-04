@@ -80,7 +80,7 @@ func TestClientApplicationServerOnboardDeviceRemoteProvisioning(t *testing.T) {
 	var ownCertificateResp pb.FinishOwnDeviceResponse
 	decodeBody(t, resp.Body, &ownCertificateResp)
 
-	cloudConn, err := grpc.Dial(config.GRPC_GW_HOST, grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{
+	cloudConn, err := grpc.NewClient(config.GRPC_GW_HOST, grpc.WithTransportCredentials(credentials.NewTLS(&tls.Config{
 		RootCAs:    hubTest.GetRootCertificatePool(t),
 		MinVersion: tls.VersionTLS12,
 	})))
