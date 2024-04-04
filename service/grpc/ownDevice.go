@@ -18,6 +18,7 @@ package grpc
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -55,7 +56,7 @@ func (s *remoteSign) Close(err error) {
 	close(s.certificateSignChan)
 }
 
-func (s *remoteSign) Sign(ctx context.Context, csr []byte) ([]byte, error) {
+func (s *remoteSign) Sign(_ context.Context, csr []byte) ([]byte, error) {
 	select {
 	case <-s.ctx.Done():
 		return nil, fmt.Errorf("cannot send request with CSR: %w", s.ctx.Err())
@@ -143,7 +144,7 @@ func (s *ClientApplicationServer) ownDeviceGetCSR(ctx context.Context, timeoutVa
 	go func() {
 		devService := s.serviceDevice.Load()
 		if devService == nil {
-			remoteSign.Close(fmt.Errorf("device service is not initialized"))
+			remoteSign.Close(errors.New("device service is not initialized"))
 			return
 		}
 		defer s.remoteOwnSignCache.Delete(deviceStateID(dev.ID, remoteSign.state))

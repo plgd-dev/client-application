@@ -129,9 +129,8 @@ func newListener(config configHttp.Config, fileWatcher *fsnotify.Watcher, logger
 			Addr: config.Config.Addr,
 			TLS:  config.Config.TLS.Config,
 		}, fileWatcher, logger)
-	} else {
-		return listener.New(config.Config, fileWatcher, logger)
 	}
+	return listener.New(config.Config, fileWatcher, logger)
 }
 
 func wrapHandler(handler http.Handler, serviceName string, tracerProvider trace.TracerProvider) http.Handler {
@@ -213,7 +212,7 @@ func New(ctx context.Context, serviceName string, config configHttp.Config, clie
 	handler := newCORSHandler(config, r)
 
 	// register grpc-proxy handler
-	if err := pb.RegisterClientApplicationHandlerClient(context.Background(), mux, grpcClient); err != nil {
+	if err := pb.RegisterClientApplicationHandlerClient(ctx, mux, grpcClient); err != nil {
 		_ = lis.Close()
 		return nil, fmt.Errorf("failed to register grpc-gateway handler: %w", err)
 	}

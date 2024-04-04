@@ -41,17 +41,17 @@ func TestClientApplicationServerOwnDevice(t *testing.T) {
 	require.NoError(t, err)
 
 	_, err = s.OwnDevice(ctx, &pb.OwnDeviceRequest{
-		DeviceId: dev.Id,
+		DeviceId: dev.GetId(),
 	})
 	require.NoError(t, err)
 
 	_, err = s.GetResource(ctx, &pb.GetResourceRequest{
-		ResourceId: commands.NewResourceID(dev.Id, "/light/1"),
+		ResourceId: commands.NewResourceID(dev.GetId(), "/light/1"),
 	})
 	require.NoError(t, err)
 
 	_, err = s.DisownDevice(ctx, &pb.DisownDeviceRequest{
-		DeviceId: dev.Id,
+		DeviceId: dev.GetId(),
 	})
 	require.NoError(t, err)
 }
@@ -73,17 +73,17 @@ func TestClientApplicationServerOwnDeviceViaManufacturerCertificate(t *testing.T
 	require.NoError(t, err)
 
 	_, err = s.OwnDevice(ctx, &pb.OwnDeviceRequest{
-		DeviceId: dev.Id,
+		DeviceId: dev.GetId(),
 	})
 	require.NoError(t, err)
 
 	_, err = s.GetResource(ctx, &pb.GetResourceRequest{
-		ResourceId: commands.NewResourceID(dev.Id, "/light/1"),
+		ResourceId: commands.NewResourceID(dev.GetId(), "/light/1"),
 	})
 	require.NoError(t, err)
 
 	_, err = s.DisownDevice(ctx, &pb.DisownDeviceRequest{
-		DeviceId: dev.Id,
+		DeviceId: dev.GetId(),
 	})
 	require.NoError(t, err)
 }

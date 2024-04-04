@@ -23,7 +23,7 @@ import (
 	"github.com/plgd-dev/client-application/pb"
 )
 
-func (s *ClientApplicationServer) GetConfiguration(ctx context.Context, _ *pb.GetConfigurationRequest) (*pb.GetConfigurationResponse, error) {
+func (s *ClientApplicationServer) GetConfiguration(_ context.Context, _ *pb.GetConfigurationRequest) (*pb.GetConfigurationResponse, error) {
 	info := s.info.Clone()
 	devService := s.serviceDevice.Load()
 	info.DeviceAuthenticationMode = pb.GetConfigurationResponse_UNINITIALIZED
@@ -31,7 +31,7 @@ func (s *ClientApplicationServer) GetConfiguration(ctx context.Context, _ *pb.Ge
 	info.Owner = ""
 	remoteProvisioning := s.GetConfig().RemoteProvisioning
 	info.RemoteProvisioning = remoteProvisioning.Clone()
-	if info.RemoteProvisioning == nil {
+	if info.GetRemoteProvisioning() == nil {
 		info.RemoteProvisioning = &pb.RemoteProvisioning{}
 	}
 	info.RemoteProvisioning.CurrentTime = time.Now().UnixNano()
@@ -39,7 +39,7 @@ func (s *ClientApplicationServer) GetConfiguration(ctx context.Context, _ *pb.Ge
 		info.DeviceAuthenticationMode = devService.GetDeviceAuthenticationMode()
 		info.IsInitialized = devService.IsInitialized()
 		info.Owner = devService.GetOwner()
-		if info.DeviceAuthenticationMode == pb.GetConfigurationResponse_X509 {
+		if info.GetDeviceAuthenticationMode() == pb.GetConfigurationResponse_X509 {
 			info.RemoteProvisioning.Mode = pb.RemoteProvisioning_USER_AGENT
 		} else {
 			info.RemoteProvisioning.Mode = pb.RemoteProvisioning_MODE_NONE

@@ -1,7 +1,7 @@
 package grpc
 
 import (
-	"fmt"
+	"errors"
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
@@ -37,18 +37,18 @@ func (c *JSONWebKeyCache) GetKey(token *jwt.Token) (interface{}, error) {
 func (c *JSONWebKeyCache) LookupKey(token *jwt.Token) (jwk.Key, error) {
 	id, ok := token.Header["kid"].(string)
 	if !ok {
-		return nil, fmt.Errorf("missing key id in token")
+		return nil, errors.New("missing key id in token")
 	}
 
 	if c.keys == nil {
-		return nil, fmt.Errorf("empty JWK cache")
+		return nil, errors.New("empty JWK cache")
 	}
 	if key, ok := c.keys.LookupKeyID(id); ok {
 		if key.Algorithm() == token.Method.Alg() {
 			return key, nil
 		}
 	}
-	return nil, fmt.Errorf("could not find JWK")
+	return nil, errors.New("could not find JWK")
 }
 
 func (s *ClientApplicationServer) ParseWithClaims(token string, claims jwt.Claims) error {

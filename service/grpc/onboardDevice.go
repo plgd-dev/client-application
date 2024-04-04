@@ -19,6 +19,7 @@ package grpc
 import (
 	"context"
 	"crypto/x509"
+	"errors"
 	"fmt"
 
 	"github.com/google/uuid"
@@ -186,11 +187,11 @@ func insecureAddCredentials(ctx context.Context, cloudID string, dev *device, li
 func onboardInsecureDevice(ctx context.Context, dev *device, links schema.ResourceLinks, req *pb.OnboardDeviceRequest) error {
 	switch {
 	case req.GetAuthorizationProviderName() == "":
-		return fmt.Errorf("invalid AuthorizationProvider")
+		return errors.New("invalid AuthorizationProvider")
 	case req.GetAuthorizationCode() == "":
-		return fmt.Errorf("invalid AuthorizationCode")
+		return errors.New("invalid AuthorizationCode")
 	case req.GetCoapGatewayAddress() == "":
-		return fmt.Errorf("invalid URL")
+		return errors.New("invalid URL")
 	}
 	cloudLinks := links.GetResourceLinks(cloud.ResourceType)
 	if len(cloudLinks) == 0 {

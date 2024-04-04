@@ -54,7 +54,7 @@ func getDevices(t *testing.T, token string) {
 
 func TestClientApplicationServerGetDevices(t *testing.T) {
 	device := test.MustFindDeviceByName(test.DevsimName, []pb.GetDevicesRequest_UseMulticast{pb.GetDevicesRequest_IPV4})
-	u, err := url.Parse(device.Endpoints[0])
+	u, err := url.Parse(device.GetEndpoints()[0])
 	require.NoError(t, err)
 
 	type args struct {

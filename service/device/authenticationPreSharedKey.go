@@ -68,7 +68,7 @@ func (s *authenticationPreSharedKey) DialDTLS(ctx context.Context, addr string, 
 	idBin, _ := subjectUUID.MarshalBinary()
 	dtlsCfg := &dtls.Config{
 		PSKIdentityHint: idBin,
-		PSK: func(b []byte) ([]byte, error) {
+		PSK: func([]byte) ([]byte, error) {
 			// iotivity-lite supports only 16-byte PSK
 			return toKeyBin(key), nil
 		},
@@ -77,7 +77,7 @@ func (s *authenticationPreSharedKey) DialDTLS(ctx context.Context, addr string, 
 	return coap.DialUDPSecure(ctx, addr, dtlsCfg, opts...)
 }
 
-func (s *authenticationPreSharedKey) DialTLS(ctx context.Context, addr string, tlsCfg *tls.Config, opts ...tcp.Option) (*coap.ClientCloseHandler, error) {
+func (s *authenticationPreSharedKey) DialTLS(_ context.Context, _ string, _ *tls.Config, _ ...tcp.Option) (*coap.ClientCloseHandler, error) {
 	return nil, errPreSharedKeyAuthentication
 }
 
@@ -94,11 +94,11 @@ func (s *authenticationPreSharedKey) GetOwnOptions() ([]core.OwnOption, error) {
 	return []core.OwnOption{core.WithPresharedKey(toKeyBin(key))}, nil
 }
 
-func (s *authenticationPreSharedKey) GetIdentityCSR(id string) ([]byte, error) {
+func (s *authenticationPreSharedKey) GetIdentityCSR(_ string) ([]byte, error) {
 	return nil, errPreSharedKeyAuthentication
 }
 
-func (s *authenticationPreSharedKey) SetIdentityCertificate(owner string, chainPem []byte) error {
+func (s *authenticationPreSharedKey) SetIdentityCertificate(_ string, _ []byte) error {
 	return errPreSharedKeyAuthentication
 }
 

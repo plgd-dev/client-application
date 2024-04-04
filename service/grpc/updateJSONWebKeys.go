@@ -46,12 +46,11 @@ func (s *ClientApplicationServer) getOwnerForUpdateJSONWebKeys(ctx context.Conte
 	if err != nil {
 		return "", status.Errorf(codes.Unauthenticated, "cannot get token: %v", err)
 	}
-	owner := ""
 	cfg := s.GetConfig()
 	if s.jwksCache.Load() == nil {
-		owner, err = grpc.OwnerFromTokenMD(ctx, cfg.RemoteProvisioning.GetJwtOwnerClaim())
-		if err != nil {
-			return "", status.Errorf(codes.Unauthenticated, "cannot get owner from token: %v", err)
+		owner, err2 := grpc.OwnerFromTokenMD(ctx, cfg.RemoteProvisioning.GetJwtOwnerClaim())
+		if err2 != nil {
+			return "", status.Errorf(codes.Unauthenticated, "cannot get owner from token: %v", err2)
 		}
 		return owner, nil
 	}
@@ -61,7 +60,7 @@ func (s *ClientApplicationServer) getOwnerForUpdateJSONWebKeys(ctx context.Conte
 		return "", status.Errorf(codes.Unauthenticated, "cannot parse token: %v", err)
 	}
 	claims := plgdJwt.Claims(*scopedClaims)
-	owner, err = claims.GetOwner(cfg.RemoteProvisioning.GetJwtOwnerClaim())
+	owner, err := claims.GetOwner(cfg.RemoteProvisioning.GetJwtOwnerClaim())
 	if err != nil {
 		return "", status.Errorf(codes.Unauthenticated, "cannot get owner from token: %v", err)
 	}

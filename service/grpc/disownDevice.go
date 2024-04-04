@@ -40,7 +40,7 @@ func (s *ClientApplicationServer) DisownDevice(ctx context.Context, req *pb.Diso
 	if err != nil {
 		return nil, err
 	}
-	if dev.ToProto().OwnershipStatus != grpcgwPb.Device_OWNED {
+	if dev.ToProto().GetOwnershipStatus() != grpcgwPb.Device_OWNED {
 		return nil, status.Error(codes.PermissionDenied, "device is not owned")
 	}
 

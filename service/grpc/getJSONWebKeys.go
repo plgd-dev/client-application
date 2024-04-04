@@ -27,7 +27,7 @@ import (
 	"google.golang.org/protobuf/types/known/structpb"
 )
 
-func (s *ClientApplicationServer) GetJSONWebKeys(ctx context.Context, req *pb.GetJSONWebKeysRequest) (*structpb.Struct, error) {
+func (s *ClientApplicationServer) GetJSONWebKeys(_ context.Context, _ *pb.GetJSONWebKeysRequest) (*structpb.Struct, error) {
 	jwksCache := s.jwksCache.Load()
 	if jwksCache == nil {
 		return nil, status.Errorf(codes.Unavailable, "not available")
@@ -42,7 +42,7 @@ func (s *ClientApplicationServer) GetJSONWebKeys(ctx context.Context, req *pb.Ge
 	marshaledJwk, err := json.Marshal(map[string]interface{}{
 		"keys": keys,
 	})
-	if jwksCache == nil {
+	if err != nil {
 		return nil, status.Errorf(codes.Internal, "cannot marshal keys to json: %v", err)
 	}
 	var jwkMap map[string]interface{}

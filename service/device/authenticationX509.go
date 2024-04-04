@@ -24,6 +24,7 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/pem"
+	"errors"
 	"fmt"
 	"time"
 
@@ -53,7 +54,7 @@ func newAuthenticationX509(config configDevice.Config) *authenticationX509 {
 func (s *authenticationX509) getTLSCertificate() (*tls.Certificate, error) {
 	crt := s.certificate.Load()
 	if crt == nil || crt.Leaf == nil {
-		return nil, fmt.Errorf("certificate hasn't been set")
+		return nil, errors.New("certificate hasn't been set")
 	}
 	if crt.Leaf.NotAfter.Before(time.Now()) {
 		return nil, fmt.Errorf("certificate is not valid after %v", crt.Leaf.NotAfter)
@@ -70,7 +71,7 @@ func getRootCAFromChain(chain [][]byte) (*x509.Certificate, error) {
 		return nil, err
 	}
 	if !rootCA.IsCA || rootCA.Issuer.CommonName != rootCA.Subject.CommonName {
-		return nil, fmt.Errorf("invalid root certificate")
+		return nil, errors.New("invalid root certificate")
 	}
 	return rootCA, nil
 }
@@ -187,7 +188,7 @@ func (s *authenticationX509) updateCertificate(crt tls.Certificate) error {
 func (s *authenticationX509) SetIdentityCertificate(owner string, chainPem []byte) error {
 	privateKey := s.privateKey.Load()
 	if privateKey == nil {
-		return fmt.Errorf("private key is not set")
+		return errors.New("private key is not set")
 	}
 	keyPem, err := encodePrivateKeyToPem(privateKey)
 	if err != nil {

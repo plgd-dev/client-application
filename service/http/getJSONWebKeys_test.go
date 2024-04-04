@@ -38,12 +38,18 @@ func TestClientApplicationServerGetJSONWebKeys(t *testing.T) {
 	request := httpgwTest.NewRequest(http.MethodGet, serviceHttp.WellKnownJWKs, nil).
 		Host(test.CLIENT_APPLICATION_HTTP_HOST).Build()
 	resp := httpgwTest.HTTPDo(t, request)
+	defer func(r *http.Response) {
+		_ = r.Body.Close()
+	}(resp)
 	require.Equal(t, http.StatusServiceUnavailable, resp.StatusCode)
 
 	initializeRemoteProvisioning(ctx, t)
 
 	request = httpgwTest.NewRequest(http.MethodGet, serviceHttp.WellKnownJWKs, nil).Host(test.CLIENT_APPLICATION_HTTP_HOST).Build()
 	resp = httpgwTest.HTTPDo(t, request)
+	defer func(r *http.Response) {
+		_ = r.Body.Close()
+	}(resp)
 	require.Equal(t, http.StatusOK, resp.StatusCode)
 	var jwksClientApp map[string]interface{}
 	err := json.ReadFrom(resp.Body, &jwksClientApp)

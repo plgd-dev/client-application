@@ -51,7 +51,7 @@ func (s *ClientApplicationServer) reset(ctx context.Context, forceReset bool) er
 	return nil
 }
 
-func (s *ClientApplicationServer) Reset(ctx context.Context, req *pb.ResetRequest) (*pb.ResetResponse, error) {
+func (s *ClientApplicationServer) Reset(ctx context.Context, _ *pb.ResetRequest) (*pb.ResetResponse, error) {
 	s.initializationMutex.Lock()
 	defer s.initializationMutex.Unlock()
 	err := s.reset(ctx, true)

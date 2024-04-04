@@ -53,11 +53,11 @@ func TestClientApplicationServerGetResource(t *testing.T) {
 			name: "device resource",
 			args: args{
 				accept:   serviceHttp.ApplicationProtoJsonContentType,
-				deviceID: dev.Id,
+				deviceID: dev.GetId(),
 				href:     device.ResourceURI,
 			},
 			want: &grpcgwPb.Resource{
-				Data:  dev.Data,
+				Data:  dev.GetData(),
 				Types: []string{"oic.d.cloudDevice", "oic.wk.d"},
 			},
 			wantCode: http.StatusOK,
@@ -74,7 +74,7 @@ func TestClientApplicationServerGetResource(t *testing.T) {
 		{
 			name: "unknown href",
 			args: args{
-				deviceID: dev.Id,
+				deviceID: dev.GetId(),
 				href:     "/unknown",
 			},
 			wantErr:  true,
@@ -83,7 +83,7 @@ func TestClientApplicationServerGetResource(t *testing.T) {
 		{
 			name: "forbidden - cannot establish TLS connection",
 			args: args{
-				deviceID: dev.Id,
+				deviceID: dev.GetId(),
 				href:     configuration.ResourceURI,
 			},
 			wantErr:  true,

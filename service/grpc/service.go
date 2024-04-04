@@ -17,7 +17,6 @@
 package grpc
 
 import (
-	"context"
 	"fmt"
 
 	"github.com/plgd-dev/client-application/pb"
@@ -34,7 +33,7 @@ type Service struct {
 }
 
 // New creates new GRPC service
-func New(ctx context.Context, serviceName string, config configGrpc.Config, clientApplicationServer *ClientApplicationServer, fileWatcher *fsnotify.Watcher, logger log.Logger, tracerProvider trace.TracerProvider) (*Service, error) {
+func New(config configGrpc.Config, clientApplicationServer *ClientApplicationServer, fileWatcher *fsnotify.Watcher, logger log.Logger, tracerProvider trace.TracerProvider) (*Service, error) {
 	methods := []string{
 		"/" + pb.ClientApplication_ServiceDesc.ServiceName + "/UpdateJSONWebKeys",
 		"/" + pb.ClientApplication_ServiceDesc.ServiceName + "/GetJSONWebKeys",

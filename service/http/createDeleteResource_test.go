@@ -40,7 +40,7 @@ func TestClientApplicationServerCreateDeleteResource(t *testing.T) {
 	getDevices(t, "")
 
 	request := httpgwTest.NewRequest(http.MethodPost, serviceHttp.OwnDevice, nil).
-		Host(test.CLIENT_APPLICATION_HTTP_HOST).DeviceId(dev.Id).Build()
+		Host(test.CLIENT_APPLICATION_HTTP_HOST).DeviceId(dev.GetId()).Build()
 	resp := httpgwTest.HTTPDo(t, request)
 	_ = resp.Body.Close()
 	require.Equal(t, http.StatusOK, resp.StatusCode)
@@ -50,27 +50,27 @@ func TestClientApplicationServerCreateDeleteResource(t *testing.T) {
 		v, err := json.Encode(hubTest.MakeSwitchResourceDefaultData())
 		require.NoError(t, err)
 		return v
-	}())).Host(test.CLIENT_APPLICATION_HTTP_HOST).DeviceId(dev.Id).ResourceHref(hubTest.TestResourceSwitchesHref).Build()
+	}())).Host(test.CLIENT_APPLICATION_HTTP_HOST).DeviceId(dev.GetId()).ResourceHref(hubTest.TestResourceSwitchesHref).Build()
 	resp = httpgwTest.HTTPDo(t, request)
 	_ = resp.Body.Close()
 	require.Equal(t, http.StatusOK, resp.StatusCode)
 
 	// delete resource
 	request = httpgwTest.NewRequest(http.MethodDelete, serviceHttp.DeviceResourceLink, nil).
-		Host(test.CLIENT_APPLICATION_HTTP_HOST).DeviceId(dev.Id).ResourceHref(hubTest.TestResourceSwitchesInstanceHref("1")).Build()
+		Host(test.CLIENT_APPLICATION_HTTP_HOST).DeviceId(dev.GetId()).ResourceHref(hubTest.TestResourceSwitchesInstanceHref("1")).Build()
 	resp = httpgwTest.HTTPDo(t, request)
 	_ = resp.Body.Close()
 	require.Equal(t, http.StatusOK, resp.StatusCode)
 
 	// duplicity delete
 	request = httpgwTest.NewRequest(http.MethodDelete, serviceHttp.DeviceResourceLink, nil).
-		Host(test.CLIENT_APPLICATION_HTTP_HOST).DeviceId(dev.Id).ResourceHref(hubTest.TestResourceSwitchesInstanceHref("1")).Build()
+		Host(test.CLIENT_APPLICATION_HTTP_HOST).DeviceId(dev.GetId()).ResourceHref(hubTest.TestResourceSwitchesInstanceHref("1")).Build()
 	resp = httpgwTest.HTTPDo(t, request)
 	_ = resp.Body.Close()
 	require.Equal(t, http.StatusNotFound, resp.StatusCode)
 
 	request = httpgwTest.NewRequest(http.MethodPost, serviceHttp.DisownDevice, nil).
-		Host(test.CLIENT_APPLICATION_HTTP_HOST).DeviceId(dev.Id).Build()
+		Host(test.CLIENT_APPLICATION_HTTP_HOST).DeviceId(dev.GetId()).Build()
 	resp = httpgwTest.HTTPDo(t, request)
 	_ = resp.Body.Close()
 	require.Equal(t, http.StatusOK, resp.StatusCode)

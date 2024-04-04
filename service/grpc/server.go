@@ -73,7 +73,7 @@ func NewClientApplicationServer(cfg *atomic.Pointer[config.Config], devService *
 }
 
 func (s *ClientApplicationServer) Version() string {
-	return s.info.Version
+	return s.info.GetVersion()
 }
 
 func (s *ClientApplicationServer) GetConfig() config.Config {

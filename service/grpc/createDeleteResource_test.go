@@ -44,18 +44,18 @@ func TestClientApplicationServerCreateDeleteResource(t *testing.T) {
 	require.NoError(t, err)
 
 	d1, err := s.GetDevice(ctx, &pb.GetDeviceRequest{
-		DeviceId: dev.Id,
+		DeviceId: dev.GetId(),
 	})
 	require.NoError(t, err)
 	require.Equal(t, dev, d1)
 
 	_, err = s.OwnDevice(ctx, &pb.OwnDeviceRequest{
-		DeviceId: dev.Id,
+		DeviceId: dev.GetId(),
 	})
 	require.NoError(t, err)
 
 	_, err = s.CreateResource(ctx, &pb.CreateResourceRequest{
-		ResourceId: commands.NewResourceID(dev.Id, hubTest.TestResourceSwitchesHref),
+		ResourceId: commands.NewResourceID(dev.GetId(), hubTest.TestResourceSwitchesHref),
 		Content: &grpcgwPb.Content{
 			ContentType: message.AppOcfCbor.String(),
 			Data:        hubTest.EncodeToCbor(t, hubTest.MakeSwitchResourceDefaultData()),
@@ -64,18 +64,18 @@ func TestClientApplicationServerCreateDeleteResource(t *testing.T) {
 	require.NoError(t, err)
 
 	_, err = s.DeleteResource(ctx, &pb.DeleteResourceRequest{
-		ResourceId: commands.NewResourceID(dev.Id, hubTest.TestResourceSwitchesInstanceHref("1")),
+		ResourceId: commands.NewResourceID(dev.GetId(), hubTest.TestResourceSwitchesInstanceHref("1")),
 	})
 	require.NoError(t, err)
 
 	// duplicity delete
 	_, err = s.DeleteResource(ctx, &pb.DeleteResourceRequest{
-		ResourceId: commands.NewResourceID(dev.Id, hubTest.TestResourceSwitchesInstanceHref("1")),
+		ResourceId: commands.NewResourceID(dev.GetId(), hubTest.TestResourceSwitchesInstanceHref("1")),
 	})
 	require.Error(t, err)
 
 	_, err = s.DisownDevice(ctx, &pb.DisownDeviceRequest{
-		DeviceId: dev.Id,
+		DeviceId: dev.GetId(),
 	})
 	require.NoError(t, err)
 }

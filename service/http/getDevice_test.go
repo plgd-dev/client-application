@@ -43,7 +43,7 @@ func TestClientApplicationServerGetDevice(t *testing.T) {
 	getDevices(t, "")
 
 	request := httpgwTest.NewRequest(http.MethodPost, serviceHttp.OwnDevice, nil).
-		Host(test.CLIENT_APPLICATION_HTTP_HOST).DeviceId(dev.Id).Build()
+		Host(test.CLIENT_APPLICATION_HTTP_HOST).DeviceId(dev.GetId()).Build()
 	resp := httpgwTest.HTTPDo(t, request)
 	_ = resp.Body.Close()
 	require.Equal(t, http.StatusOK, resp.StatusCode)
@@ -51,7 +51,7 @@ func TestClientApplicationServerGetDevice(t *testing.T) {
 	newName := test.DevsimName + "_new"
 
 	request = httpgwTest.NewRequest(http.MethodPut, serviceHttp.DeviceResource, bytes.NewBufferString(`{"n":"`+newName+`"}`)).
-		Host(test.CLIENT_APPLICATION_HTTP_HOST).DeviceId(dev.Id).ResourceHref(configuration.ResourceURI).ContentType(serviceHttp.ApplicationJsonContentType).Build()
+		Host(test.CLIENT_APPLICATION_HTTP_HOST).DeviceId(dev.GetId()).ResourceHref(configuration.ResourceURI).ContentType(serviceHttp.ApplicationJsonContentType).Build()
 	resp = httpgwTest.HTTPDo(t, request)
 	defer func() {
 		_ = resp.Body.Close()
@@ -59,7 +59,7 @@ func TestClientApplicationServerGetDevice(t *testing.T) {
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
 
 	request = httpgwTest.NewRequest(http.MethodGet, serviceHttp.Device, nil).
-		Host(test.CLIENT_APPLICATION_HTTP_HOST).Accept(serviceHttp.ApplicationProtoJsonContentType).DeviceId(dev.Id).Build()
+		Host(test.CLIENT_APPLICATION_HTTP_HOST).Accept(serviceHttp.ApplicationProtoJsonContentType).DeviceId(dev.GetId()).Build()
 	resp = httpgwTest.HTTPDo(t, request)
 	defer func() {
 		_ = resp.Body.Close()
@@ -76,7 +76,7 @@ func TestClientApplicationServerGetDevice(t *testing.T) {
 	require.Equal(t, newName, v.Name)
 
 	request = httpgwTest.NewRequest(http.MethodPut, serviceHttp.DeviceResource, bytes.NewBufferString(`{"n":"`+test.DevsimName+`"}`)).
-		Host(test.CLIENT_APPLICATION_HTTP_HOST).DeviceId(dev.Id).ResourceHref(configuration.ResourceURI).ContentType(serviceHttp.ApplicationJsonContentType).Build()
+		Host(test.CLIENT_APPLICATION_HTTP_HOST).DeviceId(dev.GetId()).ResourceHref(configuration.ResourceURI).ContentType(serviceHttp.ApplicationJsonContentType).Build()
 	resp = httpgwTest.HTTPDo(t, request)
 	defer func() {
 		_ = resp.Body.Close()
@@ -84,7 +84,7 @@ func TestClientApplicationServerGetDevice(t *testing.T) {
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
 
 	request = httpgwTest.NewRequest(http.MethodPost, serviceHttp.DisownDevice, nil).
-		Host(test.CLIENT_APPLICATION_HTTP_HOST).DeviceId(dev.Id).Build()
+		Host(test.CLIENT_APPLICATION_HTTP_HOST).DeviceId(dev.GetId()).Build()
 	resp = httpgwTest.HTTPDo(t, request)
 	_ = resp.Body.Close()
 	require.Equal(t, http.StatusOK, resp.StatusCode)

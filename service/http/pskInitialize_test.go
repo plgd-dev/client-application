@@ -40,11 +40,15 @@ func doInitializePSK(t *testing.T, subjectID string, key string, expCode int) {
 	})).Host(test.CLIENT_APPLICATION_HTTP_HOST).Build()
 	resp := httpgwTest.HTTPDo(t, request)
 	require.Equal(t, expCode, resp.StatusCode)
+	_ = resp.Body.Close()
 }
 
 func initializePSK(t *testing.T, subjectID string, key string) {
 	request := httpgwTest.NewRequest(http.MethodGet, serviceHttp.WellKnownConfiguration, nil).Host(test.CLIENT_APPLICATION_HTTP_HOST).Build()
 	resp := httpgwTest.HTTPDo(t, request)
+	defer func(r *http.Response) {
+		_ = r.Body.Close()
+	}(resp)
 	require.Equal(t, http.StatusOK, resp.StatusCode)
 	configRespBody, err := io.ReadAll(resp.Body)
 	require.NoError(t, err)
@@ -52,13 +56,16 @@ func initializePSK(t *testing.T, subjectID string, key string) {
 	err = protojson.Unmarshal(configRespBody, &configResp)
 	require.NoError(t, err)
 	require.False(t, configResp.GetIsInitialized())
-	require.Equal(t, configResp.GetOwner(), "")
-	require.Equal(t, configResp.GetDeviceAuthenticationMode(), pb.GetConfigurationResponse_UNINITIALIZED)
+	require.Equal(t, "", configResp.GetOwner())
+	require.Equal(t, pb.GetConfigurationResponse_UNINITIALIZED, configResp.GetDeviceAuthenticationMode())
 
 	doInitializePSK(t, subjectID, key, http.StatusOK)
 
 	request = httpgwTest.NewRequest(http.MethodGet, serviceHttp.WellKnownConfiguration, nil).Host(test.CLIENT_APPLICATION_HTTP_HOST).Build()
 	resp = httpgwTest.HTTPDo(t, request)
+	defer func(r *http.Response) {
+		_ = r.Body.Close()
+	}(resp)
 	require.Equal(t, http.StatusOK, resp.StatusCode)
 	configRespBody, err = io.ReadAll(resp.Body)
 	require.NoError(t, err)
@@ -67,7 +74,7 @@ func initializePSK(t *testing.T, subjectID string, key string) {
 	require.NoError(t, err)
 	require.True(t, configResp1.GetIsInitialized())
 	require.Equal(t, configResp1.GetOwner(), subjectID)
-	require.Equal(t, configResp1.GetDeviceAuthenticationMode(), pb.GetConfigurationResponse_PRE_SHARED_KEY)
+	require.Equal(t, pb.GetConfigurationResponse_PRE_SHARED_KEY, configResp1.GetDeviceAuthenticationMode())
 }
 
 func setupClientApplicationForPSKInitialization(t *testing.T) func() {
@@ -85,12 +92,14 @@ func setupClientApplicationForPSKInitialization(t *testing.T) func() {
 func doSimpleOwn(t *testing.T, deviceID string, expCode int) {
 	request := httpgwTest.NewRequest(http.MethodPost, serviceHttp.OwnDevice, nil).Host(test.CLIENT_APPLICATION_HTTP_HOST).DeviceId(deviceID).Build()
 	resp := httpgwTest.HTTPDo(t, request)
+	_ = resp.Body.Close()
 	require.Equal(t, expCode, resp.StatusCode)
 }
 
 func doDisown(t *testing.T, deviceID string, expCode int) {
 	request := httpgwTest.NewRequest(http.MethodPost, serviceHttp.DisownDevice, nil).Host(test.CLIENT_APPLICATION_HTTP_HOST).DeviceId(deviceID).Build()
 	resp := httpgwTest.HTTPDo(t, request)
+	_ = resp.Body.Close()
 	require.Equal(t, expCode, resp.StatusCode)
 }
 
