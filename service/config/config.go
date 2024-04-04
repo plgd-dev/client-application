@@ -17,6 +17,7 @@
 package config
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/plgd-dev/client-application/service/config/device"
@@ -38,7 +39,7 @@ type Config struct {
 
 func New(configPath string) (Config, error) {
 	if configPath == "" {
-		return Config{}, fmt.Errorf("path to config is empty")
+		return Config{}, errors.New("path to config is empty")
 	}
 	var cfg Config
 	if err := config.LoadAndValidateConfig(&cfg); err != nil {
@@ -85,7 +86,7 @@ type APIsConfig struct {
 
 func (c *APIsConfig) Validate() error {
 	if !c.HTTP.Enabled && !c.GRPC.Enabled {
-		return fmt.Errorf("http or grpc must be enabled")
+		return errors.New("http or grpc must be enabled")
 	}
 	if c.HTTP.Enabled {
 		if err := c.HTTP.Validate(); err != nil {

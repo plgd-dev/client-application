@@ -56,7 +56,7 @@ func TestClientApplicationServerUpdateResource(t *testing.T) {
 			args: args{
 				req: &pb.UpdateResourceRequest{
 					ResourceId: &commands.ResourceId{
-						DeviceId: dev.Id,
+						DeviceId: dev.GetId(),
 						Href:     doxm.ResourceURI,
 					},
 					Content: &grpcgwPb.Content{
@@ -77,7 +77,7 @@ func TestClientApplicationServerUpdateResource(t *testing.T) {
 			args: args{
 				req: &pb.UpdateResourceRequest{
 					ResourceId: &commands.ResourceId{
-						DeviceId: dev.Id,
+						DeviceId: dev.GetId(),
 						Href:     device.ResourceURI,
 					},
 					Content: &grpcgwPb.Content{
@@ -111,7 +111,7 @@ func TestClientApplicationServerUpdateResource(t *testing.T) {
 			args: args{
 				req: &pb.UpdateResourceRequest{
 					ResourceId: &commands.ResourceId{
-						DeviceId: dev.Id,
+						DeviceId: dev.GetId(),
 						Href:     "/unknown",
 					},
 					Content: &grpcgwPb.Content{
@@ -128,7 +128,7 @@ func TestClientApplicationServerUpdateResource(t *testing.T) {
 			args: args{
 				req: &pb.UpdateResourceRequest{
 					ResourceId: &commands.ResourceId{
-						DeviceId: dev.Id,
+						DeviceId: dev.GetId(),
 						Href:     configuration.ResourceURI,
 					},
 					Content: &grpcgwPb.Content{

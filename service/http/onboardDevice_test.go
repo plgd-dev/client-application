@@ -62,7 +62,7 @@ func TestClientApplicationServerOnboardDeviceRemoteProvisioning(t *testing.T) {
 
 	request := httpgwTest.NewRequest(http.MethodPost, serviceHttp.OwnDevice, encodeToBody(t, &pb.OwnDeviceRequest{
 		Timeout: (time.Second * 8).Nanoseconds(),
-	})).Host(test.CLIENT_APPLICATION_HTTP_HOST).AuthToken(token).DeviceId(dev.Id).Build()
+	})).Host(test.CLIENT_APPLICATION_HTTP_HOST).AuthToken(token).DeviceId(dev.GetId()).Build()
 	resp := httpgwTest.HTTPDo(t, request)
 	require.Equal(t, http.StatusOK, resp.StatusCode)
 	var ownCSRResp pb.OwnDeviceResponse
@@ -74,7 +74,7 @@ func TestClientApplicationServerOnboardDeviceRemoteProvisioning(t *testing.T) {
 	certificate := signCSR(ctx, t, ownCSRResp.GetIdentityCertificateChallenge().GetCertificateSigningRequest())
 	request = httpgwTest.NewRequest(http.MethodPost, serviceHttp.OwnDevice+"/"+ownCSRResp.GetIdentityCertificateChallenge().GetState(), encodeToBody(t, &pb.FinishOwnDeviceRequest{
 		Certificate: certificate,
-	})).Host(test.CLIENT_APPLICATION_HTTP_HOST).AuthToken(token).DeviceId(dev.Id).Build()
+	})).Host(test.CLIENT_APPLICATION_HTTP_HOST).AuthToken(token).DeviceId(dev.GetId()).Build()
 	resp = httpgwTest.HTTPDo(t, request)
 	require.Equal(t, http.StatusOK, resp.StatusCode)
 	var ownCertificateResp pb.FinishOwnDeviceResponse
@@ -106,7 +106,7 @@ func TestClientApplicationServerOnboardDeviceRemoteProvisioning(t *testing.T) {
 	ev, err := subClient.Recv()
 	require.NoError(t, err)
 	expectedEvent := &hubGrpcGwPb.Event{
-		SubscriptionId: ev.SubscriptionId,
+		SubscriptionId: ev.GetSubscriptionId(),
 		CorrelationId:  "allEvents",
 		Type: &hubGrpcGwPb.Event_OperationProcessed_{
 			OperationProcessed: &hubGrpcGwPb.Event_OperationProcessed{
@@ -140,26 +140,26 @@ func TestClientApplicationServerOnboardDeviceRemoteProvisioning(t *testing.T) {
 	// onboard
 	request = httpgwTest.NewRequest(http.MethodPost, serviceHttp.OnboardDevice, encodeToBody(t, &pb.OnboardDeviceRequest{
 		CoapGatewayAddress:        httpClientCfg.GetRemoteProvisioning().GetCoapGateway(),
-		AuthorizationCode:         hubTestOAuthServerTest.GetAuthorizationCode(t, oauthServer.Host, httpClientCfg.GetRemoteProvisioning().GetDeviceOauthClient().GetClientId(), dev.Id, ""),
+		AuthorizationCode:         hubTestOAuthServerTest.GetAuthorizationCode(t, oauthServer.Host, httpClientCfg.GetRemoteProvisioning().GetDeviceOauthClient().GetClientId(), dev.GetId(), ""),
 		HubId:                     httpClientCfg.GetRemoteProvisioning().GetId(),
 		AuthorizationProviderName: httpClientCfg.GetRemoteProvisioning().GetDeviceOauthClient().GetProviderName(),
 		CertificateAuthorities:    httpClientCfg.GetRemoteProvisioning().GetCertificateAuthorities(),
-	})).Host(test.CLIENT_APPLICATION_HTTP_HOST).AuthToken(token).DeviceId(dev.Id).Build()
+	})).Host(test.CLIENT_APPLICATION_HTTP_HOST).AuthToken(token).DeviceId(dev.GetId()).Build()
 	resp = httpgwTest.HTTPDo(t, request)
 	_ = resp.Body.Close()
 	require.Equal(t, http.StatusOK, resp.StatusCode)
 
-	hubTest.WaitForDevice(t, subClient, dev.Id, expectedEvent.GetSubscriptionId(), expectedEvent.GetCorrelationId(), hubTest.GetAllBackendResourceLinks())
+	hubTest.WaitForDevice(t, subClient, dev.GetId(), expectedEvent.GetSubscriptionId(), expectedEvent.GetCorrelationId(), hubTest.GetAllBackendResourceLinks())
 
 	// offboard
-	request = httpgwTest.NewRequest(http.MethodPost, serviceHttp.OffboardDevice, nil).Host(test.CLIENT_APPLICATION_HTTP_HOST).AuthToken(token).DeviceId(dev.Id).Build()
+	request = httpgwTest.NewRequest(http.MethodPost, serviceHttp.OffboardDevice, nil).Host(test.CLIENT_APPLICATION_HTTP_HOST).AuthToken(token).DeviceId(dev.GetId()).Build()
 	resp = httpgwTest.HTTPDo(t, request)
 	_ = resp.Body.Close()
 	require.Equal(t, http.StatusOK, resp.StatusCode)
 
 	// disown
 	request = httpgwTest.NewRequest(http.MethodPost, serviceHttp.DisownDevice, nil).
-		Host(test.CLIENT_APPLICATION_HTTP_HOST).AuthToken(token).DeviceId(dev.Id).Build()
+		Host(test.CLIENT_APPLICATION_HTTP_HOST).AuthToken(token).DeviceId(dev.GetId()).Build()
 	resp = httpgwTest.HTTPDo(t, request)
 	_ = resp.Body.Close()
 	require.Equal(t, http.StatusOK, resp.StatusCode)

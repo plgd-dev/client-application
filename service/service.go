@@ -52,8 +52,8 @@ func newHttpService(ctx context.Context, config config.Config, clientApplication
 	return httpService, err
 }
 
-func newGrpcService(ctx context.Context, config config.Config, clientApplicationServer *grpc.ClientApplicationServer, fileWatcher *fsnotify.Watcher, logger log.Logger, tracerProvider trace.TracerProvider) (*grpc.Service, error) {
-	grpcService, err := grpc.New(ctx, serviceName, config.APIs.GRPC.Config, clientApplicationServer, fileWatcher, logger, tracerProvider)
+func newGrpcService(config config.Config, clientApplicationServer *grpc.ClientApplicationServer, fileWatcher *fsnotify.Watcher, logger log.Logger, tracerProvider trace.TracerProvider) (*grpc.Service, error) {
+	grpcService, err := grpc.New(config.APIs.GRPC.Config, clientApplicationServer, fileWatcher, logger, tracerProvider)
 	if err != nil {
 		return nil, err
 	}
@@ -115,7 +115,7 @@ func New(ctx context.Context, cfg config.Config, info *configGrpc.ServiceInforma
 		services = append(services, httpService)
 	}
 	if cfg.APIs.GRPC.Enabled {
-		grpcService, err := newGrpcService(ctx, cfg, clientApplicationServer, fileWatcher, logger, tracerProvider)
+		grpcService, err := newGrpcService(cfg, clientApplicationServer, fileWatcher, logger, tracerProvider)
 		if err != nil {
 			closerFunc.Execute()
 			return nil, closeServicesOnError(fmt.Errorf("cannot create grpc service: %w", err), services)

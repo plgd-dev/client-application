@@ -18,6 +18,7 @@ package grpc
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"io"
 	"net"
@@ -171,7 +172,7 @@ func processDiscoveryResourceResponse(serviceDevice *serviceDevice.Service, logg
 		return nil, err
 	}
 	if len(links) == 0 {
-		return nil, fmt.Errorf("no links in response")
+		return nil, errors.New("no links in response")
 	}
 
 	addr, err := pkgNet.ParseString(string(schema.UDPScheme), remoteAddr.String())
@@ -256,7 +257,7 @@ func processDeviceResourceResponse(serviceDevice *serviceDevice.Service, logger 
 		return nil, err
 	}
 	if d.ID == "" {
-		return nil, fmt.Errorf("device ID is empty")
+		return nil, errors.New("device ID is empty")
 	}
 	devID, err := uuid.Parse(d.ID)
 	if err != nil {
@@ -559,7 +560,7 @@ func (s *ClientApplicationServer) GetDevices(req *pb.GetDevicesRequest, srv pb.C
 	}
 	discoveryCtx, cancel := context.WithTimeout(ctx, timeout)
 	defer cancel()
-	if req.UseCache {
+	if req.GetUseCache() {
 		s.devices.Range(func(key uuid.UUID, value *device) bool {
 			cachedDevices.Store(key, value)
 			return true
@@ -569,7 +570,7 @@ func (s *ClientApplicationServer) GetDevices(req *pb.GetDevicesRequest, srv pb.C
 	if len(req.GetUseMulticast()) > 0 {
 		devService := s.serviceDevice.Load()
 		if devService == nil {
-			return fmt.Errorf("cannot get devices: device service is not initialized")
+			return errors.New("cannot get devices: device service is not initialized")
 		}
 		toCall = append(toCall, func() {
 			getDevicesByMulticast(discoveryCtx, toDiscoveryConfiguration(toUseMulticastFilter(req.GetUseMulticast())), func(conn *client.Conn, resp *pool.Message) {
@@ -584,7 +585,7 @@ func (s *ClientApplicationServer) GetDevices(req *pb.GetDevicesRequest, srv pb.C
 	if len(req.GetUseEndpoints()) > 0 {
 		devService := s.serviceDevice.Load()
 		if devService == nil {
-			return fmt.Errorf("cannot get devices: device service is not initialized")
+			return errors.New("cannot get devices: device service is not initialized")
 		}
 		toCall = append(toCall, func() {
 			getDevicesByEndpoints(discoveryCtx, devService, s.logger, req.GetUseEndpoints(), discoveredDevices)
@@ -602,7 +603,7 @@ func (s *ClientApplicationServer) GetDevices(req *pb.GetDevicesRequest, srv pb.C
 	wg.Wait()
 
 	devs := s.processDiscoverdDevices(discoveredDevices, cachedDevices)
-	cachedDevices.Range(func(key uuid.UUID, d *device) bool {
+	cachedDevices.Range(func(_ uuid.UUID, d *device) bool {
 		devs = append(devs, d)
 		return true
 	})

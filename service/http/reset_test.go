@@ -37,10 +37,16 @@ func doReset(t *testing.T, token string, expCode int) {
 	request := httpgwTest.NewRequest(http.MethodPost, serviceHttp.Reset, nil).
 		Host(test.CLIENT_APPLICATION_HTTP_HOST).AuthToken(token).Build()
 	resp := httpgwTest.HTTPDo(t, request)
+	defer func(r *http.Response) {
+		_ = r.Body.Close()
+	}(resp)
 	require.Equal(t, expCode, resp.StatusCode)
 	if resp.StatusCode == http.StatusOK {
 		request = httpgwTest.NewRequest(http.MethodGet, serviceHttp.WellKnownConfiguration, nil).Host(test.CLIENT_APPLICATION_HTTP_HOST).Build()
 		resp = httpgwTest.HTTPDo(t, request)
+		defer func(r *http.Response) {
+			_ = r.Body.Close()
+		}(resp)
 		require.Equal(t, http.StatusOK, resp.StatusCode)
 		configRespBody, err := io.ReadAll(resp.Body)
 		require.NoError(t, err)
@@ -48,9 +54,9 @@ func doReset(t *testing.T, token string, expCode int) {
 		err = protojson.Unmarshal(configRespBody, &configResp)
 		require.NoError(t, err)
 		require.False(t, configResp.GetIsInitialized())
-		require.Equal(t, configResp.GetOwner(), "")
-		require.Equal(t, configResp.GetDeviceAuthenticationMode(), pb.GetConfigurationResponse_UNINITIALIZED)
-		require.Equal(t, configResp.GetRemoteProvisioning().GetMode(), pb.RemoteProvisioning_MODE_NONE)
+		require.Equal(t, "", configResp.GetOwner())
+		require.Equal(t, pb.GetConfigurationResponse_UNINITIALIZED, configResp.GetDeviceAuthenticationMode())
+		require.Equal(t, pb.RemoteProvisioning_MODE_NONE, configResp.GetRemoteProvisioning().GetMode())
 	}
 }
 

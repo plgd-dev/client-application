@@ -48,19 +48,19 @@ func TestClientApplicationServerGetDevice(t *testing.T) {
 	time.Sleep(time.Second)
 
 	d1, err := s.GetDevice(ctx, &pb.GetDeviceRequest{
-		DeviceId: dev.Id,
+		DeviceId: dev.GetId(),
 	})
 	require.NoError(t, err)
 	require.Equal(t, dev.GetData(), d1.GetData())
 
 	_, err = s.OwnDevice(ctx, &pb.OwnDeviceRequest{
-		DeviceId: dev.Id,
+		DeviceId: dev.GetId(),
 	})
 	require.NoError(t, err)
 
 	newName := test.DevsimName + "_new"
 	_, err = s.UpdateResource(ctx, &pb.UpdateResourceRequest{
-		ResourceId: commands.NewResourceID(dev.Id, configuration.ResourceURI),
+		ResourceId: commands.NewResourceID(dev.GetId(), configuration.ResourceURI),
 		Content: &grpcgwPb.Content{
 			ContentType: serviceHttp.ApplicationJsonContentType,
 			Data:        []byte(`{"n":"` + newName + `"}`),
@@ -69,7 +69,7 @@ func TestClientApplicationServerGetDevice(t *testing.T) {
 	require.NoError(t, err)
 
 	d1, err = s.GetDevice(ctx, &pb.GetDeviceRequest{
-		DeviceId: dev.Id,
+		DeviceId: dev.GetId(),
 	})
 	require.NoError(t, err)
 	var v plgdDevice.Device
@@ -78,7 +78,7 @@ func TestClientApplicationServerGetDevice(t *testing.T) {
 	require.Equal(t, newName, v.Name)
 
 	_, err = s.UpdateResource(ctx, &pb.UpdateResourceRequest{
-		ResourceId: commands.NewResourceID(dev.Id, configuration.ResourceURI),
+		ResourceId: commands.NewResourceID(dev.GetId(), configuration.ResourceURI),
 		Content: &grpcgwPb.Content{
 			ContentType: serviceHttp.ApplicationJsonContentType,
 			Data:        []byte(`{"n":"` + test.DevsimName + `"}`),
@@ -87,7 +87,7 @@ func TestClientApplicationServerGetDevice(t *testing.T) {
 	require.NoError(t, err)
 
 	_, err = s.DisownDevice(ctx, &pb.DisownDeviceRequest{
-		DeviceId: dev.Id,
+		DeviceId: dev.GetId(),
 	})
 	require.NoError(t, err)
 }

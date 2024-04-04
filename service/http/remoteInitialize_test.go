@@ -62,6 +62,9 @@ func encodeToBody(t *testing.T, v protoreflect.ProtoMessage) io.Reader {
 func initializeRemoteProvisioning(ctx context.Context, t *testing.T) {
 	request := httpgwTest.NewRequest(http.MethodGet, serviceHttp.WellKnownConfiguration, nil).Host(test.CLIENT_APPLICATION_HTTP_HOST).Build()
 	resp := httpgwTest.HTTPDo(t, request)
+	defer func(r *http.Response) {
+		_ = r.Body.Close()
+	}(resp)
 	require.Equal(t, http.StatusOK, resp.StatusCode)
 	configRespBody, err := io.ReadAll(resp.Body)
 	require.NoError(t, err)
@@ -69,12 +72,15 @@ func initializeRemoteProvisioning(ctx context.Context, t *testing.T) {
 	err = protojson.Unmarshal(configRespBody, &configResp)
 	require.NoError(t, err)
 	require.False(t, configResp.GetIsInitialized())
-	require.Equal(t, configResp.GetOwner(), "")
-	require.Equal(t, configResp.GetDeviceAuthenticationMode(), pb.GetConfigurationResponse_UNINITIALIZED)
-	require.Equal(t, configResp.GetRemoteProvisioning().GetMode(), pb.RemoteProvisioning_MODE_NONE)
+	require.Equal(t, "", configResp.GetOwner())
+	require.Equal(t, pb.GetConfigurationResponse_UNINITIALIZED, configResp.GetDeviceAuthenticationMode())
+	require.Equal(t, pb.RemoteProvisioning_MODE_NONE, configResp.GetRemoteProvisioning().GetMode())
 
 	request = httpgwTest.NewRequest(http.MethodGet, serviceHttp.WellKnownJWKs, nil).Host(config.OAUTH_SERVER_HOST).Build()
 	resp = httpgwTest.HTTPDo(t, request)
+	defer func(r *http.Response) {
+		_ = r.Body.Close()
+	}(resp)
 	require.Equal(t, http.StatusOK, resp.StatusCode)
 
 	var jwks map[string]interface{}
@@ -89,6 +95,9 @@ func initializeRemoteProvisioning(ctx context.Context, t *testing.T) {
 		Jwks: pbJwks,
 	})).Host(test.CLIENT_APPLICATION_HTTP_HOST).AuthToken(token).Build()
 	resp = httpgwTest.HTTPDo(t, request)
+	defer func(r *http.Response) {
+		_ = r.Body.Close()
+	}(resp)
 	require.Equal(t, http.StatusOK, resp.StatusCode)
 
 	var challengeResp pb.InitializeResponse
@@ -102,10 +111,16 @@ func initializeRemoteProvisioning(ctx context.Context, t *testing.T) {
 		Certificate: certificate,
 	})).Host(test.CLIENT_APPLICATION_HTTP_HOST).AuthToken(token).Build()
 	resp = httpgwTest.HTTPDo(t, request)
+	defer func(r *http.Response) {
+		_ = r.Body.Close()
+	}(resp)
 	require.Equal(t, http.StatusOK, resp.StatusCode)
 
 	request = httpgwTest.NewRequest(http.MethodGet, serviceHttp.WellKnownConfiguration, nil).Host(test.CLIENT_APPLICATION_HTTP_HOST).Build()
 	resp = httpgwTest.HTTPDo(t, request)
+	defer func(r *http.Response) {
+		_ = r.Body.Close()
+	}(resp)
 	require.Equal(t, http.StatusOK, resp.StatusCode)
 	configRespBody, err = io.ReadAll(resp.Body)
 	require.NoError(t, err)
@@ -113,12 +128,15 @@ func initializeRemoteProvisioning(ctx context.Context, t *testing.T) {
 	err = protojson.Unmarshal(configRespBody, &configResp)
 	require.NoError(t, err)
 	require.True(t, configResp.GetIsInitialized())
-	require.Equal(t, configResp.GetOwner(), "1")
-	require.Equal(t, configResp.GetDeviceAuthenticationMode(), pb.GetConfigurationResponse_X509)
-	require.Equal(t, configResp.GetRemoteProvisioning().GetMode(), pb.RemoteProvisioning_USER_AGENT)
+	require.Equal(t, "1", configResp.GetOwner())
+	require.Equal(t, pb.GetConfigurationResponse_X509, configResp.GetDeviceAuthenticationMode())
+	require.Equal(t, pb.RemoteProvisioning_USER_AGENT, configResp.GetRemoteProvisioning().GetMode())
 
 	request = httpgwTest.NewRequest(http.MethodGet, serviceHttp.IdentityCertificate, nil).Host(test.CLIENT_APPLICATION_HTTP_HOST).AuthToken(token).Build()
 	resp = httpgwTest.HTTPDo(t, request)
+	defer func(r *http.Response) {
+		_ = r.Body.Close()
+	}(resp)
 	require.Equal(t, http.StatusOK, resp.StatusCode)
 }
 
@@ -160,7 +178,7 @@ func signCSR(ctx context.Context, t *testing.T, csr []byte) []byte {
 		CertificateSigningRequest: csr,
 	})
 	require.NoError(t, err)
-	return signResp.Certificate
+	return signResp.GetCertificate()
 }
 
 func TestClientApplicationServerUpdateIdentityCertificate(t *testing.T) {
@@ -178,6 +196,9 @@ func TestClientApplicationServerUpdateIdentityCertificate(t *testing.T) {
 
 	request := httpgwTest.NewRequest(http.MethodGet, serviceHttp.WellKnownConfiguration, nil).Host(test.CLIENT_APPLICATION_HTTP_HOST).Build()
 	resp := httpgwTest.HTTPDo(t, request)
+	defer func(r *http.Response) {
+		_ = r.Body.Close()
+	}(resp)
 	require.Equal(t, http.StatusOK, resp.StatusCode)
 	configRespBody, err := io.ReadAll(resp.Body)
 	require.NoError(t, err)
@@ -185,12 +206,15 @@ func TestClientApplicationServerUpdateIdentityCertificate(t *testing.T) {
 	err = protojson.Unmarshal(configRespBody, &configResp)
 	require.NoError(t, err)
 	require.False(t, configResp.GetIsInitialized())
-	require.Equal(t, configResp.GetOwner(), "")
-	require.Equal(t, configResp.GetDeviceAuthenticationMode(), pb.GetConfigurationResponse_X509)
-	require.Equal(t, configResp.GetRemoteProvisioning().GetMode(), pb.RemoteProvisioning_USER_AGENT)
+	require.Equal(t, "", configResp.GetOwner())
+	require.Equal(t, pb.GetConfigurationResponse_X509, configResp.GetDeviceAuthenticationMode())
+	require.Equal(t, pb.RemoteProvisioning_USER_AGENT, configResp.GetRemoteProvisioning().GetMode())
 
 	request = httpgwTest.NewRequest(http.MethodGet, serviceHttp.WellKnownJWKs, nil).Host(config.OAUTH_SERVER_HOST).Build()
 	resp = httpgwTest.HTTPDo(t, request)
+	defer func(r *http.Response) {
+		_ = r.Body.Close()
+	}(resp)
 	require.Equal(t, http.StatusOK, resp.StatusCode)
 
 	var jwks map[string]interface{}
@@ -205,6 +229,9 @@ func TestClientApplicationServerUpdateIdentityCertificate(t *testing.T) {
 		Jwks: pbJwks,
 	})).Host(test.CLIENT_APPLICATION_HTTP_HOST).AuthToken(token).Build()
 	resp = httpgwTest.HTTPDo(t, request)
+	defer func(r *http.Response) {
+		_ = r.Body.Close()
+	}(resp)
 	require.Equal(t, http.StatusOK, resp.StatusCode)
 	var challengeResp pb.InitializeResponse
 	decodeBody(t, resp.Body, &challengeResp)
@@ -213,6 +240,9 @@ func TestClientApplicationServerUpdateIdentityCertificate(t *testing.T) {
 
 	request = httpgwTest.NewRequest(http.MethodGet, serviceHttp.IdentityCertificate, nil).Host(test.CLIENT_APPLICATION_HTTP_HOST).AuthToken(token).Build()
 	resp = httpgwTest.HTTPDo(t, request)
+	defer func(r *http.Response) {
+		_ = r.Body.Close()
+	}(resp)
 	require.Equal(t, http.StatusServiceUnavailable, resp.StatusCode)
 
 	ctx = kitNetGrpc.CtxWithToken(ctx, token)
@@ -221,23 +251,32 @@ func TestClientApplicationServerUpdateIdentityCertificate(t *testing.T) {
 		Certificate: certificate,
 	})).Host(test.CLIENT_APPLICATION_HTTP_HOST).AuthToken(token).Build()
 	resp = httpgwTest.HTTPDo(t, request)
+	defer func(r *http.Response) {
+		_ = r.Body.Close()
+	}(resp)
 	require.Equal(t, http.StatusOK, resp.StatusCode)
 
 	request = httpgwTest.NewRequest(http.MethodGet, serviceHttp.IdentityCertificate, nil).Host(test.CLIENT_APPLICATION_HTTP_HOST).AuthToken(token).Build()
 	resp = httpgwTest.HTTPDo(t, request)
+	defer func(r *http.Response) {
+		_ = r.Body.Close()
+	}(resp)
 	require.Equal(t, http.StatusOK, resp.StatusCode)
 
 	var clientCertificate pb.GetIdentityCertificateResponse
 	decodeBody(t, resp.Body, &clientCertificate)
-	require.Equal(t, certificate, clientCertificate.Certificate)
+	require.Equal(t, certificate, clientCertificate.GetCertificate())
 
 	request = httpgwTest.NewRequest(http.MethodGet, serviceHttp.WellKnownConfiguration, nil).Host(test.CLIENT_APPLICATION_HTTP_HOST).Build()
 	resp = httpgwTest.HTTPDo(t, request)
+	defer func(r *http.Response) {
+		_ = r.Body.Close()
+	}(resp)
 	require.Equal(t, http.StatusOK, resp.StatusCode)
 	configRespBody, err = io.ReadAll(resp.Body)
 	require.NoError(t, err)
 	err = protojson.Unmarshal(configRespBody, &configResp)
 	require.NoError(t, err)
 	require.True(t, configResp.GetIsInitialized())
-	require.Equal(t, configResp.GetOwner(), "1")
+	require.Equal(t, "1", configResp.GetOwner())
 }

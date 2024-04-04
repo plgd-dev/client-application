@@ -35,7 +35,7 @@ func (c *UserAgent) Clone() *UserAgent {
 		return nil
 	}
 	return &UserAgent{
-		CsrChallengeStateExpiration: c.CsrChallengeStateExpiration,
+		CsrChallengeStateExpiration: c.GetCsrChallengeStateExpiration(),
 	}
 }
 
@@ -102,7 +102,7 @@ func (r *GetConfigurationResponse) Clone() *GetConfigurationResponse {
 		CommitHash:         r.GetBuildInfo().GetCommitHash(),
 		CommitDate:         r.GetBuildInfo().GetCommitDate(),
 		ReleaseUrl:         r.GetBuildInfo().GetReleaseUrl(),
-		RemoteProvisioning: r.RemoteProvisioning.Clone(),
+		RemoteProvisioning: r.GetRemoteProvisioning().Clone(),
 		BuildInfo:          r.GetBuildInfo().Clone(),
 		Ui:                 r.GetUi().Clone(),
 	}

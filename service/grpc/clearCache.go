@@ -53,7 +53,7 @@ func closeDevices(devices map[uuid.UUID]*device) error {
 	}
 }
 
-func (s *ClientApplicationServer) ClearCache(ctx context.Context, _ *pb.ClearCacheRequest) (*pb.ClearCacheResponse, error) {
+func (s *ClientApplicationServer) ClearCache(_ context.Context, _ *pb.ClearCacheRequest) (*pb.ClearCacheResponse, error) {
 	devices := s.devices.LoadAndDeleteAll()
 	go func(devices map[uuid.UUID]*device) {
 		err := closeDevices(devices)

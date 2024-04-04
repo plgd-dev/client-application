@@ -49,21 +49,21 @@ func TestClientApplicationServerClearCache(t *testing.T) {
 
 	// get device
 	d1, err := s.GetDevice(ctx, &pb.GetDeviceRequest{
-		DeviceId: dev.Id,
+		DeviceId: dev.GetId(),
 	})
 	require.NoError(t, err)
 	require.Equal(t, dev, d1)
 
 	// own device
 	_, err = s.OwnDevice(ctx, &pb.OwnDeviceRequest{
-		DeviceId: dev.Id,
+		DeviceId: dev.GetId(),
 	})
 	require.NoError(t, err)
 
 	// update resource - dtls connection will be created
 	newName := test.DevsimName + "_new"
 	_, err = s.UpdateResource(ctx, &pb.UpdateResourceRequest{
-		ResourceId: commands.NewResourceID(dev.Id, configuration.ResourceURI),
+		ResourceId: commands.NewResourceID(dev.GetId(), configuration.ResourceURI),
 		Content: &grpcgwPb.Content{
 			ContentType: serviceHttp.ApplicationJsonContentType,
 			Data:        []byte(`{"n":"` + newName + `"}`),
@@ -73,7 +73,7 @@ func TestClientApplicationServerClearCache(t *testing.T) {
 
 	// get device - udp connection will be created
 	d1, err = s.GetDevice(ctx, &pb.GetDeviceRequest{
-		DeviceId: dev.Id,
+		DeviceId: dev.GetId(),
 	})
 	require.NoError(t, err)
 	var v plgdDevice.Device
@@ -87,7 +87,7 @@ func TestClientApplicationServerClearCache(t *testing.T) {
 
 	// get device - cache is empty so expected error
 	_, err = s.GetDevice(ctx, &pb.GetDeviceRequest{
-		DeviceId: dev.Id,
+		DeviceId: dev.GetId(),
 	})
 	require.Error(t, err)
 
@@ -99,7 +99,7 @@ func TestClientApplicationServerClearCache(t *testing.T) {
 
 	// revert resource update
 	_, err = s.UpdateResource(ctx, &pb.UpdateResourceRequest{
-		ResourceId: commands.NewResourceID(dev.Id, configuration.ResourceURI),
+		ResourceId: commands.NewResourceID(dev.GetId(), configuration.ResourceURI),
 		Content: &grpcgwPb.Content{
 			ContentType: serviceHttp.ApplicationJsonContentType,
 			Data:        []byte(`{"n":"` + test.DevsimName + `"}`),
@@ -109,7 +109,7 @@ func TestClientApplicationServerClearCache(t *testing.T) {
 
 	// disown device
 	_, err = s.DisownDevice(ctx, &pb.DisownDeviceRequest{
-		DeviceId: dev.Id,
+		DeviceId: dev.GetId(),
 	})
 	require.NoError(t, err)
 }

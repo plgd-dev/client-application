@@ -52,11 +52,11 @@ func TestClientApplicationServerGetDeviceResourceLinks(t *testing.T) {
 			name: "device links",
 			args: args{
 				req: &pb.GetDeviceResourceLinksRequest{
-					DeviceId: dev.Id,
+					DeviceId: dev.GetId(),
 				},
 			},
 			want: hubTestPb.CleanUpResourceLinksPublished(&events.ResourceLinksPublished{
-				DeviceId:  dev.Id,
+				DeviceId:  dev.GetId(),
 				Resources: commands.SchemaResourceLinksToResources(test.GetDeviceResourceLinks(), time.Time{}),
 			}, true),
 		},

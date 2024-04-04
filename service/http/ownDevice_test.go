@@ -54,15 +54,15 @@ func TestClientApplicationServerOwnDevice(t *testing.T) {
 
 	getDevices(t, "")
 
-	doSimpleOwn(t, dev.Id, http.StatusOK)
+	doSimpleOwn(t, dev.GetId(), http.StatusOK)
 
 	request := httpgwTest.NewRequest(http.MethodGet, serviceHttp.DeviceResource, nil).
-		Host(test.CLIENT_APPLICATION_HTTP_HOST).DeviceId(dev.Id).ResourceHref("/light/1").Build()
+		Host(test.CLIENT_APPLICATION_HTTP_HOST).DeviceId(dev.GetId()).ResourceHref("/light/1").Build()
 	resp := httpgwTest.HTTPDo(t, request)
 	_ = resp.Body.Close()
 	require.Equal(t, http.StatusOK, resp.StatusCode)
 
-	doDisown(t, dev.Id, http.StatusOK)
+	doDisown(t, dev.GetId(), http.StatusOK)
 }
 
 func createJwkKey(privateKey interface{}) (jwk.Key, error) {
@@ -166,8 +166,11 @@ func TestClientApplicationServerOwnDeviceRemoteProvisioning(t *testing.T) {
 
 	request := httpgwTest.NewRequest(http.MethodPost, serviceHttp.OwnDevice, encodeToBody(t, &pb.OwnDeviceRequest{
 		Timeout: (time.Second * 8).Nanoseconds(),
-	})).Host(test.CLIENT_APPLICATION_HTTP_HOST).AuthToken(token).DeviceId(dev.Id).Build()
+	})).Host(test.CLIENT_APPLICATION_HTTP_HOST).AuthToken(token).DeviceId(dev.GetId()).Build()
 	resp := httpgwTest.HTTPDo(t, request)
+	defer func(r *http.Response) {
+		_ = r.Body.Close()
+	}(resp)
 	require.Equal(t, http.StatusOK, resp.StatusCode)
 	var ownCSRResp pb.OwnDeviceResponse
 	decodeBody(t, resp.Body, &ownCSRResp)
@@ -177,27 +180,36 @@ func TestClientApplicationServerOwnDeviceRemoteProvisioning(t *testing.T) {
 	certificate := signCSR(ctx, t, ownCSRResp.GetIdentityCertificateChallenge().GetCertificateSigningRequest())
 	request = httpgwTest.NewRequest(http.MethodPost, serviceHttp.OwnDevice+"/"+ownCSRResp.GetIdentityCertificateChallenge().GetState(), encodeToBody(t, &pb.FinishOwnDeviceRequest{
 		Certificate: certificate,
-	})).Host(test.CLIENT_APPLICATION_HTTP_HOST).AuthToken(token).DeviceId(dev.Id).Build()
+	})).Host(test.CLIENT_APPLICATION_HTTP_HOST).AuthToken(token).DeviceId(dev.GetId()).Build()
 	resp = httpgwTest.HTTPDo(t, request)
+	defer func(r *http.Response) {
+		_ = r.Body.Close()
+	}(resp)
 	require.Equal(t, http.StatusOK, resp.StatusCode)
 	var ownCertificateResp pb.FinishOwnDeviceResponse
 	decodeBody(t, resp.Body, &ownCertificateResp)
 
 	// get resource with valid token
 	request = httpgwTest.NewRequest(http.MethodGet, serviceHttp.DeviceResource, nil).
-		Host(test.CLIENT_APPLICATION_HTTP_HOST).AuthToken(token).DeviceId(dev.Id).ResourceHref("/light/1").Build()
+		Host(test.CLIENT_APPLICATION_HTTP_HOST).AuthToken(token).DeviceId(dev.GetId()).ResourceHref("/light/1").Build()
 	resp = httpgwTest.HTTPDo(t, request)
+	defer func(r *http.Response) {
+		_ = r.Body.Close()
+	}(resp)
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
 
 	// get resource with token by another user
 	user2token := GetAccessTokenForUser(t, "user2")
 	request = httpgwTest.NewRequest(http.MethodGet, serviceHttp.DeviceResource, nil).
-		Host(test.CLIENT_APPLICATION_HTTP_HOST).AuthToken(user2token).DeviceId(dev.Id).ResourceHref("/light/1").Build()
+		Host(test.CLIENT_APPLICATION_HTTP_HOST).AuthToken(user2token).DeviceId(dev.GetId()).ResourceHref("/light/1").Build()
 	resp = httpgwTest.HTTPDo(t, request)
+	defer func(r *http.Response) {
+		_ = r.Body.Close()
+	}(resp)
 	assert.Equal(t, http.StatusUnauthorized, resp.StatusCode)
 
 	request = httpgwTest.NewRequest(http.MethodPost, serviceHttp.DisownDevice, nil).
-		Host(test.CLIENT_APPLICATION_HTTP_HOST).AuthToken(token).DeviceId(dev.Id).Build()
+		Host(test.CLIENT_APPLICATION_HTTP_HOST).AuthToken(token).DeviceId(dev.GetId()).Build()
 	resp = httpgwTest.HTTPDo(t, request)
 	_ = resp.Body.Close()
 	require.Equal(t, http.StatusOK, resp.StatusCode)
@@ -219,8 +231,11 @@ func TestClientApplicationServerOwnDeviceRemoteProvisioningFails(t *testing.T) {
 
 	request := httpgwTest.NewRequest(http.MethodPost, serviceHttp.OwnDevice, encodeToBody(t, &pb.OwnDeviceRequest{
 		Timeout: (time.Millisecond * 100).Nanoseconds(),
-	})).Host(test.CLIENT_APPLICATION_HTTP_HOST).AuthToken(token).DeviceId(dev.Id).Build()
+	})).Host(test.CLIENT_APPLICATION_HTTP_HOST).AuthToken(token).DeviceId(dev.GetId()).Build()
 	resp := httpgwTest.HTTPDo(t, request)
+	defer func(r *http.Response) {
+		_ = r.Body.Close()
+	}(resp)
 	require.Equal(t, http.StatusOK, resp.StatusCode)
 	var ownCSRResp pb.OwnDeviceResponse
 	decodeBody(t, resp.Body, &ownCSRResp)
@@ -233,7 +248,10 @@ func TestClientApplicationServerOwnDeviceRemoteProvisioningFails(t *testing.T) {
 	certificate := signCSR(ctx, t, ownCSRResp.GetIdentityCertificateChallenge().GetCertificateSigningRequest())
 	request = httpgwTest.NewRequest(http.MethodPost, serviceHttp.OwnDevice+"/"+ownCSRResp.GetIdentityCertificateChallenge().GetState(), encodeToBody(t, &pb.FinishOwnDeviceRequest{
 		Certificate: certificate,
-	})).Host(test.CLIENT_APPLICATION_HTTP_HOST).AuthToken(token).DeviceId(dev.Id).Build()
+	})).Host(test.CLIENT_APPLICATION_HTTP_HOST).AuthToken(token).DeviceId(dev.GetId()).Build()
 	resp = httpgwTest.HTTPDo(t, request)
+	defer func(r *http.Response) {
+		_ = r.Body.Close()
+	}(resp)
 	require.Equal(t, http.StatusNotFound, resp.StatusCode)
 }

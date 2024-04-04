@@ -60,7 +60,7 @@ func TestClientApplicationServerUpdateResource(t *testing.T) {
 			name: "doxm update",
 			args: args{
 				accept:      serviceHttp.ApplicationProtoJsonContentType,
-				deviceID:    dev.Id,
+				deviceID:    dev.GetId(),
 				href:        doxm.ResourceURI,
 				contentType: serviceHttp.ApplicationJsonContentType,
 				body:        bytes.NewReader([]byte(`{"oxmsel":0}`)),
@@ -78,7 +78,7 @@ func TestClientApplicationServerUpdateResource(t *testing.T) {
 			name: "device resource",
 			args: args{
 				accept:      serviceHttp.ApplicationProtoJsonContentType,
-				deviceID:    dev.Id,
+				deviceID:    dev.GetId(),
 				href:        device.ResourceURI,
 				contentType: serviceHttp.ApplicationJsonContentType,
 				body:        bytes.NewReader([]byte(`{"oxmsel":0}`)),
@@ -100,7 +100,7 @@ func TestClientApplicationServerUpdateResource(t *testing.T) {
 		{
 			name: "unknown href",
 			args: args{
-				deviceID:    dev.Id,
+				deviceID:    dev.GetId(),
 				href:        "/unknown",
 				contentType: serviceHttp.ApplicationJsonContentType,
 				body:        bytes.NewReader([]byte(`{"oxmsel":0}`)),
@@ -111,7 +111,7 @@ func TestClientApplicationServerUpdateResource(t *testing.T) {
 		{
 			name: "forbidden - cannot establish TLS connection",
 			args: args{
-				deviceID:    dev.Id,
+				deviceID:    dev.GetId(),
 				href:        configuration.ResourceURI,
 				contentType: serviceHttp.ApplicationJsonContentType,
 				body:        bytes.NewReader([]byte(`{"oxmsel":0}`)),

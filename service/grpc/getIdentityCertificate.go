@@ -25,7 +25,7 @@ import (
 	"google.golang.org/grpc/codes"
 )
 
-func (s *ClientApplicationServer) GetIdentityCertificate(ctx context.Context, req *pb.GetIdentityCertificateRequest) (*pb.GetIdentityCertificateResponse, error) {
+func (s *ClientApplicationServer) GetIdentityCertificate(_ context.Context, _ *pb.GetIdentityCertificateRequest) (*pb.GetIdentityCertificateResponse, error) {
 	devService := s.serviceDevice.Load()
 	if devService == nil {
 		return nil, grpc.ForwardErrorf(codes.Unavailable, "service is not initialized")

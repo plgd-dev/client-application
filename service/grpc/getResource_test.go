@@ -53,7 +53,7 @@ func TestClientApplicationServerGetResource(t *testing.T) {
 			args: args{
 				req: &pb.GetResourceRequest{
 					ResourceId: &commands.ResourceId{
-						DeviceId: dev.Id,
+						DeviceId: dev.GetId(),
 						Href:     device.ResourceURI,
 					},
 				},
@@ -81,7 +81,7 @@ func TestClientApplicationServerGetResource(t *testing.T) {
 			args: args{
 				req: &pb.GetResourceRequest{
 					ResourceId: &commands.ResourceId{
-						DeviceId: dev.Id,
+						DeviceId: dev.GetId(),
 						Href:     "/unknown",
 					},
 				},
@@ -94,7 +94,7 @@ func TestClientApplicationServerGetResource(t *testing.T) {
 			args: args{
 				req: &pb.GetResourceRequest{
 					ResourceId: &commands.ResourceId{
-						DeviceId: dev.Id,
+						DeviceId: dev.GetId(),
 						Href:     configuration.ResourceURI,
 					},
 				},

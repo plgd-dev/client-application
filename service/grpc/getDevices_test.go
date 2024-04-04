@@ -43,7 +43,7 @@ func TestClientApplicationServerCheckForClosingInactivityConnection(t *testing.T
 		srv := test.NewClientApplicationGetDevicesServer(ctx)
 		err = s.GetDevices(&pb.GetDevicesRequest{}, srv)
 		require.NoError(t, err)
-		require.Greater(t, len(srv.Devices), 0)
+		require.NotEmpty(t, srv.Devices)
 		time.Sleep(time.Second)
 		numParallel := 10
 		var wg sync.WaitGroup
@@ -54,7 +54,7 @@ func TestClientApplicationServerCheckForClosingInactivityConnection(t *testing.T
 			go func(i int) {
 				defer wg.Done()
 				fmt.Printf("%v GetDevice %v start\n", time.Now(), i)
-				_, err := s.GetDevice(ctx, &pb.GetDeviceRequest{DeviceId: device.Id})
+				_, err := s.GetDevice(ctx, &pb.GetDeviceRequest{DeviceId: device.GetId()})
 				fmt.Printf("%v GetDevice %v end %v\n", time.Now(), i, err)
 				errCh <- err
 			}(i)
@@ -73,7 +73,7 @@ func TestClientApplicationServerCheckForClosingInactivityConnection(t *testing.T
 
 func TestClientApplicationServerGetDevices(t *testing.T) {
 	device := test.MustFindDeviceByName(test.DevsimName, []pb.GetDevicesRequest_UseMulticast{pb.GetDevicesRequest_IPV4})
-	u, err := url.Parse(device.Endpoints[0])
+	u, err := url.Parse(device.GetEndpoints()[0])
 	require.NoError(t, err)
 	ctx, cancel := context.WithTimeout(context.Background(), time.Second*8)
 	defer cancel()
@@ -141,11 +141,11 @@ func TestClientApplicationServerGetDevices(t *testing.T) {
 			require.True(t, ok)
 			got := server.Devices
 			require.NotEmpty(t, got)
-			require.Len(t, got[0].Endpoints, 4)
-			require.True(t, strings.Contains(got[0].Endpoints[0], "coap://"))
-			require.True(t, strings.Contains(got[0].Endpoints[1], "coap+tcp://"))
-			require.True(t, strings.Contains(got[0].Endpoints[2], "coaps://"))
-			require.True(t, strings.Contains(got[0].Endpoints[3], "coaps+tcp://"))
+			require.Len(t, got[0].GetEndpoints(), 4)
+			require.True(t, strings.Contains(got[0].GetEndpoints()[0], "coap://"))
+			require.True(t, strings.Contains(got[0].GetEndpoints()[1], "coap+tcp://"))
+			require.True(t, strings.Contains(got[0].GetEndpoints()[2], "coaps://"))
+			require.True(t, strings.Contains(got[0].GetEndpoints()[3], "coaps+tcp://"))
 			assert.Equal(t, tt.want, got)
 		})
 	}

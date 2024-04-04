@@ -20,6 +20,7 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
+	"errors"
 	"fmt"
 	"net"
 	"sync"
@@ -86,7 +87,7 @@ func New(ctx context.Context, getConfig func() configDevice.Config, logger log.L
 	case configDevice.AuthenticationX509:
 		authenticationClient = newAuthenticationX509(config)
 	case configDevice.AuthenticationUninitialized:
-		return nil, fmt.Errorf("device is not initialized")
+		return nil, errors.New("device is not initialized")
 	}
 
 	opts := []udpServer.Option{
@@ -182,7 +183,7 @@ func (c *UDPClientConn) Context() context.Context {
 	return cc.Context()
 }
 
-func (s *Service) DialUDP(ctx context.Context, addr string, opts ...udp.Option) (*coap.ClientCloseHandler, error) {
+func (s *Service) DialUDP(_ context.Context, addr string, _ ...udp.Option) (*coap.ClientCloseHandler, error) {
 	udpAddr, err := net.ResolveUDPAddr("udp", addr)
 	if err != nil {
 		return nil, err
@@ -199,12 +200,12 @@ func (s *Service) DialUDP(ctx context.Context, addr string, opts ...udp.Option) 
 	closeHandler := cc.Context().Value(&closeHandlerKey)
 	if closeHandler == nil {
 		_ = cc.Close()
-		return nil, fmt.Errorf("failed to create client connection: close handler is nil")
+		return nil, errors.New("failed to create client connection: close handler is nil")
 	}
 	h, ok := closeHandler.(*coap.OnCloseHandler)
 	if !ok {
 		_ = cc.Close()
-		return nil, fmt.Errorf("failed to create client connection: close handler is not *coap.OnCloseHandler")
+		return nil, errors.New("failed to create client connection: close handler is not *coap.OnCloseHandler")
 	}
 	return coap.NewClientCloseHandler(&UDPClientConn{Conn: cc}, h), nil
 }
