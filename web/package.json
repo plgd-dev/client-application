@@ -67,7 +67,7 @@
     "webpack": "^5.89.0"
   },
   "overrides": {
-    "react-refresh": "0.11.0"
+    "react-refresh": "0.14.2"
   },
   "scripts": {
     "start": "npm run generate-language-files && craco start",
