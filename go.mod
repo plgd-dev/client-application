@@ -18,8 +18,8 @@ require (
 	github.com/jessevdk/go-flags v1.5.0
 	github.com/lestrrat-go/jwx v1.2.29
 	github.com/pion/dtls/v2 v2.2.8-0.20240327211025-8244c4570c01
-	github.com/plgd-dev/device/v2 v2.4.5-0.20240403073803-48efa094e7b0
-	github.com/plgd-dev/go-coap/v3 v3.3.4-0.20240403064319-6ed2ef2c4664
+	github.com/plgd-dev/device/v2 v2.5.0
+	github.com/plgd-dev/go-coap/v3 v3.3.4-0.20240404104253-8d54d1cdfc79
 	github.com/plgd-dev/hub/v2 v2.17.4-0.20240403125943-fbad2f31e1ed
 	github.com/plgd-dev/kit/v2 v2.0.0-20211006190727-057b33161b90
 	github.com/stretchr/testify v1.9.0
