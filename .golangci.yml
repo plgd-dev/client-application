@@ -3,9 +3,6 @@ linters-settings:
     default-signifies-exhaustive: true
   gocyclo:
     min-complexity: 15
-  gomoddirectives:
-    replace-allow-list:
-      - github.com/pion/dtls/v2
   govet:
     enable:
       - nilness
@@ -51,7 +48,7 @@ linters:
     - gofumpt          # Gofumpt checks whether code was gofumpt-ed.
     - goheader         # Checks is file header matches to pattern
     - goimports        # Goimports does everything that gofmt does. Additionally it checks unused imports
-    - gomoddirectives  # Manage the use of 'replace', 'retract', and 'excludes' directives in go.mod.
+    # - gomoddirectives  # Manage the use of 'replace', 'retract', and 'excludes' directives in go.mod.
     - gomodguard       # Allow and block list linter for direct Go module dependencies. This is different from depguard where there are different block types for example version constraints and module recommendations.
     - goprintffuncname # Checks that printf-like functions are named with `f` at the end
     - gosec            # Inspects source code for security problems
@@ -137,6 +134,9 @@ issues:
   exclude-use-default: false
   exclude-dirs:
     - dependency
+  exclude-files:
+    - ".*\\.pb\\.go$"
+    - ".*\\.pb\\.gw\\.go$"
   exclude-rules:
     # Allow complex tests, better to be self contained
     - path: _test\.go
