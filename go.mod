@@ -1,6 +1,8 @@
 module github.com/plgd-dev/client-application
 
-go 1.20
+go 1.22
+
+toolchain go1.22.3
 
 require (
 	github.com/apex/log v1.9.0
@@ -18,7 +20,7 @@ require (
 	github.com/jessevdk/go-flags v1.5.0
 	github.com/lestrrat-go/jwx v1.2.29
 	github.com/pion/dtls/v2 v2.2.8-0.20240501061905-2c36d63320a0
-	github.com/plgd-dev/device/v2 v2.5.1-0.20240502072920-6021006ea86b
+	github.com/plgd-dev/device/v2 v2.5.1
 	github.com/plgd-dev/go-coap/v3 v3.3.4
 	github.com/plgd-dev/hub/v2 v2.18.1-0.20240502083717-331c4dbb67d7
 	github.com/plgd-dev/kit/v2 v2.0.0-20211006190727-057b33161b90
