@@ -5,7 +5,7 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 	"github.com/google/uuid"
-	"github.com/lestrrat-go/jwx/jwk"
+	"github.com/lestrrat-go/jwx/v2/jwk"
 	"github.com/plgd-dev/client-application/pb"
 	"github.com/plgd-dev/hub/v2/identity-store/events"
 	plgdJwt "github.com/plgd-dev/hub/v2/pkg/security/jwt"
@@ -44,7 +44,7 @@ func (c *JSONWebKeyCache) LookupKey(token *jwt.Token) (jwk.Key, error) {
 		return nil, errors.New("empty JWK cache")
 	}
 	if key, ok := c.keys.LookupKeyID(id); ok {
-		if key.Algorithm() == token.Method.Alg() {
+		if key.Algorithm().String() == token.Method.Alg() {
 			return key, nil
 		}
 	}

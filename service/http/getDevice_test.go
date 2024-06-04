@@ -28,6 +28,7 @@ import (
 	plgdDevice "github.com/plgd-dev/device/v2/schema/device"
 	grpcgwPb "github.com/plgd-dev/hub/v2/grpc-gateway/pb"
 	httpgwTest "github.com/plgd-dev/hub/v2/http-gateway/test"
+	httpTest "github.com/plgd-dev/hub/v2/test/http"
 	"github.com/plgd-dev/kit/v2/codec/cbor"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -67,7 +68,7 @@ func TestClientApplicationServerGetDevice(t *testing.T) {
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
 
 	var device grpcgwPb.Device
-	err := httpgwTest.Unmarshal(resp.StatusCode, resp.Body, &device)
+	err := httpTest.Unmarshal(resp.StatusCode, resp.Body, &device)
 	require.NoError(t, err)
 
 	var v plgdDevice.Device

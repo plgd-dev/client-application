@@ -20,7 +20,7 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/lestrrat-go/jwx/jwk"
+	"github.com/lestrrat-go/jwx/v2/jwk"
 	"github.com/plgd-dev/client-application/pb"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
@@ -34,9 +34,9 @@ func (s *ClientApplicationServer) GetJSONWebKeys(_ context.Context, _ *pb.GetJSO
 	}
 	keys := make([]jwk.Key, 0, jwksCache.keys.Len())
 	for i := 0; i < jwksCache.keys.Len(); i++ {
-		k, ok := jwksCache.keys.Get(i)
+		key, ok := jwksCache.keys.Key(i)
 		if ok {
-			keys = append(keys, k)
+			keys = append(keys, key)
 		}
 	}
 	marshaledJwk, err := json.Marshal(map[string]interface{}{

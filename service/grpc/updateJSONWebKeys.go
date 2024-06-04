@@ -20,7 +20,7 @@ import (
 	"context"
 
 	"github.com/google/uuid"
-	"github.com/lestrrat-go/jwx/jwk"
+	"github.com/lestrrat-go/jwx/v2/jwk"
 	"github.com/plgd-dev/hub/v2/identity-store/events"
 	"github.com/plgd-dev/hub/v2/pkg/net/grpc"
 	plgdJwt "github.com/plgd-dev/hub/v2/pkg/security/jwt"
