@@ -29,6 +29,7 @@ import (
 	"github.com/plgd-dev/hub/v2/resource-aggregate/commands"
 	"github.com/plgd-dev/hub/v2/resource-aggregate/events"
 	hubTest "github.com/plgd-dev/hub/v2/test"
+	httpTest "github.com/plgd-dev/hub/v2/test/http"
 	hubTestPb "github.com/plgd-dev/hub/v2/test/pb"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -87,7 +88,7 @@ func TestClientApplicationServerGetDeviceResourceLinks(t *testing.T) {
 			assert.Equal(t, tt.wantCode, resp.StatusCode)
 
 			var val events.ResourceLinksPublished
-			err := httpgwTest.Unmarshal(resp.StatusCode, resp.Body, &val)
+			err := httpTest.Unmarshal(resp.StatusCode, resp.Body, &val)
 			if tt.wantErr {
 				require.Error(t, err)
 				return

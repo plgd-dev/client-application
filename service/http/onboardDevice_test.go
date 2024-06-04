@@ -32,6 +32,8 @@ import (
 	kitNetGrpc "github.com/plgd-dev/hub/v2/pkg/net/grpc"
 	hubTest "github.com/plgd-dev/hub/v2/test"
 	"github.com/plgd-dev/hub/v2/test/config"
+	"github.com/plgd-dev/hub/v2/test/device/ocf"
+	httpTest "github.com/plgd-dev/hub/v2/test/http"
 	hubTestOAuthServerTest "github.com/plgd-dev/hub/v2/test/oauth-server/test"
 	hubTestService "github.com/plgd-dev/hub/v2/test/service"
 	"github.com/stretchr/testify/require"
@@ -41,7 +43,7 @@ import (
 
 func TestClientApplicationServerOnboardDeviceRemoteProvisioning(t *testing.T) {
 	dev := test.MustFindDeviceByName(test.DevsimName, []pb.GetDevicesRequest_UseMulticast{pb.GetDevicesRequest_IPV4})
-	ctx, cancel := context.WithTimeout(context.Background(), time.Second*3600)
+	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 	tearDown := setupRemoteProvisioning(t, hubTestService.SetUpServicesOAuth|
 		hubTestService.SetUpServicesCertificateAuthority|
@@ -128,7 +130,7 @@ func TestClientApplicationServerOnboardDeviceRemoteProvisioning(t *testing.T) {
 	require.Equal(t, http.StatusOK, resp.StatusCode)
 
 	var httpClientCfg pb.GetConfigurationResponse
-	err = httpgwTest.Unmarshal(resp.StatusCode, resp.Body, &httpClientCfg)
+	err = httpTest.Unmarshal(resp.StatusCode, resp.Body, &httpClientCfg)
 	require.NoError(t, err)
 
 	// oauth server url to host
@@ -149,7 +151,7 @@ func TestClientApplicationServerOnboardDeviceRemoteProvisioning(t *testing.T) {
 	_ = resp.Body.Close()
 	require.Equal(t, http.StatusOK, resp.StatusCode)
 
-	hubTest.WaitForDevice(t, subClient, dev.GetId(), expectedEvent.GetSubscriptionId(), expectedEvent.GetCorrelationId(), hubTest.GetAllBackendResourceLinks())
+	hubTest.WaitForDevice(t, subClient, ocf.NewDevice(dev.GetId(), test.DevsimName), expectedEvent.GetSubscriptionId(), expectedEvent.GetCorrelationId(), hubTest.GetAllBackendResourceLinks())
 
 	// offboard
 	request = httpgwTest.NewRequest(http.MethodPost, serviceHttp.OffboardDevice, nil).Host(test.CLIENT_APPLICATION_HTTP_HOST).AuthToken(token).DeviceId(dev.GetId()).Build()

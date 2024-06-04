@@ -34,6 +34,7 @@ import (
 	"github.com/plgd-dev/hub/v2/resource-aggregate/commands"
 	"github.com/plgd-dev/hub/v2/resource-aggregate/events"
 	hubTest "github.com/plgd-dev/hub/v2/test"
+	httpTest "github.com/plgd-dev/hub/v2/test/http"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -139,7 +140,7 @@ func TestClientApplicationServerUpdateResource(t *testing.T) {
 			assert.Equal(t, tt.wantCode, resp.StatusCode)
 
 			var got grpcgwPb.UpdateResourceResponse
-			err := httpgwTest.Unmarshal(resp.StatusCode, resp.Body, &got)
+			err := httpTest.Unmarshal(resp.StatusCode, resp.Body, &got)
 			if tt.wantErr {
 				require.Error(t, err)
 				return

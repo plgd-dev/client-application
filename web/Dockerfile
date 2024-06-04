@@ -1,7 +1,12 @@
 FROM node:18 AS build-web
 COPY . /web
-RUN cd /web && \
-    npm config set fetch-retries 3 && \
+
+WORKDIR /web
+
+#TODO:hotfix, remove after shared-ui is updated
+RUN npx update-browserslist-db@latest
+
+RUN npm config set fetch-retries 3 && \
     npm config set fetch-retry-mintimeout 600000 &&  \
     npm config set fetch-retry-maxtimeout 1200000 && \
     npm config set fetch-timeout 1800000 && \

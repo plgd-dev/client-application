@@ -28,10 +28,10 @@ import (
 	"time"
 
 	"github.com/google/uuid"
-	"github.com/lestrrat-go/jwx/jwa"
-	"github.com/lestrrat-go/jwx/jwk"
-	"github.com/lestrrat-go/jwx/jws"
-	"github.com/lestrrat-go/jwx/jwt"
+	"github.com/lestrrat-go/jwx/v2/jwa"
+	"github.com/lestrrat-go/jwx/v2/jwk"
+	"github.com/lestrrat-go/jwx/v2/jws"
+	"github.com/lestrrat-go/jwx/v2/jwt"
 	"github.com/plgd-dev/client-application/pb"
 	serviceHttp "github.com/plgd-dev/client-application/service/http"
 	"github.com/plgd-dev/client-application/test"
@@ -66,28 +66,34 @@ func TestClientApplicationServerOwnDevice(t *testing.T) {
 }
 
 func createJwkKey(privateKey interface{}) (jwk.Key, error) {
-	var alg string
-	var publicKey interface{}
-	switch v := privateKey.(type) {
-	case *rsa.PrivateKey:
-		alg = jwa.RS256.String()
-		publicKey = &v.PublicKey
-	case *ecdsa.PrivateKey:
-		alg = jwa.ES256.String()
-		publicKey = &v.PublicKey
-	}
-
-	jwkKey, err := jwk.New(publicKey)
+	jwkKey, err := jwk.FromRaw(privateKey)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create jwk: %w", err)
+	}
+	publicJwkKey, err := jwkKey.PublicKey()
+	if err != nil {
+		return nil, fmt.Errorf("failed to get public key: %w", err)
+	}
+	var publicKey any
+	err = publicJwkKey.Raw(&publicKey)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get public key: %w", err)
 	}
 	data, err := x509.MarshalPKIXPublicKey(publicKey)
 	if err != nil {
 		return nil, fmt.Errorf("cannot marshal public key: %w", err)
 	}
-
 	if err = jwkKey.Set(jwk.KeyIDKey, uuid.NewSHA1(uuid.NameSpaceX500, data).String()); err != nil {
 		return nil, fmt.Errorf("failed to set %v: %w", jwk.KeyIDKey, err)
+	}
+	var alg string
+	switch privateKey.(type) {
+	case *rsa.PrivateKey:
+		alg = jwa.RS256.String()
+	case *ecdsa.PrivateKey:
+		alg = jwa.ES256.String()
+	default:
+		alg = jwkKey.Algorithm().String()
 	}
 	if err = jwkKey.Set(jwk.AlgorithmKey, alg); err != nil {
 		return nil, fmt.Errorf("failed to set %v: %w", jwk.AlgorithmKey, err)
@@ -144,7 +150,7 @@ func MakeJWTPayload(key interface{}, jwkKey jwk.Key, data []byte) ([]byte, error
 	if err := hdr.Set(jws.KeyIDKey, jwkKey.KeyID()); err != nil {
 		return nil, fmt.Errorf("failed to set %v: %w", jws.KeyIDKey, err)
 	}
-	payload, err := jws.Sign(data, jwa.SignatureAlgorithm(jwkKey.Algorithm()), key, jws.WithHeaders(hdr))
+	payload, err := jws.Sign(data, jws.WithKey(jwkKey.Algorithm(), key), jws.WithHeaders(hdr))
 	if err != nil {
 		return nil, fmt.Errorf("failed to create UserToken: %w", err)
 	}
