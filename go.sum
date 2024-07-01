@@ -780,6 +780,8 @@ github.com/plgd-dev/go-coap/v3 v3.3.5-0.20240603125124-ff2c47df37c4 h1:xu8YTmRsK
 github.com/plgd-dev/go-coap/v3 v3.3.5-0.20240603125124-ff2c47df37c4/go.mod h1:0hBuEpbEa6SU58czqnYoypY5DzzItqNfRu62NlsKSgs=
 github.com/plgd-dev/hub/v2 v2.19.1 h1:VS+mMRChkaIdEtsNIB9vhcPD24Aj5f5aPCIHwl4K3co=
 github.com/plgd-dev/hub/v2 v2.19.1/go.mod h1:dhBEGy23JvChKC64rfN4AgatCixsPiEXVKyosljmgN8=
+github.com/plgd-dev/hub/v2 v2.20.0 h1:cPJkiq1Lqgn60pj9dH2MLZzzmHp1132ZHZajOQCiGbo=
+github.com/plgd-dev/hub/v2 v2.20.0/go.mod h1:dhBEGy23JvChKC64rfN4AgatCixsPiEXVKyosljmgN8=
 github.com/plgd-dev/kit v0.0.0-20200819113605-d5fcf3e94f63/go.mod h1:Yl9zisyXfPdtP9hTWlJqjJYXmgU/jtSDKttz9/CeD90=
 github.com/plgd-dev/kit/v2 v2.0.0-20211006190727-057b33161b90 h1:TC1HJ/UbyflJFPvaOdGmNZ5TeFGex1/dyr9urNGLy7M=
 github.com/plgd-dev/kit/v2 v2.0.0-20211006190727-057b33161b90/go.mod h1:Z7oKFLSGQjdi8eInxwFCs0tSApuEM1o0qNck+sJYp4M=
