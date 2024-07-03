@@ -41,10 +41,10 @@ jobs:
           echo "ui_file=$(pwd)/.tmp/ui.tar.gz" >> $GITHUB_OUTPUT
 
       - name: Build client
-        uses: goreleaser/goreleaser-action@v5
+        uses: goreleaser/goreleaser-action@v6
         with:
           # version of goreleaser which will be used
-          version: latest
+          version: "~> v2"
           args: release --clean --skip=validate --skip=publish
         env:
           UI_SEPARATOR: "--------UI--------"

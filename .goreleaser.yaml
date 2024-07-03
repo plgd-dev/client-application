@@ -1,8 +1,8 @@
-# This is an example .goreleaser.yml file with some sensible defaults.
-# Make sure to check the documentation at https://goreleaser.com
+# Documentation at https://goreleaser.com
+version: 2
 before:
   hooks:
-   - bash -c "test -f {{.Env.UI_FILE}} || make build-web UI_FILE={{.Env.UI_FILE}}"
+    - bash -c "test -f {{.Env.UI_FILE}} || make build-web UI_FILE={{.Env.UI_FILE}}"
 dist: .tmp/dist
 builds:
   - binary: client-application
@@ -41,12 +41,12 @@ archives:
       - goos: windows
         format: zip
 checksum:
-  name_template: 'checksums.txt'
+  name_template: "checksums.txt"
 snapshot:
   name_template: "{{ incpatch .Version }}-next"
 changelog:
   sort: asc
   filters:
     exclude:
-      - '^docs:'
-      - '^test:'
+      - "^docs:"
+      - "^test:"
