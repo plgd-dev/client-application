@@ -21,7 +21,7 @@ package tools
 
 import (
 	_ "github.com/favadi/protoc-go-inject-tag"
-	_ "github.com/goreleaser/goreleaser"
+	_ "github.com/goreleaser/goreleaser/v2"
 	_ "github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-grpc-gateway"
 	_ "github.com/grpc-ecosystem/grpc-gateway/v2/protoc-gen-openapiv2"
 	_ "google.golang.org/grpc/cmd/protoc-gen-go-grpc"
