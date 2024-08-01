@@ -19,7 +19,7 @@ require (
 	github.com/jellydator/ttlcache/v3 v3.2.0
 	github.com/jessevdk/go-flags v1.6.1
 	github.com/lestrrat-go/jwx/v2 v2.1.0
-	github.com/pion/dtls/v2 v2.2.8-0.20240701035148-45e16a098c47
+	github.com/pion/dtls/v2 v2.2.12
 	github.com/plgd-dev/device/v2 v2.5.2-0.20240702123445-f895dc844003
 	github.com/plgd-dev/go-coap/v3 v3.3.5-0.20240702113249-de76143e11ea
 	github.com/plgd-dev/hub/v2 v2.20.1-0.20240702133409-6fcf2db85f31
@@ -374,4 +374,4 @@ require (
 
 // note: github.com/pion/dtls/v2/pkg/net package is not yet available in release branches,
 // so we force to the use of the pinned master branch
-replace github.com/pion/dtls/v2 => github.com/pion/dtls/v2 v2.2.8-0.20240701035148-45e16a098c47
+replace github.com/pion/dtls/v2 => github.com/pion/dtls/v2 v2.2.12
