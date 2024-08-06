@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"io"
 	"net"
+	"slices"
 	"strings"
 	"sync"
 	"time"
@@ -44,7 +45,6 @@ import (
 	"github.com/plgd-dev/go-coap/v3/udp/client"
 	grpcgwPb "github.com/plgd-dev/hub/v2/grpc-gateway/pb"
 	"github.com/plgd-dev/hub/v2/pkg/log"
-	pkgStrings "github.com/plgd-dev/hub/v2/pkg/strings"
 	"github.com/plgd-dev/hub/v2/resource-aggregate/commands"
 	"github.com/plgd-dev/kit/v2/codec/cbor"
 	pkgNet "github.com/plgd-dev/kit/v2/net"
@@ -147,12 +147,12 @@ func getDeviceInfoFromLinks(links schema.ResourceLinks) map[string]*deviceInfo {
 			}
 			devices[l.GetDeviceID()] = d
 		}
-		if pkgStrings.Contains(l.ResourceTypes, plgdDevice.ResourceType) {
+		if slices.Contains(l.ResourceTypes, plgdDevice.ResourceType) {
 			d.endpoints = l.Endpoints
 			d.resourceTypes = l.ResourceTypes
 			d.deviceURI = l.Href
 		}
-		if pkgStrings.Contains(l.ResourceTypes, doxm.ResourceType) {
+		if slices.Contains(l.ResourceTypes, doxm.ResourceType) {
 			d.ownershipStatus = getOwnershipStatus(l)
 		}
 	}

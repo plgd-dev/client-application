@@ -353,29 +353,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "type": "object",
-              "properties": {
-                "coapGatewayAddress": {
-                  "type": "string",
-                  "title": "endpoint in format \u003cscheme\u003e://\u003chost\u003e:\u003cport\u003e"
-                },
-                "authorizationCode": {
-                  "type": "string",
-                  "title": "authorization code from the hub"
-                },
-                "authorizationProviderName": {
-                  "type": "string",
-                  "title": "authorization provider from the hub"
-                },
-                "hubId": {
-                  "type": "string",
-                  "title": "hub id in uuid format to allow hub access to device"
-                },
-                "certificateAuthorities": {
-                  "type": "string",
-                  "title": "list of hub certificate authorities in PEM format to verify the hub certificate"
-                }
-              }
+              "$ref": "#/definitions/ClientApplicationOnboardDeviceBody"
             }
           }
         ],
@@ -420,14 +398,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "type": "object",
-              "properties": {
-                "timeout": {
-                  "type": "string",
-                  "format": "int64",
-                  "description": "Defines how long own process will wait for the OwnDeviceRequest with set_identity_certificate in nanoseconds. Default value is 15secs."
-                }
-              }
+              "$ref": "#/definitions/ClientApplicationOwnDeviceBody"
             }
           }
         ],
@@ -479,14 +450,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "type": "object",
-              "properties": {
-                "certificate": {
-                  "type": "string",
-                  "format": "byte",
-                  "title": "Certificate chain in PEM format"
-                }
-              }
+              "$ref": "#/definitions/ClientApplicationFinishOwnDeviceBody"
             }
           }
         ],
@@ -837,14 +801,7 @@
             "in": "body",
             "required": true,
             "schema": {
-              "type": "object",
-              "properties": {
-                "certificate": {
-                  "type": "string",
-                  "format": "byte",
-                  "title": "Certificate chain in PEM format"
-                }
-              }
+              "$ref": "#/definitions/ClientApplicationFinishInitializeBody"
             }
           }
         ],
@@ -898,6 +855,61 @@
     }
   },
   "definitions": {
+    "ClientApplicationFinishInitializeBody": {
+      "type": "object",
+      "properties": {
+        "certificate": {
+          "type": "string",
+          "format": "byte",
+          "title": "Certificate chain in PEM format"
+        }
+      }
+    },
+    "ClientApplicationFinishOwnDeviceBody": {
+      "type": "object",
+      "properties": {
+        "certificate": {
+          "type": "string",
+          "format": "byte",
+          "title": "Certificate chain in PEM format"
+        }
+      }
+    },
+    "ClientApplicationOnboardDeviceBody": {
+      "type": "object",
+      "properties": {
+        "coapGatewayAddress": {
+          "type": "string",
+          "title": "endpoint in format \u003cscheme\u003e://\u003chost\u003e:\u003cport\u003e"
+        },
+        "authorizationCode": {
+          "type": "string",
+          "title": "authorization code from the hub"
+        },
+        "authorizationProviderName": {
+          "type": "string",
+          "title": "authorization provider from the hub"
+        },
+        "hubId": {
+          "type": "string",
+          "title": "hub id in uuid format to allow hub access to device"
+        },
+        "certificateAuthorities": {
+          "type": "string",
+          "title": "list of hub certificate authorities in PEM format to verify the hub certificate"
+        }
+      }
+    },
+    "ClientApplicationOwnDeviceBody": {
+      "type": "object",
+      "properties": {
+        "timeout": {
+          "type": "string",
+          "format": "int64",
+          "description": "Defines how long own process will wait for the OwnDeviceRequest with set_identity_certificate in nanoseconds. Default value is 15secs."
+        }
+      }
+    },
     "ConnectionProtocol": {
       "type": "string",
       "enum": [
@@ -1086,6 +1098,13 @@
         "serviceId": {
           "type": "string",
           "description": "The service.ID, which identify the device being served, must be set when the status is ONLINE. However, during an OFFLINE event, they will be sed to empty values."
+        },
+        "localEndpoints": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "The last local endpoints of the device, and it is set when the status is ONLINE."
         }
       }
     },
@@ -1150,28 +1169,6 @@
         }
       }
     },
-    "pbDeviceOAuthClient": {
-      "type": "object",
-      "properties": {
-        "clientId": {
-          "type": "string",
-          "title": "@gotags: yaml:\"clientID\""
-        },
-        "audience": {
-          "type": "string"
-        },
-        "scopes": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
-        },
-        "providerName": {
-          "type": "string",
-          "title": "@gotags: yaml:\"providerName\""
-        }
-      }
-    },
     "pbDisownDeviceResponse": {
       "type": "object"
     },
@@ -1233,7 +1230,7 @@
           "$ref": "#/definitions/servicepbBuildInfo"
         },
         "ui": {
-          "$ref": "#/definitions/pbUIConfiguration"
+          "$ref": "#/definitions/servicepbUIConfiguration"
         }
       }
     },
@@ -1310,6 +1307,39 @@
         }
       }
     },
+    "pbOAuthClient": {
+      "type": "object",
+      "properties": {
+        "clientId": {
+          "type": "string",
+          "title": "@gotags: yaml:\"clientID\""
+        },
+        "audience": {
+          "type": "string"
+        },
+        "scopes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "providerName": {
+          "type": "string",
+          "title": "@gotags: yaml:\"providerName\""
+        },
+        "clientAssertionType": {
+          "type": "string",
+          "title": "@gotags: yaml:\"clientAssertionType\""
+        },
+        "authority": {
+          "type": "string"
+        },
+        "grantType": {
+          "type": "string",
+          "title": "@gotags: yaml:\"grantType\""
+        }
+      }
+    },
     "pbOffboardDeviceResponse": {
       "type": "object"
     },
@@ -1372,13 +1402,17 @@
           "title": "certificate_authority in format https://host:port"
         },
         "webOauthClient": {
-          "$ref": "#/definitions/pbWebOAuthClient",
+          "$ref": "#/definitions/pbOAuthClient",
           "description": "@gotags: yaml:\"webOAuthClient\"",
           "title": "http-gateway in format https://host:port\nstring http_gateway_address = 10; // @gotags: yaml:\"-\""
         },
         "deviceOauthClient": {
-          "$ref": "#/definitions/pbDeviceOAuthClient",
+          "$ref": "#/definitions/pbOAuthClient",
           "title": "@gotags: yaml:\"deviceOAuthClient\""
+        },
+        "m2mOauthClient": {
+          "$ref": "#/definitions/pbOAuthClient",
+          "title": "@gotags: yaml:\"m2mOAuthClient\""
         },
         "mode": {
           "$ref": "#/definitions/RemoteProvisioningMode",
@@ -1426,6 +1460,12 @@
           "format": "byte",
           "title": "etag of the resource used by twin synchronization"
         },
+        "resourceTypes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
         "openTelemetryCarrier": {
           "type": "object",
           "additionalProperties": {
@@ -1453,6 +1493,12 @@
         "eventMetadata": {
           "$ref": "#/definitions/resourceaggregatepbEventMetadata"
         },
+        "resourceTypes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
         "openTelemetryCarrier": {
           "type": "object",
           "additionalProperties": {
@@ -1479,6 +1525,12 @@
         },
         "eventMetadata": {
           "$ref": "#/definitions/resourceaggregatepbEventMetadata"
+        },
+        "resourceTypes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
         },
         "openTelemetryCarrier": {
           "type": "object",
@@ -1547,6 +1599,12 @@
         "eventMetadata": {
           "$ref": "#/definitions/resourceaggregatepbEventMetadata"
         },
+        "resourceTypes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
         "openTelemetryCarrier": {
           "type": "object",
           "additionalProperties": {
@@ -1583,18 +1641,6 @@
         }
       }
     },
-    "pbUIConfiguration": {
-      "type": "object",
-      "properties": {
-        "defaultDiscoveryTimeout": {
-          "type": "string",
-          "format": "int64",
-          "title": "default discovery timeout in nanoseconds"
-        }
-      },
-      "description": "similar to https://github.com/plgd-dev/hub/blob/4c4861a4bc483ba4080a1d448063da392eff4026/grpc-gateway/pb/hubConfiguration.proto#L61",
-      "title": "UI configuration"
-    },
     "pbUserAgent": {
       "type": "object",
       "properties": {
@@ -1603,24 +1649,6 @@
           "format": "int64",
           "description": "@gotags: yaml:\"csrChallengeStateExpiration\"",
           "title": "in nanoseconds"
-        }
-      }
-    },
-    "pbWebOAuthClient": {
-      "type": "object",
-      "properties": {
-        "clientId": {
-          "type": "string",
-          "title": "@gotags: yaml:\"clientID\""
-        },
-        "audience": {
-          "type": "string"
-        },
-        "scopes": {
-          "type": "array",
-          "items": {
-            "type": "string"
-          }
         }
       }
     },
@@ -1792,6 +1820,18 @@
           "title": "release url of the service"
         }
       }
+    },
+    "servicepbUIConfiguration": {
+      "type": "object",
+      "properties": {
+        "defaultDiscoveryTimeout": {
+          "type": "string",
+          "format": "int64",
+          "title": "default discovery timeout in nanoseconds"
+        }
+      },
+      "description": "similar to\n https://github.com/plgd-dev/hub/blob/4c4861a4bc483ba4080a1d448063da392eff4026/grpc-gateway/pb/hubConfiguration.proto#L61",
+      "title": "UI configuration"
     }
   },
   "securityDefinitions": {

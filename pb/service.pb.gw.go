@@ -164,7 +164,7 @@ func local_request_ClientApplication_GetDeviceResourceLinks_0(ctx context.Contex
 }
 
 var (
-	filter_ClientApplication_GetResource_0 = &utilities.DoubleArray{Encoding: map[string]int{"resource_id": 0, "device_id": 1, "deviceId": 2, "href": 3}, Base: []int{1, 3, 1, 4, 5, 0, 3, 0, 0, 0}, Check: []int{0, 1, 2, 1, 1, 3, 2, 7, 4, 5}}
+	filter_ClientApplication_GetResource_0 = &utilities.DoubleArray{Encoding: map[string]int{"resource_id": 0, "device_id": 1, "href": 2}, Base: []int{1, 1, 1, 2, 0, 0}, Check: []int{0, 1, 2, 2, 3, 4}}
 )
 
 func request_ClientApplication_GetResource_0(ctx context.Context, marshaler runtime.Marshaler, client ClientApplicationClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
@@ -254,18 +254,14 @@ func local_request_ClientApplication_GetResource_0(ctx context.Context, marshale
 }
 
 var (
-	filter_ClientApplication_UpdateResource_0 = &utilities.DoubleArray{Encoding: map[string]int{"content": 0, "resource_id": 1, "device_id": 2, "deviceId": 3, "href": 4}, Base: []int{1, 2, 5, 3, 6, 7, 0, 0, 0, 5, 0, 0, 0}, Check: []int{0, 1, 1, 3, 1, 1, 2, 2, 4, 3, 10, 5, 6}}
+	filter_ClientApplication_UpdateResource_0 = &utilities.DoubleArray{Encoding: map[string]int{"content": 0, "resource_id": 1, "device_id": 2, "href": 3}, Base: []int{1, 1, 1, 2, 3, 0, 0, 0}, Check: []int{0, 1, 1, 3, 3, 2, 4, 5}}
 )
 
 func request_ClientApplication_UpdateResource_0(ctx context.Context, marshaler runtime.Marshaler, client ClientApplicationClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq UpdateResourceRequest
 	var metadata runtime.ServerMetadata
 
-	newReader, berr := utilities.IOReaderFactory(req.Body)
-	if berr != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
-	}
-	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq.Content); err != nil && err != io.EOF {
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq.Content); err != nil && err != io.EOF {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -312,11 +308,7 @@ func local_request_ClientApplication_UpdateResource_0(ctx context.Context, marsh
 	var protoReq UpdateResourceRequest
 	var metadata runtime.ServerMetadata
 
-	newReader, berr := utilities.IOReaderFactory(req.Body)
-	if berr != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
-	}
-	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq.Content); err != nil && err != io.EOF {
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq.Content); err != nil && err != io.EOF {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -360,18 +352,14 @@ func local_request_ClientApplication_UpdateResource_0(ctx context.Context, marsh
 }
 
 var (
-	filter_ClientApplication_CreateResource_0 = &utilities.DoubleArray{Encoding: map[string]int{"content": 0, "resource_id": 1, "device_id": 2, "deviceId": 3, "href": 4}, Base: []int{1, 2, 5, 3, 6, 7, 0, 0, 0, 5, 0, 0, 0}, Check: []int{0, 1, 1, 3, 1, 1, 2, 2, 4, 3, 10, 5, 6}}
+	filter_ClientApplication_CreateResource_0 = &utilities.DoubleArray{Encoding: map[string]int{"content": 0, "resource_id": 1, "device_id": 2, "href": 3}, Base: []int{1, 1, 1, 2, 3, 0, 0, 0}, Check: []int{0, 1, 1, 3, 3, 2, 4, 5}}
 )
 
 func request_ClientApplication_CreateResource_0(ctx context.Context, marshaler runtime.Marshaler, client ClientApplicationClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
 	var protoReq CreateResourceRequest
 	var metadata runtime.ServerMetadata
 
-	newReader, berr := utilities.IOReaderFactory(req.Body)
-	if berr != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
-	}
-	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq.Content); err != nil && err != io.EOF {
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq.Content); err != nil && err != io.EOF {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -418,11 +406,7 @@ func local_request_ClientApplication_CreateResource_0(ctx context.Context, marsh
 	var protoReq CreateResourceRequest
 	var metadata runtime.ServerMetadata
 
-	newReader, berr := utilities.IOReaderFactory(req.Body)
-	if berr != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
-	}
-	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq.Content); err != nil && err != io.EOF {
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq.Content); err != nil && err != io.EOF {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -466,7 +450,7 @@ func local_request_ClientApplication_CreateResource_0(ctx context.Context, marsh
 }
 
 var (
-	filter_ClientApplication_DeleteResource_0 = &utilities.DoubleArray{Encoding: map[string]int{"resource_id": 0, "device_id": 1, "deviceId": 2, "href": 3}, Base: []int{1, 3, 1, 4, 5, 0, 3, 0, 0, 0}, Check: []int{0, 1, 2, 1, 1, 3, 2, 7, 4, 5}}
+	filter_ClientApplication_DeleteResource_0 = &utilities.DoubleArray{Encoding: map[string]int{"resource_id": 0, "device_id": 1, "href": 2}, Base: []int{1, 1, 1, 2, 0, 0}, Check: []int{0, 1, 2, 2, 3, 4}}
 )
 
 func request_ClientApplication_DeleteResource_0(ctx context.Context, marshaler runtime.Marshaler, client ClientApplicationClient, req *http.Request, pathParams map[string]string) (proto.Message, runtime.ServerMetadata, error) {
@@ -559,11 +543,7 @@ func request_ClientApplication_OwnDevice_0(ctx context.Context, marshaler runtim
 	var protoReq OwnDeviceRequest
 	var metadata runtime.ServerMetadata
 
-	newReader, berr := utilities.IOReaderFactory(req.Body)
-	if berr != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
-	}
-	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq); err != nil && err != io.EOF {
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && err != io.EOF {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -593,11 +573,7 @@ func local_request_ClientApplication_OwnDevice_0(ctx context.Context, marshaler 
 	var protoReq OwnDeviceRequest
 	var metadata runtime.ServerMetadata
 
-	newReader, berr := utilities.IOReaderFactory(req.Body)
-	if berr != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
-	}
-	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq); err != nil && err != io.EOF {
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && err != io.EOF {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -627,11 +603,7 @@ func request_ClientApplication_FinishOwnDevice_0(ctx context.Context, marshaler 
 	var protoReq FinishOwnDeviceRequest
 	var metadata runtime.ServerMetadata
 
-	newReader, berr := utilities.IOReaderFactory(req.Body)
-	if berr != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
-	}
-	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq); err != nil && err != io.EOF {
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && err != io.EOF {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -671,11 +643,7 @@ func local_request_ClientApplication_FinishOwnDevice_0(ctx context.Context, mars
 	var protoReq FinishOwnDeviceRequest
 	var metadata runtime.ServerMetadata
 
-	newReader, berr := utilities.IOReaderFactory(req.Body)
-	if berr != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
-	}
-	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq); err != nil && err != io.EOF {
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && err != io.EOF {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -839,11 +807,7 @@ func request_ClientApplication_Initialize_0(ctx context.Context, marshaler runti
 	var protoReq InitializeRequest
 	var metadata runtime.ServerMetadata
 
-	newReader, berr := utilities.IOReaderFactory(req.Body)
-	if berr != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
-	}
-	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq); err != nil && err != io.EOF {
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && err != io.EOF {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -856,11 +820,7 @@ func local_request_ClientApplication_Initialize_0(ctx context.Context, marshaler
 	var protoReq InitializeRequest
 	var metadata runtime.ServerMetadata
 
-	newReader, berr := utilities.IOReaderFactory(req.Body)
-	if berr != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
-	}
-	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq); err != nil && err != io.EOF {
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && err != io.EOF {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -873,11 +833,7 @@ func request_ClientApplication_FinishInitialize_0(ctx context.Context, marshaler
 	var protoReq FinishInitializeRequest
 	var metadata runtime.ServerMetadata
 
-	newReader, berr := utilities.IOReaderFactory(req.Body)
-	if berr != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
-	}
-	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq); err != nil && err != io.EOF {
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && err != io.EOF {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -907,11 +863,7 @@ func local_request_ClientApplication_FinishInitialize_0(ctx context.Context, mar
 	var protoReq FinishInitializeRequest
 	var metadata runtime.ServerMetadata
 
-	newReader, berr := utilities.IOReaderFactory(req.Body)
-	if berr != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
-	}
-	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq); err != nil && err != io.EOF {
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && err != io.EOF {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -941,11 +893,7 @@ func request_ClientApplication_Reset_0(ctx context.Context, marshaler runtime.Ma
 	var protoReq ResetRequest
 	var metadata runtime.ServerMetadata
 
-	newReader, berr := utilities.IOReaderFactory(req.Body)
-	if berr != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
-	}
-	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq); err != nil && err != io.EOF {
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && err != io.EOF {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -958,11 +906,7 @@ func local_request_ClientApplication_Reset_0(ctx context.Context, marshaler runt
 	var protoReq ResetRequest
 	var metadata runtime.ServerMetadata
 
-	newReader, berr := utilities.IOReaderFactory(req.Body)
-	if berr != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
-	}
-	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq); err != nil && err != io.EOF {
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && err != io.EOF {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -975,11 +919,7 @@ func request_ClientApplication_OnboardDevice_0(ctx context.Context, marshaler ru
 	var protoReq OnboardDeviceRequest
 	var metadata runtime.ServerMetadata
 
-	newReader, berr := utilities.IOReaderFactory(req.Body)
-	if berr != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
-	}
-	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq); err != nil && err != io.EOF {
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && err != io.EOF {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -1009,11 +949,7 @@ func local_request_ClientApplication_OnboardDevice_0(ctx context.Context, marsha
 	var protoReq OnboardDeviceRequest
 	var metadata runtime.ServerMetadata
 
-	newReader, berr := utilities.IOReaderFactory(req.Body)
-	if berr != nil {
-		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", berr)
-	}
-	if err := marshaler.NewDecoder(newReader()).Decode(&protoReq); err != nil && err != io.EOF {
+	if err := marshaler.NewDecoder(req.Body).Decode(&protoReq); err != nil && err != io.EOF {
 		return nil, metadata, status.Errorf(codes.InvalidArgument, "%v", err)
 	}
 
@@ -1095,6 +1031,7 @@ func local_request_ClientApplication_OffboardDevice_0(ctx context.Context, marsh
 // UnaryRPC     :call ClientApplicationServer directly.
 // StreamingRPC :currently unsupported pending https://github.com/grpc/grpc-go/issues/906.
 // Note that using this registration option will cause many gRPC library features to stop working. Consider using RegisterClientApplicationHandlerFromEndpoint instead.
+// GRPC interceptors will not work for this type of registration. To use interceptors, you must use the "runtime.WithMiddlewares" option in the "runtime.NewServeMux" call.
 func RegisterClientApplicationHandlerServer(ctx context.Context, mux *runtime.ServeMux, server ClientApplicationServer) error {
 
 	mux.Handle("GET", pattern_ClientApplication_GetDevices_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {
@@ -1560,21 +1497,21 @@ func RegisterClientApplicationHandlerServer(ctx context.Context, mux *runtime.Se
 // RegisterClientApplicationHandlerFromEndpoint is same as RegisterClientApplicationHandler but
 // automatically dials to "endpoint" and closes the connection when "ctx" gets done.
 func RegisterClientApplicationHandlerFromEndpoint(ctx context.Context, mux *runtime.ServeMux, endpoint string, opts []grpc.DialOption) (err error) {
-	conn, err := grpc.DialContext(ctx, endpoint, opts...)
+	conn, err := grpc.NewClient(endpoint, opts...)
 	if err != nil {
 		return err
 	}
 	defer func() {
 		if err != nil {
 			if cerr := conn.Close(); cerr != nil {
-				grpclog.Infof("Failed to close conn to %s: %v", endpoint, cerr)
+				grpclog.Errorf("Failed to close conn to %s: %v", endpoint, cerr)
 			}
 			return
 		}
 		go func() {
 			<-ctx.Done()
 			if cerr := conn.Close(); cerr != nil {
-				grpclog.Infof("Failed to close conn to %s: %v", endpoint, cerr)
+				grpclog.Errorf("Failed to close conn to %s: %v", endpoint, cerr)
 			}
 		}()
 	}()
@@ -1592,7 +1529,7 @@ func RegisterClientApplicationHandler(ctx context.Context, mux *runtime.ServeMux
 // to "mux". The handlers forward requests to the grpc endpoint over the given implementation of "ClientApplicationClient".
 // Note: the gRPC framework executes interceptors within the gRPC handler. If the passed in "ClientApplicationClient"
 // doesn't go through the normal gRPC flow (creating a gRPC client etc.) then it will be up to the passed in
-// "ClientApplicationClient" to call the correct interceptors.
+// "ClientApplicationClient" to call the correct interceptors. This client ignores the HTTP middlewares.
 func RegisterClientApplicationHandlerClient(ctx context.Context, mux *runtime.ServeMux, client ClientApplicationClient) error {
 
 	mux.Handle("GET", pattern_ClientApplication_GetDevices_0, func(w http.ResponseWriter, req *http.Request, pathParams map[string]string) {

@@ -19,6 +19,7 @@ package grpc
 import (
 	"context"
 	"fmt"
+	"slices"
 	"sort"
 	"sync"
 	"time"
@@ -34,7 +35,6 @@ import (
 	"github.com/plgd-dev/device/v2/schema/resources"
 	grpcgwPb "github.com/plgd-dev/hub/v2/grpc-gateway/pb"
 	"github.com/plgd-dev/hub/v2/pkg/log"
-	"github.com/plgd-dev/hub/v2/pkg/strings"
 	"github.com/plgd-dev/hub/v2/resource-aggregate/commands"
 	"github.com/plgd-dev/hub/v2/resource-aggregate/events"
 	"google.golang.org/grpc/codes"
@@ -184,7 +184,7 @@ func (d *device) getResourceLinkAndCheckAccess(ctx context.Context, resourceID *
 	if err != nil {
 		return link, err
 	}
-	if strings.Contains(link.ResourceTypes, resources.ResourceType) && resInterface == interfaces.OC_IF_B {
+	if slices.Contains(link.ResourceTypes, resources.ResourceType) && resInterface == interfaces.OC_IF_B {
 		link.Endpoints = link.Endpoints.FilterSecureEndpoints()
 	}
 	return link, d.checkAccess(link)

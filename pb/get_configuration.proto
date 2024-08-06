@@ -25,78 +25,88 @@ option go_package = "github.com/plgd-dev/client-application/pb;pb";
 message GetConfigurationRequest {}
 
 message UserAgent {
-    // in nanoseconds
-    int64 csr_challenge_state_expiration = 1; // @gotags: yaml:"csrChallengeStateExpiration"
+  // in nanoseconds
+  int64 csr_challenge_state_expiration =
+      1; // @gotags: yaml:"csrChallengeStateExpiration"
 }
 
 message RemoteProvisioning {
-    // similar to https://github.com/plgd-dev/hub/blob/ca24aa39111bfc97fd27c0cff9d0ce7e22d82818/grpc-gateway/pb/hubConfiguration.proto#L24
-    reserved 3, 8, 10;
-    enum Mode {
-        MODE_NONE = 0;
-        USER_AGENT = 1;
-    };
-    int64 current_time = 1; // @gotags: yaml:"-"
-    string jwt_owner_claim = 2; // @gotags: yaml:"ownerClaim"
-    // Hub ID
-    string id = 4; // @gotags: yaml:"hubID"
-    // coap-gateway in format coaps+tcp://host:port
-    string coap_gateway = 5; // @gotags: yaml:"coapGateway"
-    // certificate_authorities in format PEM - can contain multiple certificates
-    string certificate_authorities = 6; // @gotags: yaml:"-"
-    // authority in format https://host:port
-    string authority = 7; // @gotags: yaml:"authority"
-    // certificate_authority in format https://host:port
-    string certificate_authority = 9; // @gotags: yaml:"certificateAuthority"
-    // http-gateway in format https://host:port
-    // string http_gateway_address = 10; // @gotags: yaml:"-"
-    grpcgateway.pb.WebOAuthClient web_oauth_client = 11; // @gotags: yaml:"webOAuthClient"
-    grpcgateway.pb.DeviceOAuthClient device_oauth_client = 12; // @gotags: yaml:"deviceOAuthClient"
- 
-    Mode mode = 100; // @gotags: yaml:"mode"
-    UserAgent user_agent = 101; // @gotags: yaml:"userAgent"
-    repeated string ca_pool = 102; // @gotags: yaml:"caPool"
+  // similar to
+  // https://github.com/plgd-dev/hub/blob/ca24aa39111bfc97fd27c0cff9d0ce7e22d82818/grpc-gateway/pb/hubConfiguration.proto#L24
+  reserved 3, 8, 10;
+  enum Mode {
+    MODE_NONE = 0;
+    USER_AGENT = 1;
+  };
+  int64 current_time = 1;     // @gotags: yaml:"-"
+  string jwt_owner_claim = 2; // @gotags: yaml:"ownerClaim"
+  // Hub ID
+  string id = 4; // @gotags: yaml:"hubID"
+  // coap-gateway in format coaps+tcp://host:port
+  string coap_gateway = 5; // @gotags: yaml:"coapGateway"
+  // certificate_authorities in format PEM - can contain multiple certificates
+  string certificate_authorities = 6; // @gotags: yaml:"-"
+  // authority in format https://host:port
+  string authority = 7; // @gotags: yaml:"authority"
+  // certificate_authority in format https://host:port
+  string certificate_authority = 9; // @gotags: yaml:"certificateAuthority"
+  // http-gateway in format https://host:port
+  // string http_gateway_address = 10; // @gotags: yaml:"-"
+  grpcgateway.pb.OAuthClient web_oauth_client =
+      11; // @gotags: yaml:"webOAuthClient"
+  grpcgateway.pb.OAuthClient device_oauth_client =
+      12; // @gotags: yaml:"deviceOAuthClient"
+  grpcgateway.pb.OAuthClient m2m_oauth_client =
+      13; // @gotags: yaml:"m2mOAuthClient"
 
-    // exposes default command time to live in nanoseconds for CreateResource, RetrieveResource, UpdateResource, DeleteResource, and UpdateDeviceMetadata commands when it is not set in the request. 0 - means forever.
-    //int64 default_command_time_to_live = 8;
+  Mode mode = 100;               // @gotags: yaml:"mode"
+  UserAgent user_agent = 101;    // @gotags: yaml:"userAgent"
+  repeated string ca_pool = 102; // @gotags: yaml:"caPool"
+
+  // exposes default command time to live in nanoseconds for CreateResource,
+  // RetrieveResource, UpdateResource, DeleteResource, and UpdateDeviceMetadata
+  // commands when it is not set in the request. 0 - means forever.
+  // int64 default_command_time_to_live = 8;
 }
 
 message BuildInfo {
-    // version of the service
-    string version = 1; 
-    // build date of the service
-    string build_date = 2;
-    // commit hash of the service
-    string commit_hash = 3;
-    // commit date of the service
-    string commit_date = 4;
-    // release url of the service
-    string release_url = 5;
+  // version of the service
+  string version = 1;
+  // build date of the service
+  string build_date = 2;
+  // commit hash of the service
+  string commit_hash = 3;
+  // commit date of the service
+  string commit_date = 4;
+  // release url of the service
+  string release_url = 5;
 }
 
 // UI configuration
 message UIConfiguration {
-    // similar to https://github.com/plgd-dev/hub/blob/4c4861a4bc483ba4080a1d448063da392eff4026/grpc-gateway/pb/hubConfiguration.proto#L61
+  // similar to
+  // https://github.com/plgd-dev/hub/blob/4c4861a4bc483ba4080a1d448063da392eff4026/grpc-gateway/pb/hubConfiguration.proto#L61
 
-    int64 default_discovery_timeout = 100; // default discovery timeout in nanoseconds
+  int64 default_discovery_timeout =
+      100; // default discovery timeout in nanoseconds
 }
 
 message GetConfigurationResponse {
-    enum DeviceAuthenticationMode {
-        PRE_SHARED_KEY = 0;
-        X509 = 1;
-        UNINITIALIZED = 2;
-    };
-    string version = 1; // deprecated, use build_info.version
-    string build_date = 2; // deprecated, use build_info.build_date
-    string commit_hash = 3; // deprecated, use build_info.commit_hash
-    string commit_date = 4; // deprecated, use build_info.commit_date
-    string release_url = 5; // deprecated, use build_info.release_url
-    // user don't need to call initialize endpoint
-    bool is_initialized = 6;
-    DeviceAuthenticationMode device_authentication_mode = 7;
-    RemoteProvisioning remote_provisioning = 8;
-    string owner = 9;
-    BuildInfo build_info = 10;
-    UIConfiguration ui = 11;
+  enum DeviceAuthenticationMode {
+    PRE_SHARED_KEY = 0;
+    X509 = 1;
+    UNINITIALIZED = 2;
+  };
+  string version = 1;     // deprecated, use build_info.version
+  string build_date = 2;  // deprecated, use build_info.build_date
+  string commit_hash = 3; // deprecated, use build_info.commit_hash
+  string commit_date = 4; // deprecated, use build_info.commit_date
+  string release_url = 5; // deprecated, use build_info.release_url
+  // user don't need to call initialize endpoint
+  bool is_initialized = 6;
+  DeviceAuthenticationMode device_authentication_mode = 7;
+  RemoteProvisioning remote_provisioning = 8;
+  string owner = 9;
+  BuildInfo build_info = 10;
+  UIConfiguration ui = 11;
 }
