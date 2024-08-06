@@ -20,14 +20,9 @@ import (
 	"os"
 	"time"
 
-	pb "github.com/plgd-dev/hub/v2/grpc-gateway/pb"
+	"github.com/plgd-dev/hub/v2/grpc-gateway/pb"
 	"github.com/plgd-dev/kit/v2/security"
 	"gopkg.in/yaml.v3"
-)
-
-type (
-	WebOauthClient    = pb.WebOAuthClient
-	DeviceOauthClient = pb.DeviceOAuthClient
 )
 
 func (c *UserAgent) Clone() *UserAgent {
@@ -108,7 +103,7 @@ func (r *GetConfigurationResponse) Clone() *GetConfigurationResponse {
 	}
 }
 
-func ValidateWebOAuthClient(c *pb.WebOAuthClient) error {
+func ValidateWebOAuthClient(c *pb.OAuthClient) error {
 	if c.GetClientId() == "" {
 		return fmt.Errorf("clientID('%v')", c.GetClientId())
 	}

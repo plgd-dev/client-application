@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 	"testing"
+	"time"
 
 	"github.com/plgd-dev/client-application/service"
 	"github.com/plgd-dev/client-application/test"
@@ -32,6 +33,9 @@ func TestServiceServe(t *testing.T) {
 	fmt.Printf("%v\n\n", test.MakeConfig(t))
 
 	shutDown := test.SetUp(t)
+	// give some time to start-up
+	time.Sleep(time.Second)
+
 	defer shutDown()
 }
 

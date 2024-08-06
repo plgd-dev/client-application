@@ -213,14 +213,14 @@ func NewRemoteProvisioningConfig() *pb.RemoteProvisioning {
 			CsrChallengeStateExpiration: (time.Minute * 10).Nanoseconds(),
 		},
 		CertificateAuthority: "https://" + testConfig.CERTIFICATE_AUTHORITY_HOST,
-		WebOauthClient: &pb.WebOauthClient{
+		WebOauthClient: &grpcgwPb.OAuthClient{
 			ClientId: testConfig.OAUTH_MANAGER_CLIENT_ID,
 			Scopes:   []string{"openid"},
 		},
 		JwtOwnerClaim: testConfig.OWNER_CLAIM,
 		Authority:     "https://" + testConfig.OAUTH_SERVER_HOST,
 		CoapGateway:   testConfig.ACTIVE_COAP_SCHEME + "://" + testConfig.COAP_GW_HOST,
-		DeviceOauthClient: &pb.DeviceOauthClient{
+		DeviceOauthClient: &grpcgwPb.OAuthClient{
 			ClientId:     testConfig.OAUTH_MANAGER_CLIENT_ID,
 			ProviderName: testConfig.DEVICE_PROVIDER,
 			Audience:     "http://" + CLIENT_APPLICATION_HTTP_HOST,

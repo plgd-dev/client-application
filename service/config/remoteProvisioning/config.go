@@ -20,6 +20,7 @@ import (
 	"time"
 
 	"github.com/plgd-dev/client-application/pb"
+	grpcgwPb "github.com/plgd-dev/hub/v2/grpc-gateway/pb"
 )
 
 type Config = pb.RemoteProvisioning
@@ -30,8 +31,9 @@ var defaultConfig = Config{
 		CsrChallengeStateExpiration: time.Minute.Nanoseconds(),
 	},
 	JwtOwnerClaim:     "sub",
-	WebOauthClient:    &pb.WebOauthClient{},
-	DeviceOauthClient: &pb.DeviceOauthClient{},
+	WebOauthClient:    &grpcgwPb.OAuthClient{},
+	DeviceOauthClient: &grpcgwPb.OAuthClient{},
+	M2MOauthClient:    &grpcgwPb.OAuthClient{},
 }
 
 func DefaultConfig() *Config {

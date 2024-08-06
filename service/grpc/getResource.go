@@ -19,6 +19,7 @@ package grpc
 import (
 	"context"
 	"fmt"
+	"slices"
 
 	"github.com/plgd-dev/client-application/pb"
 	"github.com/plgd-dev/client-application/pkg/rawcodec"
@@ -27,7 +28,6 @@ import (
 	plgdDevice "github.com/plgd-dev/device/v2/schema/device"
 	"github.com/plgd-dev/go-coap/v3/message"
 	grpcgwPb "github.com/plgd-dev/hub/v2/grpc-gateway/pb"
-	"github.com/plgd-dev/hub/v2/pkg/strings"
 	"github.com/plgd-dev/hub/v2/resource-aggregate/commands"
 	"github.com/plgd-dev/hub/v2/resource-aggregate/events"
 	"google.golang.org/grpc/codes"
@@ -47,7 +47,7 @@ func getResourceAndRefreshCache(ctx context.Context, dev *device, link schema.Re
 	}
 	content := responseToData(response)
 	// we update device resource body only for device resource
-	if strings.Contains(link.ResourceTypes, plgdDevice.ResourceType) && resourceInterface == "" {
+	if slices.Contains(link.ResourceTypes, plgdDevice.ResourceType) && resourceInterface == "" {
 		dev.updateDeviceResourceBody(content)
 	}
 	return content, nil
