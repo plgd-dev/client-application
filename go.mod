@@ -16,7 +16,7 @@ require (
 	github.com/gorilla/mux v1.8.1
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.21.0
 	github.com/hashicorp/go-multierror v1.1.1
-	github.com/jellydator/ttlcache/v3 v3.2.0
+	github.com/jellydator/ttlcache/v3 v3.3.0
 	github.com/jessevdk/go-flags v1.6.1
 	github.com/lestrrat-go/jwx/v2 v2.1.1
 	github.com/pion/dtls/v2 v2.2.8-0.20240701035148-45e16a098c47
