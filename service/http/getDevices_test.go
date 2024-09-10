@@ -30,7 +30,7 @@ import (
 	"github.com/plgd-dev/client-application/test"
 	grpcgwPb "github.com/plgd-dev/hub/v2/grpc-gateway/pb"
 	httpgwTest "github.com/plgd-dev/hub/v2/http-gateway/test"
-	httpTest "github.com/plgd-dev/hub/v2/test/http"
+	pkgHttpPb "github.com/plgd-dev/hub/v2/pkg/net/http/pb"
 	"github.com/stretchr/testify/require"
 )
 
@@ -44,7 +44,7 @@ func getDevices(t *testing.T, token string) {
 	require.Equal(t, http.StatusOK, resp.StatusCode)
 	for {
 		var dev grpcgwPb.Device
-		err := httpTest.Unmarshal(resp.StatusCode, resp.Body, &dev)
+		err := pkgHttpPb.Unmarshal(resp.StatusCode, resp.Body, &dev)
 		if errors.Is(err, io.EOF) {
 			break
 		}
@@ -116,7 +116,7 @@ func TestClientApplicationServerGetDevices(t *testing.T) {
 			var got []*grpcgwPb.Device
 			for {
 				var dev grpcgwPb.Device
-				err := httpTest.Unmarshal(resp.StatusCode, resp.Body, &dev)
+				err := pkgHttpPb.Unmarshal(resp.StatusCode, resp.Body, &dev)
 				if errors.Is(err, io.EOF) {
 					break
 				}

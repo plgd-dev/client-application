@@ -1,6 +1,7 @@
 package grpc
 
 import (
+	"context"
 	"errors"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -51,7 +52,7 @@ func (c *JSONWebKeyCache) LookupKey(token *jwt.Token) (jwk.Key, error) {
 	return nil, errors.New("could not find JWK")
 }
 
-func (s *ClientApplicationServer) ParseWithClaims(token string, claims jwt.Claims) error {
+func (s *ClientApplicationServer) ParseWithClaims(_ context.Context, token string, claims jwt.Claims) error {
 	if token == "" {
 		if !s.HasJWTAuthorizationEnabled() {
 			return nil

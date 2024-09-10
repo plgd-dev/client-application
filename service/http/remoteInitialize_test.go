@@ -150,7 +150,7 @@ func setupRemoteProvisioning(t *testing.T, services ...hubTestService.SetUpServi
 
 	var service hubTestService.SetUpServicesConfig
 	if len(services) == 0 {
-		service = hubTestService.SetUpServicesOAuth | hubTestService.SetUpServicesCertificateAuthority
+		service = hubTestService.SetUpServicesOAuth | hubTestService.SetUpServicesMachine2MachineOAuth | hubTestService.SetUpServicesCertificateAuthority
 	} else {
 		for _, s := range services {
 			service |= s
@@ -191,7 +191,8 @@ func TestClientApplicationServerUpdateIdentityCertificate(t *testing.T) {
 	shutDown := test.New(t, cfg)
 	defer shutDown()
 
-	servicesShutdown := hubTestService.SetUpServices(ctx, t, hubTestService.SetUpServicesOAuth|hubTestService.SetUpServicesCertificateAuthority)
+	servicesShutdown := hubTestService.SetUpServices(ctx, t, hubTestService.SetUpServicesOAuth|
+		hubTestService.SetUpServicesMachine2MachineOAuth|hubTestService.SetUpServicesCertificateAuthority)
 	defer servicesShutdown()
 
 	request := httpgwTest.NewRequest(http.MethodGet, serviceHttp.WellKnownConfiguration, nil).Host(test.CLIENT_APPLICATION_HTTP_HOST).Build()

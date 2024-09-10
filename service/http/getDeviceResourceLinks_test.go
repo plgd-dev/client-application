@@ -26,10 +26,10 @@ import (
 	serviceHttp "github.com/plgd-dev/client-application/service/http"
 	"github.com/plgd-dev/client-application/test"
 	httpgwTest "github.com/plgd-dev/hub/v2/http-gateway/test"
+	pkgHttpPb "github.com/plgd-dev/hub/v2/pkg/net/http/pb"
 	"github.com/plgd-dev/hub/v2/resource-aggregate/commands"
 	"github.com/plgd-dev/hub/v2/resource-aggregate/events"
 	hubTest "github.com/plgd-dev/hub/v2/test"
-	httpTest "github.com/plgd-dev/hub/v2/test/http"
 	hubTestPb "github.com/plgd-dev/hub/v2/test/pb"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -88,7 +88,7 @@ func TestClientApplicationServerGetDeviceResourceLinks(t *testing.T) {
 			assert.Equal(t, tt.wantCode, resp.StatusCode)
 
 			var val events.ResourceLinksPublished
-			err := httpTest.Unmarshal(resp.StatusCode, resp.Body, &val)
+			err := pkgHttpPb.Unmarshal(resp.StatusCode, resp.Body, &val)
 			if tt.wantErr {
 				require.Error(t, err)
 				return

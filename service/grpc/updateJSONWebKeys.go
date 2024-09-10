@@ -55,7 +55,7 @@ func (s *ClientApplicationServer) getOwnerForUpdateJSONWebKeys(ctx context.Conte
 		return owner, nil
 	}
 	scopedClaims := plgdJwt.NewScopeClaims()
-	err = s.ParseWithClaims(token, scopedClaims)
+	err = s.ParseWithClaims(ctx, token, scopedClaims)
 	if err != nil {
 		return "", status.Errorf(codes.Unauthenticated, "cannot parse token: %v", err)
 	}

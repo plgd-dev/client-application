@@ -14,6 +14,7 @@
         "MFG_CLIENT_APPLICATION_KEY": "${workspaceFolder}/.tmp/devsim/pki_certs/mfgclientapplicationkey.pem",
         "TEST_OAUTH_SERVER_ID_TOKEN_PRIVATE_KEY": "${workspaceFolder}/.tmp/oauth-server/idTokenKey.pem",
         "TEST_OAUTH_SERVER_ACCESS_TOKEN_PRIVATE_KEY": "${workspaceFolder}/.tmp/oauth-server/accessTokenKey.pem",
+        "M2M_OAUTH_SERVER_PRIVATE_KEY": "${workspaceFolder}/.tmp/oauth-server/m2mAccessTokenKey.pem",
         "TEST_ROOT_CA_KEY": "${workspaceFolder}/.tmp/certs/rootcakey.pem",
         "TEST_ROOT_CA_CERT": "${workspaceFolder}/.tmp/certs/rootcacrt.pem",
         "TEST_CLOUD_SID": "adebc667-1f2b-41e3-bf5c-6d6eabc68cc6",
@@ -31,6 +32,6 @@
     ],
     "go.useLanguageServer": true,
     "gopls": {
-	    "formatting.gofumpt": true,
+        "formatting.gofumpt": true,
     },
 }
