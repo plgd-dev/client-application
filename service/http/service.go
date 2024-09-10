@@ -40,6 +40,8 @@ import (
 	"github.com/plgd-dev/hub/v2/pkg/fsnotify"
 	pkgLog "github.com/plgd-dev/hub/v2/pkg/log"
 	kitNetHttp "github.com/plgd-dev/hub/v2/pkg/net/http"
+	pkgHttpJwt "github.com/plgd-dev/hub/v2/pkg/net/http/jwt"
+	pkgHttpUri "github.com/plgd-dev/hub/v2/pkg/net/http/uri"
 	"go.opentelemetry.io/otel/trace"
 )
 
@@ -55,7 +57,7 @@ type RequestHandler struct {
 }
 
 func splitURIPath(requestURI, prefix string) []string {
-	v := kitNetHttp.CanonicalHref(requestURI)
+	v := pkgHttpUri.CanonicalHref(requestURI)
 	p := strings.TrimPrefix(v, prefix) // remove core prefix
 	if p == v {
 		return nil
@@ -78,7 +80,7 @@ func resourceMatcher(r *http.Request, rm *router.RouteMatch) bool {
 }
 
 func createAuthFunc(config configHttp.Config, clientApplicationServer *grpc.ClientApplicationServer) func(ctx context.Context, method, uri string) (context.Context, error) {
-	whiteList := []kitNetHttp.RequestMatcher{
+	whiteList := []pkgHttpJwt.RequestMatcher{
 		{
 			Method: http.MethodGet,
 			URI:    regexp.MustCompile(regexp.QuoteMeta(WellKnownJWKs)),
@@ -94,12 +96,12 @@ func createAuthFunc(config configHttp.Config, clientApplicationServer *grpc.Clie
 		},
 	}
 	if config.UI.Enabled {
-		whiteList = append(whiteList, kitNetHttp.RequestMatcher{
+		whiteList = append(whiteList, pkgHttpJwt.RequestMatcher{
 			Method: http.MethodGet,
 			URI:    regexp.MustCompile(`^\/(a$|[^a].*|ap$|a[^p].*|ap[^i].*|api[^/])`),
 		})
 	}
-	auth := kitNetHttp.NewInterceptorWithValidator(clientApplicationServer, kitNetHttp.NewDefaultAuthorizationRules(ApiV1), whiteList...)
+	auth := pkgHttpJwt.NewInterceptorWithValidator(clientApplicationServer, kitNetHttp.NewDefaultAuthorizationRules(ApiV1), whiteList...)
 	return func(ctx context.Context, method, uri string) (context.Context, error) {
 		if clientApplicationServer.HasJWTAuthorizationEnabled() {
 			return auth(ctx, method, uri)

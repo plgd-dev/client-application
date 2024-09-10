@@ -28,8 +28,8 @@ import (
 	"github.com/plgd-dev/device/v2/schema/device"
 	grpcgwPb "github.com/plgd-dev/hub/v2/grpc-gateway/pb"
 	httpgwTest "github.com/plgd-dev/hub/v2/http-gateway/test"
+	pkgHttpPb "github.com/plgd-dev/hub/v2/pkg/net/http/pb"
 	hubTest "github.com/plgd-dev/hub/v2/test"
-	httpTest "github.com/plgd-dev/hub/v2/test/http"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -111,7 +111,7 @@ func TestClientApplicationServerGetResource(t *testing.T) {
 			assert.Equal(t, tt.wantCode, resp.StatusCode)
 
 			var got grpcgwPb.Resource
-			err := httpTest.Unmarshal(resp.StatusCode, resp.Body, &got)
+			err := pkgHttpPb.Unmarshal(resp.StatusCode, resp.Body, &got)
 			if tt.wantErr {
 				require.Error(t, err)
 				return

@@ -25,6 +25,7 @@ UI_SEPARATOR ?= "--------UI--------"
 OAUTH_SERVER_PATH = $(shell pwd)/.tmp/oauth-server
 OAUTH_SERVER_ID_TOKEN_PRIVATE_KEY = $(OAUTH_SERVER_PATH)/idTokenKey.pem
 OAUTH_SERVER_ACCESS_TOKEN_PRIVATE_KEY = $(OAUTH_SERVER_PATH)/accessTokenKey.pem
+M2M_OAUTH_SERVER_ACCESS_TOKEN_PRIVATE_KEY = $(OAUTH_SERVER_PATH)/m2mAccessTokenKey.pem
 CLOUD_SID = adebc667-1f2b-41e3-bf5c-6d6eabc68cc6
 
 certificates:
@@ -68,6 +69,8 @@ privateKeys:
 	mkdir -p $(OAUTH_SERVER_PATH)
 	openssl genrsa -out $(OAUTH_SERVER_ID_TOKEN_PRIVATE_KEY) 4096
 	openssl ecparam -name prime256v1 -genkey -noout -out $(OAUTH_SERVER_ACCESS_TOKEN_PRIVATE_KEY)
+	openssl ecparam -name prime256v1 -genkey -noout -out $(M2M_OAUTH_SERVER_ACCESS_TOKEN_PRIVATE_KEY)
+
 .PHONY: privateKeys
 
 env: clean certificates privateKeys nats mongo
@@ -119,6 +122,7 @@ test: env
 	export MFG_CLIENT_APPLICATION_KEY=$(MFG_CLIENT_APPLICATION_KEY); \
 	export TEST_OAUTH_SERVER_ID_TOKEN_PRIVATE_KEY=$(OAUTH_SERVER_ID_TOKEN_PRIVATE_KEY); \
 	export TEST_OAUTH_SERVER_ACCESS_TOKEN_PRIVATE_KEY=$(OAUTH_SERVER_ACCESS_TOKEN_PRIVATE_KEY); \
+	export M2M_OAUTH_SERVER_PRIVATE_KEY=$(M2M_OAUTH_SERVER_ACCESS_TOKEN_PRIVATE_KEY); \
 	export TEST_ROOT_CA_KEY=$(WORKING_DIRECTORY)/.tmp/certs/rootcakey.pem; \
 	export TEST_ROOT_CA_CERT=$(WORKING_DIRECTORY)/.tmp/certs/rootcacrt.pem; \
 	export TEST_COAP_GW_CERT_FILE=$(WORKING_DIRECTORY)/.tmp/certs/coap.crt; \

@@ -30,10 +30,10 @@ import (
 	hubGrpcGwPb "github.com/plgd-dev/hub/v2/grpc-gateway/pb"
 	httpgwTest "github.com/plgd-dev/hub/v2/http-gateway/test"
 	kitNetGrpc "github.com/plgd-dev/hub/v2/pkg/net/grpc"
+	pkgHttpPb "github.com/plgd-dev/hub/v2/pkg/net/http/pb"
 	hubTest "github.com/plgd-dev/hub/v2/test"
 	"github.com/plgd-dev/hub/v2/test/config"
 	"github.com/plgd-dev/hub/v2/test/device/ocf"
-	httpTest "github.com/plgd-dev/hub/v2/test/http"
 	hubTestOAuthServerTest "github.com/plgd-dev/hub/v2/test/oauth-server/test"
 	hubTestService "github.com/plgd-dev/hub/v2/test/service"
 	"github.com/stretchr/testify/require"
@@ -46,6 +46,7 @@ func TestClientApplicationServerOnboardDeviceRemoteProvisioning(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 	tearDown := setupRemoteProvisioning(t, hubTestService.SetUpServicesOAuth|
+		hubTestService.SetUpServicesMachine2MachineOAuth|
 		hubTestService.SetUpServicesCertificateAuthority|
 		hubTestService.SetUpServicesId|
 		hubTestService.SetUpServicesCertificateAuthority|
@@ -130,7 +131,7 @@ func TestClientApplicationServerOnboardDeviceRemoteProvisioning(t *testing.T) {
 	require.Equal(t, http.StatusOK, resp.StatusCode)
 
 	var httpClientCfg pb.GetConfigurationResponse
-	err = httpTest.Unmarshal(resp.StatusCode, resp.Body, &httpClientCfg)
+	err = pkgHttpPb.Unmarshal(resp.StatusCode, resp.Body, &httpClientCfg)
 	require.NoError(t, err)
 
 	// oauth server url to host

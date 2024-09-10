@@ -164,7 +164,7 @@ func Untar(dst string, r io.Reader) error {
 			}
 		// if it's a file create it
 		case tar.TypeReg:
-			err := copyFile(target, os.FileMode(header.Mode), tr)
+			err := copyFile(target, os.FileMode(header.Mode), tr) //nolint:gosec
 			if err != nil {
 				return err
 			}
