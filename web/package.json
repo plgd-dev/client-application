@@ -48,7 +48,7 @@
     "@types/react-helmet": "^6.1.11",
     "@typescript-eslint/parser": "^6.13.2",
     "babel-plugin-formatjs": "^10.5.10",
-    "eslint": "8.54.0",
+    "eslint": "8.57.1",
     "eslint-config-prettier": "^9.0.0",
     "eslint-config-react-app": "^7.0.1",
     "eslint-formatter-pretty": "^5.0.0",
