@@ -46,7 +46,7 @@
     "@types/react": "^18.2.42",
     "@types/react-dom": "^18.2.17",
     "@types/react-helmet": "^6.1.11",
-    "@typescript-eslint/parser": "^6.13.2",
+    "@typescript-eslint/parser": "^8.0.0",
     "babel-plugin-formatjs": "^10.5.10",
     "eslint": "8.54.0",
     "eslint-config-prettier": "^9.0.0",
