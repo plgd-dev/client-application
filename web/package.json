@@ -13,7 +13,7 @@
     "oidc-client": "^1.11.5",
     "oidc-react": "^3.2.2",
     "postcss-normalize": "^10.0.1",
-    "postcss-preset-env": "^9.3.0",
+    "postcss-preset-env": "^10.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-helmet": "^6.1.0",
