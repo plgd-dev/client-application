@@ -2,7 +2,7 @@ module github.com/plgd-dev/client-application
 
 go 1.22.5
 
-toolchain go1.22.7
+toolchain go1.23.1
 
 require (
 	github.com/apex/log v1.9.0
