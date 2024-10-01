@@ -12,7 +12,7 @@
     "lodash": "^4.17.21",
     "oidc-client": "^1.11.5",
     "oidc-react": "^3.2.2",
-    "postcss-normalize": "^10.0.1",
+    "postcss-normalize": "^13.0.0",
     "postcss-preset-env": "^9.3.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
