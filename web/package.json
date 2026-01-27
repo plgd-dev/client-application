@@ -9,7 +9,7 @@
     "@reduxjs/toolkit": "^1.9.7",
     "cross-env": "^7.0.3",
     "history": "^5.3.0",
-    "lodash": "^4.17.21",
+    "lodash": "^4.17.23",
     "oidc-client": "^1.11.5",
     "oidc-react": "^3.2.2",
     "postcss-normalize": "^10.0.1",
