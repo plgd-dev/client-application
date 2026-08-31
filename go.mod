@@ -9,7 +9,7 @@ require (
 	github.com/favadi/protoc-go-inject-tag v1.4.0
 	github.com/fullstorydev/grpchan v1.1.1
 	github.com/glendc/go-external-ip v0.1.0
-	github.com/golang-jwt/jwt/v5 v5.2.1
+	github.com/golang-jwt/jwt/v5 v5.2.2
 	github.com/google/uuid v1.6.0
 	github.com/goreleaser/goreleaser/v2 v2.2.0
 	github.com/gorilla/handlers v1.5.2
