@@ -1,8 +1,6 @@
 module github.com/plgd-dev/client-application
 
-go 1.22.5
-
-toolchain go1.22.7
+go 1.25.0
 
 require (
 	github.com/apex/log v1.9.0
@@ -18,13 +16,13 @@ require (
 	github.com/hashicorp/go-multierror v1.1.1
 	github.com/jellydator/ttlcache/v3 v3.3.0
 	github.com/jessevdk/go-flags v1.6.1
-	github.com/lestrrat-go/jwx/v2 v2.1.1
+	github.com/lestrrat-go/jwx/v2 v2.1.7
 	github.com/pion/dtls/v2 v2.2.8-0.20240701035148-45e16a098c47
 	github.com/plgd-dev/device/v2 v2.5.3-0.20240904102627-4c2719d9d856
 	github.com/plgd-dev/go-coap/v3 v3.3.5-0.20240904100911-1afdeb72cb92
 	github.com/plgd-dev/hub/v2 v2.24.1
 	github.com/plgd-dev/kit/v2 v2.0.0-20211006190727-057b33161b90
-	github.com/stretchr/testify v1.9.0
+	github.com/stretchr/testify v1.11.1
 	go.opentelemetry.io/otel/trace v1.29.0
 	go.uber.org/atomic v1.11.0
 	go.uber.org/zap v1.27.0
@@ -130,7 +128,7 @@ require (
 	github.com/cyphar/filepath-securejoin v0.2.4 // indirect
 	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/davidmz/go-pageant v1.0.2 // indirect
-	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.3.0 // indirect
+	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.4.1 // indirect
 	github.com/dghubble/go-twitter v0.0.0-20211115160449-93a8679adecb // indirect
 	github.com/dghubble/oauth1 v0.7.3 // indirect
 	github.com/dghubble/sling v1.4.0 // indirect
@@ -175,7 +173,7 @@ require (
 	github.com/go-restruct/restruct v1.2.0-alpha // indirect
 	github.com/go-telegram-bot-api/telegram-bot-api/v5 v5.5.1 // indirect
 	github.com/gobwas/glob v0.2.3 // indirect
-	github.com/goccy/go-json v0.10.3 // indirect
+	github.com/goccy/go-json v0.10.6 // indirect
 	github.com/gocql/gocql v1.6.0 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang-jwt/jwt/v4 v4.5.0 // indirect
@@ -234,7 +232,7 @@ require (
 	github.com/klauspost/cpuid/v2 v2.2.7 // indirect
 	github.com/klauspost/pgzip v1.2.6 // indirect
 	github.com/kylelemons/godebug v1.1.0 // indirect
-	github.com/lestrrat-go/blackmagic v1.0.2 // indirect
+	github.com/lestrrat-go/blackmagic v1.0.4 // indirect
 	github.com/lestrrat-go/httpcc v1.0.1 // indirect
 	github.com/lestrrat-go/httprc v1.0.6 // indirect
 	github.com/lestrrat-go/iter v1.0.2 // indirect
@@ -293,7 +291,7 @@ require (
 	github.com/sagikazarmark/slog-shim v0.1.0 // indirect
 	github.com/scylladb/go-set v1.0.3-0.20200225121959-cc7b2070d91e // indirect
 	github.com/secure-systems-lab/go-securesystemslib v0.8.0 // indirect
-	github.com/segmentio/asm v1.2.0 // indirect
+	github.com/segmentio/asm v1.2.1 // indirect
 	github.com/sergi/go-diff v1.3.2-0.20230802210424-5b0b94c5c0d3 // indirect
 	github.com/shopspring/decimal v1.2.0 // indirect
 	github.com/sigstore/cosign/v2 v2.2.4 // indirect
@@ -348,17 +346,17 @@ require (
 	go.uber.org/automaxprocs v1.5.3 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	gocloud.dev v0.38.0 // indirect
-	golang.org/x/crypto v0.27.0 // indirect
+	golang.org/x/crypto v0.53.0 // indirect
 	golang.org/x/exp v0.0.0-20240909161429-701f63a606c0 // indirect
-	golang.org/x/mod v0.21.0 // indirect
-	golang.org/x/net v0.29.0 // indirect
+	golang.org/x/mod v0.36.0 // indirect
+	golang.org/x/net v0.55.0 // indirect
 	golang.org/x/oauth2 v0.23.0 // indirect
-	golang.org/x/sync v0.8.0 // indirect
-	golang.org/x/sys v0.25.0 // indirect
-	golang.org/x/term v0.24.0 // indirect
-	golang.org/x/text v0.18.0 // indirect
+	golang.org/x/sync v0.21.0 // indirect
+	golang.org/x/sys v0.46.0 // indirect
+	golang.org/x/term v0.44.0 // indirect
+	golang.org/x/text v0.38.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
-	golang.org/x/tools v0.25.0 // indirect
+	golang.org/x/tools v0.45.0 // indirect
 	golang.org/x/xerrors v0.0.0-20231012003039-104605ab7028 // indirect
 	google.golang.org/api v0.176.1 // indirect
 	google.golang.org/genproto v0.0.0-20240415180920-8c6c420018be // indirect
