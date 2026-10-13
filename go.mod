@@ -1,8 +1,6 @@
 module github.com/plgd-dev/client-application
 
-go 1.22.5
-
-toolchain go1.22.7
+go 1.25
 
 require (
 	github.com/apex/log v1.9.0
@@ -24,7 +22,7 @@ require (
 	github.com/plgd-dev/go-coap/v3 v3.3.5-0.20240904100911-1afdeb72cb92
 	github.com/plgd-dev/hub/v2 v2.24.1
 	github.com/plgd-dev/kit/v2 v2.0.0-20211006190727-057b33161b90
-	github.com/stretchr/testify v1.9.0
+	github.com/stretchr/testify v1.11.1
 	go.opentelemetry.io/otel/trace v1.29.0
 	go.uber.org/atomic v1.11.0
 	go.uber.org/zap v1.27.0
@@ -301,7 +299,7 @@ require (
 	github.com/sigstore/sigstore v1.8.3 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/skeema/knownhosts v1.2.2 // indirect
-	github.com/slack-go/slack v0.13.1 // indirect
+	github.com/slack-go/slack v0.23.1 // indirect
 	github.com/sourcegraph/conc v0.3.0 // indirect
 	github.com/spaolacci/murmur3 v1.1.0 // indirect
 	github.com/spf13/afero v1.11.0 // indirect
