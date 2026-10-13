@@ -967,6 +967,8 @@ gitlab.com/digitalxero/go-conventional-commit v1.0.7 h1:8/dO6WWG+98PMhlZowt/Yjui
 gitlab.com/digitalxero/go-conventional-commit v1.0.7/go.mod h1:05Xc2BFsSyC5tKhK0y+P3bs0AwUtNuTp+mTpbCU/DZ0=
 go.mongodb.org/mongo-driver v1.16.1 h1:rIVLL3q0IHM39dvE+z2ulZLp9ENZKThVfuvN/IiN4l8=
 go.mongodb.org/mongo-driver v1.16.1/go.mod h1:oB6AhJQvFQL4LEHyXi6aJzQJtBiTQHiAd83l0GdFaiw=
+go.mongodb.org/mongo-driver v1.17.7 h1:a9w+U3Vt67eYzcfq3k/OAv284/uUUkL0uP75VE5rCOU=
+go.mongodb.org/mongo-driver v1.17.7/go.mod h1:Hy04i7O2kC4RS06ZrhPRqj/u4DTYkFDAAccj+rVKqgQ=
 go.opencensus.io v0.24.0 h1:y73uSU6J157QMP2kn2r30vwW1A2W2WFwSCGnAVxeaD0=
 go.opencensus.io v0.24.0/go.mod h1:vNK8G9p7aAivkbmorf4v+7Hgx+Zs0yY+0fOtgBfjQKo=
 go.opentelemetry.io/contrib/exporters/autoexport v0.46.1 h1:ysCfPZB9AjUlMa1UHYup3c9dAOCMQX/6sxSfPBUoxHw=
