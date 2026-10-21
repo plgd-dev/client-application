@@ -1,8 +1,6 @@
 module github.com/plgd-dev/client-application
 
-go 1.22.5
-
-toolchain go1.22.7
+go 1.24
 
 require (
 	github.com/apex/log v1.9.0
@@ -230,7 +228,7 @@ require (
 	github.com/jtacoma/uritemplates v1.0.0 // indirect
 	github.com/karrick/tparse/v2 v2.8.2 // indirect
 	github.com/kevinburke/ssh_config v1.2.0 // indirect
-	github.com/klauspost/compress v1.17.9 // indirect
+	github.com/klauspost/compress v1.18.7 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.7 // indirect
 	github.com/klauspost/pgzip v1.2.6 // indirect
 	github.com/kylelemons/godebug v1.1.0 // indirect
